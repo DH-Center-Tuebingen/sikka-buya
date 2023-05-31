@@ -288,7 +288,6 @@ import Text from '../../utils/Text';
 
 import CatalogItem from '../catalog/CatalogItem.vue';
 import LabeledField from '../display/LabeledField.vue';
-import CaseHelper from '../../utils/CaseHelper';
 
 import Gift from 'vue-material-design-icons/GiftOutline';
 import Italic from 'vue-material-design-icons/FormatItalic.vue';
@@ -425,10 +424,6 @@ export default {
       return site
         ? `/image/logos/${site}.png`
         : 'https://www.fint-ikmk.uni-tuebingen.de/ikmk/special/favicons/android-chrome-256x256.png';
-    },
-
-    camelToSnake(value) {
-      return CaseHelper.camelToSnake(value);
     },
 
     mapText: function (val, num = 1) {

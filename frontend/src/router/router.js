@@ -50,7 +50,6 @@ import PersonPage from "@/components/page/catalog/PersonPage.vue"
 import EditorPage from "@/components/page/editor/EditorPage.vue"
 import LandingPage from "@/components/page/LandingPage.vue"
 import ContactPage from "@/components/page/ContactPage.vue"
-import PlaceholderLandingPage from "@/components/page/PlaceholderLandingPage.vue"
 import CreateTypePage from "@/components/page/CreateTypePage.vue"
 import CoinMarkOverview from "@/components/page/CoinMarkOverview.vue"
 import CoinVerseOverview from "@/components/page/CoinVerseOverview.vue"
@@ -58,6 +57,7 @@ import InitialSetup from "@/components/page/InitialSetup.vue"
 import UserManagementPage from "@/components/page/UserManagementPage.vue"
 import FixDiff from "@/components/page/FixDiff.vue"
 import PageNotFoundPage from "@/components/page/system/PageNotFoundPage"
+import ServerOfflinePage from "@/components/page/system/ServerOfflinePage"
 
 import EditorPanel from "@/components/page/EditorPanel.vue"
 import ExpertSearch from "@/components/page/editor/ExpertSearch.vue"
@@ -66,7 +66,7 @@ import Overview from "@/components/page/Overview.vue"
 import PersonOverview from "@/components/page/PersonOverview"
 import MaterialOverview from "@/components/page/MaterialOverview"
 
-
+import FileListPage from "@/components/page/FileListPage.vue"
 
 import TypeOverview from "@/components/page/TypeOverview.vue"
 
@@ -106,6 +106,11 @@ const routes = [
   {
     path: "/template",
     component: TemplatePage
+  },
+  {
+    name: "Server Offline",
+    path: "/offline",
+    component: ServerOfflinePage
   },
   {
     path: "/map/",
@@ -427,6 +432,11 @@ const routes = [
             component: LocaleForm
           }
         ]
+      },
+      {
+        path: "working-papers",
+        name: "Working Papers",
+        component: FileListPage
       },
       {
         path: "/404",

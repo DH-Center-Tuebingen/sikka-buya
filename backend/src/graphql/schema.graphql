@@ -2,6 +2,11 @@ scalar Void
 scalar GeoJSON
 scalar Upload
 
+type NamedURL {
+  name: String
+  url: String
+}
+
 type AuthResponse {
   success: Boolean
   message: String
@@ -351,6 +356,8 @@ type Query {
   getSinglePage(group: String!): Page
 
   i18n:String
+
+  files(group:String!, orderBy:String):[NamedURL]
 }
 
 type MintPersons {
