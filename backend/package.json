@@ -21,6 +21,10 @@
     "author": "Severin Opel",
     "license": "MIT",
     "dependencies": {
+        "@graphql-toolkit/common": "^0.10.7",
+        "@graphql-toolkit/core": "^0.10.7",
+        "@graphql-toolkit/file-loading": "^0.10.7",
+        "@graphql-tools/load-files": "^7.0.0",
         "bcrypt": "^5.0.1",
         "chalk": "^4.x.x",
         "cli-progress": "^3.9.1",
@@ -35,6 +39,7 @@
         "graphql-fields": "^2.0.3",
         "graphql-tools": "^8.3.20",
         "graphql-upload": "^16.0.2",
+        "graphql-yoga": "^3.9.1",
         "jsdom": "^18.1.1",
         "jsonwebtoken": "^8.5.1",
         "pg": "^8.5.1",

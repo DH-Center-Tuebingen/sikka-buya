@@ -12,6 +12,9 @@ const { User } = require('../models/user.js')
 const Language = require('../language.js')
 const Argument = require('../argument.js')
 const { guardFunctionObject: guard } = require('../utils/guard.js')
+const Frontend = require('../frontend.js')
+const { readdir } = require('fs/promises')
+const { join } = require('path')
 
 
 
@@ -30,6 +33,33 @@ const Queries = {
     locale: async function () {
         const { lc_collate: locale } = await Database.one(`SHOW lc_collate`)
         return locale
+    },
+    files: async function (_, { group, orderBy = "name" } = {}, req) {
+
+        const path = ["data", "cms", "files", group]
+        const groupDir = Frontend.getByParts(...path)
+
+        let namedDownloads = []
+
+        try {
+            let dirents = await readdir(groupDir, { withFileTypes: true })
+            const files = dirents.filter(dirent => dirent.isFile())
+
+            // The dirents returned from readdir does not contain a path
+            // value therefore we must reconstruct the path.
+            namedDownloads = files.map(dirent => {
+                return {
+                    name: dirent.name,
+                    url: [...path, dirent.name].join("/")
+                }
+            })
+
+        } catch (e) {
+            console.log(`Error in 'files' resolver: Tried to access '${groupDir}'`, e)
+        }
+
+
+        return namedDownloads
     },
     environment: () => {
         return (process.env.TEST_ENVIRONMENT) ? "testing" : "production"

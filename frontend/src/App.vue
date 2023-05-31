@@ -4,43 +4,65 @@
     :class="loggedInClass"
     ref="app"
   >
-    <user-hub v-if="$store.getters.loggedIn && !$route.meta.hideHub" />
+    <LoadingPage v-if="loading" />
+    <template v-else>
+      <template v-if="offline">
+        <router-view></router-view>
+      </template>
+      <template v-else>
+        <user-hub v-if="$store.getters.loggedIn && !$route.meta.hideHub" />
 
-    <router-view></router-view>
+        <router-view></router-view>
 
-    <div
-      class="error-popup error"
-      :class="{ show: $store.getters.hasErrors }"
-    >
-      <div
-        class="error-message"
-        v-for="(error, idx) of $store.getters.errors"
-        :key="`error-${idx}`"
-      >
-        {{ error }}
-      </div>
-    </div>
+        <div
+          class="error-popup error"
+          :class="{ show: $store.getters.hasErrors }"
+        >
+          <div
+            class="error-message"
+            v-for="(error, idx) of $store.getters.errors"
+            :key="`error-${idx}`"
+          >
+            {{ error }}
+          </div>
+        </div>
+      </template>
+    </template>
   </div>
 </template>
 
 <script>
+import LoadingPage from './components/page/system/LoadingPage.vue';
 import PopupHandler from './popup';
 import UserHub from './components/auth/UserHub.vue';
 
 import AuthMixin from './components/mixins/auth';
+import I18n from './i18n/i18n';
 
 export default {
-  components: { UserHub },
+  components: { UserHub, LoadingPage },
   mixins: [AuthMixin],
   name: 'App',
   data: function () {
     return {
+      offline: false,
+      loading: true,
       popupHandler: null,
       language: 'de',
     };
   },
   created: async function () {
-    await this.authenticateIfAvailable();
+
+    try {
+      await I18n.load(this)
+      await this.authenticateIfAvailable();
+    } catch (e) {
+      this.offline = true;
+      this.$router.replace({ name: "Server Offline" });
+    } finally {
+      this.loading = false;
+    }
+
     this.popupHandler = new PopupHandler(this);
     this.popupHandler.init(document.body);
   },
@@ -51,24 +73,12 @@ export default {
     /**
      * Disables the default zoom behaviour of the browser.
      */
+
     this.$refs.app.addEventListener('wheel', (event) => {
       if (event.ctrlKey) {
         event.preventDefault();
       }
     });
-
-    let lang;
-    try {
-      lang = window.localStorage.getItem('language', this.$i18n.locale);
-    } catch (e) {
-      console.warn(e);
-    }
-
-    if (lang) {
-      this.languageChanged(lang);
-    } else {
-      this.languageChanged('de');
-    }
 
     /**
      * Sets the debug mode, if in development mode.
@@ -84,15 +94,6 @@ export default {
     }
   },
   methods: {
-    languageChanged: function (lang) {
-      this.language = lang;
-      this.$i18n.locale = lang;
-      try {
-        window.localStorage.setItem('language', this.$i18n.locale);
-      } catch (e) {
-        console.warn(e);
-      }
-    },
     goHome: function () {
       if (this.$router.route != '/') this.$router.push('/');
     },
@@ -256,6 +257,7 @@ h6 {
 
 
   text-align: left;
+
   .subtitle {
     font-size: 0.641em;
     color: currentColor;
