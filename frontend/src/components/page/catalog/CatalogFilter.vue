@@ -324,57 +324,8 @@ export default {
       }
       return options;
     },
-    async searchCallback({
-      filters,
-      multiSelectFilters,
-      multiSelectFilters2D,
-    } = {}) {
+    async searchCallback(filters) {
       this.$emit('loading', true);
-
-      // if (filters.ruler || filters.buyid) {
-      //   const rulers = filters.ruler || []
-      //   const buyids = filters.buyid || []
-      //   const ruler = [...rulers, ...buyids]
-      //   delete filters.buyid
-      //   if (ruler.length > 0)
-      //     filters.ruler = ruler
-
-      // }
-
-      const msf = {};
-
-      multiSelectFilters.forEach(({ name, join }) => {
-        if (filters[name]) {
-          const target = join || name;
-          let ids = filters[name].map((item) => item.id);
-          const targetSelector =
-            this.filterMode?.[name].toLowerCase() === 'and'
-              ? target + '_and'
-              : target;
-          const existing = msf[targetSelector] || [];
-          const all = [...existing, ...ids];
-          msf[targetSelector] = all;
-          delete filters[name];
-        }
-      });
-
-      Object.assign(filters, msf);
-
-      multiSelectFilters2D.forEach(({ name }) => {
-        if (filters[name]) {
-          if (this.filterMode?.[name].toLowerCase() === 'and') {
-            filters[name + '_or_and'] = filters[name].map((arr) =>
-              arr.map((el) => el.id)
-            );
-          } else {
-            filters[name + '_and_or'] = filters[name].map((arr) =>
-              arr.map((el) => el.id)
-            );
-          }
-
-          delete filters[name];
-        }
-      });
 
       let types = [],
         pageInfo = this.pageInfo;
@@ -473,19 +424,49 @@ export default {
             }
           )
     },
-    async search() {
+    getFilters() {
+
       const filters = Object.assign(
         {},
         this.activeFilters,
         this.constantFilters,
-        this.overwriteFilters
+        this.overwriteFilters,
       );
 
-      await this.searchRequestGuard.exec({
-        filters,
-        multiSelectFilters: this.multiSelectFilters,
-        multiSelectFilters2D: this.multiSelectFilters2D,
+      this.multiSelectFilters.forEach(({ name }) => {
+        if (filters[name]) {
+          if(this.filterMode?.[name].toLowerCase() === 'and') {
+            filters[name + '_and'] = filters[name].map((el) => el.id);
+            delete filters[name];
+          } else {
+            filters[name] = filters[name].map((el) => el.id);
+          }
+        }
       });
+      console.log(filters.material)
+
+      this.multiSelectFilters2D.forEach(({ name }) => {
+        if (filters[name]) {
+          if (this.filterMode?.[name].toLowerCase() === 'and') {
+            filters[name + '_or_and'] = filters[name].map((arr) =>
+              arr.map((el) => el.id)
+            );
+          } else {
+            filters[name + '_and_or'] = filters[name].map((arr) =>
+              arr.map((el) => el.id)
+            );
+          }
+
+          delete filters[name];
+        }
+      });
+
+
+      return filters;
+    },
+    async search() {
+
+      await this.searchRequestGuard.exec(this.getFilters());
     },
     watch() {
       if (this.watching) this.search();

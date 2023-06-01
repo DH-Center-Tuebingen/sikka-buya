@@ -145,6 +145,9 @@ import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
+import Query from '../../database/query';
+import TimelineChart from '../../models/timeline/TimelineChart.js';
+
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'MaterialOverlay');
@@ -281,6 +284,11 @@ export default {
 
     await this.initTimeline();
     this.updateTimeline(true);
+
+    this.timelineChart = new TimelineChart(
+      this.$refs.timelineCanvas,
+      this.raw_timeline
+    )
   },
   methods: {
     getShareLink() {
@@ -337,9 +345,9 @@ export default {
 
       this.$refs.catalogFilter.resetFilters();
       this.$refs.catalogFilter.setFilters(options)
-      
-      
-      
+
+
+
     },
     resetSettings() {
       this.overlay.settings.reset();
@@ -351,9 +359,33 @@ export default {
         'mint',
         'yearOfMint',
       ]);
+
+      this.drawTimeline()
+
       this.overlay.setData(data);
       this.overlay.repaint();
       this.save();
+    },
+    drawTimeline: async function() {
+
+      const data = await this.getTypePlot()
+      console.log(data)
+      const max = Math.max(...data.map(d => d.y))
+      this.timelineChart.clear()
+      this.timelineChart.drawGraphOnTimeline(data, {
+        fillStyle: "rgba(0,0,0,.1)",
+        strokeStyle: "transparent"
+      }, {max})
+
+    },
+    getTypePlot: async function () {
+      const points = await Query.raw(`query timelinePlot($filter: TypeFilter){timelinePlotType(filters: $filter) {
+  x
+  y
+}}`, this.$refs.catalogFilter.getFilters(), true)
+
+      return points.data.data.timelinePlotType
+
     },
     save() {
       this.catalog_filter_mixin_save(this.$refs.catalogFilter);
