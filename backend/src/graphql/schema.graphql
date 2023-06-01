@@ -507,6 +507,7 @@ type Mutation {
   deleteBlock(id:ID!):Void
   createPageGroup(name:String):ID
   
+  deleteFile(identity:String!):Void
   uploadFile(identity:String!, file:Upload!):Void
   setLang(path:String!, lang:String!, singular:String!, plural:String):Void
 }

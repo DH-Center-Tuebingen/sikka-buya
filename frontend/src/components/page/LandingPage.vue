@@ -98,7 +98,7 @@
           >
 
             <div class="subtitled">
-              <locale path="cms.working_papers" />
+              <locale path="cms.Working Papers" />
               <span class="subtitle">Demnächst verfügbar!</span>
             </div>
           </card-link>

@@ -47,10 +47,6 @@ class Frontend {
         let parts = path.split(sep)
         return this.createByParts(...parts)
     }
-
-    static getURL(path) {
-        console.log(path,)
-    }
 }
 
 module.exports = Frontend
