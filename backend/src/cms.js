@@ -5,7 +5,7 @@ const { finished } = require('stream/promises')
 const Frontend = require('./frontend')
 
 
-const supportedExtensions = ["png", "jpg", "jpeg"]
+const supportedExtensions = ["png", "jpg", "jpeg", "pdf"]
 class CMS {
 
 
@@ -53,6 +53,7 @@ class CMS {
         const fileStream = await promise.promise
         const ext = path.extname(fileStream.filename).toLowerCase()
         if (supportedExtensions.indexOf(ext.substring(1)) === -1) throw new Error("Unsupported file extension")
+        console.log("FILENAME", filename)
         const fileURI = this.getDataPath(...parts, filename + ext)
 
         const stream = fileStream.createReadStream()
@@ -68,7 +69,7 @@ class CMS {
      * @param {string} filename - filename without extension
      * @param {array*} extensions - array of filenames (optional)  
      */
-    static async removeExistingFiles(parts, filename, extensions = ["png", "jpg", "jpeg"]) {
+    static async removeExistingFiles(parts, filename, extensions = supportedExtensions) {
         const files = await this.findFilesAt(parts, filename, extensions)
 
         for (let file of files) {
@@ -85,6 +86,7 @@ class CMS {
     static decomposeIdentity(identity) {
         const parts = identity.split(this.identityPathSeparator)
         const filename = parts.pop()
+        console.log(identity, parts, filename)
         return { parts, filename }
     }
 }

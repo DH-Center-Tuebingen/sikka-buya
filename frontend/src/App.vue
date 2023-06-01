@@ -67,6 +67,7 @@ export default {
     this.popupHandler.init(document.body);
   },
   beforeDestroy: function () {
+    document.body.removeEventListener("click", this.globalClick)
     this.popupHandler.cleanup();
   },
   mounted: function () {
@@ -92,8 +93,14 @@ export default {
         store.commit('setDebug');
       };
     }
+
+    document.body.addEventListener("click", this.globalClick)
+
   },
   methods: {
+    globalClick(event) {
+      this.$root.$emit("global-click", event)
+    },
     goHome: function () {
       if (this.$router.route != '/') this.$router.push('/');
     },

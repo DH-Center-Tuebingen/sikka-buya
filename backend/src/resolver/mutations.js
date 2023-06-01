@@ -271,6 +271,12 @@ const EditorMutations = {
             console.log("ERROR OCCURED: ", e)
         }
     },
+    async deleteFile(_, { identity }) {
+        if (!identity) throw new Error("Identity field is required!")
+
+        const { parts, filename } = CMS.decomposeIdentity(identity)
+        await CMS.removeExistingFiles(parts, filename)
+    },
 }
 
 
