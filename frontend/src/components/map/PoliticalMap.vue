@@ -576,7 +576,7 @@ export default {
       const height = this.$refs.timelineSlideshowArea.getTimeline().$el.offsetHeight;
       const points = timelineRuledBy.data || [];
 
-      var fill = this.timelineChart
+      var fillStyle = this.timelineChart
         .getContext()
         .createPattern(
           Pattern.createLinePattern(
@@ -587,7 +587,7 @@ export default {
         );
 
       const combinedRanges = Range.fromNumberSequence(points);
-      this.timelineChart.drawRangeRectOnCanvas(combinedRanges, 0, height, fill);
+      this.timelineChart.drawRangeRectOnCanvas(combinedRanges, height, { fillStyle });
     },
     resizeCanvas() {
       if (this.timelineResizeTimeout) clearTimeout(this.timelineResizeTimeout);

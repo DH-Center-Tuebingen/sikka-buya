@@ -125,6 +125,10 @@
             >
 
                 <template #background>
+                    <canvas
+                        id="timeline-canvas"
+                        ref="timelineCanvas"
+                    > </canvas>
                     <slot name="background" />
                 </template>
             </Timeline>
@@ -204,7 +208,7 @@ export default {
             slideshow,
             headerIconSize: 18,
             playInterval: null,
-
+            timelineChart: null
         }
     },
     watch: {

@@ -1,6 +1,6 @@
 class Chart {
     constructor(canvas) {
-        if(!canvas) throw new Error("Canvas is required")
+        if (!canvas) throw new Error("Canvas is required")
         this.canvas = canvas
     }
 
@@ -56,9 +56,9 @@ export default class TimelineChart extends Chart {
         return x
     }
 
-    drawRangeRectOnCanvas(data, y, height, fillStyle = 'red') {
+    drawRangeRectOnCanvas(data, height, contextStyles) {
         let ctx = this.getContext()
-        ctx.fillStyle = fillStyle
+        Object.assign(ctx, contextStyles)
         data.forEach(range => {
             let width = this.x(range[1], "end") - this.x(range[0], "start")
             ctx.fillRect(this.x(range[0], "start"), 0, width, height)

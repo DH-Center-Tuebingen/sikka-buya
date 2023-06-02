@@ -574,6 +574,13 @@ class Type {
     }
 
     static async yearPlot({ filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null } = {}, context) {
+
+        // If we plot the year and we have a filter set as yearOfint
+        // it doesn't make sense, therefore we delete it.
+        // Also as it is mostly used in conjunction with a displayed year
+        // it is more convenient to just keep it in the filter object.
+        if (filters.yearOfMint) delete filters.yearOfMint
+
         const { JOINS, WHERE } = this.typeQueryProperties({
             filters,
             additionalJoin,

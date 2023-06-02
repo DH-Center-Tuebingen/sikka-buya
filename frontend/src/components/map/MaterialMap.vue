@@ -115,6 +115,7 @@
 
 <script>
 // Mixins
+import catalogFilterMixin from '../mixins/catalog-filter';
 import map from './mixins/map';
 import {
   mintLocationsMixin,
@@ -122,6 +123,8 @@ import {
 } from './mixins/MintLocationsMixin';
 import settingsMixin from '../map/mixins/settings';
 import timeline from './mixins/timeline';
+import slideshow from '../mixins/slideshow';
+
 
 //Components
 import Button from '../layout/buttons/Button.vue';
@@ -134,13 +137,14 @@ import Slider from '../forms/Slider.vue';
 import Timeline from './timeline/Timeline.vue';
 
 // Other
+
+
+import Range from "../../models/timeline/range.js"
 import MaterialOverlay from '../../maps/MaterialOverlay';
 import Settings from '../../settings';
 import Sorter from '../../utils/Sorter';
 import URLParams from '../../utils/URLParams';
-import slideshow from '../mixins/slideshow';
 import ListSelectionTools from '../interactive/ListSelectionTools.vue';
-import catalogFilterMixin from '../mixins/catalog-filter';
 import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
@@ -366,23 +370,22 @@ export default {
       this.overlay.repaint();
       this.save();
     },
-    drawTimeline: async function() {
-
+    drawTimeline: async function () {
+      const height = this.$refs.timeline.getTimeline().$el.offsetHeight;
       const data = await this.getTypePlot()
-      console.log(data)
       const max = Math.max(...data.map(d => d.y))
       this.timelineChart.clear()
-      this.timelineChart.drawGraphOnTimeline(data, {
-        fillStyle: "rgba(0,0,0,.1)",
-        strokeStyle: "transparent"
-      }, {max})
+      this.timelineChart.drawRangeRectOnCanvas(Range.fromPointArray(data), height, {
+        strokeStyle: 'rgba(0,0,0,0.5)',
+        fillStyle: 'rgba(0,0,0,0.1)',
+      })
 
     },
     getTypePlot: async function () {
-      const points = await Query.raw(`query timelinePlot($filter: TypeFilter){timelinePlotType(filters: $filter) {
+      const points = await Query.raw(`query timelinePlot($filters: TypeFilter){timelinePlotType(filters: $filters) {
   x
   y
-}}`, this.$refs.catalogFilter.getFilters(), true)
+}}`, { filters: this.$refs.catalogFilter.getFilters() }, true)
 
       return points.data.data.timelinePlotType
 
