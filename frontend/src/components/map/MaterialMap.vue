@@ -150,7 +150,7 @@ import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
-import TimelineChart from '../../models/timeline/TimelineChart.js';
+import { RangeChart } from '../../models/timeline/TimelineChart.js';
 
 
 const queryPrefix = 'map-filter-';
@@ -191,6 +191,7 @@ export default {
       },
       pageInfo: { page: 0, count: 100000 },
       painter: null,
+      chart: null,
     };
   },
   mixins: [
@@ -288,11 +289,6 @@ export default {
 
     await this.initTimeline();
     this.updateTimeline(true);
-
-    this.timelineChart = new TimelineChart(
-      this.$refs.timelineCanvas,
-      this.raw_timeline
-    )
   },
   methods: {
     getShareLink() {
@@ -373,19 +369,17 @@ export default {
     drawTimeline: async function () {
       const height = this.$refs.timeline.getTimeline().$el.offsetHeight;
       const data = await this.getTypePlot()
-      const max = Math.max(...data.map(d => d.y))
-      this.timelineChart.clear()
-      this.timelineChart.drawRangeRectOnCanvas(Range.fromPointArray(data), height, {
-        strokeStyle: 'rgba(0,0,0,0.5)',
-        fillStyle: 'rgba(0,0,0,0.1)',
-      })
+      const chart = new RangeChart(data, { height: height })
+
+      if (this.$refs.timeline.timelineDiagram)
+        this.$refs.timeline.$data.timelineDiagram.update({ data, charts: [chart] })
 
     },
     getTypePlot: async function () {
       const points = await Query.raw(`query timelinePlot($filters: TypeFilter){timelinePlotType(filters: $filters) {
   x
   y
-}}`, { filters: this.$refs.catalogFilter.getFilters() }, true)
+}}`, { filters: this.$refs.catalogFilter.getFilters() })
 
       return points.data.data.timelinePlotType
 

@@ -10,9 +10,10 @@
     @blur="(arg) => $emit('blur', arg)"
     ref="slider"
   >
-    <div class="background">
+    <template #background>
       <slot name="background" />
-    </div>
+    </template>
+
     <div
       class="long-dash"
       v-for="lable of lables"

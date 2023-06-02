@@ -1,17 +1,19 @@
-class Chart {
+import Range from "./range.js"
+
+class Diagram {
     constructor(canvas) {
         if (!canvas) throw new Error("Canvas is required")
         this.canvas = canvas
     }
 
     updateSize() {
-        const rect = this.canvas.getBoundingClientRect()
-        this.canvas.width = rect.width
-        this.canvas.height = rect.height
+        this.clear()
     }
 
     clear() {
-        this.updateSize()
+        const rect = this.canvas.getBoundingClientRect()
+        this.canvas.width = rect.width
+        this.canvas.height = rect.height
         this.getContext().clearRect(0, 0, this.canvas.width, this.canvas.height)
     }
 
@@ -20,12 +22,114 @@ class Chart {
     }
 }
 
+export class Chart {
+    draw(context, data) {
+        this.joinStyles(context)
+    }
 
-export default class TimelineChart extends Chart {
+    get baseStyles() {
+        return {
+            fillStyle: "rgba(0,0,0,0.1)",
+            strokeStyle: "rgba(0,0,0,0.1)",
+        }
+    }
 
-    constructor(canvas, timeline) {
+    joinStyles(context) {
+        Object.assign(context, this.baseStyles, this.contextStyles)
+    }
+}
+
+export class RangeChart extends Chart {
+
+    constructor(data, { contextStyles = {} } = {}) {
+        super()
+        this.data = Range.fromPointArray(data)
+        this.contextStyles = contextStyles
+    }
+
+    draw(context, diagram) {
+        super.draw(context, diagram)
+
+        this.data.forEach(range => {
+
+            let start = diagram.x(range[0], "start")
+            let end = diagram.x(range[1], "end")
+            let width = Math.ceil(end - start)
+            if (width === 0) {
+                width = 1
+            }
+            context.fillRect(start, 0, width, diagram.y(0))
+        })
+    }
+}
+
+export class StackedRanges extends Chart {
+
+    constructor(data, { y = 0, contextStyles = {} } = {}) {
+        super()
+        this.y = y
+        this.data = Range.fromPointArray(data)
+        this.contextStyles = contextStyles
+    }
+
+    draw(context, diagram) {
+        super.draw(context, diagram)
+
+        this.data.forEach(range => {
+            context.beginPath();
+            const start = diagram.x(range[0], "start")
+            context.moveTo(start, diagram.y(this.y))
+
+            let end = diagram.x(range[1], "end")
+            if (end - start <= 1) end = start + 1
+            context.lineTo(end, diagram.y(this.y))
+            context.stroke()
+        })
+    }
+}
+
+
+export default class TimelineDiagram extends Diagram {
+
+    /**
+     * 
+     * @param {HTMLCanvasElement} canvas 
+     * @param {object} timeline - timeline object with from and to properties
+     * @param {number} timeline.from - start year
+     * @param {number} timeline.to  - end year
+     */
+    constructor(canvas, timeline, charts = []) {
         super(canvas)
+        this.charts = charts
         this.timeline = timeline
+        if (charts.length > 0)
+            this.draw()
+    }
+
+
+    update({ charts = [], timeline }) {
+        if (charts.length > 0)
+            this.charts = charts
+        if (timeline)
+            this.timeline = timeline
+        this.draw()
+    }
+
+    updateChart(chart) {
+        this.charts = chart
+        this.draw()
+    }
+
+    updateSize() {
+        super.updateSize()
+        this.draw()
+    }
+
+    draw() {
+        this.clear()
+        this.charts.forEach(chart => {
+            chart.draw(this.getContext(), this)
+        })
     }
 
     updateTimeline(timeline) {
@@ -40,90 +144,74 @@ export default class TimelineChart extends Chart {
             return this.canvas.height - val;
     }
 
-    x(val, pos = null) {
+    x(val, pos = "center") {
         const timelineSpan = this.timeline.to - this.timeline.from
-        const widthPerYear = this.canvas.width / timelineSpan
-        let x = (val - this.timeline.from) * widthPerYear - 2
+        const widthPerYear = (this.canvas.width / timelineSpan)
+        let x = (val - this.timeline.from) * widthPerYear
 
-        if (pos === "start")
-            x = x - widthPerYear / 2
-        else if (pos === "end") {
-            x = x + widthPerYear / 2
-
+        let halfWidth = widthPerYear / 2
+        if (halfWidth < 1) halfWidth = 1
+        if (pos === "start") {
+            x = Math.floor(x - halfWidth)
+        } else if (pos === "end") {
+            x = Math.floor(x + halfWidth)
         }
         // console.table({ in: val, x, timelineSpan, widthPerYear, to: this.timeline.to, from: this.timeline.from })
 
         return x
     }
 
-    drawRangeRectOnCanvas(data, height, contextStyles) {
-        let ctx = this.getContext()
-        Object.assign(ctx, contextStyles)
-        data.forEach(range => {
-            let width = this.x(range[1], "end") - this.x(range[0], "start")
-            ctx.fillRect(this.x(range[0], "start"), 0, width, height)
-        })
-    }
+    // drawRangeRectOnCanvas(data, height, contextStyles) {
+    //     let ctx = this.getContext()
+    //     Object.assign(ctx, contextStyles)
+    //     data.forEach(range => {
+    //         let width = this.x(range[1], "end") - this.x(range[0], "start")
+    //         ctx.fillRect(this.x(range[0], "start"), 0, width, height)
+    //     })
+    // }
 
-    drawRangeLineOnCanvas(data, y, lineOptions) {
-        let ctx = this.getContext()
-        Object.assign(ctx, lineOptions)
 
-        data.forEach(range => {
-            ctx.beginPath();
-            const start = this.x(range[0], "start")
-            ctx.moveTo(start, this.y(y))
 
-            let end = this.x(range[1], "end")
-            if (end - start <= 1) end = start + 1
-            ctx.lineTo(end, this.y(y))
-            ctx.stroke()
-        })
+    // drawGraphOnTimeline(data, lineOptions = {}, {
+    //     max = null
+    // } = {}) {
+    //     let ctx = this.canvas.getContext('2d');
+    //     Object.assign(ctx, lineOptions)
+    //     ctx.beginPath();
 
-    }
+    //     let curveMax = max;
+    //     let yStep = (this.canvas.height - (lineOptions.lineWidth || 1) - 10) / (curveMax > 0 ? curveMax : 20);
+    //     data = data.sort((a, b) => a.x - b.x)
+    //     let last = null;
+    //     data.forEach(({ x: _x, y: _y }) => {
+    //         if (last && _x - last.x > 1) {
+    //             ctx.lineTo(this.x(last.x), this.y(0));
+    //             last = null;
+    //         }
 
-    drawGraphOnTimeline(data, lineOptions = {}, {
-        max = null
-    } = {}) {
-        let ctx = this.canvas.getContext('2d');
-        Object.assign(ctx, lineOptions)
-        ctx.beginPath();
+    //         const x = this.x(_x)
+    //         const y = this.y(_y * yStep)
+    //         const bezier = 0
 
-        let curveMax = max;
-        let yStep = (this.canvas.height - (lineOptions.lineWidth || 1) - 10) / (curveMax > 0 ? curveMax : 20);
-        data = data.sort((a, b) => a.x - b.x)
-        let last = null;
-        data.forEach(({ x: _x, y: _y }) => {
-            if (last && _x - last.x > 1) {
-                ctx.lineTo(this.x(last.x), this.y(0));
-                last = null;
-            }
-
-            const x = this.x(_x)
-            const y = this.y(_y * yStep)
-            const bezier = 0
-
-            if (last == null) {
-                ctx.moveTo(this.x(_x), this.y(0));
-                ctx.lineTo(x, y)
-            } else {
-                ctx.lineTo(x, y)
-                // ctx.bezierCurveTo(this.x(last.x + bezier), this.y(last.y), this.x(_x - bezier), this.y(_y), x, y)
-            }
+    //         if (last == null) {
+    //             ctx.moveTo(this.x(_x), this.y(0));
+    //             ctx.lineTo(x, y)
+    //         } else {
+    //             ctx.lineTo(x, y)
+    //             // ctx.bezierCurveTo(this.x(last.x + bezier), this.y(last.y), this.x(_x - bezier), this.y(_y), x, y)
+    //         }
 
 
 
 
 
 
-            last = { x: _x, y: _y };
-        });
+    //         last = { x: _x, y: _y };
+    //     });
 
-        ctx.lineTo(this.x(last.x), this.y(0));
-        ctx.stroke();
-        ctx.fill();
-        ctx.closePath();
-    }
-
-
+    //     ctx.lineTo(this.x(last.x), this.y(0));
+    //     ctx.stroke();
+    //     ctx.fill();
+    //     ctx.closePath();
+    // }
 }
