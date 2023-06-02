@@ -51,7 +51,7 @@ async function dropReadOnlyUserIfNecessary() {
 }
 
 async function createTestDatabase() {
-    await SuperDatabase.none("CREATE DATABASE $1:name WITH LOCALE 'C' TEMPLATE 'template0'", WriteableDatabase.$cn.database)
+    await SuperDatabase.none("CREATE DATABASE $1:name WITH LC_COLLATE='C' LC_CTYPE='C' TEMPLATE 'template0'", WriteableDatabase.$cn.database)
     console.log(`Created test database`)
 }
 
@@ -63,7 +63,6 @@ async function resetSchema() {
         await t.none("GRANT ALL ON SCHEMA public TO public")
     })
     console.log(`Reset schema`)
-
 }
 
 async function resetTestDatabase(schemaFile) {
