@@ -177,7 +177,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
-import { RangeGraph, LineGraph } from '../../models/timeline/TimelineChart';
+import { RangeGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();
@@ -447,7 +447,7 @@ export default {
       return options;
     },
     async drawTimeline() {
-      console.log('drawTimeline')
+      
       if (!this.$data.i) this.$data.i = 1
       if (this.timelineChart) {
         let graphs = []
@@ -458,13 +458,14 @@ export default {
             rulerGraphs.map((graph) => graph.data)
           );
 
-          graphs = [...mintGraphs, ...rulerGraphs]
+          graphs = [...mintGraphs,  ...rulerGraphs]
 
         } else if (this.selectedMints.length > 0) {
           graphs = await this.drawMintCountOntoTimeline();
 
         } else if (this.selectedRulers.length > 0) {
           graphs = await this.drawRulersOntoTimeline();
+
         } else {
           this.timelineChart.clear()
         }
@@ -492,7 +493,11 @@ export default {
       }`
       );
 
-      const rulerPointArrays = result.data.data.ruledMintCount;
+      const {
+        ruledMintCount,
+        timelineRuledBy,
+      } = result.data.data
+
 
       // const minMaxGraphs = rulerPointArrays.map(({ ruler, data }) => {
       //   const minmax = data.reduce((prev, cur) => {
@@ -518,32 +523,60 @@ export default {
 
       const graphs = []
       let max = 0
-      rulerPointArrays.forEach(({ ruler, data }) => {
-        //TODO: Normally data should be delivered in a irdered fasion
-        data = data.sort((a, b) => a.x - b.x)
-        const graph = new LineGraph(data, { yOffset: 40, contextStyles: { strokeStyle: ruler.color, lineWidth: 2 } })
-        const graphMax = data.reduce((prev, cur) => {
+      if (drawAsHorizontals) {
+        const lineHeight = 5;
+        const padding = Math.ceil(lineHeight / 2);
+        let allSelectedRulerRanges = [];
 
-          if (cur.y > prev) prev = cur.y
-          return prev
-        }, -Infinity)
+        ruledMintCount.forEach((rulerObj) => {
+          let rulerYearArr = rulerObj.data.slice().map((obj) => obj.x);
+          const rulerRangeArr = Range.fromNumberSequence(rulerYearArr);
+          allSelectedRulerRanges.push({
+            ruler: rulerObj.ruler,
+            range: rulerRangeArr.slice(),
+          });
+        });
 
-        if (graphMax > max) max = graphMax
+        allSelectedRulerRanges.sort((a, b) => {
+          return (
+            Range.getWidthFromRanges(b.range) -
+            Range.getWidthFromRanges(a.range)
+          );
+        });
 
-        graphs.push(graph)
-      })
+        console.log(allSelectedRulerRanges)
 
-      console.log(max)
-      graphs.forEach((graph) => {
-        graph.set("yMax", max)
-      })
+        allSelectedRulerRanges.forEach((rangeObj, index) => {
+          graphs.push(new StackedRanges(rangeObj.range, { y: (lineHeight + padding) * (index + 1), contextStyles: { strokeStyle: rangeObj.ruler.color, lineWidth: lineHeight } }))
+        });
+      } else {
+        ruledMintCount.forEach(({ ruler, data }) => {
+          //TODO: Normally data should be delivered in a irdered fasion
+          data = data.sort((a, b) => a.x - b.x)
+          let graph = new LineGraph(data, { yOffset: 20, contextStyles: { strokeStyle: ruler.color, lineWidth: 2 } })
+          const graphMax = data.reduce((prev, cur) => {
+
+            if (cur.y > prev) prev = cur.y
+            return prev
+          }, -Infinity)
+
+          if (graphMax > max) max = graphMax
+
+          graphs.push(graph)
+        })
+
+        graphs.forEach((graph) => {
+          graph.set("yMax", max)
+        })
+      }
+
+      const andGraph = []
+      if (this.selectedRulers.length > 1) {
+        andGraph.push(this.drawStripedAndBlock(timelineRuledBy))
+      }
 
 
-
-
-
-
-      return graphs
+      return [...andGraph, ...graphs]
 
 
       // this.timelineChart.updateTimeline(this.raw_timeline);
@@ -618,6 +651,30 @@ export default {
       // }
 
       // return ranges;
+    },
+    drawStripedAndBlock(timelineRuledBy) {
+      let combinedRanges = Range.fromNumberSequence(timelineRuledBy.data);
+
+      var fillStyle = this.timelineChart
+        .getContext()
+        .createPattern(
+          Pattern.createLinePattern(
+            [Color.Gray, Color.hexBrighten(Color.Gray, 0.5)],
+            10
+          ),
+          'repeat'
+        );
+
+
+
+      const rangeGraph = new RangeGraph(combinedRanges, {
+        contextStyles: {
+          fillStyle,
+          fillOpacity: 0.5,
+        }
+      })
+
+      return rangeGraph
     },
     timelineUpdated: async function () {
       this.update();
@@ -762,33 +819,11 @@ export default {
           return false
         });
 
-
-        const overlappingRanges = Range.overlappingRanges(ranges)
-        console.log(overlappingRanges)
-        // Create and charts
-        let andData = data.filter(point => {
-          for (let range of overlappingRanges) {
-            if (point.x >= range[0] && point.x <= range[1]) return true
-          }
-          return false
-        });
-
-
-        const fillStyle = this.timelineChart
-          .getContext()
-          .createPattern(
-            Pattern.createLinePattern(
-              [Color.Gray, Color.hexBrighten(Color.Gray, 0.5)],
-              10
-            ),
-            'repeat'
-          );
-
-        andGraphs.push(new RangeGraph(andData, { height, contextStyles: { fillStyle } }))
-
       }
 
-      let graph = new RangeGraph(data, { height })
+      let graph = new RangeGraph(Range.fromPointArray(data), { height, contextStyles: {
+        fillStyle: Color.Gray
+      } })
       return [graph, ...andGraphs]
 
     },

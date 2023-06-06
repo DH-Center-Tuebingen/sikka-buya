@@ -151,7 +151,7 @@ import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
 import { RangeGraph } from '../../models/timeline/TimelineChart.js';
-
+import Color from '../../utils/Color';
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'MaterialOverlay');
@@ -368,18 +368,29 @@ export default {
     },
     drawTimeline: async function () {
       const height = this.$refs.timeline.getTimeline().$el.offsetHeight;
-      const data = await this.getTypePlot()
-      const graph = new RangeGraph(data, { height: height })
+      const filters = this.$refs.catalogFilter.getFilters()
 
-      if (this.$refs.timeline.timelineChart)
-        this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph] })
+      let otherFilters = Object.assign({}, filters)
+      delete otherFilters['yearOfMint']
+      delete otherFilters['excludeFromMapApp']
+
+      if (Object.keys(otherFilters).length <= 1 && otherFilters['mint'].length === 0) {
+        this.$refs.timeline.$data.timelineChart.update({ data: [], graphs: [] })
+      } else {
+        const data = await this.getTypePlot(filters)
+        const ranges = Range.fromPointArray(data)
+        const graph = new RangeGraph(ranges, { height: height, contextStyles: { fillStyle: Color.Gray } })
+
+        if (this.$refs.timeline.timelineChart)
+          this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph] })
+      }
 
     },
-    getTypePlot: async function () {
+    getTypePlot: async function (filters) {
       const points = await Query.raw(`query timelinePlot($filters: TypeFilter){timelinePlotType(filters: $filters) {
   x
   y
-}}`, { filters: this.$refs.catalogFilter.getFilters() })
+}}`, { filters })
 
       return points.data.data.timelinePlotType
 

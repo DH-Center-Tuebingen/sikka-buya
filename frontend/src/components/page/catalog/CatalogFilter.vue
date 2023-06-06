@@ -443,7 +443,6 @@ export default {
           }
         }
       });
-      console.log(filters.material)
 
       this.multiSelectFilters2D.forEach(({ name }) => {
         if (filters[name]) {
@@ -534,7 +533,6 @@ export default {
       return this[methodName](target, idx);
     },
     removeFilter(name, target, index) {
-      console.log(name, target, index)
       const methodName = this._getMethodFromFilter(
         'removeMethodName',
         name,

@@ -51,7 +51,6 @@ export class LineGraph extends Graph {
 
     set(name, value) {
         this[name] = value
-        console.log({ name: (this[name]) })
         return this
     }
 
@@ -72,7 +71,6 @@ export class LineGraph extends Graph {
                 context.moveTo(chart.x(x), chart.y(0, this.yOptions))
             }
             prev = { x, y }
-            console.log(chart.x(x), chart.y(y, this.yOptions))
             context.lineTo(chart.x(x), chart.y(y, this.yOptions))
 
             // console.log(nextX, nextX - x)
@@ -91,7 +89,7 @@ export class RangeGraph extends Graph {
 
     constructor(data, { contextStyles = {} } = {}) {
         super()
-        this.data = Range.fromPointArray(data)
+        this.data = data
         this.contextStyles = contextStyles
     }
 
@@ -99,7 +97,6 @@ export class RangeGraph extends Graph {
         super.draw(context, chart)
 
         this.data.forEach(range => {
-
             let start = chart.x(range[0], "start")
             let end = chart.x(range[1], "end")
             let width = Math.ceil(end - start)
@@ -116,7 +113,7 @@ export class StackedRanges extends Graph {
     constructor(data, { y = 0, contextStyles = {} } = {}) {
         super()
         this.y = y
-        this.data = Range.fromPointArray(data)
+        this.data = data
         this.contextStyles = contextStyles
     }
 
@@ -185,7 +182,7 @@ export default class TimelineChart extends Chart {
     }
 
 
-    y(val, { max = null, offset = 0 }) {
+    y(val, { max = null, offset = 0 } = {}) {
 
         const height = this.canvas.height - offset
 
