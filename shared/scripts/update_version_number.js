@@ -9,6 +9,8 @@
  */
 
 const { readFile } = require('fs').promises;
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 const { writeFile } = require('fs/promises');
 const { join } = require("path");
 
@@ -53,6 +55,16 @@ async function main() {
         console.log(`Updated file "${file}" to version ${version}.`)
         await writeFile(file, JSON.stringify(packageJson, null, 4))
     }
+
+    await execute(`git add ${join(__dirname, relativeRoot)}`)
+    await execute(`git commit -m "Upgraded version to ${version}."`)
+    await execute(`git push`)
+    await execute(`node ${join(__dirname, "update_git_tag.js")}`)
+}
+
+async function execute(command) {
+    console.log(`Executing: ${command}`)
+    await exec(command)
 }
 
 async function getPackageJson(file) {
