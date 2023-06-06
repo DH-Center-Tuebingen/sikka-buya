@@ -39,6 +39,54 @@ export class Graph {
     }
 }
 
+export class LineGraph extends Graph {
+
+    constructor(data, { yMax = 0, yOffset = 0, contextStyles = {} } = {}) {
+        super()
+        this.yMax = yMax
+        this.yOffset = yOffset
+        this.data = data
+        this.contextStyles = contextStyles
+    }
+
+    set(name, value) {
+        this[name] = value
+        console.log({ name: (this[name]) })
+        return this
+    }
+
+    get yOptions() {
+        return { max: this.yMax, offset: this.yOffset }
+    }
+
+    draw(context, chart) {
+        super.draw(context, chart)
+
+        context.beginPath();
+        let prev = null
+        for (let i = 0; i < this.data.length; i++) {
+            let { x, y } = this.data[i]
+            let { x: nextX } = this.data[i + 1] || { x: null }
+
+            if (!prev || x - prev.x > 1) {
+                context.moveTo(chart.x(x), chart.y(0, this.yOptions))
+            }
+            prev = { x, y }
+            console.log(chart.x(x), chart.y(y, this.yOptions))
+            context.lineTo(chart.x(x), chart.y(y, this.yOptions))
+
+            // console.log(nextX, nextX - x)
+            if (!nextX || nextX - x > 1) {
+                context.lineTo(chart.x(x), chart.y(0, this.yOptions))
+            }
+        }
+
+
+        context.stroke()
+    }
+
+}
+
 export class RangeGraph extends Graph {
 
     constructor(data, { contextStyles = {} } = {}) {
@@ -137,11 +185,14 @@ export default class TimelineChart extends Chart {
     }
 
 
-    y(val) {
-        if (val < 0)
-            return val * -1
-        else
-            return this.canvas.height - val;
+    y(val, { max = null, offset = 0 }) {
+
+        const height = this.canvas.height - offset
+
+        if (max) {
+            return (height - (val / max) * height) + offset
+        } else
+            return height - val + offset;
     }
 
     x(val, pos = "center") {

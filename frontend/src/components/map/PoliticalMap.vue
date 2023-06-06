@@ -177,7 +177,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
-import { RangeGraph, StackedRanges } from '../../models/timeline/TimelineChart';
+import { RangeGraph, LineGraph } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();
@@ -466,10 +466,9 @@ export default {
         } else if (this.selectedRulers.length > 0) {
           graphs = await this.drawRulersOntoTimeline();
         } else {
-          console.log('clear')
           this.timelineChart.clear()
         }
-        console.log(graphs)
+
         this.timelineChart.update({ graphs })
 
       }
@@ -495,30 +494,58 @@ export default {
 
       const rulerPointArrays = result.data.data.ruledMintCount;
 
-      const minMaxGraphs = rulerPointArrays.map(({ ruler, data }) => {
-        const minmax = data.reduce((prev, cur) => {
-          if (cur.x < prev.min) prev.min = cur.x
-          if (cur.x > prev.max) prev.max = cur.x
+      // const minMaxGraphs = rulerPointArrays.map(({ ruler, data }) => {
+      //   const minmax = data.reduce((prev, cur) => {
+      //     if (cur.x < prev.min) prev.min = cur.x
+      //     if (cur.x > prev.max) prev.max = cur.x
+      //     return prev
+      //   }, { min: Infinity, max: -Infinity })
+      // const graph = new LineGraph(data, { height: 100, contextStyles: { strokeStyle: ruler.color, lineWidth: 5, lineCap: 'butt' } })
+      //   return { ...minmax, graph }
+      // })
+
+      // const graphs = minMaxGraphs.sort((a, b) => {
+      //   const aLen = a.max - a.min
+      //   const bLen = b.max - b.min
+
+      //   const lenDiff = bLen - aLen
+      //   if (lenDiff != 0) return lenDiff
+      //   else return b.min - a.min
+      // }).map(({ graph }, index) => {
+      //   graph.y = (index + 1) * 10
+      //   return graph
+      // })
+
+      const graphs = []
+      let max = 0
+      rulerPointArrays.forEach(({ ruler, data }) => {
+        //TODO: Normally data should be delivered in a irdered fasion
+        data = data.sort((a, b) => a.x - b.x)
+        const graph = new LineGraph(data, { yOffset: 40, contextStyles: { strokeStyle: ruler.color, lineWidth: 2 } })
+        const graphMax = data.reduce((prev, cur) => {
+
+          if (cur.y > prev) prev = cur.y
           return prev
-        }, { min: Infinity, max: -Infinity })
-        const graph = new StackedRanges(data, { height: 100, contextStyles: { strokeStyle: ruler.color, lineWidth: 5, lineCap: 'butt' } })
-        return { ...minmax, graph }
+        }, -Infinity)
+
+        if (graphMax > max) max = graphMax
+
+        graphs.push(graph)
       })
 
-      const graphs = minMaxGraphs.sort((a, b) => {
-        const aLen = a.max - a.min
-        const bLen = b.max - b.min
-
-        const lenDiff = bLen - aLen
-        if (lenDiff != 0) return lenDiff
-        else return b.min - a.min
-      }).map(({ graph }, index) => {
-        graph.y = (index + 1) * 10
-        return graph
+      console.log(max)
+      graphs.forEach((graph) => {
+        graph.set("yMax", max)
       })
+
+
+
+
 
 
       return graphs
+
+
       // this.timelineChart.updateTimeline(this.raw_timeline);
 
       // const timelineRuledBy = result.data.data.timelineRuledBy;
