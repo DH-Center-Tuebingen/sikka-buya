@@ -177,7 +177,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
-import { RangeChart, StackedRanges } from '../../models/timeline/TimelineChart';
+import { RangeGraph, StackedRanges } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();
@@ -259,8 +259,8 @@ export default {
     }),
   ],
   computed: {
-    timelineDiagram() {
-      return this.$refs.timelineSlideshowArea.timelineDiagram
+    timelineChart() {
+      return this.$refs.timelineSlideshowArea.timelineChart
     },
     shareLink() {
       return URLParams.generate(this.getOptions()).href;
@@ -447,28 +447,30 @@ export default {
       return options;
     },
     async drawTimeline() {
+      console.log('drawTimeline')
       if (!this.$data.i) this.$data.i = 1
-      if (this.timelineDiagram) {
-        let charts = []
+      if (this.timelineChart) {
+        let graphs = []
         if (this.selectedMints.length > 0 && this.selectedRulers.length > 0) {
-          const rulerCharts = await this.drawRulersOntoTimeline(true);
+          const rulerGraphs = await this.drawRulersOntoTimeline(true);
 
-          const mintCharts = await this.drawMintCountOntoTimeline(
-            rulerCharts.map((chart) => chart.data)
+          const mintGraphs = await this.drawMintCountOntoTimeline(
+            rulerGraphs.map((graph) => graph.data)
           );
 
-          charts = [...mintCharts, ...rulerCharts]
+          graphs = [...mintGraphs, ...rulerGraphs]
 
         } else if (this.selectedMints.length > 0) {
-          charts = await this.drawMintCountOntoTimeline();
+          graphs = await this.drawMintCountOntoTimeline();
 
         } else if (this.selectedRulers.length > 0) {
-          charts = await this.drawRulersOntoTimeline();
+          graphs = await this.drawRulersOntoTimeline();
         } else {
           console.log('clear')
-          this.timelineDiagram.clear()
+          this.timelineChart.clear()
         }
-        this.timelineDiagram.update({ charts })
+        console.log(graphs)
+        this.timelineChart.update({ graphs })
 
       }
 
@@ -493,30 +495,30 @@ export default {
 
       const rulerPointArrays = result.data.data.ruledMintCount;
 
-      const minmaxcharts = rulerPointArrays.map(({ ruler, data }) => {
+      const minMaxGraphs = rulerPointArrays.map(({ ruler, data }) => {
         const minmax = data.reduce((prev, cur) => {
           if (cur.x < prev.min) prev.min = cur.x
           if (cur.x > prev.max) prev.max = cur.x
           return prev
         }, { min: Infinity, max: -Infinity })
-        const chart = new StackedRanges(data, { height: 100, contextStyles: { strokeStyle: ruler.color, lineWidth: 5, lineCap: 'butt' } })
-        return { ...minmax, chart }
+        const graph = new StackedRanges(data, { height: 100, contextStyles: { strokeStyle: ruler.color, lineWidth: 5, lineCap: 'butt' } })
+        return { ...minmax, graph }
       })
 
-      const charts = minmaxcharts.sort((a, b) => {
+      const graphs = minMaxGraphs.sort((a, b) => {
         const aLen = a.max - a.min
         const bLen = b.max - b.min
 
         const lenDiff = bLen - aLen
         if (lenDiff != 0) return lenDiff
         else return b.min - a.min
-      }).map(({ chart }, index) => {
-        chart.y = (index + 1) * 10
-        return chart
+      }).map(({ graph }, index) => {
+        graph.y = (index + 1) * 10
+        return graph
       })
 
 
-      return charts
+      return graphs
       // this.timelineChart.updateTimeline(this.raw_timeline);
 
       // const timelineRuledBy = result.data.data.timelineRuledBy;
@@ -719,7 +721,7 @@ export default {
       }, []);
 
       const height = 100
-      let andChart = []
+      let andGraphs = []
       if (ranges) {
 
         //Filter for or chart
@@ -745,7 +747,7 @@ export default {
         });
 
 
-        const fillStyle = this.timelineDiagram
+        const fillStyle = this.timelineChart
           .getContext()
           .createPattern(
             Pattern.createLinePattern(
@@ -755,12 +757,12 @@ export default {
             'repeat'
           );
 
-        andChart.push(new RangeChart(andData, { height, contextStyles: { fillStyle } }))
+        andGraphs.push(new RangeGraph(andData, { height, contextStyles: { fillStyle } }))
 
       }
 
-      let chart = new RangeChart(data, { height })
-      return [chart, ...andChart]
+      let graph = new RangeGraph(data, { height })
+      return [graph, ...andGraphs]
 
     },
   }

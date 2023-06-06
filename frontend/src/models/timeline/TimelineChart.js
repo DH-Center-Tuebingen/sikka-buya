@@ -1,6 +1,6 @@
 import Range from "./range.js"
 
-class Diagram {
+class Chart {
     constructor(canvas) {
         if (!canvas) throw new Error("Canvas is required")
         this.canvas = canvas
@@ -22,7 +22,7 @@ class Diagram {
     }
 }
 
-export class Chart {
+export class Graph {
     draw(context, data) {
         this.joinStyles(context)
     }
@@ -39,7 +39,7 @@ export class Chart {
     }
 }
 
-export class RangeChart extends Chart {
+export class RangeGraph extends Graph {
 
     constructor(data, { contextStyles = {} } = {}) {
         super()
@@ -47,23 +47,23 @@ export class RangeChart extends Chart {
         this.contextStyles = contextStyles
     }
 
-    draw(context, diagram) {
-        super.draw(context, diagram)
+    draw(context, chart) {
+        super.draw(context, chart)
 
         this.data.forEach(range => {
 
-            let start = diagram.x(range[0], "start")
-            let end = diagram.x(range[1], "end")
+            let start = chart.x(range[0], "start")
+            let end = chart.x(range[1], "end")
             let width = Math.ceil(end - start)
             if (width === 0) {
                 width = 1
             }
-            context.fillRect(start, 0, width, diagram.y(0))
+            context.fillRect(start, 0, width, chart.y(0))
         })
     }
 }
 
-export class StackedRanges extends Chart {
+export class StackedRanges extends Graph {
 
     constructor(data, { y = 0, contextStyles = {} } = {}) {
         super()
@@ -72,24 +72,24 @@ export class StackedRanges extends Chart {
         this.contextStyles = contextStyles
     }
 
-    draw(context, diagram) {
-        super.draw(context, diagram)
+    draw(context, chart) {
+        super.draw(context, chart)
 
         this.data.forEach(range => {
             context.beginPath();
-            const start = diagram.x(range[0], "start")
-            context.moveTo(start, diagram.y(this.y))
+            const start = chart.x(range[0], "start")
+            context.moveTo(start, chart.y(this.y))
 
-            let end = diagram.x(range[1], "end")
+            let end = chart.x(range[1], "end")
             if (end - start <= 1) end = start + 1
-            context.lineTo(end, diagram.y(this.y))
+            context.lineTo(end, chart.y(this.y))
             context.stroke()
         })
     }
 }
 
 
-export default class TimelineDiagram extends Diagram {
+export default class TimelineChart extends Chart {
 
     /**
      * 
@@ -98,25 +98,25 @@ export default class TimelineDiagram extends Diagram {
      * @param {number} timeline.from - start year
      * @param {number} timeline.to  - end year
      */
-    constructor(canvas, timeline, charts = []) {
+    constructor(canvas, timeline, graphs = []) {
         super(canvas)
-        this.charts = charts
+        this.graphs = graphs
         this.timeline = timeline
-        if (charts.length > 0)
+        if (graphs.length > 0)
             this.draw()
     }
 
 
-    update({ charts = [], timeline }) {
-        if (charts.length > 0)
-            this.charts = charts
+    update({ graphs = null, timeline = null }) {
+        if (graphs != null)
+            this.graphs = graphs
         if (timeline)
             this.timeline = timeline
         this.draw()
     }
 
-    updateChart(chart) {
-        this.charts = chart
+    updateGraph(graphs) {
+        this.graphs = graphs
         this.draw()
     }
 
@@ -127,8 +127,8 @@ export default class TimelineDiagram extends Diagram {
 
     draw() {
         this.clear()
-        this.charts.forEach(chart => {
-            chart.draw(this.getContext(), this)
+        this.graphs.forEach(graph => {
+            graph.draw(this.getContext(), this)
         })
     }
 

@@ -150,7 +150,7 @@ import PopupActivator from '../Popup/PopupActivator.vue';
 import CopyField from '../forms/CopyField.vue';
 import Slideshow from './slideshow/Slideshow.vue';
 import Timeline from './timeline/Timeline.vue';
-import TimelineDiagram from '../../models/timeline/TimelineChart';
+import TimelineChart from '../../models/timeline/TimelineChart';
 
 import icons from "@/components/mixins/icons.js"
 
@@ -209,7 +209,7 @@ export default {
             slideshow,
             headerIconSize: 18,
             playInterval: null,
-            timelineDiagram: null,
+            timelineChart: null,
             timelineResizeTimeout: null,
         }
     },
@@ -222,11 +222,11 @@ export default {
         },
         timelineFrom() {
             console.log("timelineFrom changed", this.timelineFrom, this.timelineTo)
-            this.timelineDiagram.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
+            this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
         },
         timelineTo() {
             console.log("timelineTo changed", this.timelineFrom, this.timelineTo)
-            this.timelineDiagram.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
+            this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
         },
     },
     computed: {
@@ -235,7 +235,7 @@ export default {
         }
     },
     mounted() {
-        this.timelineDiagram = new TimelineDiagram(this.$refs.timelineCanvas, { from: this.timelineFrom, to: this.timelineTo });
+        this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timelineFrom, to: this.timelineTo });
         window.addEventListener('resize', this.resizeCanvas);
     },
     beforeDestroy() {
@@ -248,7 +248,7 @@ export default {
         resizeCanvas() {
             if (this.timelineResizeTimeout) clearTimeout(this.timelineResizeTimeout);
             this.timelineResizeTimeout = setTimeout(() => {
-                this.timelineDiagram.updateSize();
+                this.timelineChart.updateSize();
                 this.$emit("resize");
             }, 300);
         },

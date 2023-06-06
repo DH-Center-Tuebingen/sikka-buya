@@ -150,7 +150,7 @@ import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
-import { RangeChart } from '../../models/timeline/TimelineChart.js';
+import { RangeGraph } from '../../models/timeline/TimelineChart.js';
 
 
 const queryPrefix = 'map-filter-';
@@ -369,10 +369,10 @@ export default {
     drawTimeline: async function () {
       const height = this.$refs.timeline.getTimeline().$el.offsetHeight;
       const data = await this.getTypePlot()
-      const chart = new RangeChart(data, { height: height })
+      const graph = new RangeGraph(data, { height: height })
 
-      if (this.$refs.timeline.timelineDiagram)
-        this.$refs.timeline.$data.timelineDiagram.update({ data, charts: [chart] })
+      if (this.$refs.timeline.timelineChart)
+        this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph] })
 
     },
     getTypePlot: async function () {
