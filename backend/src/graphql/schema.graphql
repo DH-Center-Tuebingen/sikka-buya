@@ -366,11 +366,6 @@ type MintPointArray {
   data: [Point]
 }
 
-type IdPointArray {
-  id: Int!
-  data: [Point]!
-}
-
 type RulerIntArray {
   ruler: [Person],
   data: [Int]
