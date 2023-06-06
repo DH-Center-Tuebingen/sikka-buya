@@ -90,6 +90,10 @@ export default class Range {
         return overlappingRanges
     }
 
+    static fromPointArray(arr) {
+        return this.fromNumberSequence(arr.filter(point => point.y > 0).map(point => point.x))
+    }
+
     static fromNumberSequence(arr) {
         let ranges = [];
         arr.sort((a, b) => a - b)

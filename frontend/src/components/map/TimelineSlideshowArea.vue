@@ -125,7 +125,11 @@
             >
 
                 <template #background>
-                    <slot name="background" />
+                    <canvas
+                        id="timeline-canvas"
+                        ref="timelineCanvas"
+                    > </canvas>
+                    <!-- <slot name="background" /> -->
                 </template>
             </Timeline>
         </Drawer>
@@ -146,6 +150,7 @@ import PopupActivator from '../Popup/PopupActivator.vue';
 import CopyField from '../forms/CopyField.vue';
 import Slideshow from './slideshow/Slideshow.vue';
 import Timeline from './timeline/Timeline.vue';
+import TimelineChart from '../../models/timeline/TimelineChart';
 
 import icons from "@/components/mixins/icons.js"
 
@@ -204,7 +209,8 @@ export default {
             slideshow,
             headerIconSize: 18,
             playInterval: null,
-
+            timelineChart: null,
+            timelineResizeTimeout: null,
         }
     },
     watch: {
@@ -214,15 +220,37 @@ export default {
             },
             deep: true,
         },
+        timelineFrom() {
+            console.log("timelineFrom changed", this.timelineFrom, this.timelineTo)
+            this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
+        },
+        timelineTo() {
+            console.log("timelineTo changed", this.timelineFrom, this.timelineTo)
+            this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
+        },
     },
     computed: {
         playing() {
             return this.playInterval != null;
         }
     },
+    mounted() {
+        this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timelineFrom, to: this.timelineTo });
+        window.addEventListener('resize', this.resizeCanvas);
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.resizeCanvas);
+    },
     methods: {
         getTimeline() {
             return this.$refs.timeline;
+        },
+        resizeCanvas() {
+            if (this.timelineResizeTimeout) clearTimeout(this.timelineResizeTimeout);
+            this.timelineResizeTimeout = setTimeout(() => {
+                this.timelineChart.updateSize();
+                this.$emit("resize");
+            }, 300);
         },
         toggleTimeline() {
             this.$emit('toggle', this.timelineActive);
@@ -236,7 +264,7 @@ export default {
         },
         timelineChanged(year, isPlaying = false) {
             // If the timeline is changed due to playing, don't stop the playing
-            if (!isPlaying) this.stop();
+            if (!isPlaying) this.stop()
             this.$emit("input", year)
         },
         start() {

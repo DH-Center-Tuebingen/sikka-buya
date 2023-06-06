@@ -307,7 +307,7 @@ type Query {
   ruledMintCount(rulers: [ID]!,mints: [ID]): [RulerPointArray]
   typeCountOfMints(ids: [ID]): [MintPointArray]
 
-  timelinePlotTypeProperty(name:String!, ids:[ID]):[IdPointArray]
+  timelinePlotType(filters: TypeFilter):[Point]
 
 
   timespan: Range
@@ -364,11 +364,6 @@ type MintPersons {
 type MintPointArray {
   mint: Mint
   data: [Point]
-}
-
-type IdPointArray {
-  id: Int!
-  data: [Point]!
 }
 
 type RulerIntArray {

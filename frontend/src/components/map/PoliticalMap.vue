@@ -98,15 +98,6 @@
             </labeled-input-container>
           </map-settings-box>
         </template>
-
-        <template #background>
-          <canvas
-            id="timeline-canvas"
-            ref="timelineCanvas"
-          > </canvas>
-        </template>
-
-
       </TimelineSlideshowArea>
     </div>
 
@@ -139,7 +130,6 @@
 
 <script>
 // Models
-import TimelineChart from '../../models/timeline/TimelineChart.js';
 import Range from '../../models/timeline/range.js';
 import Sequence from '../../models/timeline/sequence.js';
 import Pattern from '../../models/draw/pattern';
@@ -187,6 +177,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
+import { RangeGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();
@@ -242,7 +233,6 @@ export default {
       availableRulers: [],
       data: null,
       mints: [],
-      mintTimelineData: [],
       overlay: null,
       patterns: {},
       persons: {},
@@ -254,8 +244,6 @@ export default {
       unavailableRulers: [],
       selectedUnavailableRulers: [],
       unlocatedTypes: [],
-      timelineResizeTimeout: null,
-      timelineChart: null,
       types: [],
     };
   },
@@ -271,6 +259,9 @@ export default {
     }),
   ],
   computed: {
+    timelineChart() {
+      return this.$refs.timelineSlideshowArea.timelineChart
+    },
     shareLink() {
       return URLParams.generate(this.getOptions()).href;
     },
@@ -388,11 +379,6 @@ export default {
       URLParams.clear();
     });
 
-    this.timelineChart = new TimelineChart(
-      this.$refs.timelineCanvas,
-      this.raw_timeline
-    );
-
     let selectedRulers = URLParams.getArray('selectedRulers');
     if (selectedRulers) {
       this.rulerSelectionChanged({ active: selectedRulers, added: selectedRulers }, {
@@ -414,17 +400,12 @@ export default {
 
     await this.initTimeline();
     await this.update();
+    await this.drawTimeline();
 
     this.addedMints = []
-
-    // await this.drawTimeline();
-
-    window.addEventListener('resize', this.resizeCanvas);
   },
   beforeDestroy: function () {
     if (this.mintLocations) this.mintLocations.clearLayers();
-
-    window.removeEventListener('resize', this.resizeCanvas);
   },
   methods: {
     toggleTimeline() {
@@ -466,117 +447,215 @@ export default {
       return options;
     },
     async drawTimeline() {
+      
       if (!this.$data.i) this.$data.i = 1
       if (this.timelineChart) {
-        this.timelineChart.clear();
+        let graphs = []
         if (this.selectedMints.length > 0 && this.selectedRulers.length > 0) {
-          const ranges = await this.drawRulersOntoTimeline(true);
-          await this.drawMintCountOntoTimeline(
-            ranges.length > 0 ? ranges : null
+          const rulerGraphs = await this.drawRulersOntoTimeline(true);
+
+          const mintGraphs = await this.drawMintCountOntoTimeline(
+            rulerGraphs.map((graph) => graph.data)
           );
-        } else if (this.selectedMints.length > 0)
-          await this.drawMintCountOntoTimeline();
-        else if (this.selectedRulers.length > 0)
-          await this.drawRulersOntoTimeline();
+
+          graphs = [...mintGraphs,  ...rulerGraphs]
+
+        } else if (this.selectedMints.length > 0) {
+          graphs = await this.drawMintCountOntoTimeline();
+
+        } else if (this.selectedRulers.length > 0) {
+          graphs = await this.drawRulersOntoTimeline();
+
+        } else {
+          this.timelineChart.clear()
+        }
+
+        this.timelineChart.update({ graphs })
+
       }
+
     },
     async drawRulersOntoTimeline(drawAsHorizontals = false) {
       const result = await Query.raw(
         `{
-        timelineRuledBy(rulers: [${this.selectedRulers.join(
+              timelineRuledBy(rulers: [${this.selectedRulers.join(
           ','
         )}], mints: [${this.selectedMints.join(',')}]){
-            ruler {color},
-            data
-        }
- ruledMintCount(rulers: [${this.selectedRulers.join(
+                  ruler {color},
+                  data
+              }
+       ruledMintCount(rulers: [${this.selectedRulers.join(
           ','
         )}], mints: [${this.selectedMints.join(',')}]){
-   ruler {id name color}
-    data {x, y}
-}
-}`
+         ruler {id name color}
+          data {x, y}
+      }
+      }`
       );
 
-      const rulerPointArrays = result.data.data.ruledMintCount;
-      this.timelineChart.updateTimeline(this.raw_timeline);
+      const {
+        ruledMintCount,
+        timelineRuledBy,
+      } = result.data.data
 
-      const timelineRuledBy = result.data.data.timelineRuledBy;
 
-      if (this.selectedRulers.length > 1)
-        this.drawStripedAndBlock(timelineRuledBy);
+      // const minMaxGraphs = rulerPointArrays.map(({ ruler, data }) => {
+      //   const minmax = data.reduce((prev, cur) => {
+      //     if (cur.x < prev.min) prev.min = cur.x
+      //     if (cur.x > prev.max) prev.max = cur.x
+      //     return prev
+      //   }, { min: Infinity, max: -Infinity })
+      // const graph = new LineGraph(data, { height: 100, contextStyles: { strokeStyle: ruler.color, lineWidth: 5, lineCap: 'butt' } })
+      //   return { ...minmax, graph }
+      // })
 
-      let ranges = [];
+      // const graphs = minMaxGraphs.sort((a, b) => {
+      //   const aLen = a.max - a.min
+      //   const bLen = b.max - b.min
 
+      //   const lenDiff = bLen - aLen
+      //   if (lenDiff != 0) return lenDiff
+      //   else return b.min - a.min
+      // }).map(({ graph }, index) => {
+      //   graph.y = (index + 1) * 10
+      //   return graph
+      // })
+
+      const graphs = []
+      let max = 0
       if (drawAsHorizontals) {
-        const rulerLines = () => {
-          const lineHeight = 5;
-          const padding = Math.ceil(lineHeight / 2);
-          let allSelectedRulerRanges = [];
+        const lineHeight = 5;
+        const padding = Math.ceil(lineHeight / 2);
+        let allSelectedRulerRanges = [];
 
-          rulerPointArrays.forEach((rulerObj) => {
-            let rulerYearArr = rulerObj.data.slice().map((obj) => obj.x);
-            const rulerRangeArr = Range.fromNumberSequence(rulerYearArr);
-            allSelectedRulerRanges.push({
-              ruler: rulerObj.ruler,
-              range: rulerRangeArr.slice(),
-            });
+        ruledMintCount.forEach((rulerObj) => {
+          let rulerYearArr = rulerObj.data.slice().map((obj) => obj.x);
+          const rulerRangeArr = Range.fromNumberSequence(rulerYearArr);
+          allSelectedRulerRanges.push({
+            ruler: rulerObj.ruler,
+            range: rulerRangeArr.slice(),
           });
-
-          allSelectedRulerRanges.sort((a, b) => {
-            return (
-              Range.getWidthFromRanges(b.range) -
-              Range.getWidthFromRanges(a.range)
-            );
-          });
-
-          let yPos = 0;
-          allSelectedRulerRanges.forEach((rangeObj) => {
-            yPos += lineHeight + padding;
-            this.timelineChart.drawRangeLineOnCanvas(rangeObj.range, yPos, {
-              lineCap: 'butt',
-              lineWidth: lineHeight,
-              strokeStyle: rangeObj.ruler.color,
-            });
-          });
-
-          return allSelectedRulerRanges;
-        };
-
-        ranges = Range.union(rulerLines().map((el) => el.range));
-      } else {
-        let max = 0;
-        Object.values(rulerPointArrays).forEach(({ ruler, data }) => {
-          const c_max = data.reduce((prev, cur) => {
-            const value = cur.y;
-            return value > prev ? value : prev;
-          }, -Infinity);
-
-          if (c_max > max) max = c_max;
         });
 
-        rulerPointArrays.forEach(({ ruler, data }) => {
-          this.timelineChart.drawGraphOnTimeline(
-            data,
-            {
-              strokeStyle: ruler.color + 'aa',
-              lineWidth: 2,
-              fillStyle: 'transparent',
-            },
-            {
-              max,
-            }
+        allSelectedRulerRanges.sort((a, b) => {
+          return (
+            Range.getWidthFromRanges(b.range) -
+            Range.getWidthFromRanges(a.range)
           );
         });
+
+        console.log(allSelectedRulerRanges)
+
+        allSelectedRulerRanges.forEach((rangeObj, index) => {
+          graphs.push(new StackedRanges(rangeObj.range, { y: (lineHeight + padding) * (index + 1), contextStyles: { strokeStyle: rangeObj.ruler.color, lineWidth: lineHeight } }))
+        });
+      } else {
+        ruledMintCount.forEach(({ ruler, data }) => {
+          //TODO: Normally data should be delivered in a irdered fasion
+          data = data.sort((a, b) => a.x - b.x)
+          let graph = new LineGraph(data, { yOffset: 20, contextStyles: { strokeStyle: ruler.color, lineWidth: 2 } })
+          const graphMax = data.reduce((prev, cur) => {
+
+            if (cur.y > prev) prev = cur.y
+            return prev
+          }, -Infinity)
+
+          if (graphMax > max) max = graphMax
+
+          graphs.push(graph)
+        })
+
+        graphs.forEach((graph) => {
+          graph.set("yMax", max)
+        })
       }
 
-      return ranges;
+      const andGraph = []
+      if (this.selectedRulers.length > 1) {
+        andGraph.push(this.drawStripedAndBlock(timelineRuledBy))
+      }
+
+
+      return [...andGraph, ...graphs]
+
+
+      // this.timelineChart.updateTimeline(this.raw_timeline);
+
+      // const timelineRuledBy = result.data.data.timelineRuledBy;
+
+      // if (this.selectedRulers.length > 1)
+      //   this.drawStripedAndBlock(timelineRuledBy);
+
+      // let ranges = [];
+
+      // if (drawAsHorizontals) {
+      //   const rulerLines = () => {
+      //     const lineHeight = 5;
+      //     const padding = Math.ceil(lineHeight / 2);
+      //     let allSelectedRulerRanges = [];
+
+      //     rulerPointArrays.forEach((rulerObj) => {
+      //       let rulerYearArr = rulerObj.data.slice().map((obj) => obj.x);
+      //       const rulerRangeArr = Range.fromNumberSequence(rulerYearArr);
+      //       allSelectedRulerRanges.push({
+      //         ruler: rulerObj.ruler,
+      //         range: rulerRangeArr.slice(),
+      //       });
+      //     });
+
+      //     allSelectedRulerRanges.sort((a, b) => {
+      //       return (
+      //         Range.getWidthFromRanges(b.range) -
+      //         Range.getWidthFromRanges(a.range)
+      //       );
+      //     });
+
+      //     let yPos = 0;
+      //     allSelectedRulerRanges.forEach((rangeObj) => {
+      //       yPos += lineHeight + padding;
+      //       this.timelineChart.drawRangeLineOnCanvas(rangeObj.range, yPos, {
+      //         lineCap: 'butt',
+      //         lineWidth: lineHeight,
+      //         strokeStyle: rangeObj.ruler.color,
+      //       });
+      //     });
+
+      //     return allSelectedRulerRanges;
+      //   };
+
+      //   ranges = Range.union(rulerLines().map((el) => el.range));
+      // } else {
+      //   let max = 0;
+      //   Object.values(rulerPointArrays).forEach(({ ruler, data }) => {
+      //     const c_max = data.reduce((prev, cur) => {
+      //       const value = cur.y;
+      //       return value > prev ? value : prev;
+      //     }, -Infinity);
+
+      //     if (c_max > max) max = c_max;
+      //   });
+
+      //   rulerPointArrays.forEach(({ ruler, data }) => {
+      //     this.timelineChart.drawGraphOnTimeline(
+      //       data,
+      //       {
+      //         strokeStyle: ruler.color + 'aa',
+      //         lineWidth: 2,
+      //         fillStyle: 'transparent',
+      //       },
+      //       {
+      //         max,
+      //       }
+      //     );
+      //   });
+      // }
+
+      // return ranges;
     },
     drawStripedAndBlock(timelineRuledBy) {
-      const height = this.$refs.timelineSlideshowArea.getTimeline().$el.offsetHeight;
-      const points = timelineRuledBy.data || [];
+      let combinedRanges = Range.fromNumberSequence(timelineRuledBy.data);
 
-      var fill = this.timelineChart
+      var fillStyle = this.timelineChart
         .getContext()
         .createPattern(
           Pattern.createLinePattern(
@@ -586,15 +665,16 @@ export default {
           'repeat'
         );
 
-      const combinedRanges = Range.fromNumberSequence(points);
-      this.timelineChart.drawRangeRectOnCanvas(combinedRanges, 0, height, fill);
-    },
-    resizeCanvas() {
-      if (this.timelineResizeTimeout) clearTimeout(this.timelineResizeTimeout);
-      this.timelineResizeTimeout = setTimeout(() => {
-        this.timelineChart.updateSize();
-        this.drawTimeline();
-      }, 300);
+
+
+      const rangeGraph = new RangeGraph(combinedRanges, {
+        contextStyles: {
+          fillStyle,
+          fillOpacity: 0.5,
+        }
+      })
+
+      return rangeGraph
     },
     timelineUpdated: async function () {
       this.update();
@@ -612,7 +692,6 @@ export default {
     },
     async update() {
       this.setLoading(true);
-      await this.drawTimeline()
       await this.overlay.update({
         filters: this.filters,
         selections: this.selections,
@@ -715,40 +794,41 @@ export default {
       }
     },
     async drawMintCountOntoTimeline(ranges) {
-      await Query.raw(
-        `{
- typeCountOfMints(ids: [${this.selectedMints.join(',')}]){
-   mint {id name}
-    data {x, y}
-}
-}`
-      )
-        .then((val) => {
-          this.timelineChart.updateTimeline(this.raw_timeline);
-          this.mintTimelineData = val.data.data.typeCountOfMints;
-          const sequence = Sequence.fromArrayObject(
-            this.mintTimelineData,
-            (obj) => {
-              return obj.data;
-            }
-          ).map((obj) => obj.x);
+      const val = await Query.raw(`{
+      typeCountOfMints(ids: [${this.selectedMints.join(',')}]){
+          data {x, y}
+      }
+    }`)
 
-          let mintRanges = Range.fromNumberSequence(sequence);
+      let data = val.data.data.typeCountOfMints.reduce((prev, cur) => {
+        return prev.concat(cur.data);
+      }, []);
 
-          if (ranges)
-            mintRanges = Range.overlappingRanges([mintRanges, ranges]);
+      const height = 100
+      let andGraphs = []
+      if (ranges) {
 
-          const height = this.$refs.timelineSlideshowArea.getTimeline().$el.offsetHeight;
-          this.timelineChart.drawRangeLineOnCanvas(mintRanges, height / 2, {
-            lineCap: 'butt',
-            lineWidth: height,
-            strokeStyle: 'rgba(0,0,0,0.05)',
-          });
-        })
-        .catch(console.error);
+        //Filter for or chart
+        data = data.filter(point => {
+          let flatRanges = ranges.reduce((prev, cur) => {
+            return prev.concat(cur)
+          }, [])
+          for (let range of flatRanges) {
+            if (point.x >= range[0] && point.x <= range[1]) return true
+          }
+          return false
+        });
+
+      }
+
+      let graph = new RangeGraph(Range.fromPointArray(data), { height, contextStyles: {
+        fillStyle: Color.Gray
+      } })
+      return [graph, ...andGraphs]
+
     },
-  },
-};
+  }
+}
 </script>
 
 <style  lang="scss" >

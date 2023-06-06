@@ -115,6 +115,7 @@
 
 <script>
 // Mixins
+import catalogFilterMixin from '../mixins/catalog-filter';
 import map from './mixins/map';
 import {
   mintLocationsMixin,
@@ -122,6 +123,8 @@ import {
 } from './mixins/MintLocationsMixin';
 import settingsMixin from '../map/mixins/settings';
 import timeline from './mixins/timeline';
+import slideshow from '../mixins/slideshow';
+
 
 //Components
 import Button from '../layout/buttons/Button.vue';
@@ -134,17 +137,21 @@ import Slider from '../forms/Slider.vue';
 import Timeline from './timeline/Timeline.vue';
 
 // Other
+
+
+import Range from "../../models/timeline/range.js"
 import MaterialOverlay from '../../maps/MaterialOverlay';
 import Settings from '../../settings';
 import Sorter from '../../utils/Sorter';
 import URLParams from '../../utils/URLParams';
-import slideshow from '../mixins/slideshow';
 import ListSelectionTools from '../interactive/ListSelectionTools.vue';
-import catalogFilterMixin from '../mixins/catalog-filter';
 import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
+import Query from '../../database/query';
+import { RangeGraph } from '../../models/timeline/TimelineChart.js';
+import Color from '../../utils/Color';
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'MaterialOverlay');
@@ -184,6 +191,7 @@ export default {
       },
       pageInfo: { page: 0, count: 100000 },
       painter: null,
+      chart: null,
     };
   },
   mixins: [
@@ -337,9 +345,9 @@ export default {
 
       this.$refs.catalogFilter.resetFilters();
       this.$refs.catalogFilter.setFilters(options)
-      
-      
-      
+
+
+
     },
     resetSettings() {
       this.overlay.settings.reset();
@@ -351,9 +359,41 @@ export default {
         'mint',
         'yearOfMint',
       ]);
+
+      this.drawTimeline()
+
       this.overlay.setData(data);
       this.overlay.repaint();
       this.save();
+    },
+    drawTimeline: async function () {
+      const height = this.$refs.timeline.getTimeline().$el.offsetHeight;
+      const filters = this.$refs.catalogFilter.getFilters()
+
+      let otherFilters = Object.assign({}, filters)
+      delete otherFilters['yearOfMint']
+      delete otherFilters['excludeFromMapApp']
+
+      if (Object.keys(otherFilters).length <= 1 && otherFilters['mint'].length === 0) {
+        this.$refs.timeline.$data.timelineChart.update({ data: [], graphs: [] })
+      } else {
+        const data = await this.getTypePlot(filters)
+        const ranges = Range.fromPointArray(data)
+        const graph = new RangeGraph(ranges, { height: height, contextStyles: { fillStyle: Color.Gray } })
+
+        if (this.$refs.timeline.timelineChart)
+          this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph] })
+      }
+
+    },
+    getTypePlot: async function (filters) {
+      const points = await Query.raw(`query timelinePlot($filters: TypeFilter){timelinePlotType(filters: $filters) {
+  x
+  y
+}}`, { filters })
+
+      return points.data.data.timelinePlotType
+
     },
     save() {
       this.catalog_filter_mixin_save(this.$refs.catalogFilter);

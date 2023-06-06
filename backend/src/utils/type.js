@@ -492,6 +492,25 @@ class Type {
         return where
     }
 
+    static typeQueryProperties({
+        filters = {},
+        additionalJoin = "",
+        additionalRows = [],
+        additionalWhere = [],
+        context = {},
+    } = {}) {
+        if (!context) throw new Error("context is required")
+
+        const queryBuilder = new QueryBuilder()
+        this.complexFilters(queryBuilder, filters, context)
+        const conditions = this.objectToFilters(filters)
+
+        const SELECT = [this.rows, this.getAuthRows(context), ...additionalRows].join(",")
+        const JOINS = [this.joins, this.getAuthJoins(context), ...queryBuilder._joins, additionalJoin].join("\n")
+        const WHERE = QueryBuilder.buildWhere([...conditions, ...queryBuilder._wheres, ...additionalWhere])
+        return { SELECT, JOINS, WHERE }
+    }
+
     static async getTypes(_, { pagination = { count: 50, total: 0, page: 0 }, filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null }, context, info) {
 
         /**
@@ -509,16 +528,15 @@ class Type {
          */
 
         pagination.count = (pagination.count < process.env.MAX_SEARCH) ? pagination.count : process.env.MAX_SEARCH
-
-        const queryBuilder = new QueryBuilder()
-        this.complexFilters(queryBuilder, filters, context)
-        const conditions = this.objectToFilters(filters)
         const pageInfo = new PageInfo(pagination)
 
+        const { SELECT, JOINS, WHERE } = this.typeQueryProperties({
+            filters,
+            additionalJoin,
+            additionalRows,
+            context
+        })
 
-        const SELECT = [this.rows, this.getAuthRows(context), ...additionalRows].join(",")
-        const JOINS = [this.joins, this.getAuthJoins(context), ...queryBuilder._joins, additionalJoin].join("\n")
-        const WHERE = QueryBuilder.buildWhere([...conditions, ...queryBuilder._wheres])
 
         const totalQuery = `
         SELECT count(*)
@@ -553,6 +571,35 @@ class Type {
         }
 
         return { types: result, pageInfo }
+    }
+
+    static async yearPlot({ filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null } = {}, context) {
+
+        // If we plot the year and we have a filter set as yearOfint
+        // it doesn't make sense, therefore we delete it.
+        // Also as it is mostly used in conjunction with a displayed year
+        // it is more convenient to just keep it in the filter object.
+        if (filters.yearOfMint) delete filters.yearOfMint
+
+        const { JOINS, WHERE } = this.typeQueryProperties({
+            filters,
+            additionalJoin,
+            additionalRows,
+            additionalWhere: ["t.year_of_mint <> '' AND TRIM(t.year_of_mint) ~ '^[0-9]+$'"],
+            context
+        })
+
+        const query = `
+            SELECT 
+                t.year_of_mint,
+                COUNT(t.id) as count
+            FROM type t 
+            ${JOINS}
+            ${WHERE}
+            GROUP BY t.year_of_mint
+            ORDER BY TRIM(t.year_of_mint)::numeric ASC`
+
+        return Database.manyOrNone(query)
     }
 
     static complexFilters(queryBuilder, filter, context) {
