@@ -13,7 +13,9 @@ const { join: joinPath } = require("path")
 function createDirectoryStructure(basePath, config) {
 
     if (!existsSync(basePath)) {
-        throw new Error("Base path is invalid!")
+        const error = "Base path does not exist"
+        console.error(`${error}: ${basePath}`)
+        throw new Error(error)
     }
 
     createChildDirectories(basePath, config)

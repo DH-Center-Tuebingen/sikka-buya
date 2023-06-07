@@ -24,7 +24,10 @@
                 :data-type="getType(file.name)"
             >
 
-                <a :href="file.url">
+                <a
+                    :href="file.url"
+                    target="_blank"
+                >
                     <span class="file-name">{{ getName(file.name) }}</span>
                     <span class="type-indicator">{{ getType(file.name) }}</span>
                 </a>
@@ -155,10 +158,8 @@ a {
 
 .type-indicator {
     padding: .5em 1em;
-    color: white;
-    background-color: $light-gray;
+    color: $light-gray;
     text-transform: uppercase;
-    border-radius: $border-radius;
 }
 
 .file-name {
