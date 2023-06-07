@@ -47,12 +47,29 @@ const Queries = {
 
             // The dirents returned from readdir does not contain a path
             // value therefore we must reconstruct the path.
-            namedDownloads = files.map(dirent => {
+            namedDownloads = files.map(async dirent => {
+
+                const filePath = join(groupDir, dirent.name)
+                const fileStat = await fs.stat(filePath)
+
                 return {
                     name: dirent.name,
+                    modified: new Date(fileStat.mtime),
+                    created: new Date(fileStat.birthtime),
                     url: [...path, dirent.name].join("/")
                 }
             })
+
+            switch (orderBy) {
+                case "created":
+                case "modified":
+                    namedDownloads.forEach(a => console.log(a[orderBy]))
+                    namedDownloads.sort((a, b) => b[orderBy] - a[orderBy])
+                    break
+                case "name":
+                default:
+                    namedDownloads.sort((a, b) => a.name.localeCompare(b.name))
+            }
 
         } catch (e) {
             console.log(`Error in 'files' resolver: Tried to access '${groupDir}'`, e)
@@ -224,8 +241,8 @@ ORDER BY person.id;
 
     },
     /**
-   * Same as getCoinTypes, but also allow to filter for evaluation filters.
-   */
+    * Same as getCoinTypes, but also allow to filter for evaluation filters.
+    */
     modGetTypes: async function (_, args, context) {
         Auth.verifyContext(context)
 

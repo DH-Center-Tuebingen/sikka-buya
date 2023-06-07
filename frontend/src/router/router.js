@@ -436,6 +436,9 @@ const routes = [
       {
         path: "working-papers",
         name: "Working Papers",
+        props: {
+          orderBy: "created"
+        },
         component: FileListPage
       },
       {

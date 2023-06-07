@@ -62,7 +62,11 @@ export default {
         ActionsDrawer
     },
     props: {
-        description: String
+        description: String,
+        orderBy: {
+            type: String,
+            default: "name"
+        }
     },
     data() {
         return {
@@ -99,14 +103,17 @@ export default {
             return filename.split(".")[0].replace(/_/g, " ")
         },
         load: async function () {
-            console.log(paramCase(this.$route.name))
-            const query = await Query.raw(` {
-                files(group:"${paramCase(this.$route.name)}") {
+            const query = await Query.raw(` 
+            query files($group: String!, $orderBy: String){
+                files(group: $group, orderBy: $orderBy) {
                         name
                         url
                     }
                 }
-            `, {}, true)
+            `, {
+                group: paramCase(this.$route.name),
+                orderBy: this.orderBy
+            }, true)
 
             this.files = query.data.data.files
         },
