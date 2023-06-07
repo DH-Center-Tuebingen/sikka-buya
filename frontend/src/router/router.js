@@ -139,14 +139,18 @@ const routes = [
       },
     ]
   }, {
+    path: "/",
+    name: "Home",
+    component: LandingPage
+  }, {
     path: "/home",
     name: "Home",
     component: LandingPage
   },
   {
     path: "",
+    name: "CommonMain",
     component: CommonMain,
-    redirect: "home",
     children: [
       {
         path: "/contact",
@@ -515,8 +519,11 @@ const router = new VueRouter({
   }
 })
 
+
+
 router.beforeEach(async (to, from, next) => {
-  let redirect = false
+  let nextRoute = null
+
 
   /**
    * As the 'store errors' are shown in the `App.vue`
@@ -525,35 +532,31 @@ router.beforeEach(async (to, from, next) => {
    */
   store.commit("resetErrors");
 
+  if (to.fullPath === "/" && to.name != "Home") nextRoute = { name: "Home" }
+
   if (to.name == "InitialSetup" && await superUserIsSet()) {
-    next({ name: "Home" })
+    nextRoute = { name: "Home" }
   }
 
-  if (to.fullPath === "/") next({ name: "Home" })
-  else {
-    if (to.matched.some(record => record.meta.auth)) {
-      let auth = await Auth.check()
-      if (auth) {
-        next()
-      } else {
-        if (to.name === "Home") {
-          router.push({ name: "Landing" })
-        } else {
-          const error = "Bitte loggen Sie sich ein!"
-          router.push({
-            name: "Login", params: {
-              error
-            }
-          })
 
-          store.commit("printError", error)
+  if (to.matched.some(record => record.meta.auth)) {
+    let auth = await Auth.check()
+    if (!auth) {
+      const error = "Bitte loggen Sie sich ein!"
+      nextRoute = {
+        name: "Login",
+        params: {
+          error
         }
       }
+      store.commit("printError", error)
     }
-
-    if (!redirect)
-      next()
   }
+
+  if (nextRoute)
+    next(nextRoute)
+  else
+    next()
 })
 
 export default router
