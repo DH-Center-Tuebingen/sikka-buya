@@ -41,10 +41,11 @@ export class Graph {
 
 export class LineGraph extends Graph {
 
-    constructor(data, { yMax = 0, yOffset = 0, contextStyles = {} } = {}) {
+    constructor(data, { yMax = 0, yOffset = 0, edges = "drop", contextStyles = {} } = {}) {
         super()
         this.yMax = yMax
         this.yOffset = yOffset
+        this.edges = edges
         this.data = data
         this.contextStyles = contextStyles
     }
@@ -68,14 +69,27 @@ export class LineGraph extends Graph {
             let { x: nextX } = this.data[i + 1] || { x: null }
 
             if (!prev || x - prev.x > 1) {
-                context.moveTo(chart.x(x), chart.y(0, this.yOptions))
+                switch (this.edges) {
+                    case "line":
+                        context.moveTo(chart.x(x, "start"), chart.y(y, this.yOptions))
+                        break
+                    case "drop":
+                    default:
+                        context.moveTo(chart.x(x), chart.y(0, this.yOptions))
+                }
             }
             prev = { x, y }
             context.lineTo(chart.x(x), chart.y(y, this.yOptions))
 
-            // console.log(nextX, nextX - x)
             if (!nextX || nextX - x > 1) {
-                context.lineTo(chart.x(x), chart.y(0, this.yOptions))
+                switch (this.edges) {
+                    case "line":
+                        context.lineTo(chart.x(x, "end"), chart.y(y, this.yOptions))
+                        break
+                    case "drop":
+                    default:
+                        context.lineTo(chart.x(x), chart.y(0, this.yOptions))
+                }
             }
         }
 

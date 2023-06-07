@@ -368,9 +368,9 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
 
         return mintArray
     },
-    timelinePlotType: async function (_, { filters } = {}, context) {
+    timelinePlotType: async function (_, { filters, distinct } = {}, context) {
 
-        return (await Type.yearPlot({ filters }, context))
+        return (await Type.yearPlot({ distinct, filters }, context))
             .map(({ year_of_mint, count }) => { return { x: parseInt(year_of_mint), y: parseInt(count) } })
             .filter(({ x, y }) => isNaN(x) || isNaN(y) ? false : true)
 
