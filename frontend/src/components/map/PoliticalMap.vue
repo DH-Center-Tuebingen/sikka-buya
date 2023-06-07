@@ -410,6 +410,7 @@ export default {
   methods: {
     toggleTimeline() {
       timeline.methods.toggleTimeline.call(this);
+      this.drawTimeline()
       this.$nextTick(() => {
         this.update();
       });
@@ -447,7 +448,7 @@ export default {
       return options;
     },
     async drawTimeline() {
-      
+
       if (!this.$data.i) this.$data.i = 1
       if (this.timelineChart) {
         let graphs = []
@@ -458,7 +459,7 @@ export default {
             rulerGraphs.map((graph) => graph.data)
           );
 
-          graphs = [...mintGraphs,  ...rulerGraphs]
+          graphs = [...mintGraphs, ...rulerGraphs]
 
         } else if (this.selectedMints.length > 0) {
           graphs = await this.drawMintCountOntoTimeline();
@@ -821,9 +822,11 @@ export default {
 
       }
 
-      let graph = new RangeGraph(Range.fromPointArray(data), { height, contextStyles: {
-        fillStyle: Color.Gray
-      } })
+      let graph = new RangeGraph(Range.fromPointArray(data), {
+        height, contextStyles: {
+          fillStyle: Color.Gray
+        }
+      })
       return [graph, ...andGraphs]
 
     },
