@@ -53,7 +53,6 @@ class CMS {
         const fileStream = await promise.promise
         const ext = path.extname(fileStream.filename).toLowerCase()
         if (supportedExtensions.indexOf(ext.substring(1)) === -1) throw new Error("Unsupported file extension")
-        console.log("FILENAME", filename)
         const fileURI = this.getDataPath(...parts, filename + ext)
 
         const stream = fileStream.createReadStream()
@@ -86,7 +85,6 @@ class CMS {
     static decomposeIdentity(identity) {
         const parts = identity.split(this.identityPathSeparator)
         const filename = parts.pop()
-        console.log(identity, parts, filename)
         return { parts, filename }
     }
 }

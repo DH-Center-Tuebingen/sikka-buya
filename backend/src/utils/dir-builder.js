@@ -22,17 +22,21 @@ function createDirectoryStructure(basePath, config) {
 }
 
 function createChildDirectories(path, config, depth = 0) {
-    for (let [key, children] of Object.entries(config)) {
-        const targetPath = joinPath(path, key)
-        if (!existsSync(targetPath)) {
-            console.log("Create directory: " + targetPath)
-            mkdirSync(targetPath)
+    try {
+        for (let [key, children] of Object.entries(config)) {
+            const targetPath = joinPath(path, key)
+            if (!existsSync(targetPath)) {
+                console.log("Create directory: " + targetPath)
+                mkdirSync(targetPath)
+            }
+            if (children === true) {
+                return targetPath
+            } else {
+                return createChildDirectories(targetPath, children, depth++)
+            }
         }
-        if (children === true) {
-            return targetPath
-        } else {
-            return createChildDirectories(targetPath, children, depth++)
-        }
+    } catch (e) {
+        console.error(e)
     }
 }
 
