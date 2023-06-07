@@ -6,7 +6,7 @@
 
             </template>
             <p>Der Server ist derzeit nicht erreichbar. Versuchen Sie es später erneut</p>
-            <p>Currently the server appeas to be offline. Please try again later</p>
+            <p>Currently the server appears to be offline. Please try again later</p>
         </Box>
     </div>
 </template>
