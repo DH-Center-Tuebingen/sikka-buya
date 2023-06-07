@@ -140,8 +140,7 @@ const routes = [
     ]
   }, {
     path: "/",
-    name: "Home",
-    component: LandingPage
+    redirect: { name: "Home" }
   }, {
     path: "/home",
     name: "Home",
