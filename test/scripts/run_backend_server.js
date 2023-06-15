@@ -14,7 +14,7 @@ function runBackendServer() {
 }
 
 if (require.main === module) {
-    runBackendServer()
+    runBackendServer().catch(console.error)
 } else {
     module.exports = runBackendServer
 }
