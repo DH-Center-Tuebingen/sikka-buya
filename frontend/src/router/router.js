@@ -521,8 +521,7 @@ const router = new VueRouter({
 
 
 router.beforeEach(async (to, from, next) => {
-  let nextRoute = null
-
+  let route = null
 
   /**
    * As the 'store errors' are shown in the `App.vue`
@@ -531,29 +530,42 @@ router.beforeEach(async (to, from, next) => {
    */
   store.commit("resetErrors");
 
-  if (to.fullPath === "/" && to.name != "Home") nextRoute = { name: "Home" }
 
-  if (to.name == "InitialSetup" && await superUserIsSet()) {
-    nextRoute = { name: "Home" }
+
+  if (to.name == "InitialSetup") {
+    let superUserSet = false
+    try {
+      superUserSet = await superUserIsSet()
+    } catch (e) {
+      //Fail silently
+    }
+    if (superUserSet)
+      route = { name: "Home" }
   }
 
-
-  if (to.matched.some(record => record.meta.auth)) {
-    let auth = await Auth.check()
-    if (!auth) {
-      const error = "Bitte loggen Sie sich ein!"
-      nextRoute = {
-        name: "Login",
-        params: {
-          error
-        }
+  if (to.fullPath === "/") to = next({ name: "Home" })
+  else {
+    if (to.matched.some(record => record.meta.auth)) {
+      let auth = false
+      try {
+        auth = await Auth.check()
+      } catch (e) {
+        //Fail silently
       }
-      store.commit("printError", error)
+      if (!auth) {
+        const error = "Bitte loggen Sie sich ein!"
+        route = {
+          name: "Login", params: {
+            error
+          }
+        }
+        // store.commit("printError", error)
+      }
     }
   }
 
-  if (nextRoute)
-    next(nextRoute)
+  if (route)
+    next(route)
   else
     next()
 })
