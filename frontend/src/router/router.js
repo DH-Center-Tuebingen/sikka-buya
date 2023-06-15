@@ -533,8 +533,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.name == "InitialSetup") {
     let superUserSet = false
     try {
-      throw new Error("ERROR")
-      // superUserSet = await superUserIsSet()
+      superUserSet = await superUserIsSet()
     } catch (e) {
       //Fail silently
     }
