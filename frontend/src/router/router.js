@@ -530,16 +530,16 @@ router.beforeEach(async (to, from, next) => {
    */
   // store.commit("resetErrors");
 
-  // if (to.name == "InitialSetup") {
-  //   let superUserSet = false
-  //   try {
-  //     superUserSet = await superUserIsSet()
-  //   } catch (e) {
-  //     //Fail silently
-  //   }
-  //   if (superUserSet)
-  //     route = { name: "Home" }
-  // }
+  if (to.name == "InitialSetup") {
+    let superUserSet = false
+    try {
+      superUserSet = await superUserIsSet()
+    } catch (e) {
+      //Fail silently
+    }
+    if (superUserSet)
+      route = { name: "Home" }
+  }
 
   if (to.fullPath === "/") to = next({ name: "Home" })
   else {
