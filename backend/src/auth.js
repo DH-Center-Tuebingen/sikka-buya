@@ -163,9 +163,11 @@ class Auth {
             if (name === "super") {
                 allow = Boolean(isSuperUser)
             } else {
-                if (isSuperUser) return true
-                const result = await Database.oneOrNone(`SELECT * FROM app_user_privilege WHERE app_user=$[id] AND privilege=$[name]`, { id, name })
-                allow = Boolean(result)
+                if (isSuperUser) allow = true
+                else {
+                    const result = await Database.oneOrNone(`SELECT * FROM app_user_privilege WHERE app_user=$[id] AND privilege=$[name]`, { id, name })
+                    allow = Boolean(result)
+                }
             }
         }
 
