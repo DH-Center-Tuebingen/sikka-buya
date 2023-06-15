@@ -528,12 +528,12 @@ router.beforeEach(async (to, from, next) => {
    * on a global level, we must manually reset them on 
    * navigation.
    */
-  // store.commit("resetErrors");
+  store.commit("resetErrors");
 
   if (to.name == "InitialSetup") {
     let superUserSet = false
     try {
-      superUserSet = await superUserIsSet()
+      // superUserSet = await superUserIsSet()
     } catch (e) {
       //Fail silently
     }
