@@ -112,7 +112,6 @@ async function main() {
         res.status(status).end(JSON.stringify({ status, message }))
     }
 
-
     await start(Object.assign({}, process.env, {
         routes: [
             {
