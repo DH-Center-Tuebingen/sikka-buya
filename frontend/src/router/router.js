@@ -537,8 +537,8 @@ router.beforeEach(async (to, from, next) => {
     } catch (e) {
       //Fail silently
     }
-    if (superUserSet)
-      route = { name: "Home" }
+    // if (superUserSet)
+    //   route = { name: "Home" }
   }
 
   if (to.fullPath === "/") to = next({ name: "Home" })
