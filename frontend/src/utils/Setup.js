@@ -1,7 +1,12 @@
 import Query from '../database/query';
 
 export async function superUserIsSet() {
-    // const result = await Query.raw(`{isSuperUserSet}`)
-    // return result.data.data.isSuperUserSet
-    return true
+    let isSet = false
+    try {
+        const result = await Query.raw(`{isSuperUserSet}`)
+        isSet = result?.data.data?.isSuperUserSet || false
+    } catch (err) {
+        console.log(err)
+    }
+    return isSet
 }

@@ -537,8 +537,8 @@ router.beforeEach(async (to, from, next) => {
     } catch (e) {
       //Fail silently
     }
-    // if (superUserSet)
-    //   route = { name: "Home" }
+    if (superUserSet)
+      route = { name: "Home" }
   }
 
   if (to.fullPath === "/") to = next({ name: "Home" })
@@ -562,9 +562,10 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  if (route)
+  if (route) {
+    console.log("Redirecting to", route)
     next(route)
-  else
+  } else
     next()
 })
 
