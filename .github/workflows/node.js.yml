@@ -36,6 +36,8 @@ jobs:
           locale
       # Setup Firefox
       - uses: browser-actions/setup-firefox@v1
+        with:
+          firefox-version: '100.0'
       - run: firefox --version
       ## Install Node
       #- name: Use Node.js 16
