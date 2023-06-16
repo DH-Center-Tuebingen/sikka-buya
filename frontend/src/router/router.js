@@ -536,28 +536,28 @@ router.beforeEach(async (to, from, next) => {
       superUserSet = await superUserIsSet()
     } catch (e) {
       //Fail silently
+      route = e
     }
     if (superUserSet)
       route = { name: "Home" }
-  }
-
-  if (to.fullPath === "/") to = next({ name: "Home" })
+  } else if (to.fullPath === "/") to = next({ name: "Home" })
   else {
     if (to.matched.some(record => record.meta.auth)) {
       let auth = false
       try {
         auth = await Auth.check()
+        if (!auth) {
+          const error = "Bitte loggen Sie sich ein!"
+          route = {
+            name: "Login", params: {
+              error
+            }
+          }
+          // store.commit("printError", error)
+        }
       } catch (e) {
         //Fail silently
-      }
-      if (!auth) {
-        const error = "Bitte loggen Sie sich ein!"
-        route = {
-          name: "Login", params: {
-            error
-          }
-        }
-        // store.commit("printError", error)
+        route = e
       }
     }
   }
