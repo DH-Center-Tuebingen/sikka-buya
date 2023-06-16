@@ -2,6 +2,11 @@ scalar Void
 scalar GeoJSON
 scalar Upload
 
+type NamedURL {
+  name: String
+  url: String
+}
+
 type AuthResponse {
   success: Boolean
   message: String
@@ -351,6 +356,8 @@ type Query {
   getSinglePage(group: String!): Page
 
   i18n:String
+
+  files(group:String!, orderBy:String):[NamedURL]
 }
 
 type MintPersons {
@@ -495,6 +502,7 @@ type Mutation {
   deleteBlock(id:ID!):Void
   createPageGroup(name:String):ID
   
+  deleteFile(identity:String!):Void
   uploadFile(identity:String!, file:Upload!):Void
   setLang(path:String!, lang:String!, singular:String!, plural:String):Void
 }

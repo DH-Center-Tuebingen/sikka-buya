@@ -6,7 +6,7 @@ class Frontend {
 
     static _publicPath = null
 
-    static init() {
+    static async init() {
         if (this._publicPath) throw Error("Public path was already set!")
         else {
             if (process.env.FRONTEND_PUBLIC_LOCATION) {
@@ -18,7 +18,9 @@ class Frontend {
                 throw new Error("Frontend location not set in .env file. Please set either RELATIVE_FRONTEND_PUBLIC_LOCATION or FRONTEND_PUBLIC_LOCATION")
             }
 
-            if (!fs.existsSync(process.env.FRONTEND_PUBLIC_LOCATION)) {
+            try {
+                await fs.promises.access(process.env.FRONTEND_PUBLIC_LOCATION)
+            } catch (e) {
                 throw new Error("Frontend location is invalid this path does not exist: " + process.env.FRONTEND_PUBLIC_LOCATION)
             }
         }

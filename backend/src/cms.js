@@ -5,7 +5,7 @@ const { finished } = require('stream/promises')
 const Frontend = require('./frontend')
 
 
-const supportedExtensions = ["png", "jpg", "jpeg"]
+const supportedExtensions = ["png", "jpg", "jpeg", "pdf"]
 class CMS {
 
 
@@ -68,7 +68,7 @@ class CMS {
      * @param {string} filename - filename without extension
      * @param {array*} extensions - array of filenames (optional)  
      */
-    static async removeExistingFiles(parts, filename, extensions = ["png", "jpg", "jpeg"]) {
+    static async removeExistingFiles(parts, filename, extensions = supportedExtensions) {
         const files = await this.findFilesAt(parts, filename, extensions)
 
         for (let file of files) {

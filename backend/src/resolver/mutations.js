@@ -7,6 +7,8 @@ const BlockGQL = require('./klasses/BlockGQL')
 const CMS = require('../cms')
 const Argument = require('../argument')
 const Language = require('../language')
+const { createDirectoryStructure } = require('../utils/dir-builder')
+const Frontend = require('../frontend')
 
 /**
  * Most mutations require the user to be logged in to
@@ -263,6 +265,15 @@ const EditorMutations = {
         if (!filePromise) throw new Error("File field is required!")
 
         const { parts, filename } = CMS.decomposeIdentity(identity)
+
+        const dirConfig = {}
+        let obj = dirConfig
+        for (let [index, part] of parts.entries()) {
+            obj[part] = (index == parts.length - 1) ? true : {}
+            obj = obj[part]
+        }
+
+        createDirectoryStructure(CMS.dataPath, dirConfig)
         await CMS.removeExistingFiles(parts, filename)
         try {
             const fileURI = await CMS.writeFileFromPromise(parts, filename, filePromise)
@@ -270,6 +281,12 @@ const EditorMutations = {
         } catch (e) {
             console.log("ERROR OCCURED: ", e)
         }
+    },
+    async deleteFile(_, { identity }) {
+        if (!identity) throw new Error("Identity field is required!")
+
+        const { parts, filename } = CMS.decomposeIdentity(identity)
+        await CMS.removeExistingFiles(parts, filename)
     },
 }
 

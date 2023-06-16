@@ -20,7 +20,7 @@
     "target": 2
   },
   "vueCompilerOptions": {
-    "target": 2,
+    "target": 2.7,
   },
   "extensions": [
     ".vue"

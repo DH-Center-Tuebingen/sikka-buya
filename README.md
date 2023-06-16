@@ -2,6 +2,7 @@
 
 A digital application for displaying and exploring islamic coinage.
 
+
 ## Project Structure
 
 The project has three main parts:

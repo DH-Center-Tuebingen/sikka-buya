@@ -36,11 +36,12 @@
         "or": "oder",
         "publish": "veröffentlichen",
         "reset_filter": "Filter aufheben",
-        "search": "Suchen", 
+        "search": "Suchen",
         "settings": "Einstellungen",
         "share": "Teilen",
         "cooperations": "Kooperationen",
-        "user": "Nutzer"
+        "user": "Nutzer",
+        "add": "hinzufügen"
     },
     "property": {
         "material": "Material | Materialien",
@@ -136,7 +137,7 @@
         "create_page": "neue Seite erstellen",
         "landing_page_main_article": "Startseitentext",
         "news": "Neuigkeiten",
-        "working_papers": "Working Papers"
+        "Working Papers": "Working Papers"
     },
     "message": {
         "input_to_filter": "Hier Suchtext eingeben ...",

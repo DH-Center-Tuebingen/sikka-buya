@@ -85,7 +85,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('run-backend-server', function () {
         let done = this.async()
-        runBackendServer().then(done)
+        runBackendServer().then(done).catch(console.error)
     })
 
     /** 

@@ -50,7 +50,6 @@ import PersonPage from "@/components/page/catalog/PersonPage.vue"
 import EditorPage from "@/components/page/editor/EditorPage.vue"
 import LandingPage from "@/components/page/LandingPage.vue"
 import ContactPage from "@/components/page/ContactPage.vue"
-import PlaceholderLandingPage from "@/components/page/PlaceholderLandingPage.vue"
 import CreateTypePage from "@/components/page/CreateTypePage.vue"
 import CoinMarkOverview from "@/components/page/CoinMarkOverview.vue"
 import CoinVerseOverview from "@/components/page/CoinVerseOverview.vue"
@@ -58,6 +57,7 @@ import InitialSetup from "@/components/page/InitialSetup.vue"
 import UserManagementPage from "@/components/page/UserManagementPage.vue"
 import FixDiff from "@/components/page/FixDiff.vue"
 import PageNotFoundPage from "@/components/page/system/PageNotFoundPage"
+import ServerOfflinePage from "@/components/page/system/ServerOfflinePage"
 
 import EditorPanel from "@/components/page/EditorPanel.vue"
 import ExpertSearch from "@/components/page/editor/ExpertSearch.vue"
@@ -66,7 +66,7 @@ import Overview from "@/components/page/Overview.vue"
 import PersonOverview from "@/components/page/PersonOverview"
 import MaterialOverview from "@/components/page/MaterialOverview"
 
-
+import FileListPage from "@/components/page/FileListPage.vue"
 
 import TypeOverview from "@/components/page/TypeOverview.vue"
 
@@ -108,6 +108,11 @@ const routes = [
     component: TemplatePage
   },
   {
+    name: "Server Offline",
+    path: "/offline",
+    component: ServerOfflinePage
+  },
+  {
     path: "/map/",
     name: "MapPage",
     component: MapPage,
@@ -134,14 +139,17 @@ const routes = [
       },
     ]
   }, {
+    path: "/",
+    redirect: { name: "Home" }
+  }, {
     path: "/home",
     name: "Home",
     component: LandingPage
   },
   {
     path: "",
+    name: "CommonMain",
     component: CommonMain,
-    redirect: "home",
     children: [
       {
         path: "/contact",
@@ -429,6 +437,14 @@ const routes = [
         ]
       },
       {
+        path: "working-papers",
+        name: "Working Papers",
+        props: {
+          orderBy: "created"
+        },
+        component: FileListPage
+      },
+      {
         path: "/404",
         name: "PageNotFound",
         component: PageNotFoundPage
@@ -502,8 +518,10 @@ const router = new VueRouter({
   }
 })
 
+
+
 router.beforeEach(async (to, from, next) => {
-  let redirect = false
+  let route = null
 
   /**
    * As the 'store errors' are shown in the `App.vue`
@@ -512,35 +530,43 @@ router.beforeEach(async (to, from, next) => {
    */
   store.commit("resetErrors");
 
-  if (to.name == "InitialSetup" && await superUserIsSet()) {
-    next({ name: "Home" })
-  }
-
-  if (to.fullPath === "/") next({ name: "Home" })
+  if (to.name == "InitialSetup") {
+    let superUserSet = false
+    try {
+      superUserSet = await superUserIsSet()
+    } catch (e) {
+      //Fail silently
+      route = e
+    }
+    if (superUserSet)
+      route = { name: "Home" }
+  } else if (to.fullPath === "/") to = next({ name: "Home" })
   else {
     if (to.matched.some(record => record.meta.auth)) {
-      let auth = await Auth.check()
-      if (auth) {
-        next()
-      } else {
-        if (to.name === "Home") {
-          router.push({ name: "Landing" })
-        } else {
+      let auth = false
+      try {
+        auth = await Auth.check()
+        if (!auth) {
           const error = "Bitte loggen Sie sich ein!"
-          router.push({
+          route = {
             name: "Login", params: {
               error
             }
-          })
-
-          store.commit("printError", error)
+          }
+          // store.commit("printError", error)
         }
+      } catch (e) {
+        //Fail silently
+        route = e
       }
     }
-
-    if (!redirect)
-      next()
   }
+
+  if (route) {
+    console.log("Redirecting to", route)
+    next(route)
+  } else
+    next()
 })
 
 export default router

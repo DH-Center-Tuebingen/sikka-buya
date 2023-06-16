@@ -16,7 +16,7 @@
     "test:cypress": "concurrently --kill-others -n \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run test:backend \" \"cd .. && npm run frontend\" \"npm run test:cypress-app\"",
     "test:cypress:run": "concurrently --success first --kill-others  -n  \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run test:backend \"  \"cd .. && npm run frontend\" \"npm run test:cypress-run\"",
     "test:cypress:backend": "grunt backend",
-    "test:cypress-run": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && npx cypress run",
+    "test:cypress-run": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && npx cypress run --browser electron",
     "test:cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open"
   },
   "devDependencies": {
@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "cypress": "^12.12.0",
     "cypress-localstorage-commands": "^2.2.3",
+    "cypress-terminal-report": "^5.2.0",
     "dotenv": "^16.0.3",
     "express": "^4.17.1",
     "graphql": "^16.6.0",

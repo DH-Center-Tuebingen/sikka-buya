@@ -1,14 +1,14 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router/router'
-import I18n from './i18n/i18n'
 import store from "./store"
 import capitalize from 'capitalize';
 import Settings from './settings'
 import { ConfigMixin } from './config'
+import I18n from './i18n/i18n';
+import VueI18n from 'vue-i18n';
 
 async function main() {
-  const i18n = await I18n.load()
 
 
   /**Initializes the settings on the first page visit. */
@@ -33,10 +33,12 @@ async function main() {
 
   registerGlobalComponents()
 
+  I18n.init()
+
   new Vue({
     router,
     store,
-    i18n,
+    i18n: new VueI18n(),
     render: h => h(App)
   }).$mount('#app')
 }

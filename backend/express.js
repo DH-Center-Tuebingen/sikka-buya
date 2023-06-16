@@ -7,6 +7,7 @@ const fs = require("fs")
 const CMS = require('./src/cms.js')
 const Frontend = require('./src/frontend.js')
 const Language = require('./src/language.js')
+const { createSchema } = require('graphql-yoga')
 
 async function start({
     expressPort,
@@ -29,7 +30,7 @@ async function start({
      * GraphQL Imports
      */
     const { graphqlHTTP } = require("express-graphql")
-    const {  makeExecutableSchema } = require('graphql-tools');
+    const { loadFiles } = require('@graphql-tools/load-files')
 
     /**
      * Custom GraphQL Extensions
@@ -41,7 +42,7 @@ async function start({
 
     CMS.init()
 
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
         const app = express()
 
         /**
@@ -98,11 +99,9 @@ async function start({
 
         let geoJSONScalar = GeoJSON.scalarType
 
+        const typeDefs = await loadFiles(path.join(__dirname, "./src/graphql/schema.graphql"))
 
-        const typeDefs = fs.readFileSync(path.join(__dirname, "./src/graphql/schema.graphql"), { encoding: 'utf8', flag: 'r' })
-
-
-        const schema = makeExecutableSchema({
+        const schema = createSchema({
             typeDefs,
             resolvers: {
                 GeoJSON: geoJSONScalar,
