@@ -34,10 +34,15 @@ jobs:
         run: |
           echo "Current System Locale: "
           locale
+
+      - name: Update Packages
+        run: apt update
+
+      - name: Install Firefox and Cypress Dependencies
+        run: apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+        
       # Setup Firefox
-      - uses: browser-actions/setup-firefox@v1
-        with:
-          firefox-version: '100.0'
+      - uses: apt install firefox
       - run: firefox --version
       ## Install Node
       #- name: Use Node.js 16
@@ -70,11 +75,6 @@ jobs:
           DB_PASSWORD:  ${{secrets.POSTGRES_SUPER_PASSWORD}}
           DB_PORT: 5432 # get randomly assigned published port
       # Cypress
-      - name: Update Packages
-        run: apt update
-      - name: Install Cypress Dependencies
-        run: apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-      
       - name: Cypress Run 
         run: npm run test:cypress:run
         working-directory: ./test
