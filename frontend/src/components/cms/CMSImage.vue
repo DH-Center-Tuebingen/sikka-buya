@@ -83,10 +83,14 @@ export default {
   methods: {
     load: async function () {
       if (this.identity) {
-        let result = await Query.raw(
-          `{getImage(identity:"${this.fullIdentity}")}`
-        );
-        this.imageURI = result?.data?.data?.getImage;
+        try {
+          let result = await Query.raw(
+            `{getImage(identity:"${this.fullIdentity}")}`
+          );
+          this.imageURI = result?.data?.data?.getImage;
+        } catch (e) {
+          console.warn(e);
+        }
       } else {
         this.$store.commit(
           'printError',
