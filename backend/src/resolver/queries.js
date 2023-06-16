@@ -56,7 +56,7 @@ const Queries = {
                     name: dirent.name,
                     modified: new Date(fileStat.mtime),
                     created: new Date(fileStat.birthtime),
-                    url: [...path, dirent.name].join("/")
+                    url: "/" + [...path, dirent.name].join("/")
                 }
             })
 
