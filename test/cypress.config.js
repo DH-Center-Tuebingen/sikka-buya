@@ -7,6 +7,9 @@ module.exports = {
   e2e: {
     baseUrl: "http://localhost:8080",
     setupNodeEvents(on, config) {
+
+      require('cypress-terminal-report/src/installLogsPrinter')(on);
+
       // implement node event listeners here
       on("task", {
         async ResetDatabase() {
