@@ -137,7 +137,9 @@
         "create_page": "neue Seite erstellen",
         "landing_page_main_article": "Startseitentext",
         "news": "Neuigkeiten",
-        "Working Papers": "Working Papers"
+        "Working Papers": "Working Papers",
+        "create_text": "Text erstellen",
+        "edit_text": "Text bearbeiten"
     },
     "message": {
         "input_to_filter": "Hier Suchtext eingeben ...",

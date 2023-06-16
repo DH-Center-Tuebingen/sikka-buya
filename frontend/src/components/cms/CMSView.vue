@@ -5,7 +5,7 @@
                 v-if="pageMissing"
                 @click="cms_createAndVisit(group)"
             >
-                <locale path="cms.create_page" />
+                <locale :path="createText ? createText : 'cms.create_page'" />
             </button>
             <button
                 v-else
@@ -14,7 +14,7 @@
                     group
                 }, { include })"
             >
-                <locale path="cms.edit_page" />
+                <locale :path="editText ? editText : 'cms.edit_page'" />
             </button>
         </header>
 
@@ -62,6 +62,8 @@ export default {
         },
         include: { type: Array, default: () => [] },
         exclude: { type: Array, default: () => [] },
+        createText: String,
+        editText: String
     },
     methods: {
         async init() {

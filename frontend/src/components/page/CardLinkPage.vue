@@ -4,6 +4,12 @@
       <h1>
         <locale :path="title" />
       </h1>
+      <CMSView
+        :createText="`cms.create_text`"
+        :editText="`cms.edit-text`"
+        :group="`card-link-page-${sanitize(title)}-description`"
+        class="description"
+      />
       <div class="nav-grid grid">
         <card-link
           v-for="link of links"
@@ -16,7 +22,6 @@
           <locale :path="link.title" />
         </card-link>
 
-        
         <CMSView
           v-for="link in links"
           :key="`description-for-${link.title}`"
@@ -35,7 +40,7 @@ export default {
   components: {
     CardLink,
     Locale,
-    CMSView
+    CMSView,
   },
   props: {
     title: String,
@@ -62,5 +67,9 @@ export default {
 .nav-grid {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 3 * $padding;
+}
+
+.description:not(:empty){
+  margin-bottom: 1em;
 }
 </style>

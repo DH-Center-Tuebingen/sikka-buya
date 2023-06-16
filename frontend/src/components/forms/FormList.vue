@@ -108,13 +108,16 @@ export default {
   // }
 }
 
-.description {
-  font-size: 0.75rem;
-}
 </style>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+
+
+.description {
+  font-size: 0.75rem;
+}
+
 .list {
   position: relative;
   display: flex;
