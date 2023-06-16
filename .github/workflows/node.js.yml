@@ -41,8 +41,6 @@ jobs:
       - name: Install Firefox and Cypress Dependencies
         run: apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
         
-      # Setup Firefox
-      - run: apt install firefox
       ## Install Node
       #- name: Use Node.js 16
        # uses: actions/setup-node@v3
