@@ -1,6 +1,6 @@
 {
     "name": "sikka-buya",
-    "version": "0.3.48",
+    "version": "0.3.49",
     "description": "A digital application for displaying and exploring islamic coinage.",
     "main": "index.js",
     "repository": "git@github.com:Severino/sikka-buya.git",
