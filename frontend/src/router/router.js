@@ -148,7 +148,6 @@ const routes = [
   },
   {
     path: "",
-    name: "CommonMain",
     component: CommonMain,
     children: [
       {
