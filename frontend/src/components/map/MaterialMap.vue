@@ -150,7 +150,7 @@ import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
-import { RangeGraph } from '../../models/timeline/TimelineChart.js';
+import { RangeGraph, LineGraph } from '../../models/timeline/TimelineChart.js';
 import Color from '../../utils/Color';
 
 const queryPrefix = 'map-filter-';
@@ -186,8 +186,7 @@ export default {
       mintTimelineData: [],
       overwriteFilters: {
         yearOfMint: null,
-        mint: selectedMints,
-        excludeFromMapApp: false,
+        mint: selectedMints
       },
       pageInfo: { page: 0, count: 100000 },
       painter: null,
@@ -381,16 +380,19 @@ export default {
         const ranges = Range.fromPointArray(data)
         const graph = new RangeGraph(ranges, { height: height, contextStyles: { fillStyle: Color.Gray } })
 
+        const yMax = data.reduce((acc, val) => Math.max(acc, val.y), 0)
+        const linGraph = new LineGraph(data, { edges: "line", yMax, yOffset: 20, contextStyles: { strokeStyle: "#bbb", lineWidth: 1, strokeLinecap: "round" } })
+
         if (this.$refs.timeline.timelineChart)
-          this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph] })
+          this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph, linGraph] })
       }
 
     },
     getTypePlot: async function (filters) {
-      const points = await Query.raw(`query timelinePlot($filters: TypeFilter){timelinePlotType(filters: $filters) {
+      const points = await Query.raw(`query timelinePlot($filters: TypeFilter, $distinct: String){timelinePlotType(filters: $filters, distinct: $distinct) {
   x
   y
-}}`, { filters })
+}}`, { filters, distinct: "mint" })
 
       return points.data.data.timelinePlotType
 

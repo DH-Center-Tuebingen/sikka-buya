@@ -573,7 +573,7 @@ class Type {
         return { types: result, pageInfo }
     }
 
-    static async yearPlot({ filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null } = {}, context) {
+    static async yearPlot({ distinct = "id", filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null } = {}, context) {
 
         // If we plot the year and we have a filter set as yearOfint
         // it doesn't make sense, therefore we delete it.
@@ -592,7 +592,7 @@ class Type {
         const query = `
             SELECT 
                 t.year_of_mint,
-                COUNT(t.id) as count
+                COUNT(DISTINCT t.${distinct.replaceAll(/\s+/g, "")}) as count
             FROM type t 
             ${JOINS}
             ${WHERE}
