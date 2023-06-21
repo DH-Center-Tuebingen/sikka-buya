@@ -5,7 +5,6 @@
       v-if="showDebugWindow"
     >
       <h3>Debug-Window</h3>
-      <pre>{{ selectedUnavailableRulers }}</pre>
     </div>
 
     <Sidebar>
@@ -748,6 +747,17 @@ export default {
       this.availableRulers = Object.values(this.rulers).sort(
         Sort.stringPropAlphabetically('shortName')
       );
+
+      // We remove the heirs from the list if timeline is deactivated,
+      // as they are not displayed there.
+      if(this.timelineActive == false){
+        this.availableRulers.filter(p => {
+          const role = p.role
+          if(role){
+            return role.name !== "heir"
+          }else return true
+        })
+      }
 
       /**
        * If a ruler is selected but not in the timeline anymore:
