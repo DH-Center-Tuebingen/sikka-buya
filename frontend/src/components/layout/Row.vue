@@ -16,6 +16,10 @@ export default {
   flex-direction: row-reverse;
 }
 
+.row.align-start {
+  justify-items: flex-start;
+}
+
 .row.align-end {
   justify-items: flex-end;
 }

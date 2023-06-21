@@ -15,6 +15,7 @@ export default function (storage, urlParamsConfig) {
             return {
                 catalog_filter_mixin_initData: {},
                 catalog_filter_mixin_filterMode: {},
+                catalog_filter_mixin_activeFilters: [],
                 catalog_filter_mixin_filterActive: false
             }
         },
@@ -85,9 +86,9 @@ export default function (storage, urlParamsConfig) {
                 localStorage.setItem(storage, JSON.stringify(data))
             },
             catalog_filter_mixin_updateActive(catalogFilterRef, excludedKeys = []) {
-                const catalogFilters = Object.keys(
+                const catalogFilters = Object.entries(
                     catalogFilterRef.activeFilters
-                ).filter((key) => {
+                ).filter(([key]) => {
                     if (excludedKeys.indexOf(key) != -1) {
                         return false;
                     }
@@ -95,6 +96,7 @@ export default function (storage, urlParamsConfig) {
                     return true;
                 });
 
+                this.catalog_filter_mixin_activeFilters = catalogFilters.map(([key, value]) => ({ key, value }))
                 this.catalog_filter_mixin_filterActive = catalogFilters.length > 0
             }
         }

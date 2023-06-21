@@ -88,7 +88,7 @@
           :text="input.text"
           v-model="filters[searchVariableName(input.name)]"
           @select="(el) => selectFilter(input.name, el)"
-          @remove="(el, index) => removeFilter(input.name, el, index)"
+          @remove="(el, index) => removeFilterItem(input.name, el, index)"
           @change-mode="() => dataSelectToggled(input)"
           @dynamic-change="() => $emit('dynamic-change')"
         />
@@ -108,9 +108,9 @@
           :mode="filterMode[input.name]"
           @add="() => addToFilterList(input.name)"
           @select="(value, idx) => selectFilter(input.name, value, idx)"
-          @remove="(el, idx) => removeFilter(input.name, el, idx)"
+          @remove="(el, idx) => removeFilterItem(input.name, el, idx)"
           @dynamic-change="() => $emit('dynamic-change')"
-          @remove-group="(idx) => removeFilterGroup(input.name, idx)"
+          @remove-group="(idx) => removeFilterItemGroup(input.name, idx)"
           @change-mode="() => dataSelectToggled(input)"
         />
       </labeled-input-container>
@@ -435,7 +435,7 @@ export default {
 
       this.multiSelectFilters.forEach(({ name }) => {
         if (filters[name]) {
-          if(this.filterMode?.[name].toLowerCase() === 'and') {
+          if (this.filterMode?.[name].toLowerCase() === 'and') {
             filters[name + '_and'] = filters[name].map((el) => el.id);
             delete filters[name];
           } else {
@@ -477,7 +477,7 @@ export default {
         ...filters[FilterType.buttonGroup],
         ...filters[FilterType.number],
       ].forEach((item) => {
-        this.$set(this.filters, item.name, item.defaultValue || null);
+        this.resetFilter(item.name)
       });
 
       [...filters[FilterType.multiSelect]].forEach((filter) => {
@@ -532,7 +532,19 @@ export default {
       );
       return this[methodName](target, idx);
     },
-    removeFilter(name, target, index) {
+    resetFilter(name) {
+      let item = filterNameMap[name];
+      if (!item) console.error(`Filter ${name} not found`)
+      else {
+        const active = this.activeFilters[name];
+      console.log(item)
+
+        if (active !== undefined)
+          this.$set(this.filters, name, item.defaultValue || null);
+      }
+
+    },
+    removeFilterItem(name, target, index) {
       const methodName = this._getMethodFromFilter(
         'removeMethodName',
         name,
@@ -540,7 +552,7 @@ export default {
       );
       return this[methodName](target, index);
     },
-    removeFilterGroup(name, idx) {
+    removeFilterItemGroup(name, idx) {
       this.filters[name].splice(idx, 1);
     },
     addToFilterList(name) {

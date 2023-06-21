@@ -44,6 +44,7 @@
         "add": "hinzufügen"
     },
     "property": {
+        "plain_text": "Text",
         "material": "Material | Materialien",
         "coin_mark": "Münz- und Beizeichen | Münz- und Beizeichen",
         "mint": "Prägeort | Prägeorte",
@@ -128,9 +129,6 @@
     "events": {
         "copied": "Kopiert!"
     },
-    "catalog": {
-        "reset_filters": "Filter zurücksetzen"
-    },
     "cms": {
         "bibliography": "Bibliographie",
         "contact_page": "Kontakt",
@@ -142,6 +140,9 @@
         "edit_text": "Text bearbeiten"
     },
     "message": {
+        "listed_filters_are_active": "aktive Filter:",
+        "reset_all_filters": "alle Filter zurücksetzen",
+        "no_filter_active": "Keine Filter aktiv",
         "input_to_filter": "Hier Suchtext eingeben ...",
         "list_empty": "Keine Elemente in Liste",
         "initial_setup_info": "Dies ist die Seite für die Ersteinrichtung. Geben Sie den Benutzernamen und das Passwort für den Superuser ein. Sobald der Superuser eingerichtet ist, wird diese Seite nicht mehr zugänglich sein!"

@@ -169,9 +169,30 @@ const _filterConfig = {
 }
 
 
+function getDefaultValueByFilterType(type) {
+    switch (type) {
+        case FilterType.text:
+            return "";
+        case FilterType.number:
+            return 0;
+        case FilterType.buttonGroup:
+            return null;
+        case FilterType.threeWay:
+            return null;
+        case FilterType.multiSelect:
+            return [];
+        case FilterType.multiSelect2D:
+            return [[]];
+        default:
+            throw new Error("No default value for filter type " + type)
+    }
+
+}
+
 export const filterConfig = Object.entries(_filterConfig).reduce((acc, [typeName, types]) => {
     acc[typeName] = types.map((filter) => {
         filter.type = typeName;
+        filter.defaultValue = filter.defaultValue || getDefaultValueByFilterType(typeName);
         return filter;
     });
     return acc;
