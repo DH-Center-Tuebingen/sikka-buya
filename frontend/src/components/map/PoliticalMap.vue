@@ -176,7 +176,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
-import { RangeGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
+import { RangeGraph, HorizontalLinesGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();
@@ -453,7 +453,6 @@ export default {
         let graphs = []
         if (this.selectedMints.length > 0 && this.selectedRulers.length > 0) {
           const rulerGraphs = await this.drawRulersOntoTimeline(true);
-
           const mintGraphs = await this.drawMintCountOntoTimeline(
             rulerGraphs.map((graph) => graph.data)
           );
@@ -498,31 +497,9 @@ export default {
         timelineRuledBy,
       } = result.data.data
 
-
-      // const minMaxGraphs = rulerPointArrays.map(({ ruler, data }) => {
-      //   const minmax = data.reduce((prev, cur) => {
-      //     if (cur.x < prev.min) prev.min = cur.x
-      //     if (cur.x > prev.max) prev.max = cur.x
-      //     return prev
-      //   }, { min: Infinity, max: -Infinity })
-      // const graph = new LineGraph(data, { height: 100, contextStyles: { strokeStyle: ruler.color, lineWidth: 5, lineCap: 'butt' } })
-      //   return { ...minmax, graph }
-      // })
-
-      // const graphs = minMaxGraphs.sort((a, b) => {
-      //   const aLen = a.max - a.min
-      //   const bLen = b.max - b.min
-
-      //   const lenDiff = bLen - aLen
-      //   if (lenDiff != 0) return lenDiff
-      //   else return b.min - a.min
-      // }).map(({ graph }, index) => {
-      //   graph.y = (index + 1) * 10
-      //   return graph
-      // })
-
       const graphs = []
       let max = 0
+      const yOffset = 20
       if (drawAsHorizontals) {
         const lineHeight = 5;
         const padding = Math.ceil(lineHeight / 2);
@@ -544,8 +521,6 @@ export default {
           );
         });
 
-        console.log(allSelectedRulerRanges)
-
         allSelectedRulerRanges.forEach((rangeObj, index) => {
           graphs.push(new StackedRanges(rangeObj.range, { y: (lineHeight + padding) * (index + 1), contextStyles: { strokeStyle: rangeObj.ruler.color, lineWidth: lineHeight } }))
         });
@@ -553,7 +528,7 @@ export default {
         ruledMintCount.forEach(({ ruler, data }) => {
           //TODO: Normally data should be delivered in a irdered fasion
           data = data.sort((a, b) => a.x - b.x)
-          let graph = new LineGraph(data, { yOffset: 20, contextStyles: { strokeStyle: ruler.color, lineWidth: 2 } })
+          let graph = new LineGraph(data, { yOffset, contextStyles: { strokeStyle: ruler.color, lineWidth: 2 } })
           const graphMax = data.reduce((prev, cur) => {
 
             if (cur.y > prev) prev = cur.y
@@ -568,7 +543,22 @@ export default {
         graphs.forEach((graph) => {
           graph.set("yMax", max)
         })
+
+        //// This was for creating horizontal lines to make the
+        //// line graph easier to undertand. But it adds too 
+        //// much clutter to the graph.
+
+        // const horizontals = []
+        // const step = Math.ceil(max / 6)
+        // for (let i = step; i <= max; i+=step) {
+        //   horizontals.push({ x: 0, y: i })
+        // }
+        // let horizontalGraph = new HorizontalLinesGraph(horizontals, { yOffset, yMax: max, contextStyles: { strokeStyle: "#e3e3e3", lineWidth: 1 } })
+
+        // graphs.unshift(horizontalGraph)
+
       }
+
 
       const andGraph = []
       if (this.selectedRulers.length > 1) {
@@ -750,12 +740,12 @@ export default {
 
       // We remove the heirs from the list if timeline is deactivated,
       // as they are not displayed there.
-      if(this.timelineActive == false){
+      if (this.timelineActive == false) {
         this.availableRulers.filter(p => {
           const role = p.role
-          if(role){
+          if (role) {
             return role.name !== "heir"
-          }else return true
+          } else return true
         })
       }
 

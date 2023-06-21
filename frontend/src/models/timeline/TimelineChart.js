@@ -23,7 +23,13 @@ class Chart {
 }
 
 export class Graph {
-    draw(context, data) {
+
+    constructor(data, { contextStyles = {} } = {}) {
+        this.data = data
+        this.contextStyles = contextStyles
+    }
+
+    draw(context) {
         this.joinStyles(context)
     }
 
@@ -39,15 +45,43 @@ export class Graph {
     }
 }
 
-export class LineGraph extends Graph {
 
-    constructor(data, { yMax = 0, yOffset = 0, edges = "drop", contextStyles = {} } = {}) {
-        super()
+export class YGraph extends Graph {
+    constructor(data, { yMax = 0, yOffset = 0, contextStyles = {} } = {}) {
+        super(data, { contextStyles })
         this.yMax = yMax
         this.yOffset = yOffset
+    }
+
+    get yOptions() {
+        return { max: this.yMax, offset: this.yOffset }
+    }
+
+    y(chart, value) {
+        return chart.y(value, this.yOptions)
+    }
+
+}
+
+export class HorizontalLinesGraph extends YGraph {
+
+    draw(context, chart) {
+        super.draw(context, chart)
+
+        this.data.forEach(({ y } = {}) => {
+            context.beginPath();
+            context.moveTo(0, this.y(chart, y))
+            context.lineTo(chart.canvas.width, this.y(chart, y))
+            context.stroke()
+        })
+    }
+}
+
+export class LineGraph extends YGraph {
+
+    constructor(data, { yMax = 0, yOffset = 0, edges = "drop", contextStyles = {} } = {}) {
+        super(data, { yMax, yOffset, contextStyles })
         this.edges = edges
-        this.data = data
-        this.contextStyles = contextStyles
     }
 
     set(name, value) {
@@ -55,9 +89,6 @@ export class LineGraph extends Graph {
         return this
     }
 
-    get yOptions() {
-        return { max: this.yMax, offset: this.yOffset }
-    }
 
     draw(context, chart) {
         super.draw(context, chart)
@@ -102,9 +133,7 @@ export class LineGraph extends Graph {
 export class RangeGraph extends Graph {
 
     constructor(data, { contextStyles = {} } = {}) {
-        super()
-        this.data = data
-        this.contextStyles = contextStyles
+        super(data, { contextStyles })
     }
 
     draw(context, chart) {
@@ -125,10 +154,8 @@ export class RangeGraph extends Graph {
 export class StackedRanges extends Graph {
 
     constructor(data, { y = 0, contextStyles = {} } = {}) {
-        super()
+        super(data, { contextStyles })
         this.y = y
-        this.data = data
-        this.contextStyles = contextStyles
     }
 
     draw(context, chart) {
@@ -218,62 +245,8 @@ export default class TimelineChart extends Chart {
         } else if (pos === "end") {
             x = Math.floor(x + halfWidth)
         }
-        // console.table({ in: val, x, timelineSpan, widthPerYear, to: this.timeline.to, from: this.timeline.from })
 
         return x
     }
 
-    // drawRangeRectOnCanvas(data, height, contextStyles) {
-    //     let ctx = this.getContext()
-    //     Object.assign(ctx, contextStyles)
-    //     data.forEach(range => {
-    //         let width = this.x(range[1], "end") - this.x(range[0], "start")
-    //         ctx.fillRect(this.x(range[0], "start"), 0, width, height)
-    //     })
-    // }
-
-
-
-    // drawGraphOnTimeline(data, lineOptions = {}, {
-    //     max = null
-    // } = {}) {
-    //     let ctx = this.canvas.getContext('2d');
-    //     Object.assign(ctx, lineOptions)
-    //     ctx.beginPath();
-
-    //     let curveMax = max;
-    //     let yStep = (this.canvas.height - (lineOptions.lineWidth || 1) - 10) / (curveMax > 0 ? curveMax : 20);
-    //     data = data.sort((a, b) => a.x - b.x)
-    //     let last = null;
-    //     data.forEach(({ x: _x, y: _y }) => {
-    //         if (last && _x - last.x > 1) {
-    //             ctx.lineTo(this.x(last.x), this.y(0));
-    //             last = null;
-    //         }
-
-    //         const x = this.x(_x)
-    //         const y = this.y(_y * yStep)
-    //         const bezier = 0
-
-    //         if (last == null) {
-    //             ctx.moveTo(this.x(_x), this.y(0));
-    //             ctx.lineTo(x, y)
-    //         } else {
-    //             ctx.lineTo(x, y)
-    //             // ctx.bezierCurveTo(this.x(last.x + bezier), this.y(last.y), this.x(_x - bezier), this.y(_y), x, y)
-    //         }
-
-
-
-
-
-
-    //         last = { x: _x, y: _y };
-    //     });
-
-    //     ctx.lineTo(this.x(last.x), this.y(0));
-    //     ctx.stroke();
-    //     ctx.fill();
-    //     ctx.closePath();
-    // }
 }
