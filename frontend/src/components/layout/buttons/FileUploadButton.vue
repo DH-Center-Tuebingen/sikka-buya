@@ -19,7 +19,7 @@
 
 import AsyncButton from './AsyncButton.vue';
 import Button from './Button.vue';
-import iconMixin from '../../mixins/icons'
+import iconMixin from '../../mixins/icon-mixin.js'
 import { mdiLoading } from '@mdi/js';
 
 

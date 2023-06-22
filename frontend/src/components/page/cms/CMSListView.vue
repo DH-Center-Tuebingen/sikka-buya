@@ -5,7 +5,7 @@
         </h2>
         <Button
             v-if="$store.getters.canEdit"
-            @click="() => cms_createAndVisit(this.group, { include: this.include })"
+            @click="() => cms_mixin_createAndVisit(this.group, { include: this.include })"
         >Neuer Eintrag</Button>
         <div class="list">
             <CMSListItem
@@ -24,14 +24,13 @@
 <script>
 import Button from '../../layout/buttons/Button.vue';
 import CMSListItem from '../../cms/CMSListItem.vue';
-import CMSMixin from "../../mixins/cms"
+import CMSMixin from "../../mixins/cms-mixin"
 import Locale from '../../cms/Locale.vue';
-import TimeMixin from '../../mixins/time';
 
 
 export default {
     components: { Button, CMSListItem, Locale },
-    mixins: [CMSMixin, TimeMixin],
+    mixins: [CMSMixin],
     props: {
         showTime: { type: Boolean, default: true },
         include: Array,
@@ -50,7 +49,7 @@ export default {
             await this.update()
         },
         update: async function () {
-            this.pages = await this.cms_list(this.group)
+            this.pages = await this.cms_mixin_list(this.group)
         }
     }
 };

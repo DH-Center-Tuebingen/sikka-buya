@@ -10,7 +10,7 @@
 
 <script>
 import Plus from 'vue-material-design-icons/Plus';
-import IconsMixin from '../mixins/icons';
+import IconsMixin from '../mixins/icon-mixin.js';
 import { mdiPlus } from '@mdi/js';
 
 export default {

@@ -167,7 +167,7 @@ import CardLink from '../navigation/CardLink.vue';
 import PageFooter from './PageFooter.vue';
 import CMSView from '../cms/CMSView.vue';
 import CMSListView from './cms/CMSListView.vue';
-import iconMixin from "../mixins/icons"
+import iconMixin from "../mixins/icon-mixin.js"
 import { mdiMagnify } from '@mdi/js/mdi';
 
 

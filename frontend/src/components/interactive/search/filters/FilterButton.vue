@@ -12,7 +12,7 @@
 <script>
 import { mdiClose } from '@mdi/js';
 import Button from '../../../layout/buttons/Button.vue';
-import icons from '../../../mixins/icons';
+import icons from '../../../mixins/icon-mixin.js';
 
 export default {
     components: { Button },

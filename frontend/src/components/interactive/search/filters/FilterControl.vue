@@ -42,7 +42,7 @@
 import { mdiFilter, mdiFilterOff, mdiFilterOutline } from '@mdi/js';
 
 import FilterButton from './FilterButton.vue';
-import icons from '../../../mixins/icons';
+import icons from '../../../mixins/icon-mixin.js';
 import Locale from '../../../cms/Locale.vue';
 export default {
     mixins: [icons({ filter: mdiFilter, noFilter: mdiFilterOutline, filterOff: mdiFilterOff })],

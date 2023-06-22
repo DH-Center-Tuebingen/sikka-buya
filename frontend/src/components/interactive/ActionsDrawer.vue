@@ -1,5 +1,5 @@
 <template>
-    <div class="action-drawer">
+    <div class="actions-drawer">
         <div
             class="activator"
             @click="() => open = !open"
@@ -30,7 +30,7 @@
 <script>
 
 
-import iconMixin from '@/components/mixins/icons';
+import iconMixin from '@/components/mixins/icon-mixin.js';
 import { mdiDotsVertical  } from '@mdi/js/mdi'
 
 export default {
@@ -80,7 +80,7 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-.action-drawer {
+.actions-drawer {
     position: relative;
 }
 
@@ -127,6 +127,12 @@ export default {
 .actions-list-right {
     left: auto;
     right: 0;
+    transform: translate(0, -100%);
+}
+
+.actions-list-left {
+    left: auto;
+    left: 0;
     transform: translate(0, -100%);
 }
 </style>

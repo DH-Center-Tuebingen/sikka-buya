@@ -152,7 +152,7 @@ import Slideshow from './slideshow/Slideshow.vue';
 import Timeline from './timeline/Timeline.vue';
 import TimelineChart from '../../models/timeline/TimelineChart';
 
-import icons from "@/components/mixins/icons.js"
+import icons from "@/components/mixins//icon-mixin.js"
 
 
 let slideshowSettings = new Settings(window, 'Slideshow');

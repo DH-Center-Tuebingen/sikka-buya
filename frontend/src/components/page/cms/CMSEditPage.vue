@@ -2,10 +2,21 @@
   <div class="page cms-page">
     <section class="content-wrapper">
 
-    
       <h2>
         <Locale :path="`cms.${this.group}`" />
       </h2>
+
+
+      <CMSEditToolbar
+        v-if="editmode"
+        :dirty="prevent_navigation_mixin_isDirty"
+        :saving="saving"
+        :page="page"
+        @save="save"
+        @publish="publish"
+        @updatePage="updatePage"
+      />
+
 
       <template v-show="!loading">
         <div
@@ -14,15 +25,15 @@
         >
           <div class="cell">
             <label for="">Erstellt am</label>
-            {{ timeMixinFormatDate(page.createdTimestamp) }}
+            {{ time_mixin_formatDate(page.createdTimestamp) }}
           </div>
           <div class="cell">
             <label for="">Zuletzt geändert am</label>
-            {{ timeMixinFormatDate(page.modifiedTimestamp) }}
+            {{ time_mixin_formatDate(page.modifiedTimestamp) }}
           </div>
           <div class="cell">
             <label for="">Veröffentlicht am</label>
-            {{ timeMixinFormatDate(page.publishedTimestamp) }}
+            {{ time_mixin_formatDate(page.publishedTimestamp) }}
           </div>
         </div>
         <h1
@@ -38,7 +49,6 @@
         </h1>
 
         <h2
-          class="subtitle"
           v-show="hasSubtitle"
           :contenteditable="editmode"
           @input="update"
@@ -90,23 +100,25 @@
 </template>
 
 <script>
-import Query from '../../../database/query';
-import CMSPage from '../../../models/CMSPage';
+// Components
 import AsyncButton from '../../layout/buttons/AsyncButton.vue';
-import CMSStatusIndicator from './CMSStatusIndicator.vue';
+import CMSEditToolbar from '../../cms/CMSEditToolbar.vue';
+import CMSPage from '../../../models/CMSPage';
+import Locale from '../../cms/Locale.vue';
 import SimpleFormattedField from '../../forms/SimpleFormattedField.vue';
 
-import CMSConfig from '../../../../cms.config';
-import Locale from '../../cms/Locale.vue';
-
-import TimeMixin from '../../mixins/time';
+// Mixins
+import TimeMixin from '../../mixins/time-mixin';
 import CopyAndPasteMixin from '../../mixins/copy-and-paste';
 import MountedAndLoadedMixin from '../../mixins/mounted-and-loaded';
 import PreventNavigationMixin from '../../mixins/prevent-navigation-mixin';
-import LoadingSpinner from '../../misc/LoadingSpinner.vue';
+
+// Utilities
+import CMSConfig from '../../../../cms.config';
+import Query from '../../../database/query';
 
 export default {
-  components: { CMSStatusIndicator, AsyncButton, SimpleFormattedField, Locale, LoadingSpinner },
+  components: { AsyncButton, SimpleFormattedField, Locale, CMSEditToolbar },
   mixins: [TimeMixin, MountedAndLoadedMixin, CopyAndPasteMixin, PreventNavigationMixin],
   mounted() {
     CMSPage.get(this.id)
@@ -186,6 +198,11 @@ export default {
 
       return true;
     },
+    updatePage(key, value) {
+      this.page[key] = value;
+      console.log(this.time_mixin_timestampToDateInputValue(this.page[key]));
+      this.prevent_navigation_mixin_setDirty()
+    },
     async handleSpecialKeys($event, block) {
       if ($event.key === 'Enter') {
         $event.preventDefault();
@@ -263,24 +280,34 @@ export default {
 
       this.prevent_navigation_mixin_setDirty()
     },
-    async save() {
+    async publish(publish = true) {
+      const publishedTimestamp = publish ? new Date().getTime().toString() : null
+      // We override the modifiedTimestamp to exclude the 'publishing'
+      // to be considered as a modification.
+      await this.save({ publishedTimestamp, modifiedTimestamp: this.page.modifiedTimestamp })
+      this.page.publishedTimestamp = publishedTimestamp
+    },
+    async save(override = {}) {
+      const choose = (name) => override[name] || this.page[name]
       const page = {
-        title: this.page.title,
-        subtitle: this.page.subtitle,
-        summary: this.page.summary,
-        body: this.page.body,
-        image: this.page.image,
-        createdTimestamp: this.page.createdTimestamp,
-        publishedTimestamp: this.page.publishedTimestamp,
-        modifiedTimestamp: this.page.modifiedTimestamp,
+        title: choose("title"),
+        subtitle: choose("subtitle"),
+        summary: choose("summary"),
+        body: choose("body"),
+        image: choose("image"),
+        createdTimestamp: choose("createdTimestamp"),
+        publishedTimestamp: choose("publishedTimestamp"),
+        modifiedTimestamp: choose("modifiedTimestamp"),
       };
+
+      console.log(this.time_mixin_timestampToDateInputValue(page.publishedTimestamp), this.time_mixin_timestampToDateInputValue(this.page.publishedTimestamp))
 
       this.saving = true;
       await CMSPage.update(this.id, page);
       await (async function (ts) {
         return new Promise(resolve => setTimeout(resolve, ts))
       })(3000)
-      
+
       this.prevent_navigation_mixin_setClean()
       this.saving = false;
     },
@@ -379,6 +406,10 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
     display: flex;
     flex-direction: row-reverse;
   }
+}
+
+.cms-edit-toolbar {
+  margin-top: $padding;
 }
 
 .page {

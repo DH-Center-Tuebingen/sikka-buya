@@ -28,7 +28,9 @@
         }
     },
     "general": {
+        "add": "hinzufügen",
         "and": "und",
+        "cooperations": "Kooperationen",
         "delete": "löschen",
         "edit": "bearbeiten",
         "filter_active": "Filter aktiv",
@@ -36,12 +38,15 @@
         "or": "oder",
         "publish": "veröffentlichen",
         "reset_filter": "Filter aufheben",
+        "save": "speichern",
         "search": "Suchen",
         "settings": "Einstellungen",
         "share": "Teilen",
-        "cooperations": "Kooperationen",
         "user": "Nutzer",
-        "add": "hinzufügen"
+        "published": "veröffentlicht",
+        "saved": "gespeichert",
+        "saving": "speichern",
+        "scheduled": "geplant"
     },
     "property": {
         "plain_text": "Text",
@@ -236,8 +241,9 @@
         }
     },
     "time": {
-        "created_date": "erstellt am",
-        "published_date": "veröffentlicht am"
+        "created": "erstellt am",
+        "last_modified": "zuletzt geändert am",
+        "published": "veröffentlicht am"
     },
     "custom": {
         "fint": {
