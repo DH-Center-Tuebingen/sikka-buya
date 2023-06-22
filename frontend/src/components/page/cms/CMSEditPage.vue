@@ -1,6 +1,8 @@
 <template>
   <div class="page cms-page">
     <section class="content-wrapper">
+
+    
       <h2>
         <Locale :path="`cms.${this.group}`" />
       </h2>
@@ -81,31 +83,7 @@
         </div>
       </section> -->
       </template>
-      <div class="toolbar">
-        <div class="toolbar-inner content-wrapper">
-          <CMSStatusIndicator
-            :dirty="dirty"
-            :pending="saving"
-          />
-          <AsyncButton
-            v-if="editmode"
-            @click="save()"
-            :loading="saving"
-            :disabled="saving || !dirty"
-          >
-            Speichern
-          </AsyncButton>
-          <!-- <AsyncButton
-            v-else
-            @click="editmode = true"
-            :loading="loading"
-            :disabled="loading"
-          >
-            Bearbeiten
-          </AsyncButton> -->
 
-        </div>
-      </div>
 
     </section>
   </div>
@@ -124,13 +102,12 @@ import Locale from '../../cms/Locale.vue';
 import TimeMixin from '../../mixins/time';
 import CopyAndPasteMixin from '../../mixins/copy-and-paste';
 import MountedAndLoadedMixin from '../../mixins/mounted-and-loaded';
+import PreventNavigationMixin from '../../mixins/prevent-navigation-mixin';
 import LoadingSpinner from '../../misc/LoadingSpinner.vue';
-
-
 
 export default {
   components: { CMSStatusIndicator, AsyncButton, SimpleFormattedField, Locale, LoadingSpinner },
-  mixins: [TimeMixin, MountedAndLoadedMixin, CopyAndPasteMixin],
+  mixins: [TimeMixin, MountedAndLoadedMixin, CopyAndPasteMixin, PreventNavigationMixin],
   mounted() {
     CMSPage.get(this.id)
       .then((page) => {
@@ -145,18 +122,12 @@ export default {
     this.$nextTick(() => {
       this.implementedContenteditableRefs.forEach(ref => {
         console.log(ref);
-        this.initPastePlainText
+        this.initPastePlainText(ref)
       })
     })
   },
   beforeDestroy() {
     [this.$refs["title"], this.$refs["subtitle"]].forEach(this.cleanupPastePlainText)
-  },
-  beforeRouteLeave(to, from, next) {
-    if (this.dirty) {
-      const answer = window.confirm('You have unsaved changes. Are you sure you want to leave?');
-      return answer;
-    } else next()
   },
   props: {
     useBlocks: Boolean,
@@ -173,7 +144,6 @@ export default {
   },
   data() {
     return {
-      dirty: false,
       updateBuffer: null,
       allowLinks: true,
       loading: true,
@@ -275,7 +245,7 @@ export default {
     },
     updateFormattedField(property, value) {
       this.page[property] = this.$refs[property].getContent();
-      this.dirty = true;
+      this.prevent_navigation_mixin_setDirty()
     },
     update($event) {
       const target = $event.currentTarget;
@@ -291,7 +261,7 @@ export default {
         }
       }
 
-      this.dirty = true;
+      this.prevent_navigation_mixin_setDirty()
     },
     async save() {
       const page = {
@@ -310,7 +280,8 @@ export default {
       await (async function (ts) {
         return new Promise(resolve => setTimeout(resolve, ts))
       })(3000)
-      this.dirty = false;
+      
+      this.prevent_navigation_mixin_setClean()
       this.saving = false;
     },
     async addEmptyBlock() {
@@ -360,7 +331,7 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
     implementedContenteditables() {
       return ['title', 'subtitle']
     },
-    implementedFields(){
+    implementedFields() {
       return ['title', 'subtitle', 'body']
     },
     id() {
@@ -393,14 +364,15 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
 
 <style lang="scss" scoped>
 .toolbar {
-  position: fixed;
+  position: sticky;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  background-color: $light-gray;
+  background-color: whitesmoke;
   padding: $padding;
-  box-shadow: 0 0 $shadow-spread $strong-shadow-color;
+  margin-top: 2em;
+  // box-shadow: 0 0 $shadow-spread $strong-shadow-color;
 
   >* {
 
@@ -411,6 +383,11 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
 
 .page {
   margin-bottom: $page-bottom-spacing;
+  display: flex;
+
+  .content-wrapper {
+    flex: 1;
+  }
 }
 
 h1 {

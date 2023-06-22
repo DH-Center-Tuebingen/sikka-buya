@@ -64,8 +64,12 @@ export default {
             }
         },
         remove: async function (id) {
-            await this.cms_delete(id)
-            this.$emit("deleted")
+
+            const consent = confirm("Are you sure you want to delete this item?")
+            if (consent) {
+                await this.cms_delete(id)
+                this.$emit("deleted")
+            }
         }
     }
 };
