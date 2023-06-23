@@ -4,6 +4,7 @@
         :class="{ clean: !dirty, saving }"
     >
         <CMSStatusIndicator
+            
             :dirty="dirty"
             :pending="saving"
         />
@@ -11,7 +12,7 @@
             <slot />
         </div>
         <div class="stats">
-            <span>
+            <!-- <span>
                 <b>
                     <Locale path="time.created" />:
                 </b> {{ time_mixin_formatDate(page.createdTimestamp) }}
@@ -20,19 +21,9 @@
                 <b>
                     <Locale path="time.last_modified" />:
                 </b> {{ time_mixin_formatDate(page.modifiedTimestamp) }}
-            </span>
-            <span>
-                <b>
-                    <Locale path="time.published" />:
-                </b>
-                <input
-                    type="date"
-                    :value="time_mixin_timestampToDateInputValue(page.publishedTimestamp)"
-                    @input="updatePublished"
-                >
-            </span>
-        </div>
+            </span> -->
 
+        </div>
 
         <AsyncButton
             v-if="!published"
@@ -41,78 +32,71 @@
         >
             <Locale path="general.publish" />
         </AsyncButton>
-        <AsyncButton
-            class="scheduled-indicator"
-            @click="() => $emit('publish', false)"
-            :loading="saving"
-            v-else-if="scheduled"
-        >
-            <Icon
-                :path="icons.clock"
-                type="mdi"
-                :size="16"
-            />
-            <Locale path="general.scheduled" />
-        </AsyncButton>
-        <AsyncButton
-            class="published-indicator"
-            @click="() => $emit('publish', false)"
-            :loading="saving"
-            v-else
-        >
-            <Icon
-                :path="icons.published"
-                type="mdi"
-                :size="16"
-            />
-            <Locale path="general.published" />
-        </AsyncButton>
 
-        <AsyncButton
-            v-if="canSave"
-            @click="() => $emit('save')"
-            :loading="saving"
-        >
-            <Locale path="general.save" />
-        </AsyncButton>
+        <template v-if="canSave">
+            <div
+                v-if="autoSave"
+                class="save-indicator save-indicator-auto-save"
+            >
+                <Locale path="general.auto-save" />
+            </div>
+            <AsyncButton
+                v-else
+                @click="() => $emit('save')"
+                :loading="saving"
+            >
+                <Locale path="general.save" />
+            </AsyncButton>
+        </template>
         <div
             v-else-if="saving"
-            class="saving-indicator"
+            class="save-indicator save-indicator-saving"
         >
             <Locale path="general.saving" /> ...
         </div>
         <div
             v-else
-            class="saved-indicator"
+            class="save-indicator save-indicator-saved"
         >
             <Locale path="general.saved" />
-
         </div>
+        <ActionsDrawer
+            v-if="actions.length > 0"
+            :actions="actions"
+            @select="(action) => $emit('action', action)"
+            align="right"
+        />
 
 
     </div>
 </template>
 
 <script>
-import Locale from '../cms/Locale.vue';
-import CMSStatusIndicator from '../page/cms/CMSStatusIndicator.vue';
+//Components
+import ActionsDrawer from '../interactive/ActionsDrawer.vue';
 import AsyncButton from '../layout/buttons/AsyncButton.vue';
+import CMSStatusIndicator from '../page/cms/CMSStatusIndicator.vue';
+import Locale from '../cms/Locale.vue';
 
 // Mixins
 import time from '../mixins/time-mixin';
 import iconMixin from '../mixins/icon-mixin';
 
-//icon-mixin.js
-import { mdiNewspaperVariant, mdiCheck, mdiClockOutline } from '@mdi/js';
+// Icons
+import { mdiClockOutline, mdiClockRemoveOutline } from '@mdi/js';
 
 export default {
-    mixins: [time, iconMixin({ published: mdiNewspaperVariant, check: mdiCheck, clock: mdiClockOutline })],
+    mixins: [time, iconMixin({ clock: mdiClockOutline, removeClock: mdiClockRemoveOutline })],
     components: {
+        ActionsDrawer,
         AsyncButton,
         CMSStatusIndicator,
         Locale,
     },
+
     props: {
+        publishedTimestamp: Number,
+        autoSave: Boolean,
         saving: { required: true, type: Boolean },
         dirty: { required: true, type: Boolean },
         page: { required: true, type: Object }
@@ -128,11 +112,19 @@ export default {
             return this.dirty && !this.saving
         },
         published() {
-            return this.page.publishedTimestamp !== null && this.page.publishedTimestamp !== "0";
+            return this.publishedTimestamp;
         },
-        scheduled() {
-            return this.page.publishedTimestamp !== null && this.page.publishedTimestamp !== "0" && this.page.publishedTimestamp > Date.now();
-        },
+        actions() {
+            const options = []
+
+            const autoSaveAction = (this.autoSave) ? { name: "disable-auto-save", label: "cms.disable-auto-save" } : { name: "enable-auto-save", label: "cms.enable-auto-save" }
+            const publishAction = (this.published) ? { name: "unpublish", label: "cms.unpublish" } : { name: "publish", label: "cms.publish" }
+
+            return [
+                autoSaveAction,
+                publishAction
+            ].sort((a, b) => this.$tc(a.label).localeCompare(this.$tc(b.label)))
+        }
     }
 };
 </script>
@@ -153,9 +145,7 @@ export default {
         }
     }
 
-    .scheduled-indicator,
-    .saved-indicator,
-    .saving-indicator {
+    .save-indicator {
         display: flex;
         align-items: center;
         border-radius: $border-radius;
@@ -179,19 +169,32 @@ export default {
     z-index: 1000;
     top: $padding;
     display: flex;
-    padding: $padding;
+    align-items: center;
+    padding: math.div($padding, 2) $padding;
     gap: $padding;
 
-    background-color: $dark-white;
-    border: 1px solid $red;
-    border-radius: $border-radius;
+    background-color: whitesmoke;
+    border-bottom: 1px solid $red;
+    // border-radius: $border-radius;
+
+    .save-indicator {
+        color: $red;
+    }
 
     &.clean {
         border-color: $primary-color;
+
+        .save-indicator {
+            color: $primary-color;
+        }
     }
 
     &.saving {
         border-color: $yellow;
+
+        .save-indicator {
+            color: $yellow;
+        }
     }
 }
 
@@ -200,32 +203,21 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-evenly;
+
+    span {
+        display: inline-flex;
+        align-items: center;
+        gap: .5em;
+    }
+
+    svg {
+        cursor: pointer;
+        user-select: none;
+    }
 }
 
 .slot {
     display: flex;
     gap: $padding;
-}
-
-
-
-
-
-
-
-
-.scheduled-indicator {
-    $color: $purple;
-    color: $color;
-    border-color: $color;
-    background-color: transparent;
-}
-
-.published-indicator {
-    background-color: $blue;
-}
-
-.saving-indicator {
-    color: $yellow;
 }
 </style>

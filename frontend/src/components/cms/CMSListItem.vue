@@ -9,6 +9,7 @@
                 <h4 v-if="isPresent('subtitle')">{{ value.subtitle }}</h4>
             </div>
             <div class="misc">
+                <CMSPublicationStatus :value="parseInt(value.publishedTimestamp)" />
                 <span class="date">
                     {{ time_mixin_formatDate(value.publishedTimestamp) || "-" }}
                 </span>
@@ -43,6 +44,7 @@
 // Components
 import ActionsDrawer from "../interactive/ActionsDrawer.vue";
 import Button from '../layout/buttons/Button.vue';
+import CMSPublicationStatus from './CMSPublicationStatus.vue';
 import Locale from "./Locale.vue";
 
 // Mixins
@@ -57,7 +59,8 @@ export default {
     components: {
         ActionsDrawer,
         Button,
-        Locale
+        CMSPublicationStatus,
+        Locale,
     },
     props: {
         showTime: { type: Boolean, default: true },
@@ -145,44 +148,33 @@ h4 {
 .cms-list-item {
     position: relative;
 
-    &.scheduled,
-    &.draft {
-        .misc .date {
+    // &.scheduled,
+    // &.draft {
+    //     .misc .date {
 
 
-            &::before {
-                // position: absolute;
-                // top: 0;
-                // left: 0;
+    //         &::before {
+    //             // position: absolute;
+    //             // top: 0;
+    //             // left: 0;
 
-                font-size: .75rem;
-                font-weight: bold;
+    //             font-size: .75rem;
+    //             font-weight: bold;
 
-                padding: $padding;
-                content: "";
-                text-transform: uppercase;
-            }
-        }
-    }
+    //             padding: $padding;
+    //             content: "";
+    //             text-transform: uppercase;
+    //         }
+    //     }
+    // }
 
 
     &.scheduled {
-
-        border-right: 5px solid $purple;
-
-        .misc .date::before {
-            color: $purple;
-            content: "Scheduled";
-        }
+        border-top: 5px solid $purple;
     }
 
     &.draft {
-        border-right: 5px solid $yellow;
-
-        .misc .date::before {
-            color: $yellow;
-            content: "Draft";
-        }
+        border-top: 5px solid $yellow;
     }
 }
 

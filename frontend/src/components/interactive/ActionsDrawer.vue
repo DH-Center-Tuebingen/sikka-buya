@@ -21,7 +21,7 @@
                 @click="() => select(action.name)"
                 :key="action.name"
             >
-                {{ action.label }}
+                <Locale :path="action.label" />
             </div>
         </div>
     </div>
@@ -30,23 +30,25 @@
 <script>
 
 
+import Locale from '../cms/Locale.vue';
 import iconMixin from '@/components/mixins/icon-mixin.js';
-import { mdiDotsVertical  } from '@mdi/js/mdi'
+import { mdiDotsVertical } from '@mdi/js/mdi'
 
 export default {
+    components: { Locale },
     mixins: [
-        iconMixin({ mdiDotsVertical  })
+        iconMixin({ mdiDotsVertical })
     ],
     data() {
         return {
             open: false
-        }
+        };
     },
     mounted() {
-        this.$root.$on("global-click", this.close)
+        this.$root.$on("global-click", this.close);
     },
     beforeDestroy() {
-        this.$root.$off("global-click", this.close)
+        this.$root.$off("global-click", this.close);
     },
     props: {
         actions: {
@@ -61,21 +63,21 @@ export default {
     },
     methods: {
         select(action) {
-            this.$emit('select', action)
-            this.open = false
+            this.$emit("select", action);
+            this.open = false;
         },
         close(event) {
             // console.log(this.$el.contains(event.target))
             if (!this.$el.contains(event.target)) {
-                this.open = false
+                this.open = false;
             }
         }
     },
     computed: {
         alignClass() {
-            return `actions-list-${this.align}`
+            return `actions-list-${this.align}`;
         }
-    }
+    },
 };
 </script>
 

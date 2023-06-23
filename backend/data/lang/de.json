@@ -46,7 +46,11 @@
         "published": "veröffentlicht",
         "saved": "gespeichert",
         "saving": "speichern",
-        "scheduled": "geplant"
+        "scheduled": "geplant",
+        "draft": "Entwurf",
+        "unpublish": "Publizierung aufheben",
+        "auto-save": "automatisches Speichern",
+        "schedule": "planen"
     },
     "property": {
         "plain_text": "Text",
@@ -142,7 +146,13 @@
         "news": "Neuigkeiten",
         "Working Papers": "Working Papers",
         "create_text": "Text erstellen",
-        "edit_text": "Text bearbeiten"
+        "edit_text": "Text bearbeiten",
+        "unpublish": "Veröffentlichung zurückziehen",
+        "disable-auto-save": "Auto-Save",
+        "enable-auto-save": "Man.Speichern",
+        "auto-save": "auto",
+        "normal-save": "normal",
+        "schedule": "planen"
     },
     "message": {
         "listed_filters_are_active": "aktive Filter:",

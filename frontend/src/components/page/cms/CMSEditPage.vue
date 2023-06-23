@@ -1,21 +1,81 @@
 <template>
-  <div class="page cms-page">
+  <div class="page cms-edit-page">
     <section class="content-wrapper">
 
       <h2>
         <Locale :path="`cms.${this.group}`" />
       </h2>
+      <div class="tools">
 
 
-      <CMSEditToolbar
+        <CMSSaveButton
+          :autoSave="autoSave"
+          :saving="saving"
+          :dirty="prevent_navigation_mixin_isDirty"
+          @changeAutoSave="(val) => autoSave = val"
+          @save="save"
+        />
+
+
+        <HollowButton
+          class="auto-save-button"
+          :class="{ active: autoSave }"
+          @click.native="() => autoSave = !autoSave"
+          :interactive="true"
+        >
+          <Icon
+            type="mdi"
+            :path="(autoSave) ? icons.autoSave : icons.save"
+            :size="16"
+          />
+          <Locale :path="(autoSave) ? 'cms.disable-auto-save' : 'cms.enable-auto-save'" />
+        </HollowButton>
+
+        <Spacer />
+
+        <CMSPublicationInput
+          :value="parseInt(page.publishedTimestamp)"
+          @input="updatePublishedTimestamp"
+        />
+
+
+        <CMSPublicationStatus
+          :value="parseInt(lastPublishedTimestamp)"
+          @click.native="unpublish"
+        />
+
+        <HollowButton
+          v-if="!published"
+          class="publish-button"
+          @click.native="publish"
+          :interactive="true"
+        >
+          <Icon
+            type="mdi"
+            :path="(scheduled) ? icons.clock : icons.publish"
+            :size="16"
+          />
+          <Locale :path="(scheduled) ? 'cms.schedule' : 'general.publish'" />
+        </HollowButton>
+
+
+      </div>
+
+
+
+
+      <!-- <CMSEditToolbar
         v-if="editmode"
+        :autoSave="autoSave"
+        :publishedTimestamp="lastPublishedTimestamp"
         :dirty="prevent_navigation_mixin_isDirty"
         :saving="saving"
         :page="page"
+        @action="execToolbarAction"
         @save="save"
         @publish="publish"
         @updatePage="updatePage"
-      />
+      /> -->
 
 
       <template v-show="!loading">
@@ -102,38 +162,45 @@
 <script>
 // Components
 import AsyncButton from '../../layout/buttons/AsyncButton.vue';
-import CMSEditToolbar from '../../cms/CMSEditToolbar.vue';
+import HollowButton from '../../layout/buttons/HollowButton.vue';
 import CMSPage from '../../../models/CMSPage';
+import CMSPublicationStatus from '../../cms/CMSPublicationStatus.vue';
+import CMSPublicationInput from '../../cms/CMSPublicationInput.vue';
+import CMSSaveButton from '../../cms/CMSSaveButton.vue';
 import Locale from '../../cms/Locale.vue';
 import SimpleFormattedField from '../../forms/SimpleFormattedField.vue';
+import Spacer from '../../layout/Spacer.vue';
 
 // Mixins
-import TimeMixin from '../../mixins/time-mixin';
+import LocalStorageMixin from '../../mixins/local-storage-mixin';
+import IconMixin from '../../mixins/icon-mixin';
 import CopyAndPasteMixin from '../../mixins/copy-and-paste';
 import MountedAndLoadedMixin from '../../mixins/mounted-and-loaded';
 import PreventNavigationMixin from '../../mixins/prevent-navigation-mixin';
+import TimeMixin from '../../mixins/time-mixin';
 
 // Utilities
 import CMSConfig from '../../../../cms.config';
 import Query from '../../../database/query';
+import { InputDelayer } from "../../../models/request-buffer"
+import { mdiPublish, mdiClock, mdiContentSaveOutline, mdiSync } from '@mdi/js';
 
 export default {
-  components: { AsyncButton, SimpleFormattedField, Locale, CMSEditToolbar },
-  mixins: [TimeMixin, MountedAndLoadedMixin, CopyAndPasteMixin, PreventNavigationMixin],
+  components: {
+    AsyncButton,
+    CMSPublicationStatus,
+    CMSSaveButton,
+    HollowButton,
+    Locale, CMSPublicationInput,
+    SimpleFormattedField,
+    Spacer,
+  },
+  mixins: [TimeMixin, MountedAndLoadedMixin, CopyAndPasteMixin, PreventNavigationMixin, LocalStorageMixin('cms', ['autoSave']), IconMixin({ clock: mdiClock, publish: mdiPublish, save: mdiContentSaveOutline, autoSave: mdiSync })],
   mounted() {
-    CMSPage.get(this.id)
-      .then((page) => {
-        this.page = Object.assign({}, this.page, page);
-        this.implementedFields.forEach(this.selfInitialize);
-      })
-      .finally(() => {
-        this.loading = false;
-        this.isLoaded();
-      });
+    this.load()
 
     this.$nextTick(() => {
       this.implementedContenteditableRefs.forEach(ref => {
-        console.log(ref);
         this.initPastePlainText(ref)
       })
     })
@@ -157,10 +224,13 @@ export default {
   data() {
     return {
       updateBuffer: null,
+      autoSaveDelayer: new InputDelayer(300),
+      autoSave: true,
       allowLinks: true,
       loading: true,
       saving: false,
       editmode: true,
+      lastPublishedTimestamp: null,
       page: {
         title: null,
         subtitle: null,
@@ -175,6 +245,43 @@ export default {
     };
   },
   methods: {
+    updatePublishedTimestamp(ts) {
+      this.page.publishedTimestamp = ts
+      this.changed()
+    },
+    async load() {
+      try {
+        const page = await CMSPage.get(this.id)
+        this.lastPublishedTimestamp = parseInt(page.publishedTimestamp);
+        this.page = Object.assign({}, this.page, page);
+        this.implementedFields.forEach(this.selfInitialize);
+      } catch (e) {
+        console.error(e)
+      }
+
+      this.loading = false;
+      this.isLoaded();
+    },
+    execToolbarAction(action) {
+      switch (action) {
+        case 'publish':
+          this.publish();
+          break;
+        case 'unpublish':
+          this.unpublish()
+          break;
+        case 'enable-auto-save':
+          this.autoSave = true;
+          this.changed()
+          break;
+        case 'disable-auto-save':
+          this.autoSave = false;
+          break;
+        default:
+          console.error(`Action ${action} not implemented yet`)
+          break;
+      }
+    },
     selfInitialize(name) {
       if (!this.$refs[name]) console.error(`There is no ref with name ${name}`);
       else {
@@ -200,7 +307,6 @@ export default {
     },
     updatePage(key, value) {
       this.page[key] = value;
-      console.log(this.time_mixin_timestampToDateInputValue(this.page[key]));
       this.prevent_navigation_mixin_setDirty()
     },
     async handleSpecialKeys($event, block) {
@@ -262,7 +368,7 @@ export default {
     },
     updateFormattedField(property, value) {
       this.page[property] = this.$refs[property].getContent();
-      this.prevent_navigation_mixin_setDirty()
+      this.changed()
     },
     update($event) {
       const target = $event.currentTarget;
@@ -278,35 +384,55 @@ export default {
         }
       }
 
+      this.changed()
+    },
+    changed() {
+      if (this.autoSave) {
+        this.autoSaveDelayer.update(() => this.save())
+      }
       this.prevent_navigation_mixin_setDirty()
     },
+    async unpublish() {
+      if (this.page.publishedTimestamp && confirm('Are you sure you want to unpublish this page?')) {
+        await this.publish(false)
+      }
+    },
     async publish(publish = true) {
-      const publishedTimestamp = publish ? new Date().getTime().toString() : null
+
+      let publishedTimestamp = null;
+      if (publish) {
+        let pageTimestamp = parseInt(this.page.publishedTimestamp)
+        publishedTimestamp = isNaN(pageTimestamp) && pageTimestamp > 0 ? pageTimestamp : new Date().getTime()
+      }
+
       // We override the modifiedTimestamp to exclude the 'publishing'
       // to be considered as a modification.
       await this.save({ publishedTimestamp, modifiedTimestamp: this.page.modifiedTimestamp })
-      this.page.publishedTimestamp = publishedTimestamp
     },
-    async save(override = {}) {
-      const choose = (name) => override[name] || this.page[name]
-      const page = {
-        title: choose("title"),
-        subtitle: choose("subtitle"),
-        summary: choose("summary"),
-        body: choose("body"),
-        image: choose("image"),
-        createdTimestamp: choose("createdTimestamp"),
-        publishedTimestamp: choose("publishedTimestamp"),
-        modifiedTimestamp: choose("modifiedTimestamp"),
-      };
-
-      console.log(this.time_mixin_timestampToDateInputValue(page.publishedTimestamp), this.time_mixin_timestampToDateInputValue(this.page.publishedTimestamp))
-
+    async save(overrides = {}) {
       this.saving = true;
+
+      const page = Object.assign({
+        title: this.page.title,
+        subtitle: this.page.subtitle,
+        summary: this.page.summary,
+        body: this.page.body,
+        image: this.page.image,
+        createdTimestamp: this.page.createdTimestamp,
+        modifiedTimestamp: this.page.modifiedTimestamp,
+      }, overrides);
+
+      if (page.publishedTimestamp)
+        page.publishedTimestamp = page.publishedTimestamp.toString()
+
+      this.page = page
       await CMSPage.update(this.id, page);
       await (async function (ts) {
         return new Promise(resolve => setTimeout(resolve, ts))
       })(3000)
+
+      // Update page values, as the saving
+      this.lastPublishedTimestamp = parseInt(page.publishedTimestamp)
 
       this.prevent_navigation_mixin_setClean()
       this.saving = false;
@@ -352,6 +478,14 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
     },
   },
   computed: {
+    scheduled() {
+      const ts = parseInt(this.page.publishedTimestamp)
+      return !isNaN(ts) && ts > new Date().getTime()
+    },
+    published() {
+      const ts = parseInt(this.lastPublishedTimestamp)
+      return !isNaN(ts) && ts > 0
+    },
     implementedContenteditableRefs() {
       return this.implementedContenteditables.map(name => this.$refs[name])
     },
@@ -389,7 +523,53 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
 };
 </script>
 
+<style lang="scss">
+.cms-edit-page {
+  .cms-publication-status {
+
+    &.draft {
+      color: $dark-yellow;
+    }
+
+    &.published {
+      background-color: $blue;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
+  }
+}
+</style>
+
 <style lang="scss" scoped>
+h2 {
+  margin: 0;
+  margin-top: 1em;
+}
+
+.auto-save-button {
+
+  &.active {
+
+    color: $purple;
+  }
+}
+
+.publish-button {
+  color: $blue;
+}
+
+.tools {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: .5em;
+  z-index: 10;
+  background-color: whitesmoke;
+  padding: 2em 0 1em 0;
+  justify-content: flex-end;
+}
+
 .toolbar {
   position: sticky;
   bottom: 0;

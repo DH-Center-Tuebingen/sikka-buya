@@ -52,7 +52,6 @@ export default class CMSPage {
             body: null,
             image: null,
             createdTimestamp: null,
-            publishedTimestamp: null,
             modifiedTimestamp: null,
         }, page)
 
@@ -105,7 +104,7 @@ export default class CMSPage {
             }
           }
         }`
-        ,{})
+            , {})
         return result.data.data.getSinglePage
     }
 
