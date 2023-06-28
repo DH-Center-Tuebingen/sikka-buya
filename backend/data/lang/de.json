@@ -262,9 +262,7 @@
     },
     "custom": {
         "fint": {
-            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)",
-            "description": "Recherchieren Sie Einzelstücke in unserem digitalen Münzarchiv",
-            "to": "Besuche den Münzkatalog"
+            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)"
         }
     }
 }

@@ -105,50 +105,7 @@
         </section>
 
         <section>
-
-          <div class="box fint-box">
-            <h2>
-              <Locale path="custom.fint.title" />
-            </h2>
-            <p>
-              <Locale path="custom.fint.description" />
-
-              <br>
-              <a href="https://www.fint-ikmk.uni-tuebingen.de/ikmk/home">
-                <Locale path="custom.fint.to" />
-              </a>
-            </p>
-
-            <form
-              class="flex row"
-              method="post"
-              action="https://www.fint-ikmk.uni-tuebingen.de/ikmk/quick_search?lang=de"
-            >
-              <input
-                type="hidden"
-                name="search_type"
-                value="quick_search"
-              >
-              <input
-                name="quick_search_value"
-                type="text"
-                style="flex:1"
-              >
-
-              <button
-                style="margin-left: 1rem;"
-                type="submit"
-              >
-                <Icon
-                  type="mdi"
-                  :path="icons.search"
-                  :size="20"
-                />
-                <Locale path="general.search" />
-              </button>
-
-            </form>
-          </div>
+          <FintBox />
         </section>
       </aside>
     </div>
@@ -157,18 +114,17 @@
 </template>
 
 <script>
-import LoginVariant from 'vue-material-design-icons/LoginVariant';
-import CMSImage from '../cms/CMSImage.vue';
-import Locale from '../cms/Locale.vue';
 import Button from '../layout/buttons/Button.vue';
-import Row from '../layout/Row.vue';
-import Navigation from '../Navigation.vue';
 import CardLink from '../navigation/CardLink.vue';
-import PageFooter from './PageFooter.vue';
-import CMSView from '../cms/CMSView.vue';
+import CMSImage from '../cms/CMSImage.vue';
 import CMSListView from './cms/CMSListView.vue';
-import iconMixin from "../mixins/icon-mixin.js"
-import { mdiMagnify } from '@mdi/js/mdi';
+import CMSView from '../cms/CMSView.vue';
+import FintBox from '../navigation/FintBox.vue';
+import Locale from '../cms/Locale.vue';
+import LoginVariant from 'vue-material-design-icons/LoginVariant';
+import Navigation from '../Navigation.vue';
+import PageFooter from './PageFooter.vue';
+import Row from '../layout/Row.vue';
 
 
 
@@ -184,8 +140,8 @@ export default {
     Navigation,
     PageFooter,
     Row,
-  },
-  mixins: [iconMixin({'search': mdiMagnify})]
+    FintBox
+},
 };
 </script>
 
@@ -401,19 +357,6 @@ section:first-of-type {
 
   h2 {
     margin-top: 0;
-  }
-}
-
-.fint-box {
-  background-color: #1d6a8e;
-  color: $dark-white;
-
-  h2 {
-    color: white;
-  }
-
-  a {
-    color: #e98a63;
   }
 }
 
