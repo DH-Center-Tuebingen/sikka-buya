@@ -9,7 +9,9 @@
                 <h4 v-if="isPresent('subtitle')">{{ value.subtitle }}</h4>
             </div>
             <div class="misc">
-                <CMSPublicationStatus :value="parseInt(value.publishedTimestamp)" />
+                <CMSPublicationStatus
+                    v-if="$store.getters.loggedIn"
+                    :pageTimestamp="parseInt(value.publishedTimestamp)" />
                 <span class="date">
                     {{ time_mixin_formatDate(value.publishedTimestamp) || "-" }}
                 </span>

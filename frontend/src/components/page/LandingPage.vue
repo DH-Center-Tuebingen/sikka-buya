@@ -79,7 +79,7 @@
             }"
           >
             <div class="subtitled">
-              <locale path="cms.bibliography" />
+              <locale path="cms.group.bibliography" />
               <span class="subtitle">Demnächst verfügbar!</span>
             </div>
 
@@ -98,7 +98,7 @@
           >
 
             <div class="subtitled">
-              <locale path="cms.Working Papers" />
+              <locale path="cms.group.Working Papers" />
               <span class="subtitle">Demnächst verfügbar!</span>
             </div>
           </card-link>

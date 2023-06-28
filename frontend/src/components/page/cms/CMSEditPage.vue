@@ -3,7 +3,7 @@
     <section class="content-wrapper">
 
       <h2>
-        <Locale :path="`cms.${this.group}`" />
+        <Locale :path="`cms.group.${this.group}`" />
       </h2>
       <div class="tools">
 
@@ -35,29 +35,24 @@
 
         <CMSPublicationInput
           :value="parseInt(page.publishedTimestamp)"
+          @reset="() => page.publishedTimestamp = lastPublishedTimestamp"
           @input="updatePublishedTimestamp"
+          ref="publicationInput"
         />
 
 
         <CMSPublicationStatus
-          :value="parseInt(lastPublishedTimestamp)"
-          @click.native="unpublish"
+          :pageTimestamp="lastPublishedTimestamp"
+          :userTimestamp="page.publishedTimestamp"
         />
 
-        <HollowButton
-          v-if="!published"
-          class="publish-button"
-          @click.native="publish"
-          :interactive="true"
-        >
-          <Icon
-            type="mdi"
-            :path="(scheduled) ? icons.clock : icons.publish"
-            :size="16"
-          />
-          <Locale :path="(scheduled) ? 'cms.schedule' : 'general.publish'" />
-        </HollowButton>
-
+        <CMSPublicationButton
+          :lastPublishedTimestamp="lastPublishedTimestamp"
+          :publishedTimestamp="page.publishedTimestamp"
+          :pending="publishing"
+          @publish="publish"
+          @unpublish="unpublish"
+        />
 
       </div>
 
@@ -113,6 +108,7 @@
           :contenteditable="editmode"
           @input="update"
           @paste="update"
+          class="subtitle"
           data-property="subtitle"
           ref="subtitle"
           v-once
@@ -162,11 +158,12 @@
 <script>
 // Components
 import AsyncButton from '../../layout/buttons/AsyncButton.vue';
-import HollowButton from '../../layout/buttons/HollowButton.vue';
 import CMSPage from '../../../models/CMSPage';
-import CMSPublicationStatus from '../../cms/CMSPublicationStatus.vue';
+import CMSPublicationButton from '../../cms/CMSPublicationButton.vue';
 import CMSPublicationInput from '../../cms/CMSPublicationInput.vue';
+import CMSPublicationStatus from '../../cms/CMSPublicationStatus.vue';
 import CMSSaveButton from '../../cms/CMSSaveButton.vue';
+import HollowButton from '../../layout/buttons/HollowButton.vue';
 import Locale from '../../cms/Locale.vue';
 import SimpleFormattedField from '../../forms/SimpleFormattedField.vue';
 import Spacer from '../../layout/Spacer.vue';
@@ -188,6 +185,7 @@ import { mdiPublish, mdiClock, mdiContentSaveOutline, mdiSync } from '@mdi/js';
 export default {
   components: {
     AsyncButton,
+    CMSPublicationButton,
     CMSPublicationStatus,
     CMSSaveButton,
     HollowButton,
@@ -195,7 +193,17 @@ export default {
     SimpleFormattedField,
     Spacer,
   },
-  mixins: [TimeMixin, MountedAndLoadedMixin, CopyAndPasteMixin, PreventNavigationMixin, LocalStorageMixin('cms', ['autoSave']), IconMixin({ clock: mdiClock, publish: mdiPublish, save: mdiContentSaveOutline, autoSave: mdiSync })],
+  mixins: [
+    CopyAndPasteMixin,
+    LocalStorageMixin('cms', ['autoSave']),
+    IconMixin({
+      save: mdiContentSaveOutline,
+      autoSave: mdiSync
+    }),
+    MountedAndLoadedMixin,
+    PreventNavigationMixin,
+    TimeMixin,
+  ],
   mounted() {
     this.load()
 
@@ -223,14 +231,15 @@ export default {
   },
   data() {
     return {
-      updateBuffer: null,
-      autoSaveDelayer: new InputDelayer(300),
-      autoSave: true,
       allowLinks: true,
-      loading: true,
-      saving: false,
+      autoSave: true,
+      autoSaveDelayer: new InputDelayer(300),
       editmode: true,
       lastPublishedTimestamp: null,
+      loading: true,
+      publishing: false,
+      saving: false,
+      updateBuffer: null,
       page: {
         title: null,
         subtitle: null,
@@ -247,12 +256,17 @@ export default {
   methods: {
     updatePublishedTimestamp(ts) {
       this.page.publishedTimestamp = ts
-      this.changed()
     },
     async load() {
       try {
         const page = await CMSPage.get(this.id)
-        this.lastPublishedTimestamp = parseInt(page.publishedTimestamp);
+        const loadedPublishedTimestamp = parseInt(page.publishedTimestamp);
+        this.lastPublishedTimestamp = loadedPublishedTimestamp;
+        
+        if (isNaN(loadedPublishedTimestamp) || loadedPublishedTimestamp === 0) {
+          delete page.publishedTimestamp
+        }
+
         this.page = Object.assign({}, this.page, page);
         this.implementedFields.forEach(this.selfInitialize);
       } catch (e) {
@@ -402,15 +416,20 @@ export default {
       let publishedTimestamp = null;
       if (publish) {
         let pageTimestamp = parseInt(this.page.publishedTimestamp)
-        publishedTimestamp = isNaN(pageTimestamp) && pageTimestamp > 0 ? pageTimestamp : new Date().getTime()
+        publishedTimestamp = !isNaN(pageTimestamp) && pageTimestamp > 0 ? pageTimestamp.toString() : new Date().getTime().toString()
       }
 
+      this.publishing = true
       // We override the modifiedTimestamp to exclude the 'publishing'
       // to be considered as a modification.
       await this.save({ publishedTimestamp, modifiedTimestamp: this.page.modifiedTimestamp })
+      this.$refs.publicationInput.reset()
+      this.publishing = false
     },
     async save(overrides = {}) {
       this.saving = true;
+
+      const lastPublishedTimestamp = this.page.publishedTimestamp;
 
       const page = Object.assign({
         title: this.page.title,
@@ -418,24 +437,28 @@ export default {
         summary: this.page.summary,
         body: this.page.body,
         image: this.page.image,
+        publishedTimestamp: this.lastPublishedTimestamp,
         createdTimestamp: this.page.createdTimestamp,
         modifiedTimestamp: this.page.modifiedTimestamp,
       }, overrides);
 
-      if (page.publishedTimestamp)
-        page.publishedTimestamp = page.publishedTimestamp.toString()
-
-      this.page = page
+      this.page = Object.assign({}, this.page, page, {
+        publishedTimestamp: lastPublishedTimestamp
+      })
       await CMSPage.update(this.id, page);
       await (async function (ts) {
         return new Promise(resolve => setTimeout(resolve, ts))
       })(3000)
 
       // Update page values, as the saving
-      this.lastPublishedTimestamp = parseInt(page.publishedTimestamp)
+      const updatedPublishedTimestamp = parseInt(page.publishedTimestamp)
+      this.lastPublishedTimestamp = isNaN(updatedPublishedTimestamp) ? null : updatedPublishedTimestamp
 
       this.prevent_navigation_mixin_setClean()
       this.saving = false;
+    },
+    updateLastPublishedTimestamp() {
+
     },
     async addEmptyBlock() {
       const position = 10;
@@ -478,14 +501,6 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
     },
   },
   computed: {
-    scheduled() {
-      const ts = parseInt(this.page.publishedTimestamp)
-      return !isNaN(ts) && ts > new Date().getTime()
-    },
-    published() {
-      const ts = parseInt(this.lastPublishedTimestamp)
-      return !isNaN(ts) && ts > 0
-    },
     implementedContenteditableRefs() {
       return this.implementedContenteditables.map(name => this.$refs[name])
     },
@@ -532,11 +547,13 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
     }
 
     &.published {
-      background-color: $blue;
-      color: white;
-      cursor: pointer;
-      user-select: none;
+      color: $blue;
     }
+  }
+
+  .formatted-text-area {
+    background-color: transparent;
+    color: $black;
   }
 }
 </style>
@@ -553,10 +570,6 @@ h2 {
 
     color: $purple;
   }
-}
-
-.publish-button {
-  color: $blue;
 }
 
 .tools {
@@ -602,8 +615,20 @@ h2 {
 }
 
 h1 {
+  font-size: 2rem;
   margin-top: 1rem;
+  margin-bottom: .25rem;
 }
+
+.subtitle {
+  color: $gray;
+  font-style: italic;
+  margin-top: .25rem;
+
+  margin-bottom: 1rem;
+}
+
+
 
 .info {
   margin-top: 1rem;
@@ -617,9 +642,9 @@ textarea {
   width: 100%;
   resize: none;
   padding: 0.3rem;
-  background-color: $dark-white;
-  border-radius: $border-radius;
-  box-shadow: inset $shadow;
+  // background-color: $dark-white;
+  // border-radius: $border-radius;
+  // box-shadow: inset $shadow;
   box-sizing: border-box;
 }
 

@@ -1,5 +1,16 @@
 <template>
     <div class="cms-view">
+
+
+        <h2
+            class="cms-title"
+            v-if="isPresent('title')"
+        >{{ page.title }}</h2>
+        <p
+            class="cms-subtitle"
+            v-if="isPresent('subtitle')"
+        >{{ page.subtitle }}</p>
+
         <header v-if="$store.getters.canEdit">
             <button
                 v-if="pageMissing"
@@ -18,14 +29,6 @@
             </button>
         </header>
 
-        <h2
-            class="cms-title"
-            v-if="isPresent('title')"
-        >{{ page.title }}</h2>
-        <p
-            class="cms-subtitle"
-            v-if="isPresent('subtitle')"
-        >{{ page.subtitle }}</p>
         <p
             v-if="isPresent('body')"
             class="cms-body"
@@ -79,7 +82,7 @@ export default {
         isIncluded(key) {
             return this.include.length > 0 ? this.include.includes(key) : true
         },
-        isExcluded (key) {
+        isExcluded(key) {
             return this.exclude.length > 0 ? this.exclude.includes(key) : false
         }
     },
@@ -92,9 +95,12 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-
-.cms-view > *:first-child {
+.cms-view>*:first-child {
     margin-top: 0;
 }
 
+header {
+    display: flex;
+    justify-content: flex-end;
+}
 </style>

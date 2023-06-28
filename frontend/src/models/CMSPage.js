@@ -55,6 +55,8 @@ export default class CMSPage {
             modifiedTimestamp: null,
         }, page)
 
+        this.timestampsToStrings(pageObject)
+
         await Query.raw(`mutation UpdatePage($id:ID!, $page: PageInput){
             updatePage(id: $id,page: $page)
         }`, { id, page: pageObject }
@@ -82,7 +84,9 @@ export default class CMSPage {
                 }
             }
         }`, { group })
-        return result.data.data.getPageList
+        const list = result.data.data.getPageList
+        list.forEach(page => this.timestampsToNumbers(page))
+        return list
     }
 
     static async getSingle(group) {
@@ -105,7 +109,9 @@ export default class CMSPage {
           }
         }`
             , {})
-        return result.data.data.getSinglePage
+        const page = result.data.data.getSinglePage
+        this.timestampsToNumbers(page)
+        return page
     }
 
     static async get(id) {
@@ -128,7 +134,23 @@ export default class CMSPage {
           }
         }`
         )
-        return result.data.data.getPage
+        const page = result.data.data.getPage
+        this.timestampsToNumbers(page)
+        return page
     }
 
+
+    static async timestampsToNumbers(page) {
+        page.createdTimestamp = parseInt(page.createdTimestamp)
+        page.modifiedTimestamp = parseInt(page.modifiedTimestamp)
+        page.publishedTimestamp = parseInt(page.publishedTimestamp)
+        return page
+    }
+
+    static async timestampsToStrings(page) {
+        page.createdTimestamp = page.createdTimestamp ? page.createdTimestamp.toString() : null
+        page.modifiedTimestamp = page.modifiedTimestamp ? page.modifiedTimestamp.toString() : null
+        page.publishedTimestamp = page.publishedTimestamp ? page.publishedTimestamp.toString() : null
+        return page
+    }
 }

@@ -4,7 +4,6 @@
       :value="$store.state.editmode"
       @input="() => $store.commit('toggleEditMode')"
     >
-      {{ $t("users.gui.editmode") }}
       <template v-slot:active>
         ON
       </template>

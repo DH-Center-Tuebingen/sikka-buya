@@ -1,7 +1,7 @@
 <template>
     <div class="list-view">
         <h2>
-            <Locale :path="`cms.${this.group}`" />
+            <Locale :path="`cms.group.${this.group}`" />
         </h2>
         <Button
             v-if="$store.getters.canEdit"

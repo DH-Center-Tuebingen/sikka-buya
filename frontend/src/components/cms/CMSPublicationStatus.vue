@@ -1,33 +1,40 @@
 <template>
-    <HollowButton class="cms-publication-status" :class="state" :interactive="false">
-        <template v-if="state === 'draft'">
+    <HollowButton
+        class="cms-publication-status"
+        :class="state"
+        :interactive="false"
+    >
+        <template v-if="state === PublicationStatus.Draft">
             <Icon
                 :path="icons.clock"
                 type="mdi"
-                :size="16"
+                :size="size"
             />
-            <Locale path="general.draft" />
+            <Locale path="cms.draft" />
         </template>
-        <template v-else-if="state === 'scheduled'">
+        <template v-else-if="state === PublicationStatus.Scheduled">
             <Icon
                 :path="icons.clock"
                 type="mdi"
-                :size="16"
+                :size="size"
             />
-            <Locale path="general.scheduled" />
+            <Locale path="cms.scheduled" />
         </template>
         <template v-else>
             <Icon
                 :path="icons.newspaper"
                 type="mdi"
-                :size="16"
+                :size="size"
             />
-            <Locale path="general.published" />
+            <Locale path="cms.published" />
         </template>
     </HollowButton>
 </template>
 
 <script>
+import Publication from '../../models/publication';
+import { PublicationStatus } from '../../models/publication';
+import { isNumberOrNull } from '../../utils/Validators';
 import Locale from '../cms/Locale.vue';
 import HollowButton from '../layout/buttons/HollowButton.vue';
 
@@ -37,53 +44,55 @@ import { mdiClockOutline, mdiNewspaperVariantOutline } from '@mdi/js';
 
 export default {
     components: {
-    Locale,
-    HollowButton
-},
+        Locale,
+        HollowButton
+    },
     mixins: [iconMixin({ clock: mdiClockOutline, newspaper: mdiNewspaperVariantOutline })],
     props: {
-        value: {
+        pageTimestamp: {
+            validator: isNumberOrNull
+        },
+        userTimestamp: {
+            validator: isNumberOrNull
+        },
+        size: {
             type: Number,
-            reqired: true,
+            default: 16
         }
     },
     computed: {
         state() {
-            if(this.value <= 0){
-                return 'draft';
-            } else if(this.value > new Date().getTime()) {
-                return 'scheduled';
-            } else if(this.value <= new Date().getTime()) {
-                return 'published';
-            } else {
-                return "draft"
-            }
+            const pub = new Publication(this.userTimestamp, this.pageTimestamp)
+            return pub.status
+        },
+        PublicationStatus() {
+            return PublicationStatus
         }
     }
 };
 </script>
 
 <style lang='scss' scoped>
-    .draft {
-        color: $yellow;
-    }
+.draft {
+    color: $yellow;
+}
 
-    .scheduled {
-        color: $purple;
-    }
+.scheduled {
+    color: $purple;
+}
 
-    .published {
-        color: $blue;
-    }
+.published {
+    color: $blue;
+}
 
-    .cms-publication-status {
-        display: flex;
-        gap: .25em;
-        align-items: center;
-        font-size: $small-font;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-left: 8px;
-    }
+.cms-publication-status {
+    display: flex;
+    gap: .25em;
+    align-items: center;
+    font-size: $small-font;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 8px;
+}
 </style>

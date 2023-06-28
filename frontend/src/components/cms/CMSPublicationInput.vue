@@ -1,7 +1,7 @@
 <template>
     <div class="cms-publication-input">
         <input
-            v-if="schedule"
+            v-if="interactive"
             type="date"
             :value="time_mixin_timestampToDateInputValue(value)"
             @input="input"
@@ -14,10 +14,10 @@
         </template>
 
         <Icon
-            :path="(schedule) ? icons.removeClock : icons.clock"
+            :path="(interactive) ? icons.removeClock : icons.clock"
             :size="18"
             type="mdi"
-            @click.native="toggleSchedule"
+            @click.native="() => toggleInteractive()"
         />
 
 
@@ -30,13 +30,13 @@ import time from '../mixins/time-mixin';
 import iconMixin from '../mixins/icon-mixin';
 
 // Icons
-import { mdiClockOutline, mdiClockRemoveOutline } from '@mdi/js';
+import { mdiClockEditOutline, mdiClockRemoveOutline } from '@mdi/js';
 
 export default {
-    mixins: [time, iconMixin({ clock: mdiClockOutline, removeClock: mdiClockRemoveOutline })],
+    mixins: [time, iconMixin({ clock: mdiClockEditOutline, removeClock: mdiClockRemoveOutline })],
     data() {
         return {
-            schedule: false,
+            interactive: false,
         }
     },
     props: {
@@ -46,15 +46,21 @@ export default {
         }
     },
     methods: {
-        toggleSchedule() {
-            this.schedule = !this.schedule;
-            if (this.value == 0 || isNaN(this.value)) {
-                this.$emit('input', new Date().getTime());
-            }
+        reset() {
+            this.toggleInteractive(false);
+        },
+        toggleInteractive(value = null) {
+            this.interactive = value == null ? !this.interactive : value;
+
+            if (!this.interactive) this.$emit('reset')
+            else if(!this.value) this.emitInput(new Date().getTime())
+        },
+        emitInput(value) {
+            const ts = this.time_mixin_dateInputValueToTimestamp(value)
+            this.$emit('input', ts);
         },
         input(e) {
-            const ts = this.time_mixin_dateInputValueToTimestamp(e.target.value)
-            this.$emit('input', ts);
+            this.emitInput(e.target.value)
         }
     }
 
