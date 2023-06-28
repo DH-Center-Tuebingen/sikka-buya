@@ -5,13 +5,6 @@
     </h1>
     <div class="grid col-2">
       <aside>
-        <Button
-          class="error"
-          @click="resetFilters"
-          v-if="hasFilters"
-        >{{
-          $t('catalog.reset_filters')
-        }}</Button>
         <search-field
           id="text-search"
           v-model="text"
@@ -26,33 +19,39 @@
           ref="catalogFilter"
         />
       </aside>
-      <pagination
-        :pageInfo="pageInfo"
-        @input="updatePagination"
-      >
-        <List
-          :error="error"
-          :items="types"
+
+      <div class="right-controls">
+        <FilterControl :activeFilters="activeFilters" @resetFilter="resetFilter" @resetAllFilters="resetAllFilters" />
+
+        <pagination
+          :pageInfo="pageInfo"
+          @input="updatePagination"
         >
-          <ListItem
-            v-for="item of types"
-            v-bind:key="item.key"
-            :id="`list-item-type-${item.id}`"
-            :to="{
-              name: 'Catalog Entry',
-              params: { id: item.id },
-            }"
-            :class="item.completed ? 'completed' : 'incomplete'"
+          <List
+            :error="error"
+            :items="types"
           >
-            {{ item.projectId }}
-          </ListItem>
-        </List>
-      </pagination>
+            <ListItem
+              v-for="item of types"
+              v-bind:key="item.key"
+              :id="`list-item-type-${item.id}`"
+              :to="{
+                name: 'Catalog Entry',
+                params: { id: item.id },
+              }"
+              :class="item.completed ? 'completed' : 'incomplete'"
+            >
+              {{ item.projectId }}
+            </ListItem>
+          </List>
+        </pagination>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import Button from '../../layout/buttons/Button.vue';
 import List from '../../layout/List.vue';
 import ListItem from '../../layout/ListItem.vue';
 import LabeledInputContainer from '../../LabeledInputContainer.vue';
@@ -61,16 +60,19 @@ import CatalogFilter from './CatalogFilter.vue';
 import SearchField from '../../layout/SearchField.vue';
 import catalogFilterMixin from '../../mixins/catalog-filter';
 import Locale from '../../cms/Locale.vue';
+import FilterControl from '../../interactive/search/filters/FilterControl.vue';
 
 export default {
   components: {
+    Button,
     CatalogFilter,
+    FilterControl,
     LabeledInputContainer,
-    Pagination,
     List,
     ListItem,
+    Locale,
+    Pagination,
     SearchField,
-    Locale
   },
   data() {
     return {
@@ -100,21 +102,31 @@ export default {
         text: this.text,
       });
     },
-    resetFilters() {
+    resetAllFilters() {
       this.text = '';
       this.catalog_filter_mixin_reset(this.$refs.catalogFilter);
     },
+    resetFilter(name) {
+      if (name == "plain_text") {
+        this.text = '';
+      } else this.$refs.catalogFilter.resetFilter(name);
+    }
   },
   computed: {
-    filterOrder(){
+    filterOrder() {
       return {
         otherPerson: 4.13,
         coinVerse: 5.01,
         cursiveScript: 8.1
       }
-    },  
-    hasFilters() {
-      return this.catalog_filter_mixin_filterActive || this.text != '';
+    },
+    activeFilters() {
+      const activeFilters = this.catalog_filter_mixin_activeFilters
+      if (this.text != '') {
+        activeFilters.push({ key: "plain_text", value: this.text });
+      }
+
+      return activeFilters;
     },
     overwriteFilters() {
       return this.text == "" ? {} : { plain_text: this.text };
@@ -129,9 +141,6 @@ export default {
 
   margin-bottom: $page-bottom-spacing;
 
-  .pagination {
-    align-self: flex-start;
-  }
 
   .yearOfMint,
   .mint,
@@ -163,7 +172,10 @@ aside {
   flex-direction: column;
 }
 
-button {
-  margin-bottom: 3 * $padding;
+
+.right-controls {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
 }
 </style>

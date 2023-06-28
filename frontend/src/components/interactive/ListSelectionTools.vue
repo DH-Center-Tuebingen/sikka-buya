@@ -18,7 +18,7 @@
 
 <script>
 
-import iconMixin from '@/components/mixins/icons'; 
+import iconMixin from '@/components/mixins/icon-mixin.js'; 
 import {mdiSelectAll, mdiSelectOff} from '@mdi/js/mdi';
 
 export default {

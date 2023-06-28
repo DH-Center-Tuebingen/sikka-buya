@@ -20,7 +20,7 @@ export default {
          * 
          * Initializes the paste event listener for all input fields
          * 
-         * @param { Array } ref - The ref of the input field
+         * @param { HTMLElement } ref - The ref of the input field
          */
         initPastePlainText(ref) {
             ref.addEventListener('paste', this.pastePlainText);
@@ -29,7 +29,7 @@ export default {
          * Cleans up the paste event listener. 
          * Usually called in the beforeDestroy hook.
          * 
-         * @param { Array } ref - The ref of the input field
+         * @param { HTMLElement } ref - The ref of the input field
          */
         cleanupPastePlainText(ref) {
             ref.removeEventListener('paste', this.pastePlainText);
@@ -46,6 +46,7 @@ export default {
          * @returns { TextAndNode } - The text and node that was pasted
          */
         pastePlainText: function (event) {
+            console.log("PASTED PLAIN TEXT")
             event.preventDefault();
             let pastedText = (event.clipboardData || window.clipboardData).getData('text/plain');
             const selection = window.getSelection();

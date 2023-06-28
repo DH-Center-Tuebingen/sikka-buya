@@ -39,7 +39,10 @@
         </labeled-property>
       </div>
     </header>
-    <div v-if="error" class="error"></div>
+    <div
+      v-if="error"
+      class="error"
+    ></div>
 
     <div
       class="viewport"
@@ -50,13 +53,19 @@
         <thead>
           <tr>
             <td></td>
-            <td v-for="(itemX, xIdx) of xValues" :key="'row-' + xIdx">
+            <td
+              v-for="(itemX, xIdx) of xValues"
+              :key="'row-' + xIdx"
+            >
               {{ itemX }}
             </td>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(itemY, yIdx) in yValues" :key="'head-' + yIdx">
+          <tr
+            v-for="(itemY, yIdx) in yValues"
+            :key="'head-' + yIdx"
+          >
             <td>{{ itemY }}</td>
             <td
               v-for="(itemX, xIdx) of xValues"
@@ -85,8 +94,8 @@ export default {
   created: function () {
     this.fetchTypes();
 
-    this.pinXBuffer = new RequestBuffer(25, true);
-    this.pinYBuffer = new RequestBuffer(25, true);
+    this.pinXBuffer = new RequestBuffer(25, { allowSame: true });
+    this.pinYBuffer = new RequestBuffer(25, { allowSame: true });
   },
   data: function () {
     return {
@@ -264,6 +273,7 @@ export default {
 .slider {
   margin: 10px;
 }
+
 .page {
   max-height: 100%;
   flex: 1;
@@ -282,7 +292,8 @@ export default {
 .select-row {
   display: flex;
   width: 100%;
-  > * {
+
+  >* {
     flex: 1;
     display: block;
 
@@ -329,5 +340,4 @@ td:first-of-type {
   position: relative;
   left: 0;
   background-color: rgba(whitesmoke, 0.95);
-}
-</style>
+}</style>

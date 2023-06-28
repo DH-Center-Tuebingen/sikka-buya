@@ -42,7 +42,7 @@ import Locale from './cms/Locale.vue';
 import ButtonVue from './layout/buttons/Button.vue';
 import PopupActivator from './Popup/PopupActivator.vue';
 
-import Icon from "./mixins/icons"
+import Icon from "./mixins/icon-mixin.js"
 import { mdiCog, mdiRestart } from '@mdi/js';
 
 export default {

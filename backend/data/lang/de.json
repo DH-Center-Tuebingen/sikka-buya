@@ -28,22 +28,27 @@
         }
     },
     "general": {
+        "add": "hinzufügen",
         "and": "und",
+        "cooperations": "Kooperationen",
         "delete": "löschen",
         "edit": "bearbeiten",
         "filter_active": "Filter aktiv",
         "name": "Name | Namen",
         "or": "oder",
-        "publish": "veröffentlichen",
         "reset_filter": "Filter aufheben",
+        "save": "speichern",
         "search": "Suchen",
         "settings": "Einstellungen",
         "share": "Teilen",
-        "cooperations": "Kooperationen",
         "user": "Nutzer",
-        "add": "hinzufügen"
+        "saved": "gespeichert",
+        "saving": "speichern",
+        "auto-save": "automatisches Speichern",
+        "schedule": "planen"
     },
     "property": {
+        "plain_text": "Text",
         "material": "Material | Materialien",
         "coin_mark": "Münz- und Beizeichen | Münz- und Beizeichen",
         "mint": "Prägeort | Prägeorte",
@@ -128,20 +133,36 @@
     "events": {
         "copied": "Kopiert!"
     },
-    "catalog": {
-        "reset_filters": "Filter zurücksetzen"
-    },
     "cms": {
-        "bibliography": "Bibliographie",
+        "auto-save": "auto",
         "contact_page": "Kontakt",
         "create_page": "neue Seite erstellen",
-        "landing_page_main_article": "Startseitentext",
-        "news": "Neuigkeiten",
-        "Working Papers": "Working Papers",
         "create_text": "Text erstellen",
-        "edit_text": "Text bearbeiten"
+        "draft": "Entwurf",
+        "disable-auto-save": "Auto-Save",
+        "edit_text": "Text bearbeiten",
+        "enable-auto-save": "Man.Speichern",
+        "normal-save": "normal",
+        "publish": "veröffentlichen",
+        "published": "veröffentlicht",
+        "redate": "Publizierungsdatum ändern",
+        "schedule": "planen",
+        "scheduled": "geplant",
+        "unpublish": "Veröffentlichung zurückziehen",
+        "group": {
+            "landing_page_main_article": "Startseitentext",
+            "Working Papers": "Working Papers",
+            "bibliography": "Bibliographie",
+            "news": "Neuigkeiten"
+        },
+        "reschedule": "Veröffentlichung verschieben",
+        "unschedule": "Planung aufheben",
+        "edit_page": "Seite bearbeiten"
     },
     "message": {
+        "listed_filters_are_active": "aktive Filter:",
+        "reset_all_filters": "alle Filter zurücksetzen",
+        "no_filter_active": "Keine Filter aktiv",
         "input_to_filter": "Hier Suchtext eingeben ...",
         "list_empty": "Keine Elemente in Liste",
         "initial_setup_info": "Dies ist die Seite für die Ersteinrichtung. Geben Sie den Benutzernamen und das Passwort für den Superuser ein. Sobald der Superuser eingerichtet ist, wird diese Seite nicht mehr zugänglich sein!"
@@ -235,14 +256,13 @@
         }
     },
     "time": {
-        "created_date": "erstellt am",
-        "published_date": "veröffentlicht am"
+        "created": "erstellt am",
+        "last_modified": "zuletzt geändert am",
+        "published": "veröffentlicht am"
     },
     "custom": {
         "fint": {
-            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)",
-            "description": "Recherchieren Sie Einzelstücke in unserem digitalen Münzarchiv",
-            "to": "Besuche den Münzkatalog"
+            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)"
         }
     }
 }

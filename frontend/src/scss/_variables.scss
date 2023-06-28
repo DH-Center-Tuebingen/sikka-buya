@@ -25,8 +25,12 @@ $background-color: whitesmoke;
 $blue: #4873ac;
 $bright-blue: hsl(214, 60%, 60%);
 
+$purple: #ac48ac;
+$bright-purple: hsl(300, 41%, 60%);
+
 $orange: #ff531f;
-$yellow: #ffd21f;
+$yellow: #c7a417;
+$dark-yellow: darken($yellow, 10%);
 $green: #48ac48;
 $light-green: rgb(94, 170, 94);
 $dark-green: #6b996b;

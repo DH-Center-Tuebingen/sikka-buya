@@ -1,22 +1,6 @@
 <template>
     <div class="cms-view">
-        <header v-if="$store.getters.canEdit">
-            <button
-                v-if="pageMissing"
-                @click="cms_createAndVisit(group)"
-            >
-                <locale :path="createText ? createText : 'cms.create_page'" />
-            </button>
-            <button
-                v-else
-                @click="cms_edit({
-                    id: page.id,
-                    group
-                }, { include })"
-            >
-                <locale :path="editText ? editText : 'cms.edit_page'" />
-            </button>
-        </header>
+
 
         <h2
             class="cms-title"
@@ -26,6 +10,25 @@
             class="cms-subtitle"
             v-if="isPresent('subtitle')"
         >{{ page.subtitle }}</p>
+
+        <header v-if="$store.getters.canEdit">
+            <button
+                v-if="pageMissing"
+                @click="cms_mixin_createAndVisit(group)"
+            >
+                <locale :path="createText ? createText : 'cms.create_page'" />
+            </button>
+            <button
+                v-else
+                @click="cms_mixin_edit({
+                    id: page.id,
+                    group
+                }, { include })"
+            >
+                <locale :path="editText ? editText : 'cms.edit_page'" />
+            </button>
+        </header>
+
         <p
             v-if="isPresent('body')"
             class="cms-body"
@@ -37,7 +40,7 @@
 <script>
 import Button from '../layout/buttons/Button.vue';
 import CMSPage from '../../models/CMSPage';
-import CMSMixin from '../mixins/cms';
+import CMSMixin from '../mixins/cms-mixin';
 import Locale from './Locale.vue';
 
 export default {
@@ -67,9 +70,13 @@ export default {
     },
     methods: {
         async init() {
-            const page = await this.cms_get({ id: this.id, group: this.group })
-            this.ready = true
-            this.page.assign(page)
+            try {
+                const page = await this.cms_mixin_get({ id: this.id, group: this.group })
+                this.ready = true
+                this.page.assign(page)
+            } catch (e) {
+                console.error(e)
+            }
         },
         isPresent(key) {
             const allowed = this.isIncluded(key) && !this.isExcluded(key)
@@ -79,7 +86,7 @@ export default {
         isIncluded(key) {
             return this.include.length > 0 ? this.include.includes(key) : true
         },
-        isExcluded (key) {
+        isExcluded(key) {
             return this.exclude.length > 0 ? this.exclude.includes(key) : false
         }
     },
@@ -92,9 +99,12 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-
-.cms-view > *:first-child {
+.cms-view>*:first-child {
     margin-top: 0;
 }
 
+header {
+    display: flex;
+    justify-content: flex-end;
+}
 </style>

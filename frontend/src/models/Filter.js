@@ -45,7 +45,7 @@ export default class Filter {
     mapMethods() {
         return {
             [Filter.selectMethodName(this.name)]: this.selectFilter(this.name),
-            [Filter.removeMethodName(this.name)]: this.removeFilter(this.name),
+            [Filter.removeMethodName(this.name)]: this.removeFilterItem(this.name),
             [Filter.hasMethodName(this.name)]: this.hasFilter(this.name),
         }
     }
@@ -62,7 +62,7 @@ export default class Filter {
         }
     }
 
-    removeFilter() {
+    removeFilterItem() {
         const name = this.name
         return function (target) {
 
@@ -131,7 +131,7 @@ export class FilterList extends Filter {
         }
     }
 
-    removeFilter() {
+    removeFilterItem() {
         const name = this.name
         return function (target, idx) {
             if (this["has" + StringUtils.capitalize(name) + "Filter"](target, idx)) {
@@ -144,7 +144,7 @@ export class FilterList extends Filter {
                         }
                     }
                 }
-            }else{
+            } else {
                 console.error("Could not find filter(" + target.id + ") in " + name + " at index " + idx)
             }
         }

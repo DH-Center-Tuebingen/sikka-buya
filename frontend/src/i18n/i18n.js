@@ -35,12 +35,9 @@ export default class I18n {
     }
 
     static async load(vue) {
-        console.log(vue.$i18n)
         const messages = await this.loadMessages()
-
         vue.$i18n.mergeLocaleMessage("de", messages.de)
         vue.$i18n.locale = "de"
-
     }
 
 }

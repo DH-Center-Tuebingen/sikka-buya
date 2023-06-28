@@ -78,7 +78,7 @@ export default {
 <style lang="scss">
 .button {
   box-sizing: border-box;
-  $disabled-color: $gray;
+  $disabled-color: $light-gray;
 
   &[disabled] {
     color: $disabled-color;

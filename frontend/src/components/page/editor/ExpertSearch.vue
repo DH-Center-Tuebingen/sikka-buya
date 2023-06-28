@@ -4,13 +4,6 @@
 
     <div class="grid">
       <aside>
-        <Button
-          class="error"
-          @click="resetFilters"
-          v-if="hasFilters"
-        >{{
-          $t('catalog.reset_filters')
-        }}</Button>
         <search-field
           id="text-search"
           v-model="text"
@@ -23,30 +16,37 @@
           ref="catalogFilter"
         />
       </aside>
-      <pagination
-      class="results"
-        :pageInfo="pageInfo"
-        @input="updatePagination"
-      >
-        <List
-          :error="error"
-          :items="types"
+      <div class="right-control">
+        <FilterControl
+          :active-filters="activeFilters"
+          @resetFilter="resetFilter"
+          @resetAllFilters="resetAllFilters"
+        />
+        <pagination
+          class="results"
+          :pageInfo="pageInfo"
+          @input="updatePagination"
         >
-          <ListItem
-            v-for="item of types"
-            v-bind:key="item.key"
-            :id="`list-item-type-${item.id}`"
-            :to="{
-              name: 'EditType',
-              params: { id: item.id },
-              target: '_blank',
-            }"
-            :class="item.completed ? 'completed' : 'incomplete'"
+          <List
+            :error="error"
+            :items="types"
           >
-            {{ item.projectId }}
-          </ListItem>
-        </List>
-      </pagination>
+            <ListItem
+              v-for="item of types"
+              v-bind:key="item.key"
+              :id="`list-item-type-${item.id}`"
+              :to="{
+                name: 'EditType',
+                params: { id: item.id },
+                target: '_blank',
+              }"
+              :class="item.completed ? 'completed' : 'incomplete'"
+            >
+              {{ item.projectId }}
+            </ListItem>
+          </List>
+        </pagination>
+      </div>
     </div>
   </div>
 </template>
@@ -58,6 +58,7 @@ import LabeledInputContainer from '../../LabeledInputContainer.vue';
 import Pagination from '../../list/Pagination.vue';
 import CatalogFilter from '../catalog/CatalogFilter.vue';
 import SearchField from '../../layout/SearchField.vue';
+import FilterControl from '../../interactive/search/filters/FilterControl.vue';
 
 // mixins
 import CatalogFilterMixin from '../../mixins/catalog-filter';
@@ -71,6 +72,7 @@ export default {
     List,
     ListItem,
     SearchField,
+    FilterControl
   },
   data() {
     return {
@@ -100,14 +102,27 @@ export default {
         text: this.text,
       });
     },
-    resetFilters() {
+    resetAllFilters() {
       this.text = '';
       this.catalog_filter_mixin_reset(this.$refs.catalogFilter);
     },
+    resetFilter(name) {
+      if (name == "plain_text") {
+        this.text = '';
+      } else this.$refs.catalogFilter.resetFilter(name);
+    }
   },
   computed: {
     hasFilters() {
-      return this.catalog_filter_mixin_filterActive || this.text != '';
+      return this.activeFilters.length > 0;
+    },
+    activeFilters() {
+      const activeFilters = this.catalog_filter_mixin_activeFilters
+      if (this.text != '') {
+        activeFilters.push({ key: "plain_text", value: this.text });
+      }
+
+      return activeFilters;
     },
     overwriteFilters() {
       return this.text == "" ? {} : { plain_text: this.text };
@@ -118,8 +133,6 @@ export default {
 
 
 <style lang="scss" scoped>
-
-
 .results {
   grid-column: span 4;
 }
@@ -145,5 +158,13 @@ p {
 button {
   width: 100%;
   margin-bottom: 2 * $padding;
+}
+
+.right-control {
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
+
+  grid-column: span 4;
 }
 </style>

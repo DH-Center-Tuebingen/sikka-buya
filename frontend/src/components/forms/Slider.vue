@@ -1,11 +1,18 @@
 <template>
   <div class="slider">
-    <div class="slider-background"><slot name="background" /></div>
+    <div class="slider-background">
+      <slot name="background" />
+    </div>
 
-    <div class="slider-bar" ref="bar">
+    <div
+      class="slider-bar"
+      ref="bar"
+    >
       <div class="slider-thumb"></div>
     </div>
-    <div class="slider-foreground"><slot /></div>
+    <div class="slider-foreground">
+      <slot />
+    </div>
 
     <label>
       <input
@@ -52,7 +59,7 @@ export default {
     this.$refs.bar.style.width = (this.ratio * 100).toFixed(6) + '%';
   },
   methods: {
-    focus(){
+    focus() {
       this.$refs.slider.focus()
     },
     updateValue(event) {
@@ -92,6 +99,7 @@ export default {
 
 <style lang="scss">
 $caretWidth: 5px;
+
 .slider {
   position: relative;
   background-color: $dark-white;
@@ -159,7 +167,18 @@ $caretWidth: 5px;
     top: 0;
     width: 100%;
     height: 100%;
-    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .slider-foreground::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3), inset 1px 1px 25px rgba(0, 0, 0, 0.1);
   }
 
   .slider-bar {
@@ -181,5 +200,4 @@ $caretWidth: 5px;
     position: absolute;
     transform: translateX(50%);
   }
-}
-</style>
+}</style>

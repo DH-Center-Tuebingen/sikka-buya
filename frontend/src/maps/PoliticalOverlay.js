@@ -71,6 +71,10 @@ export default class PoliticalOverlay extends Overlay {
             id
             name
           }
+          role {
+            id
+            name
+          }
         }
         getPersonMints(mints: $mints) {
           mint { id, name, location }
@@ -83,6 +87,7 @@ export default class PoliticalOverlay extends Overlay {
           ${Mint.mintGraphQL()}  
       }
         `
+
 
       result = await Query.raw(query, {
         persons: filters.person,

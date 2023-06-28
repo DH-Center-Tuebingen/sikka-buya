@@ -141,8 +141,13 @@ class PageGQL extends GQL {
 
                 return result ? entryToGraphQL(result) : null
             },
-            getPageList: async function (_, { group } = args = {}) {
+            getPageList: async function (_, { group } = args = {}, context) {
                 Argument.require({ group })
+
+                const auth = Auth.authContext(context)
+
+                const where = auth ? "" : "AND published_timestamp > timestamp '1971-01-01 00:00:00' AND published_timestamp <= now()"
+                const orderBY = auth ? "created_timestamp DESC" : "published_timestamp DESC"
 
                 let results = []
                 try {
@@ -152,8 +157,8 @@ class PageGQL extends GQL {
                     results = await Database.manyOrNone(`
                     SELECT web_page.* FROM web_page 
                     LEFT JOIN web_page_group ON web_page_group.id = web_page.page_group
-                    WHERE web_page_group.name = $1
-                    ORDER BY created_timestamp DESC;
+                    WHERE web_page_group.name = $1 ${where}
+                    ORDER BY ${orderBY};
                 `, group)
                 } catch (e) {
                     console.log(e)
