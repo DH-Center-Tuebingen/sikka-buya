@@ -110,8 +110,7 @@ export default class CMSPage {
         }`
             , {})
         const page = result.data.data.getSinglePage
-        this.timestampsToNumbers(page)
-        return page
+        return this.postprocessPage(page)
     }
 
     static async get(id) {
@@ -135,8 +134,7 @@ export default class CMSPage {
         }`
         )
         const page = result.data.data.getPage
-        this.timestampsToNumbers(page)
-        return page
+        return this.postprocessPage(page)
     }
 
 
@@ -153,4 +151,13 @@ export default class CMSPage {
         page.publishedTimestamp = page.publishedTimestamp ? page.publishedTimestamp.toString() : null
         return page
     }
+
+    static async postprocessPage(page) {
+
+        if (page) {
+            this.timestampsToNumbers(page)
+        }
+        return page
+    }
+
 }

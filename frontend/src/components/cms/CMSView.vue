@@ -70,9 +70,13 @@ export default {
     },
     methods: {
         async init() {
-            const page = await this.cms_mixin_get({ id: this.id, group: this.group })
-            this.ready = true
-            this.page.assign(page)
+            try {
+                const page = await this.cms_mixin_get({ id: this.id, group: this.group })
+                this.ready = true
+                this.page.assign(page)
+            } catch (e) {
+                console.error(e)
+            }
         },
         isPresent(key) {
             const allowed = this.isIncluded(key) && !this.isExcluded(key)
