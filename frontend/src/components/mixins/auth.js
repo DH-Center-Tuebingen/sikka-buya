@@ -25,6 +25,8 @@ export default {
             this.$store.commit("logout")
             if (this.$route.meta.auth) {
                 this.$router.go()
+            } else {
+                document.location.reload(true)
             }
         }
     }

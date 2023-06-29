@@ -93,6 +93,5 @@ export default {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-left: 8px;
 }
 </style>
