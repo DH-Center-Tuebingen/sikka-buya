@@ -222,19 +222,19 @@ export default {
   }
 
 
-  .news {
-    .cms-list-item {
-      background-color: white;
-      border-radius: $border-radius;
-      padding: 1em;
+  // .news {
+  //   // .cms-list-item {
+  //   //   background-color: white;
+  //   //   border-radius: $border-radius;
+  //   //   padding: 1em;
 
-      box-shadow: $shadow;
+  //   //   box-shadow: $shadow;
 
-      :first-child {
-        margin-top: 0;
-      }
-    }
-  }
+  //   //   :first-child {
+  //   //     margin-top: 0;
+  //   //   }
+  //   // }
+  // }
 }
 </style>
 

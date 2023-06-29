@@ -85,11 +85,6 @@ export default {
     toggleMenu: function () {
       this.active = !this.active;
     },
-    logout: function () {
-      Auth.logout();
-      this.$store.commit('logout');
-      this.$router.push({ name: 'Home' });
-    },
   },
   mounted: function () {
     this.minimized = this.$route.meta.smallNav ? true : false;
@@ -120,9 +115,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#nav-logout-button {
-  text-transform: capitalize;
-}
 
 .navigation {
   height: 60px;

@@ -88,8 +88,11 @@ const store = new Vuex.Store({
       if (state.user?.super) permissions.push("super")
       return permissions
     },
+    editor(state, getters) {
+      return getters.userHasPermission("editor")
+    },
     canEdit(state, getters) {
-      return state.editmode && getters.userHasPermission("editor")
+      return state.editmode && getters.editor
     },
     hasErrors(state) {
       return state.errors.length > 0

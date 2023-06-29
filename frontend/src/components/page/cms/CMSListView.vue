@@ -1,12 +1,20 @@
 <template>
     <div class="list-view">
-        <h2>
-            <Locale :path="`cms.group.${this.group}`" />
-        </h2>
-        <Button
-            v-if="$store.getters.canEdit"
-            @click="() => cms_mixin_createAndVisit(this.group, { include: this.include })"
-        >Neuer Eintrag</Button>
+        <header>
+            <h2>
+                <Locale :path="`cms.group.${this.group}`" />
+            </h2>
+            <Button
+                v-if="$store.getters.editor"
+                @click="() => cms_mixin_createAndVisit(this.group, { include: this.include })"
+            >
+                <Icon
+                    type="mdi"
+                    :path="icons.add"
+                    :size="16"
+                /> Neuer Eintrag
+            </Button>
+        </header>
         <div class="list">
             <CMSListItem
                 v-for="page of pages"
@@ -24,13 +32,18 @@
 <script>
 import Button from '../../layout/buttons/Button.vue';
 import CMSListItem from '../../cms/CMSListItem.vue';
-import CMSMixin from "../../mixins/cms-mixin"
 import Locale from '../../cms/Locale.vue';
+
+import CMSMixin from "../../mixins/cms-mixin"
+import IconMixin from "../../mixins/icon-mixin"
+
+import { mdiPlus } from "@mdi/js"
+
 
 
 export default {
     components: { Button, CMSListItem, Locale },
-    mixins: [CMSMixin],
+    mixins: [CMSMixin, IconMixin({ add: mdiPlus })],
     props: {
         showTime: { type: Boolean, default: true },
         include: Array,
@@ -56,11 +69,20 @@ export default {
 </script>
 
 <style lang='scss' scoped>
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+button {
+    gap: .5em;
+}
+
 .list {
     margin-bottom: $page-bottom-spacing;
 
     >* {
         margin-top: $padding;
     }
-}
-</style>
+}</style>
