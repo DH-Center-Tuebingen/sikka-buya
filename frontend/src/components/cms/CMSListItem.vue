@@ -3,41 +3,77 @@
         class="cms-list-item"
         :class="klasses"
     >
-        <header>
+
+        <header v-if="$store.getters.loggedIn">
+
+            <CMSPublicationStatus :pageTimestamp="parseInt(value.publishedTimestamp)" />
+            <span class="date">
+                {{ time_mixin_formatDate(value.publishedTimestamp) || "-" }}
+            </span>
+            <div
+                style="position: relative;"
+                @mouseenter="() => this.showInfo = true"
+                @mouseleave="() => this.showInfo = false"
+            >
+                <Icon
+                    type="mdi"
+                    :path="icons.info"
+                    :size="16"
+                />
+                <tooltip v-if="showInfo">
+                    <table>
+                        <tr>
+                            <td>
+                                <Locale path="time.created" />
+                            </td>
+                            <td>{{ new Date(value.createdTimestamp).toLocaleDateString("de-DE") }} {{ new
+                                Date(value.createdTimestamp).toLocaleTimeString("de-DE") }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <Locale path="time.last_modified" />
+                            </td>
+                            <td>{{ new Date(value.lastModifiedTimestamp).toLocaleDateString("de-DE") }} {{ new
+                                Date(value.lastModifiedTimestamp).toLocaleTimeString("de-DE") }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <Locale path="time.published" />
+                            </td>
+                            <td>{{ new Date(value.publishedTimestamp).toLocaleDateString("de-DE") }} {{ new
+                                Date(value.publishedTimestamp).toLocaleTimeString("de-DE") }}</td>
+                        </tr>
+
+                    </table>
+                </tooltip>
+            </div>
+            <ActionsDrawer
+                v-if="$store.getters.editor"
+                align="right"
+                :actions="[
+                    { name: 'delete', label: $tc('general.delete') },
+                    { name: 'edit', label: $tc('general.edit') },
+                ]"
+                @select="executeAction"
+            />
+
+
+
+
+        </header>
+        <article>
             <div class="titles">
                 <h3 v-if="isPresent('title')">{{ value.title }}</h3>
                 <h4 v-if="isPresent('subtitle')">{{ value.subtitle }}</h4>
             </div>
-            <div class="misc">
-                <CMSPublicationStatus
-                    v-if="$store.getters.loggedIn"
-                    :pageTimestamp="parseInt(value.publishedTimestamp)" />
-                <span class="date">
-                    {{ time_mixin_formatDate(value.publishedTimestamp) || "-" }}
-                </span>
-                <ActionsDrawer
-                    v-if="$store.getters.canEdit"
-                    align="right"
-                    :actions="[
-                        { name: 'delete', label: $tc('general.delete') },
-                        { name: 'edit', label: $tc('general.edit') },
-                    ]"
-                    @select="executeAction"
-                />
 
+            <div class="body">
+                <div
+                    v-if="isPresent('body')"
+                    v-html="value.body"
+                ></div>
             </div>
-
-
-        </header>
-        <div class="body">
-
-
-
-            <div
-                v-if="isPresent('body')"
-                v-html="value.body"
-            ></div>
-        </div>
+        </article>
     </div>
 </template>
 
@@ -48,21 +84,30 @@ import ActionsDrawer from "../interactive/ActionsDrawer.vue";
 import Button from '../layout/buttons/Button.vue';
 import CMSPublicationStatus from './CMSPublicationStatus.vue';
 import Locale from "./Locale.vue";
+import Tooltip from "../forms/Tooltip"
 
 // Mixins
 import CMSMixin from "../mixins/cms-mixin"
 import TimeMixin from '../mixins/time-mixin';
+import IconMixin from '../mixins/icon-mixin';
 
 // Utils
 import CMSConfig from "../../../cms.config";
+import { mdiInformationOutline } from '@mdi/js';
 
 export default {
-    mixins: [TimeMixin, CMSMixin],
+    mixins: [TimeMixin, CMSMixin, IconMixin({ info: mdiInformationOutline })],
     components: {
         ActionsDrawer,
         Button,
         CMSPublicationStatus,
         Locale,
+        Tooltip,
+    },
+    data() {
+        return {
+            showInfo: false
+        }
     },
     props: {
         showTime: { type: Boolean, default: true },
@@ -105,7 +150,7 @@ export default {
             const publishedClass = this.cms_mixin_getPublishedState(this.value.publishedTimestamp)
 
             return {
-                editable: this.$store.getters.canEdit,
+                editable: this.$store.getters.editor,
                 [publishedClass]: true
             }
         }
@@ -116,7 +161,14 @@ export default {
 <style lang='scss' scoped>
 header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: space-between;
+    padding: .25em 1em;
+    border-bottom: 1px solid #efefef;
+
+    .cms-publication-status {
+        padding-left: 0;
+    }
 
     .titles {
         flex: 1;
@@ -143,41 +195,14 @@ h4 {
 
 }
 
-// .actions-drawer {
-//     padding: $padding;
-// }
-
 .cms-list-item {
     position: relative;
+    background-color: white;
+    border-radius: $border-radius;
+}
 
-    // &.scheduled,
-    // &.draft {
-    //     .misc .date {
-
-
-    //         &::before {
-    //             // position: absolute;
-    //             // top: 0;
-    //             // left: 0;
-
-    //             font-size: .75rem;
-    //             font-weight: bold;
-
-    //             padding: $padding;
-    //             content: "";
-    //             text-transform: uppercase;
-    //         }
-    //     }
-    // }
-
-
-    &.scheduled {
-        border-top: 5px solid $purple;
-    }
-
-    &.draft {
-        border-top: 5px solid $yellow;
-    }
+article {
+    padding: .5em 1em 1em 1em;
 }
 
 .date {
@@ -193,5 +218,9 @@ h4 {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 1em;
+}
+
+.cms-list-item.editable {
+    padding-top: 0 !important;
 }
 </style>
