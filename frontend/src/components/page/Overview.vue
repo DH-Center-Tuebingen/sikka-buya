@@ -3,20 +3,26 @@
     <BackHeader :to="{ name: 'Editor' }" />
     <header>
       <h1>{{ $tc(`property.${fixedPropertyName}`) }}</h1>
-      <div
+
+
+
+      <Button
         id="create-button"
-        class="button"
         @click="create"
-        tabindex="1"
-        autofocus
-        @keydown.enter="create"
       >
-        <PlusCircleOutline />
-        <span><locale path="form.create" /></span>
-      </div>
+        <Icon
+          :path="icons.add"
+          :size="IconSize.Normal"
+          type="mdi"
+        />
+        <locale path="form.create" />
+      </Button>
     </header>
 
-    <SearchField v-model="textFilter" :asyncSearch="search" />
+    <SearchField
+      v-model="textFilter"
+      :asyncSearch="search"
+    />
     <List
       @remove="remove"
       :error="listError"
@@ -30,21 +36,20 @@
         :disable="deleteButtonActive"
         :id="item.id"
       >
-        <slot name="list-item-before" :item="item" />
+        <slot
+          name="list-item-before"
+          :item="item"
+        />
 
-        <ListItemCell
-          :to="{
-            path: `${item.id}`,
-            append: true,
-          }"
-          >{{ item.name }}</ListItemCell
-        >
+        <ListItemCell :to="{
+          path: `${item.id}`,
+          append: true,
+        }">{{ item.name }}</ListItemCell>
         <Button
           v-for="tool in tools"
           :key="'tool-' + tool"
           @click="() => $emit('tool', tool, { id: item.id })"
-          >{{ $t('editor.' + tool) }}</Button
-        >
+        >{{ $t('editor.' + tool) }}</Button>
         <DynamicDeleteButton
           @delete="deleteButtonRemove(item.id)"
           @open="deleteButtonEnable()"
@@ -56,7 +61,6 @@
 </template>
 
 <script>
-import PlusCircleOutline from 'vue-material-design-icons/PlusCircleOutline';
 
 import List from '../layout/List.vue';
 import Query from '../../database/query.js';
@@ -72,10 +76,12 @@ import DeleteButtonMixin from '../mixins/deletebutton';
 import Button from '../layout/buttons/Button.vue';
 import Locale from '../cms/Locale.vue';
 
+import IconMixin from "@/components/mixins/icon-mixin"
+import { mdiPlus } from '@mdi/js';
+
 export default {
   name: 'OverviewPage',
   components: {
-    PlusCircleOutline,
     List,
     BackHeader,
     SearchField,
@@ -84,8 +90,8 @@ export default {
     ListItemCell,
     Button,
     Locale
-},
-  mixins: [DeleteButtonMixin],
+  },
+  mixins: [DeleteButtonMixin, IconMixin({ add: mdiPlus })],
   created: function () {
     this.list();
   },
@@ -132,9 +138,8 @@ export default {
         });
     },
     search() {
-      let queryCommand = `search${
-        this.queryName[0].toUpperCase() + this.queryName.substr(1)
-      }`;
+      let queryCommand = `search${this.queryName[0].toUpperCase() + this.queryName.substr(1)
+        }`;
       Query.raw(
         `{
             ${queryCommand}
@@ -229,34 +234,19 @@ export default {
   }
 }
 
-.button {
-  @include interactive();
-  display: flex;
-  align-items: center;
-  padding: $padding;
 
-  border-radius: $border-radius;
-
-  > * {
-    margin-right: $padding;
-  }
+section>* {
+  margin-bottom: $padding;
 }
 
-section > * {
-  margin-bottom: $padding;
+h1 {
+  margin-bottom: 0;
 }
 
 header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-}
-
-#create-button {
-  background-color: $primary-color;
-  color: $white;
-  // position: absolute;
-  right: 0;
-  top: 0;
+  align-items: flex-end;
+  margin-bottom: 2rem
 }
 </style>

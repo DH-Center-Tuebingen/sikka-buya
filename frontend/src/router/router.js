@@ -82,6 +82,7 @@ import PersonForm from "@/components/page/property/PersonForm"
 import ProvinceForm from "@/components/page/property/ProvinceForm"
 import RoleForm from "@/components/page/property/RoleForm"
 import TitleForm from "@/components/page/property/TitleForm"
+import TreasureForm from "@/components/page/property/TreasureForm"
 import Auth from "../utils/Auth.js"
 
 
@@ -329,7 +330,8 @@ const routes = [
             name: "Property",
             component: Overview,
             props: true
-          }, {
+          },
+          {
             path: 'type/create',
             name: 'TypeCreationPage',
             component: CreateTypePage
@@ -427,6 +429,11 @@ const routes = [
             path: "province/:id",
             name: "EditProvince",
             component: ProvinceForm
+          },
+          {
+            path: "treasure/create",
+            name: "TreasureCreate",
+            component: TreasureForm
           },
           {
             path: "locale/:lang/:path",

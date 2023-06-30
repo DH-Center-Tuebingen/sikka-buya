@@ -1342,29 +1342,29 @@ export default {
   }
 }
 
-.global.error.hidden {
-  top: 0;
-  transform: translate(-50%, -100%);
-}
+// .global.error.hidden {
+//   top: 0;
+//   transform: translate(-50%, -100%);
+// }
 
-.global.error {
-  position: fixed;
-  top: $padding;
-  left: 50%;
-  padding: $padding 2 * $padding;
-  background-color: $red;
-  z-index: 100000;
-  border: 1px sold darken($red, 0.5);
-  transform: translate(-50%, 0);
-  border-radius: $border-radius;
+// .global.error {
+//   position: fixed;
+//   top: $padding;
+//   left: 50%;
+//   padding: $padding 2 * $padding;
+//   background-color: $red;
+//   z-index: 100000;
+//   border: 1px sold darken($red, 0.5);
+//   transform: translate(-50%, 0);
+//   border-radius: $border-radius;
 
-  transition-duration: 0.5s;
-  transition-property: transform, top;
+//   transition-duration: 0.5s;
+//   transition-property: transform, top;
 
-  >*:not(:last-child) {
-    margin-right: 20px;
-  }
-}
+//   >*:not(:last-child) {
+//     margin-right: 20px;
+//   }
+// }
 
 textarea {
   width: 100%;

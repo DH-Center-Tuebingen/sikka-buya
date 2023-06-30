@@ -1,30 +1,78 @@
 <template>
-  <div class="data-select" :class="{ invalid }">
-    <input type="hidden" class="data-select-id" :value="idValue" />
-    <input class="name-field" ref="nameField" @input="input" @focus="activateList" @blur="hideList"
-      :placeholder="placeholder" v-model="value[attribute]" :required="required" />
+  <div
+    class="data-select"
+    :class="{ invalid }"
+  >
+    <input
+      type="hidden"
+      class="data-select-id"
+      :value="idValue"
+    />
+    <input
+      class="name-field"
+      ref="nameField"
+      @input="input"
+      @focus="activateList"
+      @blur="hideList"
+      :placeholder="placeholder"
+      v-model="value[attribute]"
+      :required="required"
+    />
 
-    <Button v-if="!disableRemoveButton" id="clear-btn" @click.stop.prevent="clear()">
+    <Button
+      v-if="!disableRemoveButton"
+      id="clear-btn"
+      @click.stop.prevent="clear()"
+    >
       <Close :size="iconSize" />
     </Button>
 
-    <div v-if="!unselectable" class="indicator">
-      <Alert :size="iconSize" v-if="invalid" class="alert" />
-      <Check :size="iconSize" v-else class="check" />
+
+    <div
+      class="debug-id"
+      v-if="debug"
+    >
+      ({{ idValue }})
+    </div>
+
+    <div
+      v-if="!unselectable"
+      class="indicator"
+    >
+      <Alert
+        :size="iconSize"
+        v-if="invalid"
+        class="alert"
+      />
+      <Check
+        :size="iconSize"
+        v-else
+        class="check"
+      />
     </div>
 
     <ul :class="'search-box ' + (listVisible ? 'visible' : 'hidden')">
-      <li v-if="internal_error" class="error non-selectable">
+      <li
+        v-if="internal_error"
+        class="error non-selectable"
+      >
         {{ internal_error }}
       </li>
 
-      <li v-if="
-        (!internal_error && !loading && !searchResults) ||
-        searchResults.length == 0
-      " class="non-selectable">
+      <li
+        v-if="(!internal_error && !loading && !searchResults) ||
+          searchResults.length == 0
+          "
+        class="non-selectable"
+      >
         {{ $t('message.list_empty') }}
       </li>
-      <li v-for="search of searchResults" :key="search.id" :data-id="search.id" @click.stop="setValue">
+      <li
+        v-for="search of searchResults"
+        :key="search.id"
+        :data-id="search.id"
+        @click.stop="setValue"
+      >
         <!-- These comments are necessary, that no whitespace is added!
         -->{{ transformTextContent(search)
         }}<!--
@@ -32,7 +80,10 @@
       </li>
     </ul>
 
-    <div v-if="error" class="error non-selectable">{{ error }}</div>
+    <div
+      v-if="error"
+      class="error non-selectable"
+    >{{ error }}</div>
   </div>
 </template>
 
@@ -58,6 +109,10 @@ export default {
     };
   },
   props: {
+    debug: {
+      type: Boolean,
+      default: false,
+    },
     value: {
       type: Object,
       validator: function (obj) {
@@ -78,7 +133,6 @@ export default {
     },
     attribute: {
       type: String,
-      required: true,
       default: 'name',
     },
     required: {
@@ -313,6 +367,16 @@ export default {
   }
 }
 
+.debug-id {
+  position: absolute;
+  right: 55px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  color: gray;
+}
+
 .error {
   position: absolute;
   top: 0;
@@ -326,7 +390,7 @@ export default {
 
 .name-field {
   flex: 1;
-
+  min-width: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   //   border: 1px solid gray;

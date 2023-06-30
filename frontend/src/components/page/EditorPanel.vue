@@ -124,6 +124,7 @@ export default {
         'dynasty',
         'role',
         'province',
+        'treasure'
       ];
 
       let propertyMap = {
@@ -232,4 +233,5 @@ h3 {
       }
     }
   }
-}</style>
+}
+</style>

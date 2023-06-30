@@ -86,6 +86,7 @@ input TreasureItemInput {
 }
 
 type Treasure {
+  id:ID
   name: String
   location: GeoJSON
   items: [TreasureItem]
@@ -395,6 +396,7 @@ type Query {
   files(group:String!, orderBy:String):[NamedURL]
 
   treasure:[Treasure]
+  searchTreasure(text:String): [Treasure] 
   getTreasure(id:ID): Treasure
 }
 

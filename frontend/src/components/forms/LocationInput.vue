@@ -9,7 +9,21 @@
   >
     <div class="toolbar">
       <div class="input-wrapper">
-        <label for="input">{{ type.toUpperCase() }}</label>
+        <select
+          v-if="interactive"
+          @change="typeChange"
+        >
+          <option value="point">
+            <Locale path="location.point" />
+          </option>
+          <option value="polygon">
+            <Locale path="location.polygon" />
+          </option>
+        </select>
+        <label
+          v-else
+          for="input"
+        >{{ type.toUpperCase() }}</label>
         <input
           ref="input"
           class="location-input-field"
@@ -17,13 +31,19 @@
           :value="coordinateString"
           @input="resetInputText()"
         />
-        <Button class="ghost-btn" @click="pasteEvt"><ContentPaste /></Button>
+        <Button
+          v-if="type === 'point'"
+          class="ghost-btn"
+          @click="pasteEvt"
+        >
+          <ContentPaste />
+        </Button>
       </div>
 
       <button
         type="button"
         class="delete-btn"
-        @click.prevent.stop="clearData()"
+        @click.prevent.stop="clear()"
       >
         <Close />
       </button>
@@ -51,17 +71,24 @@ import Close from 'vue-material-design-icons/Close.vue';
 import ContentPaste from 'vue-material-design-icons/ContentPaste.vue';
 import Button from '../layout/buttons/Button.vue';
 import MapView from '../map/MapView.vue';
-var L = require('leaflet');
 
+import Locale from '../cms/Locale.vue';
+
+var L = require('leaflet');
 export default {
   name: 'LocationInput',
   components: {
+    Locale,
     MapView,
     Close,
     Button,
     ContentPaste,
   },
   props: {
+    interactive: {
+      type: Boolean,
+      default: false,
+    },
     type: String,
     radius: Number,
     coordinates: {
@@ -103,6 +130,9 @@ export default {
     this.$refs.input.removeEventListener('paste', this.pasteEvtListener);
   },
   methods: {
+    typeChange(event) {
+      this.clear(event.target.value)
+    },
     async pasteEvtListener(evt) {
       let paste = (evt.clipboardData || window.clipboardData).getData('text');
       this.paste(paste);
@@ -207,14 +237,7 @@ export default {
               }
             }
 
-            // if (this.isPolygon) {
-            //   if (coordinates.length > 0) {
-
-            //   }
-            // } else {
-            //   coordinates = prevPosition.coordinates;
-            // }
-            this.emitUpdate(coordinates);
+            this.emitUpdate({ coordinates });
           }
         }
 
@@ -233,12 +256,16 @@ export default {
 
           coordinates.splice(this.activeMarkerIndex, 1);
           this.activeMarkerIndex = null;
-          this.emitUpdate(coordinates);
+          this.emitUpdate({ coordinates });
         }
       }
     },
-    clearData: function () {
-      this.emitUpdate([]);
+    clear(type = this.type) {
+      let coordinates = null
+      if (type == "polygon") {
+        coordinates = [];
+      }
+      this.emitUpdate({ coordinates, type });
     },
     enableMap() {
       this.map = this.$refs.map.map;
@@ -252,6 +279,7 @@ export default {
       });
     },
     addPoint(location) {
+      console.log(this.type, this.isPolygon)
       let coordinates = this.coordinates == null ? [] : this.coordinates;
       if (this.isPolygon) {
         coordinates.push([location.lat, location.lng]);
@@ -267,7 +295,7 @@ export default {
       while (this.markerHistory.length > this.historyLimit)
         this.markerHistory.pop();
 
-      this.emitUpdate(coordinates);
+      this.emitUpdate({ coordinates });
     },
     removeMarker() {
       if (this.marker) {
@@ -310,7 +338,7 @@ export default {
             this.setActiveMarker(idx + 1);
             this.handles[this.activeMarkerIndex].fire('mousedown', evt);
 
-            this.emitUpdate(coordinates);
+            this.emitUpdate({ coordinates });
           });
 
           this.lineHandles.push(lineHandle);
@@ -318,9 +346,9 @@ export default {
       }
     },
 
-    emitUpdate(coordinates) {
+    emitUpdate({ coordinates = this.coordinates, type = this.type } = {}) {
       this.$emit('update', {
-        type: this.type,
+        type,
         coordinates,
       });
     },
@@ -476,27 +504,27 @@ export default {
 .toolbar {
   display: flex;
 
-  > button {
+  >button {
     border-top-width: 0;
     border-right-width: 0;
   }
 
-  > div {
+  >div {
     position: relative;
     flex: 1;
     display: flex;
-    > input {
+
+    >input {
       flex: 1;
-      padding-left: 100px;
     }
 
-    > *,
+    >*,
     > :first-child {
       border-top-width: 0;
       border-right-width: 0;
     }
 
-    > label {
+    >label {
       position: absolute;
       top: 0;
       bottom: 0;
@@ -508,6 +536,14 @@ export default {
       opacity: 0.5;
     }
   }
+}
+
+select {
+  text-transform: uppercase;
+  font-weight: 900;
+  color: $gray;
+
+
 }
 
 .location-input {
@@ -536,6 +572,7 @@ export default {
     list-style-type: none;
     margin: $padding;
     padding: 0;
+
     li {
       margin: 0;
     }

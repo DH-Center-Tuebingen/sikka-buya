@@ -30,22 +30,26 @@
     "general": {
         "add": "hinzufügen",
         "and": "und",
+        "auto-save": "automatisches Speichern",
         "cooperations": "Kooperationen",
+        "count": "Anzahl",
         "delete": "löschen",
         "edit": "bearbeiten",
         "filter_active": "Filter aktiv",
+        "fragment": "Fragment",
+        "id": "ID",
         "name": "Name | Namen",
         "or": "oder",
         "reset_filter": "Filter aufheben",
         "save": "speichern",
+        "saved": "gespeichert",
+        "saving": "speichern",
+        "schedule": "planen",
         "search": "Suchen",
         "settings": "Einstellungen",
         "share": "Teilen",
-        "user": "Nutzer",
-        "saved": "gespeichert",
-        "saving": "speichern",
-        "auto-save": "automatisches Speichern",
-        "schedule": "planen"
+        "treasure_spot": "Fundort",
+        "user": "Nutzer"
     },
     "property": {
         "plain_text": "Text",
@@ -118,7 +122,9 @@
             "outerInscript": "äussere Revers-Umschrift",
             "misc": "Revers-Randbeschriftung"
         },
-        "specials": "Besonderheiten und Varianten"
+        "specials": "Besonderheiten und Varianten",
+        "treasure": "Schatzfund",
+        "treasure-items": "Schatzfundinhalt"
     },
     "error": {
         "already_submitted": "De Anfrage wurde bereits beantragt!",
@@ -128,7 +134,8 @@
             "delete": {
                 "only_super_can_delete_completed_or_reviewed_types": "Nur Superuser können abgeschlossene oder überprüfte Typen löschen."
             }
-        }
+        },
+        "loading_list": "Fehler: Liste konnte nicht geladen werden."
     },
     "events": {
         "copied": "Kopiert!"
@@ -264,5 +271,9 @@
         "fint": {
             "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)"
         }
+    },
+    "location": {
+        "point": "Ort",
+        "polygon": "Gebiet"
     }
 }
