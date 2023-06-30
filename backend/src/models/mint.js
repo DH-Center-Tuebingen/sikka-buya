@@ -88,7 +88,7 @@ class Mint {
     static fixGeoJSON(obj) {
         if (obj.uncertainArea != null && !GeoJSON.isEmpty(obj.uncertainArea) > 0) {
             obj["uncertain_area"] = obj.uncertainArea
-        }else{
+        } else {
             obj["uncertain_area"] = null
         }
         delete obj.uncertainArea

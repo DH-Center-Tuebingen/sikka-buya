@@ -62,6 +62,41 @@ type ModCoinTypePagination {
   types: [ModCoinType]
 }
 
+type TreasureItem {
+  id: ID
+  count: Int
+  projectId: String
+  dynasty:Name
+  mint: Mint
+  year: Int
+  nominal: Name
+  material: Material
+  fragment: Boolean
+}
+
+input TreasureItemInput {
+  count: Int
+  projectId: String
+  dynasty: ID
+  mint: ID
+  year: Int
+  nominal: ID
+  material: ID
+  fragment: Boolean 
+}
+
+type Treasure {
+  name: String
+  location: GeoJSON
+  items: [TreasureItem]
+}
+
+input TreasureInput {
+  name: String
+  location: GeoJSON
+  items: [TreasureItemInput]
+}
+
 type CoinType {
   avers: CoinSideInformation
   caliph: Person
@@ -358,9 +393,12 @@ type Query {
   i18n:String
 
   files(group:String!, orderBy:String):[NamedURL]
+
+  treasure:[Treasure]
+  getTreasure(id:ID): Treasure
 }
 
-type MintPersons {
+type MintPersons { 
   mint: Mint,
   caliphs:[Person],
   issuers: [Person],
@@ -461,6 +499,12 @@ type Mutation {
   addCoinType(data: CoinTypeInput): Void
   updateCoinType(id: ID, data: CoinTypeInput): Void
   deleteCoinType(id: ID): Void
+
+  # Tested in 035_treasure
+  addTreasure(data:TreasureInput):Void
+  updateTreasure(id:ID, data:TreasureInput):Void
+  deleteTreasure(id:ID):Void
+
 
   # TODO: missing Tests ---------------------------------------------
 

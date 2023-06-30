@@ -1,22 +1,43 @@
+const { WriteableDatabase } = require('../utils/database')
 
 
 class Material {
+
+    static get(id, { tableAlias = "ma", tableName = "material" } = {}) {
+        const query = `
+        ${Material.select({ tableName: tableAlias })} 
+        ${Material.colorJoin({ materialTableName: tableAlias })}
+        WHERE ${tableAlias}.id = $[id]`
+        return WriteableDatabase.oneOrNone(query, { id })
+    }
+
+    static select({
+        tableName = "ma",
+    }) {
+        return `SELECT 
+            ${this.query({ tableName })},
+            ${this.colorQuery({ materialTableName: tableName })} 
+         FROM 
+            material ${tableName}
+            `
+    }
+
     static query({
         tableName = "ma"
     } = {}) {
         return `
         ${tableName}.id AS material_id,
-        ${tableName}.name AS material_name,
+        ${tableName}.name AS material_name
     `
     }
 
     static joins({
-        typeTableName = "t",
+        joinTableName = "t",
         tableName = "material",
         tableAlias = "ma"
     } = {}) {
         return `LEFT JOIN ${tableName} ${tableAlias} 
-        ON ${typeTableName}.material = ${tableAlias}.id
+        ON ${joinTableName}.material = ${tableAlias}.id
         `
     }
 
@@ -31,10 +52,10 @@ class Material {
     static colorJoin({
         tableName = "material_color",
         tableAlias = "mac",
-        mintTableName = "ma",
+        materialTableName = "ma",
     } = {}) {
         return `
-            LEFT JOIN ${tableName}  AS ${tableAlias}   ON ${mintTableName}.id = ${tableAlias}.material
+            LEFT JOIN ${tableName} AS ${tableAlias} ON ${materialTableName}.id = ${tableAlias}.material
         `
     }
 

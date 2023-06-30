@@ -15,6 +15,7 @@ const { guardFunctionObject: guard } = require('../utils/guard.js')
 const Frontend = require('../frontend.js')
 const { readdir } = require('fs/promises')
 const { join } = require('path')
+const TreasureGQL = require('./klasses/TreasureGQL.js')
 
 
 
@@ -634,4 +635,6 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
 
 module.exports = Object.assign(Queries,
     guard(SuperUserQueries, (_, __, context) => Auth.requirePermission(context, "super")),
-    PageGQL.Queries)
+    PageGQL.Queries,
+    TreasureGQL.Queries,
+)
