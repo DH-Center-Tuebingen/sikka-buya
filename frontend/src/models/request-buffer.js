@@ -1,5 +1,5 @@
 export default class RequestBuffer {
-    constructor(blockTime, { allowSame = false }) {
+    constructor(blockTime, { allowSame = false } = {}) {
         this.blockTime = blockTime
         this.timeout = null
         this.lastTimestamp = null
