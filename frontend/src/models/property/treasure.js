@@ -1,4 +1,6 @@
 
+import Query from "@/database/query"
+
 /**
  * Class representing a treasure.
  * @class
@@ -23,6 +25,63 @@ export class Treasure {
         this.name = name
         this.location = location
         this.items = items
+    }
+
+    async upsert() {
+        const id = parseInt(this.id)
+        if (!isNaN(id) && id > 0) {
+            this.add()
+        } else {
+            this.update()
+        }
+    }
+
+    async get(id) {
+        const result = await new Query("treasure")
+            .get(id, ["id", "name", "location",
+                {
+                    items: [
+                        "id",
+                        "count",
+                        "year",
+                        { mint: ["id", "name"] },
+                        { dynasty: ["id", "name"] },
+                        { nominal: ["id", "name"] },
+                        { material: ["id", "name"] },
+                        "fragment"]
+                }
+            ])
+
+        return result?.data?.data?.getTreasure
+    }
+
+    async add() {
+        await Query.raw(`
+        mutation addTreasure($treasure: TreasureInput!) {
+            addTreasure(data: $treasure)
+        }
+        `, {
+            treasure: {
+                name: this.name,
+                location: this.location,
+                items: this.items
+            }
+        })
+    }
+
+    async update(id) {
+        await Query.raw(`
+        mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
+            updateTreasure(id:$id, data: $treasure)
+        }
+        `, {
+            id,
+            treasure: {
+                name: this.name,
+                location: this.location,
+                items: this.items
+            }
+        })
     }
 
 }
@@ -69,5 +128,16 @@ export class TreasureItem {
         this.material = material
         this.fragment = fragment
     }
+
+
+    forInput() {
+        return Object.assign({}, this, {
+            mint: { id: this.mint?.id || null, name: this.mint?.name || "" },
+            dynasty: { id: this.dynasty?.id || null, name: this.dynasty?.name || "" },
+            nominal: { id: this.nominal?.id || null, name: this.nominal?.name || "" },
+            material: { id: this.material?.id || null, name: this.material?.name || "" },
+        })
+    }
+
 
 }

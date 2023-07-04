@@ -38,20 +38,24 @@
         />
         <Toggle v-model="value.fragment">
             <template #active>
-                <Icon
-                    :path="icons.checked"
-                    :size="IconSize.Normal"
-                    type="mdi"
-                />
-                <span>Fragment</span>
+                <div>
+                    <Icon
+                        :path="icons.checked"
+                        :size="IconSize.Normal"
+                        type="mdi"
+                    />
+                </div>
+                <span class="fragment-text">Fragment</span>
             </template>
             <template #inactive>
-                <Icon
-                    :path="icons.unchecked"
-                    :size="IconSize.Normal"
-                    type="mdi"
-                />
-                <span>Kein Fragment</span>
+                <div>
+                    <Icon
+                        :path="icons.unchecked"
+                        :size="IconSize.Normal"
+                        type="mdi"
+                    />
+                </div>
+                <span class="fragment-text">Kein Fragment</span>
             </template>
         </Toggle>
 
@@ -93,7 +97,15 @@ export default {
 .treasure-item-form {
 
     .toggle {
+
         align-items: center;
+
+        span {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
     }
 
     .data-select {
@@ -113,9 +125,6 @@ export default {
 
     align-items: center;
     gap: .5em;
-
-    min-width: 0;
-    overflow: hidden;
 
 
 

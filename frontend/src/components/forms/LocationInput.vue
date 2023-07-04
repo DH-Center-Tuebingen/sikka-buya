@@ -48,7 +48,9 @@
         <Close />
       </button>
     </div>
-    <div class="map">
+    <div
+      class="map"
+    >
       <map-view
         ref="map"
         height="500px"
@@ -262,7 +264,7 @@ export default {
     },
     clear(type = this.type) {
       let coordinates = null
-      if (type == "polygon") {
+      if (type.toLowerCase() == "polygon") {
         coordinates = [];
       }
       this.emitUpdate({ coordinates, type });
@@ -454,7 +456,7 @@ export default {
   },
   computed: {
     isPolygon: function () {
-      return this.type == 'polygon';
+      return this.type.toLowerCase() == 'polygon';
     },
     lat: function () {
       if (this.coordinates == null || this.coordinates.length == 0) {
@@ -472,7 +474,7 @@ export default {
     },
     coordinateString: function () {
       this.updateString;
-      switch (this.type) {
+      switch (this.type.toLowerCase()) {
         case 'polygon':
           return this.polygonString;
         case 'point':

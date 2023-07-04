@@ -54,6 +54,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+
+  span {
+    text-overflow: ellipsis;
+  }
 
   &:not(.button)>.active {
     background-color: transparent;

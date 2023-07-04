@@ -20,13 +20,18 @@ const EditorPropertyMixin = {
             this.editor_property_load = false
         },
         async editor_property_create() {
-            let id = this.$route.params.id;
+            let id = parseInt(this.$route.params.id);
             if (this.editor_property_validId(id)) {
                 this.editor_property_id = id
-                await this.loadProperty()
+                try {
+                    await this.loadProperty()
+                    this.isLoaded()
+                } catch (e) {
+                    console.error(e)
+                }
+            } else {
+                this.isLoaded()
             }
-
-            this.isLoaded()
         },
         editor_property_validId(id) {
             return !isNaN(id) && id >= 0

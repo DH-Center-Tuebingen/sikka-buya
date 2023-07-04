@@ -13,14 +13,30 @@ export default class Query {
         return this.name[0].toUpperCase() + this.name.substr(1)
     }
 
-    async get(id, properties) {
+    async get(id, properties = []) {
+
+        function recursivelyBuildBody(p) {
+            for (let [index, object] of p.entries()) {
+                if (typeof (object) == "object") {
+                    if (Array.isArray(object)) throw new Error("Invalid property type: array")
+                    let substring = ""
+                    for (const key of Object.keys(object)) {
+                        substring += key + " " + recursivelyBuildBody(object[key])
+                    }
+                    p[index] = substring
+                }
+            }
+            return `{ ${p.join(",")} }`
+        }
+
         const query = `
               {
-                get${this.capitalizedName} (id:${id})  {
-                    ${properties.join(",")}
-                }
+                get${this.capitalizedName} (id:${id})  
+                    ${recursivelyBuildBody(properties)}
+                
               }
             `
+        console.log(query)
 
         return Query.raw(query)
     }

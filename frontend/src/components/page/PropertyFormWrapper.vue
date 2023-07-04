@@ -1,6 +1,6 @@
 <template>
   <div class="property-page">
-    <h1>{{ title }}</h1>
+    <h1><Locale :path="`property.${property}`" /> </h1>
     <LoadingSpinner class="loading-spinner" v-if="loading" />
     <form v-if="!loading" @submit.prevent>
       <slot></slot>
@@ -27,7 +27,6 @@ import LoadingSpinner from '../misc/LoadingSpinner.vue';
 export default {
   name: 'PropertyFormWrapper',
   props: {
-    title: String,
     property: {
       type: String,
       required: true,

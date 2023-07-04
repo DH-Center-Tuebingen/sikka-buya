@@ -436,6 +436,11 @@ const routes = [
             component: TreasureForm
           },
           {
+            path: "treasure/:id",
+            name: "TreasureCreate",
+            component: TreasureForm
+          },
+          {
             path: "locale/:lang/:path",
             name: "Locale",
             component: LocaleForm

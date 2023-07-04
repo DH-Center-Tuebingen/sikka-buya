@@ -1,4 +1,4 @@
-<template>
+f<template>
   <div :class="`overview ${this.property}-page`">
     <BackHeader :to="{ name: 'Editor' }" />
     <header>
@@ -36,15 +36,18 @@
         :disable="deleteButtonActive"
         :id="item.id"
       >
+      
         <slot
           name="list-item-before"
           :item="item"
         />
-
         <ListItemCell :to="{
           path: `${item.id}`,
           append: true,
-        }">{{ item.name }}</ListItemCell>
+        }">{{ item.name }}
+        
+      
+{{ "id: " + item.id }}</ListItemCell>
         <Button
           v-for="tool in tools"
           :key="'tool-' + tool"
@@ -135,7 +138,7 @@ export default {
         })
         .finally(() => {
           this.$data.loading = false;
-        });
+        }, true);
     },
     search() {
       let queryCommand = `search${this.queryName[0].toUpperCase() + this.queryName.substr(1)

@@ -77,12 +77,12 @@ type TreasureItem {
 input TreasureItemInput {
   count: Int
   projectId: String
+  fragment: Boolean 
+  year: Int
   dynasty: ID
   mint: ID
-  year: Int
   nominal: ID
   material: ID
-  fragment: Boolean 
 }
 
 type Treasure {
@@ -397,7 +397,7 @@ type Query {
 
   treasure:[Treasure]
   searchTreasure(text:String): [Treasure] 
-  getTreasure(id:ID): Treasure
+  getTreasure(id:ID!): Treasure
 }
 
 type MintPersons { 
@@ -504,8 +504,8 @@ type Mutation {
 
   # Tested in 035_treasure
   addTreasure(data:TreasureInput):Void
-  updateTreasure(id:ID, data:TreasureInput):Void
-  deleteTreasure(id:ID):Void
+  updateTreasure(id:ID!, data:TreasureInput):Void
+  deleteTreasure(id:ID!):Void
 
 
   # TODO: missing Tests ---------------------------------------------
