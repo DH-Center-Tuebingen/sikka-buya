@@ -4,36 +4,36 @@
             type="number"
             name=""
             id=""
-            placeholder="num"
+            :placeholder="$tc('general.count')"
             v-model="value.count"
         >
+
         <input
-            type="text"
+            type="number"
             name=""
             id=""
-            placeholder="name"
-            v-model="value.name"
-        />
-
+            :placeholder="$tc('property.year_of_mint')"
+            v-model="value.year"
+        >
 
         <DataSelect
             table="mint"
-            :debug="true"
+            :debug="debug"
             v-model="value.mint"
         />
         <DataSelect
             table="dynasty"
-            :debug="true"
+            :debug="debug"
             v-model="value.dynasty"
         />
         <DataSelect
             table="nominal"
-            :debug="true"
+            :debug="debug"
             v-model="value.nominal"
         />
         <DataSelect
             table="material"
-            :debug="true"
+            :debug="debug"
             v-model="value.material"
         />
         <Toggle v-model="value.fragment">
@@ -45,7 +45,6 @@
                         type="mdi"
                     />
                 </div>
-                <span class="fragment-text">Fragment</span>
             </template>
             <template #inactive>
                 <div>
@@ -55,7 +54,6 @@
                         type="mdi"
                     />
                 </div>
-                <span class="fragment-text">Kein Fragment</span>
             </template>
         </Toggle>
 
@@ -90,6 +88,11 @@ export default {
             required: true,
         },
     },
+    data() {
+        return {
+            debug: false,
+        }
+    }
 }
 </script>
 
@@ -118,7 +121,6 @@ export default {
 <style lang="scss" scoped>
 .treasure-item-form {
     display: grid;
-    grid-template-columns: 50px repeat(6, 1fr) 50px;
     background-color: white;
     border: 1px solid $light-gray;
     padding: 2px .5em;

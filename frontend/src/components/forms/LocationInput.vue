@@ -48,9 +48,7 @@
         <Close />
       </button>
     </div>
-    <div
-      class="map"
-    >
+    <div class="map">
       <map-view
         ref="map"
         height="500px"
@@ -281,7 +279,6 @@ export default {
       });
     },
     addPoint(location) {
-      console.log(this.type, this.isPolygon)
       let coordinates = this.coordinates == null ? [] : this.coordinates;
       if (this.isPolygon) {
         coordinates.push([location.lat, location.lng]);

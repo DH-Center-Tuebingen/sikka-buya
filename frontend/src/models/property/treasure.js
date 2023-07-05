@@ -139,5 +139,16 @@ export class TreasureItem {
         })
     }
 
+    static fromInputs(obj) {
+        obj = Object.assign({}, obj, {
+            count: parseInt(obj.count),
+            year: parseInt(obj.year),
+            mint: obj.mint.hasOwnProperty("id") ? obj.mint.id : obj.mint,
+            dynasty: obj.dynasty.hasOwnProperty("id") ? obj.dynasty.id : obj.dynasty,
+            nominal: obj.nominal.hasOwnProperty("id") ? obj.nominal.id : obj.nominal,
+            material: obj.material.hasOwnProperty("id") ? obj.material.id : obj.material,
+        })
 
+        return new TreasureItem(obj)
+    }
 }

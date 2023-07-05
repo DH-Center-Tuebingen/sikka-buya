@@ -1,4 +1,4 @@
-f<template>
+<template>
   <div :class="`overview ${this.property}-page`">
     <BackHeader :to="{ name: 'Editor' }" />
     <header>
@@ -36,7 +36,7 @@ f<template>
         :disable="deleteButtonActive"
         :id="item.id"
       >
-      
+
         <slot
           name="list-item-before"
           :item="item"
@@ -44,10 +44,7 @@ f<template>
         <ListItemCell :to="{
           path: `${item.id}`,
           append: true,
-        }">{{ item.name }}
-        
-      
-{{ "id: " + item.id }}</ListItemCell>
+        }">{{ item.name }}</ListItemCell>
         <Button
           v-for="tool in tools"
           :key="'tool-' + tool"

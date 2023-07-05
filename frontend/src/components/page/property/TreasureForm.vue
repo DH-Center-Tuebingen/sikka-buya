@@ -22,7 +22,6 @@
             <template #label>
                 <Locale path="general.treasure_spot" />
             </template>
-
             <LocationInput
                 :interactive="true"
                 :type="location.type"
@@ -40,10 +39,9 @@
                     <div class="count">
                         <Locale path="general.count" />
                     </div>
-                    <div class="name">
-                        <Locale path="general.name" />
+                    <div class="year">
+                        <Locale path="property.year_of_mint" />
                     </div>
-
                     <div class="mint">
                         <Locale path="property.mint" />
                     </div>
@@ -64,6 +62,7 @@
                     v-for="(item, index) in items"
                     :key="index"
                     :value="item"
+                    @delete="() => items.splice(index, 1)"
                 />
             </form-list>
         </LabeledInputContainer>
@@ -126,49 +125,71 @@ export default {
             const item = new TreasureItem().forInput()
             this.items.push(item)
         },
-        async loadProperty(){
+        async loadProperty() {
             this.editor_property_load = true
             try {
                 treasure = await new Treasure().get(this.editor_property_id)
-                console.log(treasure)
                 this.name = treasure.name
-                this.location = treasure.location || { coordinates: [0, 0], type: "point" }
-                this.items = treasure.items
+                let location = treasure.location || { coordinates: [0, 0], type: "point" }
+                if (location.type.toLowerCase() === "polygon")
+                    location.coordinates = location.coordinates[0]
+
+                this.location = location
+                this.items = treasure.items.map(item => new TreasureItem(item).forInput())
             } catch (e) {
                 let message = e
-                if(e instanceof Error) message = e.message
-                this.error = Array.isArray(message)? message.join("\n") : message
+                if (e instanceof Error) message = e.message
+                this.error = Array.isArray(message) ? message.join("\n") : message
             }
             this.editor_property_load = false
         },
         async submit() {
             this.error = ""
+
+            let location = { type: this.location.type, coordinates: this.location.coordinates.slice() }
+            if (location.type.toLowerCase() === "polygon")
+                location.coordinates = [location.coordinates]
+
             const treasure = new Treasure({
                 name: this.name,
-                location: this.location,
-                items: this.items
+                location: location,
+                items: this.items.map(item => {
+                    let ti = TreasureItem.fromInputs(item)
+                    delete ti.id
+                    return ti
+                })
             })
 
             try {
-                console.log(this)
-                if(this.editor_property_id){
+                if (this.editor_property_id) {
                     await treasure.update(this.editor_property_id)
-                }else{
+                } else {
                     await treasure.add()
                 }
-                
+                this.prevent_navigation_mixin_setClean()
+                this.$router.push({ name: "Property", params: { property: "treasure" } })
             } catch (e) {
-                this.error = Array.isArray(e)? e.join("\n") : e
+                this.error = Array.isArray(e) ? e.join("\n") : e
             }
         }
     }
 }
 </script>
 
-<style lang="scss" scoped>
+
+<style lang="scss" >
+$template-columns: 50px 80px repeat(4, 1fr) 50px 32px;
+
+.treasure-item-form {
+    display: grid;
+    grid-template-columns: $template-columns
+}
+
 header {
     display: grid;
-    grid-template-columns: 50px repeat(6, 1fr) 50px;
+    position: sticky;
+    top: 0;
+    grid-template-columns: $template-columns;
     border: 1px solid $light-gray;
     padding: 2px .5em;
     align-items: center;

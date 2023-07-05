@@ -1,19 +1,20 @@
 const { WriteableDatabase } = require('../utils/database');
+const Dynasty = require('./dynasty');
 const Material = require('./material');
 const Mint = require('./mint');
+const Nominal = require('./nominal');
 const { Table } = require('./table.js')
 const graphqlFields = require('graphql-fields')
 
 class Treasure extends Table {
 
-    static async insertItems(t, treasure, items) {
+    static async insertItems(t, treasure, items = []) {
         if (items) {
             items.forEach(({
                 count = 1,
                 fragment = false,
                 year = null,
                 coin = null,
-                treasure = id,
                 dynasty = null,
                 mint = null,
                 nominal = null,
@@ -45,7 +46,7 @@ class Treasure extends Table {
                     fragment,
                     year,
                     coin,
-                    treasure,
+                    treasure: treasure,
                     dynasty,
                     mint,
                     nominal,
@@ -130,15 +131,14 @@ class Treasure extends Table {
 
             let requestedFields = graphqlFields(info)
 
-            console.log(treasures[0].items)
             if (requestedFields.items) {
 
                 let foreignFields = {
-                    "dynasty": () => { throw new Error("NOT IMPLEMENTED") },
-                    "mint": { get: Mint.getById },
-                    "nominal": () => { throw new Error("NOT IMPLEMENTED") },
+                    "dynasty": { get: Dynasty.get },
+                    "mint": { get: Mint.getById.bind(Mint) },
+                    "nominal": { get: Nominal.get },
                     "material": {
-                        get: Material.get,
+                        get: Material.get.bind(Mint),
                         map: (material) => {
                             return {
                                 id: material.material_id,
@@ -151,12 +151,8 @@ class Treasure extends Table {
 
 
                 requestedFields = Object.keys(requestedFields.items).filter(key => foreignFields[key])
-
-
                 for (let treasureIdx = 0; treasureIdx < treasures.length; treasureIdx++) {
-
                     const treasure = treasures[treasureIdx]
-
                     for (let fieldIndex = 0; fieldIndex < requestedFields.length; fieldIndex++) {
                         const field = requestedFields[fieldIndex]
                         const cache = {}
