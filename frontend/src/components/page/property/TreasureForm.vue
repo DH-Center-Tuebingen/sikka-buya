@@ -34,6 +34,14 @@
             <template #label>
                 <Locale path="property.treasure-items" />
             </template>
+            <div class="tools">
+                <FileUploadButton :loading="importing">
+                    <Locale path="general.import"></Locale>
+
+                </FileUploadButton>
+            </div>
+
+
             <form-list @add="addItem">
                 <header>
                     <div class="count">
@@ -79,6 +87,7 @@ import List from "@/components/layout/List"
 import FormList from "@/components/forms/FormList"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
 
+import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
 
 import TreasureItemForm from "./TreasureItemForm"
 
@@ -98,9 +107,11 @@ export default {
         TreasureItemForm,
         PropertyFormWrapper,
         FormList,
+        FileUploadButton,
     },
     data() {
         return {
+            importing: false,
             error: "",
             name: "Test",
             location: { coordinates: [0, 0], type: "point" },
@@ -124,6 +135,9 @@ export default {
         addItem() {
             const item = new TreasureItem().forInput()
             this.items.push(item)
+        },
+        importItems() {
+
         },
         async loadProperty() {
             this.editor_property_load = true
@@ -182,17 +196,23 @@ $template-columns: 50px 80px repeat(4, 1fr) 50px 32px;
 
 .treasure-item-form {
     display: grid;
-    grid-template-columns: $template-columns
-}
 
-header {
-    display: grid;
-    position: sticky;
-    top: 0;
     grid-template-columns: $template-columns;
-    border: 1px solid $light-gray;
-    padding: 2px .5em;
-    align-items: center;
-    gap: .5em;
+
+    header {
+        display: grid;
+        position: sticky;
+        top: 0;
+        grid-template-columns: $template-columns;
+        font-weight: bold;
+        padding: 2px .5em;
+        align-items: center;
+        gap: .5em;
+    }
+
+    .tools {
+        display: flex;
+        justify-content: flex-end;
+    }
 }
 </style>

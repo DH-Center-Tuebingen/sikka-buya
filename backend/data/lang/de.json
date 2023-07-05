@@ -49,7 +49,8 @@
         "settings": "Einstellungen",
         "share": "Teilen",
         "treasure_spot": "Fundort",
-        "user": "Nutzer"
+        "user": "Nutzer",
+        "import": "Importieren"
     },
     "property": {
         "plain_text": "Text",
