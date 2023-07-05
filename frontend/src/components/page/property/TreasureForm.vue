@@ -194,10 +194,23 @@ export default {
 <style lang="scss" >
 $template-columns: 50px 80px repeat(4, 1fr) 50px 32px;
 
-.treasure-item-form {
-    display: grid;
+.treasure-form {
+    .treasure-item-form {
+        display: grid;
+        grid-template-columns: $template-columns;
+    }
 
-    grid-template-columns: $template-columns;
+    .list-container>* {
+        &:not(header) {
+            margin-bottom: 0;
+        }
+
+        &:not(:last-child) {
+            border-bottom: none;
+        }
+    }
+
+
 
     header {
         display: grid;
