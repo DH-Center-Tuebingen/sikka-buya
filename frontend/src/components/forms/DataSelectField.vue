@@ -155,7 +155,26 @@ export default {
       default: false,
       type: Boolean,
     },
+    /**
+     * You may use a custom query and just need to set the $text variable in that
+     * query. You must set the dataPath or queryCommand value to the path where the data is stored.
+     */
     query: String,
+    /**
+     * The 'dataPath' value is used in conjunktion with the 'query' value.
+     * And is an alternative to the queryCommand value, if you have a more
+     * complex structure you want to access.
+     * 
+     * E.g. coinTypes.types
+     */
+    dataPath: String,
+    /**
+     * The 'queryCommand' value is used in conjunktion with the 'query' value.
+     * And is an alternative to the dataPath value, if you have a simple
+     * structure you want to access.
+     * 
+     * E.g. 'coinTypes'
+     */
     queryCommand: String,
     msg: String,
     tooltip: String,
@@ -243,25 +262,48 @@ export default {
     searchEntry: async function (str = null) {
       let searchString = str !== null ? str : this.value[this.attribute] || '';
 
+      let query = this.query
+
       const queryCommand = this.queryCommand
         ? this.queryCommand
         : `search${this.table[0].toUpperCase() + this.table.slice(1)}`;
 
-      const query = `{
-      ${queryCommand}(text: "${searchString}" ${this.additionalParameters
-          ? Object.entries(this.additionalParameters).map(
-            ([key, value]) => `,${key}:${JSON.stringify(value)}`
-          )
-          : ''
-        } ){
+      if (!query) {
+        query = `query search($text: String!){
+      ${queryCommand}(text: $text ${this.additionalParameters
+            ? Object.entries(this.additionalParameters).map(
+              ([key, value]) => `,${key}:${JSON.stringify(value)}`
+            )
+            : ''
+          } ){
         ${GraphQLUtils.buildQueryBody(this.queryBody)}
       }
       }`;
+      }
 
-      Query.raw(query)
+      Query.raw(query, { text: searchString })
         .then((result) => {
-          if (result?.data?.data[queryCommand]) {
-            this.searchResults = result.data.data[queryCommand];
+
+          let data = result?.data?.data
+          let searchResults = null
+
+          if (data) {
+
+            let parts = this.dataPath ? this.dataPath.split('.') : [queryCommand]
+
+            while (parts.length > 0) {
+              const part = parts.shift()
+              console.log(part, data[part])
+              if (data[part] == null) break
+              data = data[part]
+            }
+
+            searchResults = data
+          }
+
+
+          if (searchResults) {
+            this.searchResults = searchResults;
             this.internal_error = '';
           } else {
             console.error('Could not get value');

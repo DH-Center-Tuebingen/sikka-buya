@@ -9,12 +9,29 @@
         >
 
         <input
-            type="number"
+            type="text"
             name=""
             id=""
             :placeholder="$tc('property.year_of_mint')"
             v-model="value.year"
         >
+
+        <DataSelect
+            table="coinType"
+            attribute="projectId"
+            dataPath="coinType.types"
+            query="query search($text: String){
+                coinType(filters: {projectId:$text}) {
+                    types{
+                        id
+                        projectId
+                    }
+                }
+            }"
+            v-model="value.coinType"
+        >
+
+        </DataSelect>
 
         <DataSelect
             table="mint"

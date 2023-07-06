@@ -50,6 +50,9 @@
                     <div class="year">
                         <Locale path="property.year_of_mint" />
                     </div>
+                    <div class="type">
+                        <Locale path="property.type" />
+                    </div>
                     <div class="mint">
                         <Locale path="property.mint" />
                     </div>
@@ -113,7 +116,7 @@ export default {
         return {
             importing: false,
             error: "",
-            name: "Test",
+            name: "",
             location: { coordinates: [0, 0], type: "point" },
             items: []
         }
@@ -181,7 +184,7 @@ export default {
                     await treasure.add()
                 }
                 this.prevent_navigation_mixin_setClean()
-                this.$router.push({ name: "Property", params: { property: "treasure" } })
+                // this.$router.push({ name: "Property", params: { property: "treasure" } })
             } catch (e) {
                 this.error = Array.isArray(e) ? e.join("\n") : e
             }
@@ -192,7 +195,7 @@ export default {
 
 
 <style lang="scss" >
-$template-columns: 50px 80px repeat(4, 1fr) 50px 32px;
+$template-columns: 50px 80px repeat(5, 1fr) 50px 32px;
 
 .treasure-form {
     .treasure-item-form {

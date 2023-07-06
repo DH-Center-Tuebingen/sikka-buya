@@ -1,4 +1,5 @@
 const { WriteableDatabase } = require('../utils/database');
+const Type = require('../utils/type');
 const Dynasty = require('./dynasty');
 const Material = require('./material');
 const Mint = require('./mint');
@@ -14,7 +15,7 @@ class Treasure extends Table {
                 count = 1,
                 fragment = false,
                 year = null,
-                coin = null,
+                coinType = null,
                 dynasty = null,
                 mint = null,
                 nominal = null,
@@ -25,7 +26,7 @@ class Treasure extends Table {
                     count,
                     fragment,
                     year,
-                    coin,
+                    coinType,
                     treasure,
                     dynasty,
                     mint,
@@ -35,7 +36,7 @@ class Treasure extends Table {
                     $[count],
                     $[fragment],
                     $[year],
-                    $[coin],
+                    $[coinType],
                     $[treasure],
                     $[dynasty],
                     $[mint],
@@ -45,7 +46,7 @@ class Treasure extends Table {
                     count,
                     fragment,
                     year,
-                    coin,
+                    coinType,
                     treasure: treasure,
                     dynasty,
                     mint,
@@ -99,6 +100,7 @@ class Treasure extends Table {
 
         }
 
+        let wtf = null
         let treasures = []
         await WriteableDatabase.tx(async t => {
 
@@ -115,6 +117,7 @@ class Treasure extends Table {
                         t.treasure,
                         t.count,
                         t.dynasty,
+                        t.coinType,
                         t.mint,
                         t.year,
                         t.nominal,
@@ -132,8 +135,8 @@ class Treasure extends Table {
             let requestedFields = graphqlFields(info)
 
             if (requestedFields.items) {
-
                 let foreignFields = {
+                    "coinType": { get: (id) => Type.getType(_, { id }, context, info) },
                     "dynasty": { get: Dynasty.get },
                     "mint": { get: Mint.getById.bind(Mint) },
                     "nominal": { get: Nominal.get },
@@ -149,6 +152,10 @@ class Treasure extends Table {
                     },
                 }
 
+                const apiDbFieldMap = {
+                    "coinType": "cointype",
+                }
+
 
                 requestedFields = Object.keys(requestedFields.items).filter(key => foreignFields[key])
                 for (let treasureIdx = 0; treasureIdx < treasures.length; treasureIdx++) {
@@ -157,26 +164,34 @@ class Treasure extends Table {
                         const field = requestedFields[fieldIndex]
                         const cache = {}
 
+
                         for (let itemIdx = 0; itemIdx < treasure.items.length; itemIdx++) {
                             const item = treasure.items[itemIdx]
 
-                            if (item[field]) {
-                                if (!cache[item[field]] && foreignFields[field].get) {
-                                    const result = await foreignFields[field].get(item[field])
+                            const dbField = apiDbFieldMap[field] || field
+                            const dbValue = item[dbField]
+                            if (dbValue) {
+                                if (!cache[dbValue] && foreignFields[field].get) {
+                                    const result = await foreignFields[field].get(dbValue)
                                     if (foreignFields[field].map)
-                                        cache[item[field]] = foreignFields[field].map(result)
+                                        cache[dbValue] = foreignFields[field].map(result)
                                     else
-                                        cache[item[field]] = result
+                                        cache[dbValue] = result
                                 }
 
-                                item[field] = cache[item[field]]
+                                item[field] = cache[dbValue]
                             }
                         }
                     }
+                    treasures[treasureIdx] = treasure
                 }
             }
         })
 
+        // console.log(wtf, treasures[0].items[0])
+        // treasures[0].items[0].coinType = { id: 5, projectId: "ASDASASD" }
+
+        // console.log(treasures[0].items[0].coinType)
         return treasures
     }
 }

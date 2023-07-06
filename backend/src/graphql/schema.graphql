@@ -65,10 +65,10 @@ type ModCoinTypePagination {
 type TreasureItem {
   id: ID
   count: Int
-  projectId: String
+  coinType: CoinType
   dynasty:Name
   mint: Mint
-  year: Int
+  year: String
   nominal: Name
   material: Material
   fragment: Boolean
@@ -76,9 +76,9 @@ type TreasureItem {
 
 input TreasureItemInput {
   count: Int
-  projectId: String
+  coinType: ID
   fragment: Boolean 
-  year: Int
+  year: String
   dynasty: ID
   mint: ID
   nominal: ID

@@ -10,11 +10,11 @@ CREATE TABLE treasure (
 CREATE TABLE treasure_item (
   id SERIAL PRIMARY KEY,
   count INTEGER,
-  coin INTEGER REFERENCES type(id),
+  coinType INTEGER REFERENCES type(id),
   treasure INTEGER NOT NULL REFERENCES treasure(id) ON DELETE CASCADE,
   dynasty INTEGER REFERENCES dynasty(id),
   mint INTEGER REFERENCES mint(id),
-  year INTEGER,
+  year TEXT,
   nominal INTEGER REFERENCES nominal(id),
   material INTEGER REFERENCES material(id),
   fragment BOOLEAN
