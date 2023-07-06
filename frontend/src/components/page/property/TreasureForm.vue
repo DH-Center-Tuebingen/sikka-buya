@@ -20,6 +20,33 @@
 
         <LabeledInputContainer>
             <template #label>
+                <Locale path="general.literature" />
+            </template>
+
+            <textarea
+                type="text"
+                v-model="literature"
+            ></textarea>
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+            <template #label>
+                <Locale path="general.range" />
+            </template>
+
+            <div class="coin-range">
+                <RangeInput v-model="timespan" />
+                <Button @click="getCoinRangeFromItems">
+                    <Locale path="form.range_from_items" />
+                </Button>
+            </div>
+
+        </LabeledInputContainer>
+
+
+
+        <LabeledInputContainer>
+            <template #label>
                 <Locale path="general.treasure_spot" />
             </template>
             <LocationInput
@@ -35,44 +62,22 @@
                 <Locale path="property.treasure-items" />
             </template>
             <div class="tools">
+                <Toggle v-model="autoComplete">
+                    <Locale path="general.auto-complete"></Locale>
+                </Toggle>
                 <FileUploadButton :loading="importing">
                     <Locale path="general.import"></Locale>
-
                 </FileUploadButton>
             </div>
 
 
             <form-list @add="addItem">
-                <header>
-                    <div class="count">
-                        <Locale path="general.count" />
-                    </div>
-                    <div class="year">
-                        <Locale path="property.year_of_mint" />
-                    </div>
-                    <div class="type">
-                        <Locale path="property.type" />
-                    </div>
-                    <div class="mint">
-                        <Locale path="property.mint" />
-                    </div>
-                    <div class="dynasty">
-                        <Locale path="property.dynasty" />
-                    </div>
-                    <div class="nominal">
-                        <Locale path="property.nominal" />
-                    </div>
-                    <div class="material">
-                        <Locale path="property.material" />
-                    </div>
-                    <div class="fragment">
-                        <Locale path="general.fragment" />
-                    </div>
-                </header>
+
                 <TreasureItemForm
                     v-for="(item, index) in items"
                     :key="index"
                     :value="item"
+                    @typeChanged="(data) => handleTypeChange(index, data)"
                     @delete="() => items.splice(index, 1)"
                 />
             </form-list>
@@ -89,10 +94,13 @@ import LoadingSpinner from "@/components/misc/LoadingSpinner"
 import List from "@/components/layout/List"
 import FormList from "@/components/forms/FormList"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
+import RangeInput from '../../forms/RangeInput.vue';
 
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
 
 import TreasureItemForm from "./TreasureItemForm"
+
+import Toggle from "@/components/layout/buttons/Toggle"
 
 
 import EditorPropertyMixin from "../../mixins/editor-property-mixin"
@@ -108,15 +116,20 @@ export default {
         Locale,
         LocationInput,
         TreasureItemForm,
+        Toggle,
         PropertyFormWrapper,
         FormList,
         FileUploadButton,
+        RangeInput
     },
     data() {
         return {
+            autoComplete: true,
             importing: false,
             error: "",
             name: "",
+            literature: "",
+            timespan: { from: null, to: null },
             location: { coordinates: [0, 0], type: "point" },
             items: []
         }
@@ -125,16 +138,54 @@ export default {
         name: {
             handler: function () { this.prevent_navigation_mixin_setDirty() },
         },
-        items: {
+        literature: {
             handler: function () { this.prevent_navigation_mixin_setDirty() },
+        },
+        timespan: {
+            handler: function () { this.prevent_navigation_mixin_setDirty() },
+            deep: true
+        },
+        items: {
+            handler: function () {
+                this.prevent_navigation_mixin_setDirty()
+            },
             deep: true
         },
         location: {
             handler: function () { this.prevent_navigation_mixin_setDirty() },
             deep: true
-        }
+        },
     },
     methods: {
+        getCoinRangeFromItems() {
+            let timespan = { from: null, to: null }
+            this.items.forEach(item => {
+                let year = parseInt(item.year)
+                console.log(year)
+                if (!isNaN(year)) {
+                    if (timespan.from == null || year < timespan.from) timespan.from = year
+                    if (timespan.to == null || year > timespan.to) timespan.to = year
+                }
+            })
+
+            console.log(timespan)
+            this.timespan = timespan
+        },
+        handleTypeChange(index, data) {
+            if (this.autoComplete && data.id != null) {
+                const values = ["yearOfMint"]
+                const namedInputs = ["mint", "material", "nominal"]
+
+                values.forEach(attribute => {
+                    this.items[index][attribute] = data[attribute]
+                })
+
+                namedInputs.forEach(attribute => {
+                    this.items[index][attribute] = data[attribute]
+                    console.log(this.items[index][attribute])
+                })
+            }
+        },
         addItem() {
             const item = new TreasureItem().forInput()
             this.items.push(item)
@@ -147,6 +198,10 @@ export default {
             try {
                 treasure = await new Treasure().get(this.editor_property_id)
                 this.name = treasure.name
+                this.timespan = treasure.timespan
+                this.literature = treasure.literature
+                console.log(treasure.literature, treasure.timespan)
+
                 let location = treasure.location || { coordinates: [0, 0], type: "point" }
                 if (location.type.toLowerCase() === "polygon")
                     location.coordinates = location.coordinates[0]
@@ -170,6 +225,8 @@ export default {
             const treasure = new Treasure({
                 name: this.name,
                 location: location,
+                literature: this.literature,
+                timespan: {from: parseInt(this.timespan.from), to: parseInt(this.timespan.to)},
                 items: this.items.map(item => {
                     let ti = TreasureItem.fromInputs(item)
                     delete ti.id
@@ -197,38 +254,51 @@ export default {
 <style lang="scss" >
 $template-columns: 50px 80px repeat(5, 1fr) 50px 32px;
 
+
 .treasure-form {
-    .treasure-item-form {
-        display: grid;
-        grid-template-columns: $template-columns;
-    }
+    // .treasure-item-form {
+    //     display: grid;
+    //     grid-template-columns: $template-columns;
+    // }
 
-    .list-container>* {
-        &:not(header) {
-            margin-bottom: 0;
-        }
+    // .list-container>* {
+    //     &:not(header) {
+    //         margin-bottom: 0;
+    //     }
 
-        &:not(:last-child) {
-            border-bottom: none;
-        }
-    }
+    //     &:not(:last-child) {
+    //         border-bottom: none;
+    //     }
+    // }
 
 
 
-    header {
-        display: grid;
-        position: sticky;
-        top: 0;
-        grid-template-columns: $template-columns;
-        font-weight: bold;
-        padding: 2px .5em;
-        align-items: center;
-        gap: .5em;
-    }
+    // header {
+    //     display: grid;
+    //     position: sticky;
+    //     top: 0;
+    //     grid-template-columns: $template-columns;
+    //     font-weight: bold;
+    //     padding: 2px .5em;
+    //     align-items: center;
+    //     gap: .5em;
+    // }
+
+
 
     .tools {
         display: flex;
         justify-content: flex-end;
     }
+
+    .coin-range {
+
+        .range-input {
+            flex: 1;
+        }
+
+        display: flex;
+    }
+
 }
 </style>

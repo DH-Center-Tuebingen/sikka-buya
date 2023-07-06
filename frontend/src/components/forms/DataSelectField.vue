@@ -71,7 +71,7 @@
         v-for="search of searchResults"
         :key="search.id"
         :data-id="search.id"
-        @click.stop="setValue"
+        @click.stop="($event) => setValue($event, search)"
       >
         <!-- These comments are necessary, that no whitespace is added!
         -->{{ transformTextContent(search)
@@ -193,14 +193,14 @@ export default {
     },
   },
   methods: {
-    setValue: function (event) {
+    setValue: function (event,  data) {
       const target = event.target;
       const value = this.value;
       this.listVisible = false;
       value.id = target.getAttribute('data-id');
       value[this.attribute] = target.textContent;
       this.$emit('input', value);
-      this.$emit('select', value);
+      this.$emit('select', value, data);
     },
     input: async function (event, preventSimiliarityCheck = false) {
       let value = this.value;
@@ -293,7 +293,6 @@ export default {
 
             while (parts.length > 0) {
               const part = parts.shift()
-              console.log(part, data[part])
               if (data[part] == null) break
               data = data[part]
             }

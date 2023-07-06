@@ -1,43 +1,76 @@
 {
-    "routes": {
-        "map": "Karten | Karten",
-        "catalog": "Typenkatalog | Typenkataloge",
-        "Map Landing": "Kartenübersicht",
-        "Treasure Map": "Schatzfundkarte",
-        "Additional Maps": "weitere Karten",
-        "Political Map": "politische Karte",
-        "catalog Ruler Explorer": "Herrscherliste",
-        "catalog Search": "Katalogsuche",
-        "Analytics Table": "Tabellen",
-        "Catalog Overview": "Typenkatalog",
-        "Catalog": "Typenkatalog",
-        "Catalog Search": "Katalogsuche",
-        "Catalog Ruler Explorer": "Herrscherliste",
-        "Catalog Entry": "Eintrag | Einträge",
-        "home": "Startseite",
-        "contact": "Kontakt",
-        "data_protection": "Datenschutzerklärung",
-        "impressum": "Impressum"
+    "bibliography": {
+        "treadwell_2002": "Luke Treadwell, Buyid Coinage. A die corpus (322–445 A.H.), Oxford 2002."
     },
-    "user": {
-        "permission": {
-            "editor": "Editor | Editoren",
-            "recorder": "Bearbeiter",
-            "super": "Super",
-            "creator": "Ersteller"
+    "cms": {
+        "auto-save": "auto",
+        "contact_page": "Kontakt",
+        "create_page": "neue Seite erstellen",
+        "create_text": "Text erstellen",
+        "disable-auto-save": "Auto-Save",
+        "draft": "Entwurf",
+        "edit_page": "Seite bearbeiten",
+        "edit_text": "Text bearbeiten",
+        "enable-auto-save": "Man.Speichern",
+        "group": {
+            "bibliography": "Bibliographie",
+            "landing_page_main_article": "Startseitentext",
+            "news": "Neuigkeiten",
+            "Working Papers": "Working Papers"
+        },
+        "normal-save": "normal",
+        "publish": "veröffentlichen",
+        "published": "veröffentlicht",
+        "redate": "Publizierungsdatum ändern",
+        "reschedule": "Veröffentlichung verschieben",
+        "schedule": "planen",
+        "scheduled": "geplant",
+        "unpublish": "Veröffentlichung zurückziehen",
+        "unschedule": "Planung aufheben"
+    },
+    "custom": {
+        "fint": {
+            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)"
         }
+    },
+    "editor": {
+        "administration": "Nutzerbereich",
+        "assist_tools": "Hilfsprogramme",
+        "compare_last_cleanup": "Letzte Bereinigung vergleichen",
+        "expert_search": "Expertensuche"
+    },
+    "error": {
+        "already_submitted": "De Anfrage wurde bereits beantragt!",
+        "database_does_not_exist": "Datenbank existiert nicht,.",
+        "loading_element": "Element konnte nicht geladen werden! ID ist möglicherweise ungültig.",
+        "loading_list": "Fehler: Liste konnte nicht geladen werden.",
+        "type": {
+            "delete": {
+                "only_super_can_delete_completed_or_reviewed_types": "Nur Superuser können abgeschlossene oder überprüfte Typen löschen."
+            }
+        }
+    },
+    "events": {
+        "copied": "Kopiert!"
+    },
+    "form": {
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "submit": "Senden",
+        "range_from_items": "Zeitspanne aus Einträgen ermitteln"
     },
     "general": {
         "add": "hinzufügen",
         "and": "und",
+        "auto-complete": "Auto-Vervollständigung",
         "auto-save": "automatisches Speichern",
         "cooperations": "Kooperationen",
         "count": "Anzahl",
         "delete": "löschen",
         "edit": "bearbeiten",
         "filter_active": "Filter aktiv",
-        "fragment": "Fragment",
         "id": "ID",
+        "import": "Importieren",
         "name": "Name | Namen",
         "or": "oder",
         "reset_filter": "Filter aufheben",
@@ -50,231 +83,204 @@
         "share": "Teilen",
         "treasure_spot": "Fundort",
         "user": "Nutzer",
-        "import": "Importieren"
+        "literature": "Literatur",
+        "range": "Zeitspanne"
     },
-    "property": {
-        "plain_text": "Text",
-        "material": "Material | Materialien",
-        "coin_mark": "Münz- und Beizeichen | Münz- und Beizeichen",
-        "mint": "Prägeort | Prägeorte",
-        "honorific": "Ehrenname | Ehrennamen",
-        "dynasty": "Dynastie",
-        "coin_verse": "besondere Einzelworte, Formeln, Koranverse",
-        "nominal": "Nominal | Nominale",
-        "person": "Person | Personen",
-        "province": "Region | Regionen",
-        "role": "Rolle | Rollen",
-        "title": "Herrschertitel | Herrschertitel",
-        "type": "Typ",
-        "user": "Benutzer | Benutzer",
-        "mint_year": "Prägejahr | Prägejahre",
-        "specialities_and_variants": "Besonderheiten / Varianten",
-        "literature_and_remarks": "Literatur und Anmerkungen",
-        "piece": "Exemplar(e)",
-        "treadwell_id": "Treadwell-ID | Treadwell-IDs",
-        "project_id": "sikka:būya-ID | sikka:būya-IDs",
-        "year_uncertain": "Jahr nicht sicher",
-        "purity": "Feingehalt",
-        "mint_uncertain": "Prägeort nicht sicher",
-        "donativ": "Geschenkmünze | Geschenkmünzen",
-        "small": "kleine Münze | kleine Münzen",
-        "procedure": "Herstellungsart | Herstellungsarten",
-        "mint_as_on_coin": "Prägeort wie auf Münze",
-        "procedures": {
-            "cast": "gegossen",
-            "pressed": "geprägt"
-        },
-        "issuer": "Münzherr | Münzherren",
-        "overlord": "Oberherr | Oberherren",
-        "additional_persons": "Sonstige Personen",
-        "field_text": "Feld | Felder",
-        "inner_inscript": "innere Umschrift",
-        "intermediate_inscript": "mittlere Umschrift",
-        "outer_inscript": "äußere Umschrift",
-        "misc": "Randbeschriftung",
-        "sides": {
-            "back": "Rückseite",
-            "front": "Vorderseite"
-        },
-        "cursive_script": "kursive Schriftart",
-        "excludeFromTypeCatalogue": "Nicht für Typenkatalog",
-        "excludeFromMapApp": "nicht für polit. Karten",
-        "internal_notes": "Interne Anmerkungen ",
-        "small_coin": "kleine Münze | kleine Münzen",
-        "caliph": "Thronfolger d. Kalifen",
-        "other_person": "sonstige Personen",
-        "year_of_mint": "Prägejahr",
-        "ruler": "Herrscher",
-        "typeview": {
-            "issuer": "Münzherr | Münzherr(en)",
-            "overlords": "oberherr | Oberherr(en)"
-        },
-        "avers": {
-            "fieldText": "Avers-Feld",
-            "innerInscript": "Innere Avers-Umschrift",
-            "intermediateInscript": "Mittlere Avers-Umschrift",
-            "outerInscript": "äussere Avers-Umschrift",
-            "misc": "Avers-Randbeschriftung"
-        },
-        "reverse": {
-            "fieldText": "Revers-Feld",
-            "innerInscript": "Innere Revers-Umschrift",
-            "intermediateInscript": "mittlere Revers-Umschrift",
-            "outerInscript": "äussere Revers-Umschrift",
-            "misc": "Revers-Randbeschriftung"
-        },
-        "specials": "Besonderheiten und Varianten",
-        "treasure": "Schatzfund",
-        "treasure-items": "Schatzfundinhalt"
+    "info": {
+        "overlords": "Notiz: Bei der Oberherren-Eingabe geht man in der Hierarchie von unten (1.) nach oben, d. h. Nr. 2. steht über Nr. 1, Nr. 3 über Nr. 2 usw."
     },
-    "error": {
-        "already_submitted": "De Anfrage wurde bereits beantragt!",
-        "database_does_not_exist": "Datenbank existiert nicht,.",
-        "loading_element": "Element konnte nicht geladen werden! ID ist möglicherweise ungültig.",
-        "type": {
-            "delete": {
-                "only_super_can_delete_completed_or_reviewed_types": "Nur Superuser können abgeschlossene oder überprüfte Typen löschen."
-            }
-        },
-        "loading_list": "Fehler: Liste konnte nicht geladen werden."
-    },
-    "events": {
-        "copied": "Kopiert!"
-    },
-    "cms": {
-        "auto-save": "auto",
-        "contact_page": "Kontakt",
-        "create_page": "neue Seite erstellen",
-        "create_text": "Text erstellen",
-        "draft": "Entwurf",
-        "disable-auto-save": "Auto-Save",
-        "edit_text": "Text bearbeiten",
-        "enable-auto-save": "Man.Speichern",
-        "normal-save": "normal",
-        "publish": "veröffentlichen",
-        "published": "veröffentlicht",
-        "redate": "Publizierungsdatum ändern",
-        "schedule": "planen",
-        "scheduled": "geplant",
-        "unpublish": "Veröffentlichung zurückziehen",
-        "group": {
-            "landing_page_main_article": "Startseitentext",
-            "Working Papers": "Working Papers",
-            "bibliography": "Bibliographie",
-            "news": "Neuigkeiten"
-        },
-        "reschedule": "Veröffentlichung verschieben",
-        "unschedule": "Planung aufheben",
-        "edit_page": "Seite bearbeiten"
-    },
-    "message": {
-        "listed_filters_are_active": "aktive Filter:",
-        "reset_all_filters": "alle Filter zurücksetzen",
-        "no_filter_active": "Keine Filter aktiv",
-        "input_to_filter": "Hier Suchtext eingeben ...",
-        "list_empty": "Keine Elemente in Liste",
-        "initial_setup_info": "Dies ist die Seite für die Ersteinrichtung. Geben Sie den Benutzernamen und das Passwort für den Superuser ein. Sobald der Superuser eingerichtet ist, wird diese Seite nicht mehr zugänglich sein!"
-    },
-    "editor": {
-        "assist_tools": "Hilfsprogramme",
-        "expert_search": "Expertensuche",
-        "compare_last_cleanup": "Letzte Bereinigung vergleichen",
-        "administration": "Nutzerbereich"
-    },
-    "warning": {
-        "not_reviewed_warning": "Achtung: Dieses Katalogisat wurde noch nicht (abschließend) geprüft und korrekturgelesen!",
-        "list_is_empty": "Bisher sind keine Werte in dieser Liste."
+    "location": {
+        "point": "Ort",
+        "polygon": "Gebiet"
     },
     "map": {
+        "bookmarks": "Lesezeichen",
+        "mint_selection": "Prägeorteauswahl",
+        "ruler_selection": "Herrscherauswahl",
+        "share_view": "Link auf diese Ansicht kopieren",
         "show_map": "zur Kartenansicht",
         "timeline": {
             "active": "Zeitleiste aktivieren",
             "deactivate": "Zeitleiste deaktivieren"
         },
-        "share_view": "Link auf diese Ansicht kopieren",
-        "ruler_selection": "Herrscherauswahl",
-        "mint_selection": "Prägeorteauswahl",
-        "type_filter": "Filter",
-        "bookmarks": "Lesezeichen"
+        "type_filter": "Filter"
     },
-    "form": {
-        "create": "Erstellen",
-        "submit": "Senden",
-        "cancel": "Abbrechen"
+    "message": {
+        "initial_setup_info": "Dies ist die Seite für die Ersteinrichtung. Geben Sie den Benutzernamen und das Passwort für den Superuser ein. Sobald der Superuser eingerichtet ist, wird diese Seite nicht mehr zugänglich sein!",
+        "input_to_filter": "Hier Suchtext eingeben ...",
+        "list_empty": "Keine Elemente in Liste",
+        "listed_filters_are_active": "aktive Filter:",
+        "no_filter_active": "Keine Filter aktiv",
+        "reset_all_filters": "alle Filter zurücksetzen"
     },
     "navigation": {
         "back": "Zurück"
     },
-    "info": {
-        "overlords": "Notiz: Bei der Oberherren-Eingabe geht man in der Hierarchie von unten (1.) nach oben, d. h. Nr. 2. steht über Nr. 1, Nr. 3 über Nr. 2 usw."
+    "property": {
+        "additional_persons": "Sonstige Personen",
+        "avers": {
+            "fieldText": "Avers-Feld",
+            "innerInscript": "Innere Avers-Umschrift",
+            "intermediateInscript": "Mittlere Avers-Umschrift",
+            "misc": "Avers-Randbeschriftung",
+            "outerInscript": "äussere Avers-Umschrift"
+        },
+        "caliph": "Thronfolger d. Kalifen",
+        "coin_mark": "Münz- und Beizeichen | Münz- und Beizeichen",
+        "coin_verse": "besondere Einzelworte, Formeln, Koranverse",
+        "cursive_script": "kursive Schriftart",
+        "donativ": "Geschenkmünze | Geschenkmünzen",
+        "dynasty": "Dynastie",
+        "excludeFromMapApp": "nicht für polit. Karten",
+        "excludeFromTypeCatalogue": "Nicht für Typenkatalog",
+        "field_text": "Feld | Felder",
+        "fragment": "Fragment",
+        "honorific": "Ehrenname | Ehrennamen",
+        "inner_inscript": "innere Umschrift",
+        "intermediate_inscript": "mittlere Umschrift",
+        "internal_notes": "Interne Anmerkungen ",
+        "issuer": "Münzherr | Münzherren",
+        "literature_and_remarks": "Literatur und Anmerkungen",
+        "material": "Material | Materialien",
+        "mint": "Prägeort | Prägeorte",
+        "mint_as_on_coin": "Prägeort wie auf Münze",
+        "mint_uncertain": "Prägeort nicht sicher",
+        "mint_year": "Prägejahr | Prägejahre",
+        "misc": "Randbeschriftung",
+        "nominal": "Nominal | Nominale",
+        "other_person": "sonstige Personen",
+        "outer_inscript": "äußere Umschrift",
+        "overlord": "Oberherr | Oberherren",
+        "person": "Person | Personen",
+        "piece": "Exemplar(e)",
+        "plain_text": "Text",
+        "procedure": "Herstellungsart | Herstellungsarten",
+        "procedures": {
+            "cast": "gegossen",
+            "pressed": "geprägt"
+        },
+        "project_id": "sikka:būya-ID | sikka:būya-IDs",
+        "province": "Region | Regionen",
+        "purity": "Feingehalt",
+        "reverse": {
+            "fieldText": "Revers-Feld",
+            "innerInscript": "Innere Revers-Umschrift",
+            "intermediateInscript": "mittlere Revers-Umschrift",
+            "misc": "Revers-Randbeschriftung",
+            "outerInscript": "äussere Revers-Umschrift"
+        },
+        "role": "Rolle | Rollen",
+        "ruler": "Herrscher",
+        "sides": {
+            "back": "Rückseite",
+            "front": "Vorderseite"
+        },
+        "small": "kleine Münze | kleine Münzen",
+        "small_coin": "kleine Münze | kleine Münzen",
+        "specialities_and_variants": "Besonderheiten / Varianten",
+        "specials": "Besonderheiten und Varianten",
+        "title": "Herrschertitel | Herrschertitel",
+        "treadwell_id": "Treadwell-ID | Treadwell-IDs",
+        "treasure": "Schatzfund",
+        "treasure-items": "Schatzfundinhalt",
+        "type": "Typ",
+        "typeview": {
+            "issuer": "Münzherr | Münzherr(en)",
+            "overlords": "oberherr | Oberherr(en)"
+        },
+        "user": "Benutzer | Benutzer",
+        "year_of_mint": "Prägejahr",
+        "year_uncertain": "Jahr nicht sicher",
+        "no_fragment": "kein Fragment",
+        "weight": "Gewicht"
     },
     "role": {
         "caliph": "Kalif | Kalif",
-        "heir": "Thronfolger d. Kalifen",
-        "donator": "Donator | Donatoren",
-        "warden": "Münzwardein | Münzwardeine",
-        "cutter": "Stempelschneider | Stempelschneider"
-    },
-    "system": {
-        "signup_title": "Registrierung",
-        "email": "Email",
-        "password": "Passwort",
-        "signup": "Anmelden",
-        "user_login": "Mitarbeiter Login",
-        "setup": "Ersteinrichtung",
-        "quick_access": "Schnellzugriff",
-        "supported_by": "in Zusammenarbeit mit:"
-    },
-    "ui": {
-        "list": {
-            "pagination": {
-                "elements_per_page": "Elemente pro Seite"
-            },
-            "multidataselect2d": {
-                "add_group": "Gruppe hinzufügen"
-            }
-        },
-        "multidataselect2d": {
-            "add_group": "Gruppe hinzufügen"
-        }
-    },
-    "typeview": {
-        "overlords": "Oberherr | Oberherr(en)",
-        "issuer": "Münzherr | Münzherr(en)",
-        "overlord_info": "Vom Münzherrn ausgehende Hierarchie: Der im Folgenden Erstgenannte unterstand dem Zweitgenanntem usw. (zum Kalifen hin aufsteigende Reihenfolge).",
-        "caliph": "Kalif | Kalife",
-        "heir": "des. Thronfolger des Kalifen",
         "cutter": "Stempelschneider | Stempelschneider",
-        "warden": "Münzwardein | Münzwardein(e)",
-        "donator": "Donator | Donator(en)"
+        "donator": "Donator | Donatoren",
+        "heir": "Thronfolger d. Kalifen",
+        "warden": "Münzwardein | Münzwardeine"
+    },
+    "routes": {
+        "Additional Maps": "weitere Karten",
+        "Analytics Table": "Tabellen",
+        "Catalog": "Typenkatalog",
+        "catalog": "Typenkatalog | Typenkataloge",
+        "Catalog Entry": "Eintrag | Einträge",
+        "Catalog Overview": "Typenkatalog",
+        "Catalog Ruler Explorer": "Herrscherliste",
+        "catalog Ruler Explorer": "Herrscherliste",
+        "Catalog Search": "Katalogsuche",
+        "catalog Search": "Katalogsuche",
+        "contact": "Kontakt",
+        "data_protection": "Datenschutzerklärung",
+        "home": "Startseite",
+        "impressum": "Impressum",
+        "map": "Karten | Karten",
+        "Map Landing": "Kartenübersicht",
+        "Political Map": "politische Karte",
+        "Treasure Map": "Schatzfundkarte"
     },
     "slideshow": {
-        "play": "Abspielen",
-        "pause": "Anhalten",
+        "delete": "löschen",
         "override": "überschreiben",
-        "record": "aufnehmen",
-        "delete": "löschen"
+        "pause": "Anhalten",
+        "play": "Abspielen",
+        "record": "aufnehmen"
     },
-    "bibliography": {
-        "treadwell_2002": "Luke Treadwell, Buyid Coinage. A die corpus (322–445 A.H.), Oxford 2002."
-    },
-    "values": {
-        "role": {
-            "buyid": "Buyide | Buyiden"
-        }
+    "system": {
+        "email": "Email",
+        "password": "Passwort",
+        "quick_access": "Schnellzugriff",
+        "setup": "Ersteinrichtung",
+        "signup": "Anmelden",
+        "signup_title": "Registrierung",
+        "supported_by": "in Zusammenarbeit mit:",
+        "user_login": "Mitarbeiter Login"
     },
     "time": {
         "created": "erstellt am",
         "last_modified": "zuletzt geändert am",
         "published": "veröffentlicht am"
     },
-    "custom": {
-        "fint": {
-            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)"
+    "typeview": {
+        "caliph": "Kalif | Kalife",
+        "cutter": "Stempelschneider | Stempelschneider",
+        "donator": "Donator | Donator(en)",
+        "heir": "des. Thronfolger des Kalifen",
+        "issuer": "Münzherr | Münzherr(en)",
+        "overlord_info": "Vom Münzherrn ausgehende Hierarchie: Der im Folgenden Erstgenannte unterstand dem Zweitgenanntem usw. (zum Kalifen hin aufsteigende Reihenfolge).",
+        "overlords": "Oberherr | Oberherr(en)",
+        "warden": "Münzwardein | Münzwardein(e)"
+    },
+    "ui": {
+        "list": {
+            "multidataselect2d": {
+                "add_group": "Gruppe hinzufügen"
+            },
+            "pagination": {
+                "elements_per_page": "Elemente pro Seite"
+            }
+        },
+        "multidataselect2d": {
+            "add_group": "Gruppe hinzufügen"
         }
     },
-    "location": {
-        "point": "Ort",
-        "polygon": "Gebiet"
+    "user": {
+        "permission": {
+            "creator": "Ersteller",
+            "editor": "Editor | Editoren",
+            "recorder": "Bearbeiter",
+            "super": "Super"
+        }
+    },
+    "values": {
+        "role": {
+            "buyid": "Buyide | Buyiden"
+        }
+    },
+    "warning": {
+        "list_is_empty": "Bisher sind keine Werte in dieser Liste.",
+        "not_reviewed_warning": "Achtung: Dieses Katalogisat wurde noch nicht (abschließend) geprüft und korrekturgelesen!"
     }
 }

@@ -12,63 +12,78 @@ class Treasure extends Table {
     static async insertItems(t, treasure, items = []) {
         if (items) {
             items.forEach(({
-                count = 1,
-                fragment = false,
-                year = null,
                 coinType = null,
+                count = 1,
                 dynasty = null,
+                fragment = false,
+                material = null,
                 mint = null,
                 nominal = null,
-                material = null,
+                weight = null,
+                year = null,
             } = {}) => {
 
                 t.none(`INSERT INTO treasure_item (
-                    count,
-                    fragment,
-                    year,
                     coinType,
-                    treasure,
+                    count,
                     dynasty,
+                    fragment,
+                    material,
                     mint,
                     nominal,
-                    material
+                    treasure,
+                    weight,
+                    year
                 ) VALUES (
-                    $[count],
-                    $[fragment],
-                    $[year],
                     $[coinType],
-                    $[treasure],
+                    $[count],
                     $[dynasty],
+                    $[fragment],
+                    $[material],
                     $[mint],
                     $[nominal],
-                    $[material]
+                    $[treasure],
+                    $[weight],
+                    $[year]
                 )`, {
-                    count,
-                    fragment,
-                    year,
                     coinType,
-                    treasure: treasure,
+                    count,
                     dynasty,
+                    fragment,
+                    material,
                     mint,
                     nominal,
-                    material,
+                    treasure: treasure,
+                    weight,
+                    year,
                 })
             })
         }
     }
 
-    static async add({ name = null, items = [], location = null } = {}) {
+    static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, literature = "" } = {}) {
         return WriteableDatabase.tx(async t => {
-            const { id } = await t.one(`INSERT INTO treasure (name, location) VALUES ($[name], $[location]) RETURNING treasure.id`, { name, location })
+
+            const { id } = await t.one(`INSERT INTO treasure (name, location, earliestYear, latestYear, literature) 
+            VALUES ($[name], $[location], $[earliestYear], $[latestYear], $[literature]) 
+            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, literature })
             await this.insertItems(t, id, items)
         })
     }
 
-    static async update(id, { name = "", location = null, items = [] } = {}) {
+    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, literature = "" } = {}) {
         if (id == null) throw new Error("Treasure ID is required")
+
+        console.log(timespan.from, timespan.to, literature)
         return WriteableDatabase.tx(async t => {
             await t.none(`DELETE FROM treasure_item WHERE treasure = $[id]`, { id })
-            await t.none(`UPDATE treasure SET name=$[name], location=$[location] WHERE id=$[id]`, { name, location, id })
+            await t.none(`UPDATE treasure SET 
+            name=$[name],
+            location=$[location],
+            earliestYear=$[earliestYear],
+            latestYear=$[latestYear],
+            literature=$[literature] 
+            WHERE id=$[id]`, { name, location, id, earliestYear: timespan.from, latestYear: timespan.to, literature })
             await this.insertItems(t, id, items)
         })
     }
@@ -100,7 +115,6 @@ class Treasure extends Table {
 
         }
 
-        let wtf = null
         let treasures = []
         await WriteableDatabase.tx(async t => {
 
@@ -108,6 +122,9 @@ class Treasure extends Table {
             SELECT 
             treasure.id,
                     treasure.name,
+                    treasure.earliestYear,
+                    treasure.latestYear,
+                    treasure.literature,
                     ST_AsGeoJSON(treasure.location) AS location,
                     COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
             FROM 
@@ -134,8 +151,14 @@ class Treasure extends Table {
 
             let requestedFields = graphqlFields(info)
 
+            treasures = treasures.map(treasure => {
+                treasure.timespan = { from: treasure.earliestyear, to: treasure.latestyear }
+                return treasure
+            })
+
             if (requestedFields.items) {
                 let foreignFields = {
+
                     "coinType": { get: (id) => Type.getType(_, { id }, context, info) },
                     "dynasty": { get: Dynasty.get },
                     "mint": { get: Mint.getById.bind(Mint) },
@@ -188,10 +211,6 @@ class Treasure extends Table {
             }
         })
 
-        // console.log(wtf, treasures[0].items[0])
-        // treasures[0].items[0].coinType = { id: 5, projectId: "ASDASASD" }
-
-        // console.log(treasures[0].items[0].coinType)
         return treasures
     }
 }

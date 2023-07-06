@@ -18,12 +18,16 @@ export class Treasure {
     constructor({
         id = null,
         name = null,
+        literature = null,
         location = null,
+        timespan = { from: null, to: null },
         items = []
     } = {}) {
         this.id = id
         this.name = name
+        this.literature = literature
         this.location = location
+        this.timespan = timespan
         this.items = items
     }
 
@@ -38,12 +42,18 @@ export class Treasure {
 
     async get(id) {
         const result = await new Query("treasure")
-            .get(id, ["id", "name", "location",
+            .get(id, [
+                "id",
+                "name",
+                "location",
+                "literature",
+                { timespan: ["from", "to"] },
                 {
                     items: [
                         "id",
                         "count",
                         "year",
+                        "weight",
                         { coinType: ["id", "projectId"] },
                         { mint: ["id", "name"] },
                         { dynasty: ["id", "name"] },
@@ -65,12 +75,15 @@ export class Treasure {
             treasure: {
                 name: this.name,
                 location: this.location,
+                literature: this.literature,
+                timespan: this.timespan,
                 items: this.items
             }
         })
     }
 
     async update(id) {
+        console.log(this.timespan)
         await Query.raw(`
         mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
             updateTreasure(id:$id, data: $treasure)
@@ -80,6 +93,8 @@ export class Treasure {
             treasure: {
                 name: this.name,
                 location: this.location,
+                literature: this.literature,
+                timespan: this.timespan,
                 items: this.items
             }
         })
@@ -95,39 +110,43 @@ export class Treasure {
 export class TreasureItem {
 
     /**
-     * Create a treasure item.
-     * @param {Object} [options] - The options object.
-     * @param {string} [options.id=null] - The treasure item ID.
-     * @param {number} [options.count=1] - The treasure item count.
-     * @param {string} [options.coinType=null] - The treasure item project ID.
-     * @param {string} [options.dynasty=null] - The treasure item dynasty.
-     * @param {string} [options.mint=null] - The treasure item mint.
-     * @param {string} [options.year=null] - The treasure item year.
-     * @param {string} [options.nominal=null] - The treasure item nominal.
-     * @param {string} [options.material=null] - The treasure item material.
-     * @param {boolean} [options.fragment=false] - The treasure item fragment.
+     * Creates a new instance of the TreasureItem class.
+     * @constructor
+     * @param {Object} [options] - The options to initialize the TreasureItem instance with.
+     * @param {string} [options.coinType=null] - The type of coin.
+     * @param {number} [options.count=1] - The number of items.
+     * @param {string} [options.dynasty=null] - The dynasty of the coin.
+     * @param {boolean} [options.fragment=false] - Whether the item is a fragment.
+     * @param {number} [options.id=null] - The ID of the item.
+     * @param {string} [options.material=null] - The material of the coin.
+     * @param {string} [options.mint=null] - The mint of the coin.
+     * @param {string} [options.nominal=null] - The nominal of the coin.
+     * @param {number} [options.weight=null] - The weight of the coin.
+     * @param {number} [options.year=null] - The year of the coin.
      */
     constructor({
-        id = null,
-        count = 1,
         coinType = null,
+        count = 1,
         dynasty = null,
-        mint = null,
-        year = null,
-        nominal = null,
+        fragment = false,
+        id = null,
         material = null,
-        fragment = false
+        mint = null,
+        nominal = null,
+        weight = null,
+        year = null,
     } = {}
     ) {
-        this.id = id
-        this.count = count
         this.coinType = coinType
+        this.count = count
         this.dynasty = dynasty
-        this.mint = mint
-        this.year = year
-        this.nominal = nominal
-        this.material = material
         this.fragment = fragment
+        this.id = id
+        this.material = material
+        this.mint = mint
+        this.nominal = nominal
+        this.weight = weight
+        this.year = year
     }
 
 
@@ -144,6 +163,7 @@ export class TreasureItem {
     static fromInputs(obj) {
         obj = Object.assign({}, obj, {
             count: parseInt(obj.count),
+            weight: parseFloat(obj.weight),
             coinType: obj.coinType.hasOwnProperty("id") ? obj.coinType.id : obj.coinType,
             mint: obj.mint.hasOwnProperty("id") ? obj.mint.id : obj.mint,
             dynasty: obj.dynasty.hasOwnProperty("id") ? obj.dynasty.id : obj.dynasty,

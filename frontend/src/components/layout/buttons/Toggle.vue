@@ -5,6 +5,9 @@
     @click.stop.prevent="toggle"
   >
     <Tooltip v-if="tooltip">{{ tooltip }}</Tooltip>
+    <slot
+      v-if="!$slots.active && !$slots.inactive"
+    ></slot>
     <template v-if="value">
       <slot name="active"></slot>
     </template>

@@ -63,38 +63,44 @@ type ModCoinTypePagination {
 }
 
 type TreasureItem {
-  id: ID
-  count: Int
   coinType: CoinType
+  count: Int
   dynasty:Name
-  mint: Mint
-  year: String
-  nominal: Name
-  material: Material
   fragment: Boolean
+  id: ID
+  material: Material
+  mint: Mint
+  nominal: Name
+  weight: Float
+  year: String
 }
 
 input TreasureItemInput {
-  count: Int
   coinType: ID
-  fragment: Boolean 
-  year: String
+  count: Int
   dynasty: ID
+  fragment: Boolean 
+  material: ID
   mint: ID
   nominal: ID
-  material: ID
+  weight: Float
+  year: String
 }
 
 type Treasure {
   id:ID
   name: String
   location: GeoJSON
+  timespan: Range
+  literature: String
   items: [TreasureItem]
 }
 
 input TreasureInput {
   name: String
   location: GeoJSON
+  timespan: RangeInput
+  literature: String
   items: [TreasureItemInput]
 }
 
@@ -254,6 +260,11 @@ type RuledMint {
 }
 
 type Range {
+  from: Int
+  to: Int
+}
+
+input RangeInput {
   from: Int
   to: Int
 }

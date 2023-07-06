@@ -1,80 +1,177 @@
 <template>
     <div class="treasure-item-form">
-        <input
-            type="number"
-            name=""
-            id=""
-            :placeholder="$tc('general.count')"
-            v-model="value.count"
-        >
+        <LabeledInputContainer>
 
-        <input
-            type="text"
-            name=""
-            id=""
-            :placeholder="$tc('property.year_of_mint')"
-            v-model="value.year"
-        >
+            <template #label>
+                <Locale path="general.count" />
+            </template>
 
-        <DataSelect
-            table="coinType"
-            attribute="projectId"
-            dataPath="coinType.types"
-            query="query search($text: String){
+            <input
+                type="number"
+                name=""
+                id=""
+                :placeholder="$tc('general.count')"
+                v-model="value.count"
+            >
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+
+            <template #label>
+                <Locale path="property.year_of_mint" />
+            </template>
+
+            <input
+                type="text"
+                name=""
+                id=""
+                :placeholder="$tc('property.yearOfMint')"
+                v-model="value.year"
+            >
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+            <template #label>
+                <Locale path="property.dynasty" />
+            </template>
+
+            <DataSelect
+                table="dynasty"
+                :debug="debug"
+                v-model="value.dynasty"
+            />
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+            <template #label>
+                <Locale path="property.fragment" />
+            </template>
+            <Toggle v-model="value.fragment">
+                <template #active>
+                    <div>
+                        <Icon
+                            :path="icons.checked"
+                            :size="IconSize.Normal"
+                            type="mdi"
+                        />
+                    </div>
+
+                    <Locale path="property.fragment" />
+                </template>
+                <template #inactive>
+                    <div>
+                        <Icon
+                            :path="icons.unchecked"
+                            :size="IconSize.Normal"
+                            type="mdi"
+                        />
+                    </div>
+                    <Locale path="property.no_fragment" />
+                </template>
+            </Toggle>
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+
+            <template #label>
+                <span>
+                    <Locale path="property.weight" /> (g)
+                </span>
+
+
+            </template>
+
+            <input
+                type="number"
+                step="0.01"
+                name=""
+                id=""
+                :placeholder="$tc('property.weight')"
+                v-model="value.weight"
+            >
+        </LabeledInputContainer>
+
+        <div class="type-group">
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.type" />
+                </template>
+
+                <DataSelect
+                    table="coinType"
+                    attribute="projectId"
+                    dataPath="coinType.types"
+                    query="query search($text: String){
                 coinType(filters: {projectId:$text}) {
                     types{
                         id
                         projectId
+                        yearOfMint
+                        mint {
+                            id
+                            name
+                        }
+                        material {
+                            id
+                            name
+                        }
+                        nominal {
+                            id
+                            name
+                        }
                     }
                 }
             }"
-            v-model="value.coinType"
-        >
+                    @select="(value, data) => this.$emit('typeChanged', data)"
+                    v-model="value.coinType"
+                >
 
-        </DataSelect>
+                </DataSelect>
+            </LabeledInputContainer>
 
-        <DataSelect
-            table="mint"
-            :debug="debug"
-            v-model="value.mint"
-        />
-        <DataSelect
-            table="dynasty"
-            :debug="debug"
-            v-model="value.dynasty"
-        />
-        <DataSelect
-            table="nominal"
-            :debug="debug"
-            v-model="value.nominal"
-        />
-        <DataSelect
-            table="material"
-            :debug="debug"
-            v-model="value.material"
-        />
-        <Toggle v-model="value.fragment">
-            <template #active>
-                <div>
-                    <Icon
-                        :path="icons.checked"
-                        :size="IconSize.Normal"
-                        type="mdi"
-                    />
-                </div>
-            </template>
-            <template #inactive>
-                <div>
-                    <Icon
-                        :path="icons.unchecked"
-                        :size="IconSize.Normal"
-                        type="mdi"
-                    />
-                </div>
-            </template>
-        </Toggle>
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.mint" />
+                </template>
 
-        <DynamicDeleteButton @delete="$emit('delete')" />
+                <DataSelect
+                    table="mint"
+                    :debug="debug"
+                    v-model="value.mint"
+                />
+            </LabeledInputContainer>
+
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.nominal" />
+                </template>
+
+                <DataSelect
+                    table="nominal"
+                    :debug="debug"
+                    v-model="value.nominal"
+                />
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.material" />
+                </template>
+                <DataSelect
+                    table="material"
+                    :debug="debug"
+                    v-model="value.material"
+                />
+            </LabeledInputContainer>
+
+        </div>
+
+
+        <DynamicDeleteButton
+            @delete="$emit('delete')"
+            style="grid-column: -1;"
+        />
 
     </div>
 </template>
@@ -85,6 +182,7 @@ import DataSelect from '@/components/forms/DataSelectField';
 import Toggle from '../../layout/buttons/Toggle.vue';
 import IconMixin from "@/components/mixins/icon-mixin"
 import DynamicDeleteButton from "@/components/layout/DynamicDeleteButton.vue"
+import LabeledInputContainer from "@/components/LabeledInputContainer"
 
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked } from '@mdi/js';
 
@@ -96,6 +194,7 @@ export default {
     components: {
         DataSelect,
         DynamicDeleteButton,
+        LabeledInputContainer,
         Locale,
         Toggle,
     },
@@ -138,6 +237,22 @@ export default {
 <style lang="scss" scoped>
 .treasure-item-form {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    ;
+}
+
+.type-group {
+    display: grid;
+    gap: 1em;
+    border: 1px solid $light-gray;
+    padding: math.div($padding, 2) $padding;
+
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.treasure-item-form {
+    display: grid;
     background-color: white;
     border: 1px solid $light-gray;
     padding: 2px .5em;
@@ -151,5 +266,4 @@ export default {
 
         min-width: 0;
     }
-}
-</style>
+}</style>
