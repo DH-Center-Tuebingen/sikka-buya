@@ -52,8 +52,12 @@
             <LocationInput
                 :interactive="true"
                 :type="location.type"
+                :allowRadius="true"
+                :radius="locationRadius"
                 :coordinates="location.coordinates"
+                ref="locationInput"
                 @update="(geojson) => location = geojson"
+                @updateRadius="(radius)=> locationRadius = radius"
             />
         </LabeledInputContainer>
 
@@ -136,7 +140,8 @@ export default {
             name: "",
             literature: "",
             timespan: { from: null, to: null },
-            location: { coordinates: [0, 0], type: "point" },
+            location: { coordinates: [0, 0], type: "circle" },
+            locationRadius: 10,
             items: [],
             importErrors: []
         }
@@ -238,8 +243,11 @@ export default {
             this.error = ""
 
             let location = { type: this.location.type, coordinates: this.location.coordinates.slice() }
+
             if (location.type.toLowerCase() === "polygon")
                 location.coordinates = [location.coordinates]
+            if(location.type.toLowerCase() === "circle")
+                location = this.$refs.locationInput.getGeoJsonFromCircle()
 
             const treasure = new Treasure({
                 name: this.name,
@@ -260,7 +268,7 @@ export default {
                     await treasure.add()
                 }
                 this.prevent_navigation_mixin_setClean()
-                // this.$router.push({ name: "Property", params: { property: "treasure" } })
+                this.$router.push({ name: "Property", params: { property: "treasure" } })
             } catch (e) {
                 this.error = Array.isArray(e) ? e.join("\n") : e
             }

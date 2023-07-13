@@ -9,7 +9,7 @@
                 :radius="radius"
                 :coordinates="coordinates"
                 @update="updateInput"
-                @radiusChanged="updateRadius"
+                @updateRadius="updateRadius"
             />
         </main>
     </div>

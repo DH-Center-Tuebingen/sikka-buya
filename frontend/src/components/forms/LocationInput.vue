@@ -11,7 +11,7 @@
       <div class="input-wrapper">
         <select
           v-if="interactive"
-          :value="type"
+          :value="type.toLowerCase()"
           @change="typeChange"
         >
           <option value="point">
@@ -35,7 +35,7 @@
           v-if="type === 'circle'"
           type="range"
           :value="radius"
-          @input="($event) => $emit('radiusChanged', parseFloat($event.target.value))"
+          @input="($event) => $emit('updateRadius', parseFloat($event.target.value))"
           min="1"
           max="200"
         />
@@ -182,6 +182,12 @@ export default {
         }
       } catch (e) {
         console.error(e);
+      }
+    },
+    getGeoJsonFromCircle() {
+      return {
+        type: "polygon",
+        coordinates: [this.getCircleCoordinates()]
       }
     },
     resetInputText: function () {
@@ -384,7 +390,7 @@ export default {
 
           this.handles = this.coordinates.map((point, i) => {
             let marker = L.circleMarker(point, {
-              radius: 10,
+              radius: 4,
               fillOpacity: 1,
               fillColor: this.activeMarkerIndex == i ? '#ffffff' : '#3388ff',
               draggable: true,
@@ -457,26 +463,7 @@ export default {
             icon: defaultIcon,
           })
 
-
-          const radiusInKM = this.radius
-
-          let poleLengthInKM = 20003.147
-          let equatorLengthInKM = 40075.686
-
-          const N = 16
-          const a = Math.PI * 2 / N
-          const latRad = 180 / poleLengthInKM * radiusInKM
-          const lonRad = 360 / equatorLengthInKM * radiusInKM
-
-          let circle = []
-          for (let i = 0; i < N; i++) {
-            let lat = this.coordinates[0] + Math.sin(a * i) * latRad
-            let lon = this.coordinates[1] + Math.cos(a * i) * lonRad
-            circle.push([lat, lon])
-          }
-
-          const circlePolygon = L.polygon(circle)
-
+          const circlePolygon = L.polygon(this.getCircleCoordinates())
           this.marker = L.featureGroup([marker, circlePolygon]).addTo(this.map);
 
         } else {
@@ -497,6 +484,25 @@ export default {
           }).addTo(this.map);
         }
       }
+    },
+    getCircleCoordinates() {
+      const radiusInKM = this.radius
+
+      let poleLengthInKM = 20003.147
+      let equatorLengthInKM = 40075.686
+
+      const N = 16
+      const a = Math.PI * 2 / N
+      const latRad = 180 / poleLengthInKM * radiusInKM
+      const lonRad = 360 / equatorLengthInKM * radiusInKM
+
+      let circle = []
+      for (let i = 0; i < N; i++) {
+        let lat = this.coordinates[0] + Math.sin(a * i) * latRad
+        let lon = this.coordinates[1] + Math.cos(a * i) * lonRad
+        circle.push([lat, lon])
+      }
+      return circle
     },
     createStringArray(arr) {
       const values = [];
