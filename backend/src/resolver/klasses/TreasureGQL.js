@@ -1,4 +1,4 @@
-const Treasure = require('../../models/Treasure')
+const Treasure = require('../../models/treasure.js')
 const GQL = require('./GQL.js')
 
 class TreasureGQL extends GQL {
