@@ -297,12 +297,12 @@ const EditorMutations = {
 
 const Mutations = Object.assign({},
     UnguardedMutations,
-    TreasureGQL.Mutations,
     guard(
         Object.assign(
             UserMutations,
             PageGQL.Mutations,
-            BlockGQL.Mutations
+            BlockGQL.Mutations,
+            TreasureGQL.Mutations,
         ), (_, __, context) => {
             return Auth.verifyContext(context)
         }),
