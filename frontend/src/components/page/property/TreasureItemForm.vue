@@ -16,21 +16,6 @@
         </LabeledInputContainer>
 
         <LabeledInputContainer>
-
-            <template #label>
-                <Locale path="property.year_of_mint" />
-            </template>
-
-            <input
-                type="text"
-                name=""
-                id=""
-                :placeholder="$tc('property.yearOfMint')"
-                v-model="value.year"
-            >
-        </LabeledInputContainer>
-
-        <LabeledInputContainer>
             <template #label>
                 <Locale path="property.dynasty" />
             </template>
@@ -130,6 +115,21 @@
             </LabeledInputContainer>
 
             <LabeledInputContainer>
+
+                <template #label>
+                    <Locale path="property.year_of_mint" />
+                </template>
+
+                <input
+                    type="text"
+                    name=""
+                    id=""
+                    :placeholder="$tc('property.yearOfMint')"
+                    v-model="value.year"
+                >
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
                 <template #label>
                     <Locale path="property.mint" />
                 </template>
@@ -169,8 +169,8 @@
 
 
         <DynamicDeleteButton
+            class="delete-button"
             @delete="$emit('delete')"
-            style="grid-column: -1;"
         />
 
     </div>
@@ -241,6 +241,12 @@ export default {
     ;
 }
 
+.delete-button {
+    grid-row: 3;
+    grid-column-start: 4;
+    justify-self: flex-end;
+}
+
 .type-group {
     display: grid;
     gap: 1em;
@@ -266,4 +272,5 @@ export default {
 
         min-width: 0;
     }
-}</style>
+}
+</style>

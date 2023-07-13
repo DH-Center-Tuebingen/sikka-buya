@@ -274,6 +274,12 @@ type PersonPosition {
   order: Int
 }
 
+input OrderInput{
+  by: String
+  desc: Boolean
+}
+
+
 type Query {
   locale: String
   ping: String
@@ -334,6 +340,8 @@ type Query {
   coinVerse: [Name]
   searchCoinVerse(text: String): [Name]!
   getCoinVerse(id: ID!): Name
+
+  propertyByName(property: String!, name:String!): Name
 
   mintMaterials: [MintMaterials]
   getMaterialColor(id: ID!): String

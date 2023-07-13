@@ -8,9 +8,12 @@
         </AsyncButton> -->
         <input
             type="file"
-            name=""
-            id=""
+            :name="$props.name"
+            ref="input"
+            @click="()=> $refs.input.value = ''"
             @change="change"
+            @input="(event)=> $emit('input', event)"
+            :accept="accept"
         >
     </label>
 </template>
@@ -27,10 +30,18 @@ export default {
     components: { Button, AsyncButton },
     mixins: [iconMixin({loading: mdiLoading})],
     props: {
+        name: {
+            type: String,
+            default: 'file-upload'
+        },
         loading: {
             type: Boolean,
             default: false,
             required: true
+        },
+        accept: {
+            type: String,
+            default: ''
         }
     },
     methods: {

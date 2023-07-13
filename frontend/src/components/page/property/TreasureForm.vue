@@ -65,11 +65,16 @@
                 <Toggle v-model="autoComplete">
                     <Locale path="general.auto-complete"></Locale>
                 </Toggle>
-                <FileUploadButton :loading="importing">
+                <FileUploadButton
+                    :loading="importing"
+                    @input="importItems"
+                    accept=".csv"
+                >
                     <Locale path="general.import"></Locale>
                 </FileUploadButton>
             </div>
 
+            <ErrorMessage :error="importErrors" />
 
             <form-list @add="addItem">
 
@@ -86,41 +91,42 @@
 </template>
 
 <script>
-import Locale from '@/components/cms/Locale';
-import LabeledInputContainer from "@/components/LabeledInputContainer"
 import { Treasure, TreasureItem } from '../../../models/property/treasure';
-import LocationInput from "@/components/forms/LocationInput"
-import LoadingSpinner from "@/components/misc/LoadingSpinner"
-import List from "@/components/layout/List"
-import FormList from "@/components/forms/FormList"
-import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
-import RangeInput from '../../forms/RangeInput.vue';
-
+import CsvReader from "@/utils/CsvReader"
+import EditorPropertyMixin from "../../mixins/editor-property-mixin"
+import ErrorMessage from "@/components/ErrorMessage"
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
-
+import FormList from "@/components/forms/FormList"
+import LabeledInputContainer from "@/components/LabeledInputContainer"
+import List from "@/components/layout/List"
+import LoadingSpinner from "@/components/misc/LoadingSpinner"
+import Locale from '@/components/cms/Locale';
+import LocationInput from "@/components/forms/LocationInput"
+import PreventNavigationMixin from "../../mixins/prevent-navigation-mixin"
+import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
+import Query from "@/database/query"
+import RangeInput from '../../forms/RangeInput.vue';
+import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"
 
-import Toggle from "@/components/layout/buttons/Toggle"
-
-
-import EditorPropertyMixin from "../../mixins/editor-property-mixin"
-import PreventNavigationMixin from "../../mixins/prevent-navigation-mixin"
+import { TreasureItemsImporter } from "@/models/importer"
 
 let treasure = new Treasure();
 export default {
     mixins: [EditorPropertyMixin, PreventNavigationMixin],
     components: {
-        List,
+        ErrorMessage,
+        FileUploadButton,
+        FormList,
         LabeledInputContainer,
+        List,
         LoadingSpinner,
         Locale,
         LocationInput,
-        TreasureItemForm,
-        Toggle,
         PropertyFormWrapper,
-        FormList,
-        FileUploadButton,
-        RangeInput
+        RangeInput,
+        Toggle,
+        TreasureItemForm,
     },
     data() {
         return {
@@ -131,7 +137,8 @@ export default {
             literature: "",
             timespan: { from: null, to: null },
             location: { coordinates: [0, 0], type: "point" },
-            items: []
+            items: [],
+            importErrors: []
         }
     },
     watch: {
@@ -168,17 +175,13 @@ export default {
                 }
             })
 
-            console.log(timespan)
             this.timespan = timespan
         },
         handleTypeChange(index, data) {
             if (this.autoComplete && data.id != null) {
-                const values = ["yearOfMint"]
                 const namedInputs = ["mint", "material", "nominal"]
 
-                values.forEach(attribute => {
-                    this.items[index][attribute] = data[attribute]
-                })
+                this.items[index].year = data["yearOfMint"]
 
                 namedInputs.forEach(attribute => {
                     this.items[index][attribute] = data[attribute]
@@ -190,7 +193,23 @@ export default {
             const item = new TreasureItem().forInput()
             this.items.push(item)
         },
-        importItems() {
+        async importItems(event) {
+            this.importing = true
+            this.importErrors = []
+            const file = event.target.files[0]
+
+
+            const importer = new TreasureItemsImporter()
+            await importer.exec(file)
+            this.importErrors = importer.errors
+
+            console.log(importer.errorsObject)
+            if (importer.errors.length === 0) {
+                this.items = importer.items
+                this.getCoinRangeFromItems()
+            }
+
+            this.importing = false
 
         },
         async loadProperty() {
@@ -226,7 +245,7 @@ export default {
                 name: this.name,
                 location: location,
                 literature: this.literature,
-                timespan: {from: parseInt(this.timespan.from), to: parseInt(this.timespan.to)},
+                timespan: { from: parseInt(this.timespan.from), to: parseInt(this.timespan.to) },
                 items: this.items.map(item => {
                     let ti = TreasureItem.fromInputs(item)
                     delete ti.id

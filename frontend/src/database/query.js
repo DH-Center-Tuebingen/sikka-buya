@@ -9,8 +9,26 @@ export default class Query {
         this.name = name
     }
 
+    get defaultProperties() {
+        return [
+            "id",
+            "name"
+        ]
+    }
+
     get capitalizedName() {
         return this.name[0].toUpperCase() + this.name.substr(1)
+    }
+
+    async search(text, properties = this.defaultProperties) {
+        const query = `
+        {
+            search${this.capitalizedName}(text: "${text}") {
+                ${properties.join("\n")}
+            }
+    }`
+
+        return this.raw(query)
     }
 
     async get(id, properties = []) {
@@ -36,7 +54,6 @@ export default class Query {
                 
               }
             `
-        console.log(query)
 
         return Query.raw(query)
     }
@@ -124,6 +141,8 @@ export default class Query {
             data: formData
         })
     }
+
+
 
     static async raw(query, variables = {}, debug = false) {
         // if (debug)
