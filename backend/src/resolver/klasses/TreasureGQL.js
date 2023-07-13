@@ -1,5 +1,5 @@
 const Treasure = require('../../models/treasure.js')
-const GQL = require('./GQL.js')
+const GQL = require('./gql.js')
 
 class TreasureGQL extends GQL {
     static get Mutations() {
