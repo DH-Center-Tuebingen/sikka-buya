@@ -96,6 +96,7 @@ import PlaygroundPage from "@/components/map/Playground"
 
 
 import TemplatePage from "@/components/page/TemplatePage"
+import { componentTestRoutes } from "@/component-test.js"
 import { superUserIsSet } from '../utils/Setup.js'
 import store from '../store.js'
 
@@ -113,6 +114,7 @@ const routes = [
     path: "/offline",
     component: ServerOfflinePage
   },
+  ...componentTestRoutes,
   {
     path: "/map/",
     name: "MapPage",
