@@ -67,7 +67,10 @@ class Resolver {
         return Database.one(`SELECT * FROM ${this.tableName} WHERE id=$1 `, [args.id])
     }
 
-    async list(_, { language } = {}) {
+    async list(_, { language, filters = {} } = {}) {
+
+        console.log(filters)
+
 
 
         function orderByColumn(column) {

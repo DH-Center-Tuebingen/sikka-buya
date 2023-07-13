@@ -1,30 +1,78 @@
 <template>
-  <div class="data-select" :class="{ invalid }">
-    <input type="hidden" class="data-select-id" :value="idValue" />
-    <input class="name-field" ref="nameField" @input="input" @focus="activateList" @blur="hideList"
-      :placeholder="placeholder" v-model="value[attribute]" :required="required" />
+  <div
+    class="data-select"
+    :class="{ invalid }"
+  >
+    <input
+      type="hidden"
+      class="data-select-id"
+      :value="idValue"
+    />
+    <input
+      class="name-field"
+      ref="nameField"
+      @input="input"
+      @focus="activateList"
+      @blur="hideList"
+      :placeholder="placeholder"
+      v-model="value[attribute]"
+      :required="required"
+    />
 
-    <Button v-if="!disableRemoveButton" id="clear-btn" @click.stop.prevent="clear()">
+    <Button
+      v-if="!disableRemoveButton"
+      id="clear-btn"
+      @click.stop.prevent="clear()"
+    >
       <Close :size="iconSize" />
     </Button>
 
-    <div v-if="!unselectable" class="indicator">
-      <Alert :size="iconSize" v-if="invalid" class="alert" />
-      <Check :size="iconSize" v-else class="check" />
+
+    <div
+      class="debug-id"
+      v-if="debug"
+    >
+      ({{ idValue }})
+    </div>
+
+    <div
+      v-if="!unselectable"
+      class="indicator"
+    >
+      <Alert
+        :size="iconSize"
+        v-if="invalid"
+        class="alert"
+      />
+      <Check
+        :size="iconSize"
+        v-else
+        class="check"
+      />
     </div>
 
     <ul :class="'search-box ' + (listVisible ? 'visible' : 'hidden')">
-      <li v-if="internal_error" class="error non-selectable">
+      <li
+        v-if="internal_error"
+        class="error non-selectable"
+      >
         {{ internal_error }}
       </li>
 
-      <li v-if="
-        (!internal_error && !loading && !searchResults) ||
-        searchResults.length == 0
-      " class="non-selectable">
+      <li
+        v-if="(!internal_error && !loading && !searchResults) ||
+          searchResults.length == 0
+          "
+        class="non-selectable"
+      >
         {{ $t('message.list_empty') }}
       </li>
-      <li v-for="search of searchResults" :key="search.id" :data-id="search.id" @click.stop="setValue">
+      <li
+        v-for="search of searchResults"
+        :key="search.id"
+        :data-id="search.id"
+        @click.stop="($event) => setValue($event, search)"
+      >
         <!-- These comments are necessary, that no whitespace is added!
         -->{{ transformTextContent(search)
         }}<!--
@@ -32,7 +80,10 @@
       </li>
     </ul>
 
-    <div v-if="error" class="error non-selectable">{{ error }}</div>
+    <div
+      v-if="error"
+      class="error non-selectable"
+    >{{ error }}</div>
   </div>
 </template>
 
@@ -58,6 +109,10 @@ export default {
     };
   },
   props: {
+    debug: {
+      type: Boolean,
+      default: false,
+    },
     value: {
       type: Object,
       validator: function (obj) {
@@ -78,7 +133,6 @@ export default {
     },
     attribute: {
       type: String,
-      required: true,
       default: 'name',
     },
     required: {
@@ -101,7 +155,26 @@ export default {
       default: false,
       type: Boolean,
     },
+    /**
+     * You may use a custom query and just need to set the $text variable in that
+     * query. You must set the dataPath or queryCommand value to the path where the data is stored.
+     */
     query: String,
+    /**
+     * The 'dataPath' value is used in conjunktion with the 'query' value.
+     * And is an alternative to the queryCommand value, if you have a more
+     * complex structure you want to access.
+     * 
+     * E.g. coinTypes.types
+     */
+    dataPath: String,
+    /**
+     * The 'queryCommand' value is used in conjunktion with the 'query' value.
+     * And is an alternative to the dataPath value, if you have a simple
+     * structure you want to access.
+     * 
+     * E.g. 'coinTypes'
+     */
     queryCommand: String,
     msg: String,
     tooltip: String,
@@ -120,14 +193,14 @@ export default {
     },
   },
   methods: {
-    setValue: function (event) {
+    setValue: function (event,  data) {
       const target = event.target;
       const value = this.value;
       this.listVisible = false;
       value.id = target.getAttribute('data-id');
       value[this.attribute] = target.textContent;
       this.$emit('input', value);
-      this.$emit('select', value);
+      this.$emit('select', value, data);
     },
     input: async function (event, preventSimiliarityCheck = false) {
       let value = this.value;
@@ -189,25 +262,47 @@ export default {
     searchEntry: async function (str = null) {
       let searchString = str !== null ? str : this.value[this.attribute] || '';
 
+      let query = this.query
+
       const queryCommand = this.queryCommand
         ? this.queryCommand
         : `search${this.table[0].toUpperCase() + this.table.slice(1)}`;
 
-      const query = `{
-      ${queryCommand}(text: "${searchString}" ${this.additionalParameters
-          ? Object.entries(this.additionalParameters).map(
-            ([key, value]) => `,${key}:${JSON.stringify(value)}`
-          )
-          : ''
-        } ){
+      if (!query) {
+        query = `query search($text: String!){
+      ${queryCommand}(text: $text ${this.additionalParameters
+            ? Object.entries(this.additionalParameters).map(
+              ([key, value]) => `,${key}:${JSON.stringify(value)}`
+            )
+            : ''
+          } ){
         ${GraphQLUtils.buildQueryBody(this.queryBody)}
       }
       }`;
+      }
 
-      Query.raw(query)
+      Query.raw(query, { text: searchString })
         .then((result) => {
-          if (result?.data?.data[queryCommand]) {
-            this.searchResults = result.data.data[queryCommand];
+
+          let data = result?.data?.data
+          let searchResults = null
+
+          if (data) {
+
+            let parts = this.dataPath ? this.dataPath.split('.') : [queryCommand]
+
+            while (parts.length > 0) {
+              const part = parts.shift()
+              if (data[part] == null) break
+              data = data[part]
+            }
+
+            searchResults = data
+          }
+
+
+          if (searchResults) {
+            this.searchResults = searchResults;
             this.internal_error = '';
           } else {
             console.error('Could not get value');
@@ -313,6 +408,16 @@ export default {
   }
 }
 
+.debug-id {
+  position: absolute;
+  right: 55px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  color: gray;
+}
+
 .error {
   position: absolute;
   top: 0;
@@ -326,7 +431,7 @@ export default {
 
 .name-field {
   flex: 1;
-
+  min-width: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   //   border: 1px solid gray;

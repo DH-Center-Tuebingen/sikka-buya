@@ -703,7 +703,7 @@ class Type {
 
     static get rows() {
         return ` t.*,
-                ${Material.query()}
+                ${Material.query()},
                 ${Material.colorQuery()},
                 ${Mint.query()}
                 ${Nominal.query()}

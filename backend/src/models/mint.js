@@ -61,7 +61,7 @@ class Mint {
             let p = await Database.manyOrNone(`
         SELECT 
             ${this.SELECT_QUERY}
-             FROM ${this.name} mi
+             FROM mint mi
              ${this.JOIN}
              WHERE unaccent(mi.name) ILIKE  unaccent($1) 
              ${this.ORDER}
@@ -76,7 +76,7 @@ class Mint {
         let p = await Database.manyOrNone(`
         SELECT 
         ${this.SELECT_QUERY}
-         FROM ${this.name} mi
+         FROM mint mi
          ${this.JOIN}
          ${this.ORDER}
         `)
@@ -88,7 +88,7 @@ class Mint {
     static fixGeoJSON(obj) {
         if (obj.uncertainArea != null && !GeoJSON.isEmpty(obj.uncertainArea) > 0) {
             obj["uncertain_area"] = obj.uncertainArea
-        }else{
+        } else {
             obj["uncertain_area"] = null
         }
         delete obj.uncertainArea
@@ -126,7 +126,7 @@ class Mint {
                 ST_AsGeoJSON(uncertain_area) AS uncertain_area,
                     p.id AS province_id,
                         p.name AS province_name
-        FROM ${this.name} mi
+        FROM mint mi
         ${this.JOIN}
         WHERE mi.id = $1; `
 

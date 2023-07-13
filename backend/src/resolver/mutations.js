@@ -1,14 +1,18 @@
+const Argument = require('../argument')
 const Auth = require('../auth')
+const CMS = require('../cms')
+const Language = require('../language')
+
+// Utils
+const { createDirectoryStructure } = require('../utils/dir-builder')
 const { guardFunctionObject: guard } = require('../utils/guard.js')
 const { WriteableDatabase, pgp } = require('../utils/database.js')
 const Type = require('../utils/type')
-const PageGQL = require('./klasses/PageGQL')
+
+// Klasses
 const BlockGQL = require('./klasses/BlockGQL')
-const CMS = require('../cms')
-const Argument = require('../argument')
-const Language = require('../language')
-const { createDirectoryStructure } = require('../utils/dir-builder')
-const Frontend = require('../frontend')
+const PageGQL = require('./klasses/PageGQL')
+const TreasureGQL = require('./klasses/TreasureGQL')
 
 /**
  * Most mutations require the user to be logged in to
@@ -291,14 +295,14 @@ const EditorMutations = {
 }
 
 
-
 const Mutations = Object.assign({},
     UnguardedMutations,
     guard(
         Object.assign(
             UserMutations,
             PageGQL.Mutations,
-            BlockGQL.Mutations
+            BlockGQL.Mutations,
+            TreasureGQL.Mutations,
         ), (_, __, context) => {
             return Auth.verifyContext(context)
         }),

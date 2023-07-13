@@ -3,7 +3,7 @@
     <AlertCircle v-if="icon" class="icon" />
     <p
       v-for="(error, idx) in errorMessages"
-      :key="'error-' - idx"
+      :key="'error-' + idx"
       class="error"
     >
       {{ error }}

@@ -62,6 +62,48 @@ type ModCoinTypePagination {
   types: [ModCoinType]
 }
 
+type TreasureItem {
+  coinType: CoinType
+  count: Int
+  dynasty:Name
+  fragment: Boolean
+  id: ID
+  material: Material
+  mint: Mint
+  nominal: Name
+  weight: Float
+  year: String
+}
+
+input TreasureItemInput {
+  coinType: ID
+  count: Int
+  dynasty: ID
+  fragment: Boolean 
+  material: ID
+  mint: ID
+  nominal: ID
+  weight: Float
+  year: String
+}
+
+type Treasure {
+  id:ID
+  name: String
+  location: GeoJSON
+  timespan: Range
+  literature: String
+  items: [TreasureItem]
+}
+
+input TreasureInput {
+  name: String
+  location: GeoJSON
+  timespan: RangeInput
+  literature: String
+  items: [TreasureItemInput]
+}
+
 type CoinType {
   avers: CoinSideInformation
   caliph: Person
@@ -222,10 +264,21 @@ type Range {
   to: Int
 }
 
+input RangeInput {
+  from: Int
+  to: Int
+}
+
 type PersonPosition {
   person: ID
   order: Int
 }
+
+input OrderInput{
+  by: String
+  desc: Boolean
+}
+
 
 type Query {
   locale: String
@@ -287,6 +340,8 @@ type Query {
   coinVerse: [Name]
   searchCoinVerse(text: String): [Name]!
   getCoinVerse(id: ID!): Name
+
+  propertyByName(property: String!, name:String!): Name
 
   mintMaterials: [MintMaterials]
   getMaterialColor(id: ID!): String
@@ -358,9 +413,13 @@ type Query {
   i18n:String
 
   files(group:String!, orderBy:String):[NamedURL]
+
+  treasure:[Treasure]
+  searchTreasure(text:String): [Treasure] 
+  getTreasure(id:ID!): Treasure
 }
 
-type MintPersons {
+type MintPersons { 
   mint: Mint,
   caliphs:[Person],
   issuers: [Person],
@@ -461,6 +520,12 @@ type Mutation {
   addCoinType(data: CoinTypeInput): Void
   updateCoinType(id: ID, data: CoinTypeInput): Void
   deleteCoinType(id: ID): Void
+
+  # Tested in 035_treasure
+  addTreasure(data:TreasureInput):Void
+  updateTreasure(id:ID!, data:TreasureInput):Void
+  deleteTreasure(id:ID!):Void
+
 
   # TODO: missing Tests ---------------------------------------------
 

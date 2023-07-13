@@ -9,7 +9,36 @@
   >
     <div class="toolbar">
       <div class="input-wrapper">
-        <label for="input">{{ type.toUpperCase() }}</label>
+        <select
+          v-if="interactive"
+          :value="type.toLowerCase()"
+          @change="typeChange"
+        >
+          <option value="point">
+            <Locale path="location.point" />
+          </option>
+          <option value="polygon">
+            <Locale path="location.polygon" />
+          </option>
+          <option
+            value="circle"
+            v-if="allowRadius"
+          >
+            <Locale path="location.circle" />
+          </option>
+        </select>
+        <label
+          v-else
+          for="input"
+        >{{ type.toUpperCase() }}</label>
+        <input
+          v-if="type === 'circle'"
+          type="range"
+          :value="radius"
+          @input="($event) => $emit('updateRadius', parseFloat($event.target.value))"
+          min="1"
+          max="200"
+        />
         <input
           ref="input"
           class="location-input-field"
@@ -17,13 +46,19 @@
           :value="coordinateString"
           @input="resetInputText()"
         />
-        <Button class="ghost-btn" @click="pasteEvt"><ContentPaste /></Button>
+        <Button
+          v-if="type === 'point'"
+          class="ghost-btn"
+          @click="pasteEvt"
+        >
+          <ContentPaste />
+        </Button>
       </div>
 
       <button
         type="button"
         class="delete-btn"
-        @click.prevent.stop="clearData()"
+        @click.prevent.stop="clear()"
       >
         <Close />
       </button>
@@ -51,25 +86,41 @@ import Close from 'vue-material-design-icons/Close.vue';
 import ContentPaste from 'vue-material-design-icons/ContentPaste.vue';
 import Button from '../layout/buttons/Button.vue';
 import MapView from '../map/MapView.vue';
-var L = require('leaflet');
 
+import Locale from '../cms/Locale.vue';
+
+var L = require('leaflet');
 export default {
   name: 'LocationInput',
   components: {
+    Locale,
     MapView,
     Close,
     Button,
     ContentPaste,
   },
   props: {
-    type: String,
-    radius: Number,
+    interactive: {
+      type: Boolean,
+      default: false,
+    },
+    type: {
+      type: String,
+      required: true
+    },
     coordinates: {
       type: Array,
+      required: true,
     },
+    allowRadius: {
+      type: Boolean,
+      default: false,
+    },
+    radius: Number
   },
   watch: {
-    radius: function () {
+    radius() {
+      console.log("radius changed", this.radius)
       this.updateMarker();
     },
     coordinates: function () {
@@ -103,6 +154,9 @@ export default {
     this.$refs.input.removeEventListener('paste', this.pasteEvtListener);
   },
   methods: {
+    typeChange(event) {
+      this.clear(event.target.value)
+    },
     async pasteEvtListener(evt) {
       let paste = (evt.clipboardData || window.clipboardData).getData('text');
       this.paste(paste);
@@ -130,6 +184,12 @@ export default {
         console.error(e);
       }
     },
+    getGeoJsonFromCircle() {
+      return {
+        type: "polygon",
+        coordinates: [this.getCircleCoordinates()]
+      }
+    },
     resetInputText: function () {
       // This is a hack to update the computed property.
       // The value is just referenced in the computed function
@@ -152,9 +212,6 @@ export default {
       });
 
       this.updateMarker();
-    },
-    radiusChanged(event) {
-      this.$emit('radiusChanged', event.target.value);
     },
     focus() {
       this.focused = true;
@@ -207,14 +264,7 @@ export default {
               }
             }
 
-            // if (this.isPolygon) {
-            //   if (coordinates.length > 0) {
-
-            //   }
-            // } else {
-            //   coordinates = prevPosition.coordinates;
-            // }
-            this.emitUpdate(coordinates);
+            this.emitUpdate({ coordinates });
           }
         }
 
@@ -233,12 +283,16 @@ export default {
 
           coordinates.splice(this.activeMarkerIndex, 1);
           this.activeMarkerIndex = null;
-          this.emitUpdate(coordinates);
+          this.emitUpdate({ coordinates });
         }
       }
     },
-    clearData: function () {
-      this.emitUpdate([]);
+    clear(type = this.type) {
+      let coordinates = null
+      if (type.toLowerCase() == "polygon") {
+        coordinates = [];
+      }
+      this.emitUpdate({ coordinates, type });
     },
     enableMap() {
       this.map = this.$refs.map.map;
@@ -267,7 +321,7 @@ export default {
       while (this.markerHistory.length > this.historyLimit)
         this.markerHistory.pop();
 
-      this.emitUpdate(coordinates);
+      this.emitUpdate({ coordinates });
     },
     removeMarker() {
       if (this.marker) {
@@ -310,7 +364,7 @@ export default {
             this.setActiveMarker(idx + 1);
             this.handles[this.activeMarkerIndex].fire('mousedown', evt);
 
-            this.emitUpdate(coordinates);
+            this.emitUpdate({ coordinates });
           });
 
           this.lineHandles.push(lineHandle);
@@ -318,9 +372,9 @@ export default {
       }
     },
 
-    emitUpdate(coordinates) {
+    emitUpdate({ coordinates = this.coordinates, type = this.type } = {}) {
       this.$emit('update', {
-        type: this.type,
+        type,
         coordinates,
       });
     },
@@ -336,7 +390,7 @@ export default {
 
           this.handles = this.coordinates.map((point, i) => {
             let marker = L.circleMarker(point, {
-              radius: 10,
+              radius: 4,
               fillOpacity: 1,
               fillColor: this.activeMarkerIndex == i ? '#ffffff' : '#3388ff',
               draggable: true,
@@ -392,6 +446,26 @@ export default {
 
             return marker;
           });
+        } else if (this.type === "circle") {
+          const defaultMarker =
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAApCAYAAADAk4LOAAAFgUlEQVR4Aa1XA5BjWRTN2oW17d3YaZtr2962HUzbDNpjszW24mRt28p47v7zq/bXZtrp/lWnXr337j3nPCe85NcypgSFdugCpW5YoDAMRaIMqRi6aKq5E3YqDQO3qAwjVWrD8Ncq/RBpykd8oZUb/kaJutow8r1aP9II0WmLKLIsJyv1w/kqw9Ch2MYdB++12Onxee/QMwvf4/Dk/Lfp/i4nxTXtOoQ4pW5Aj7wpici1A9erdAN2OH64x8OSP9j3Ft3b7aWkTg/Fm91siTra0f9on5sQr9INejH6CUUUpavjFNq1B+Oadhxmnfa8RfEmN8VNAsQhPqF55xHkMzz3jSmChWU6f7/XZKNH+9+hBLOHYozuKQPxyMPUKkrX/K0uWnfFaJGS1QPRtZsOPtr3NsW0uyh6NNCOkU3Yz+bXbT3I8G3xE5EXLXtCXbbqwCO9zPQYPRTZ5vIDXD7U+w7rFDEoUUf7ibHIR4y6bLVPXrz8JVZEql13trxwue/uDivd3fkWRbS6/IA2bID4uk0UpF1N8qLlbBlXs4Ee7HLTfV1j54APvODnSfOWBqtKVvjgLKzF5YdEk5ewRkGlK0i33Eofffc7HT56jD7/6U+qH3Cx7SBLNntH5YIPvODnyfIXZYRVDPqgHtLs5ABHD3YzLuespb7t79FY34DjMwrVrcTuwlT55YMPvOBnRrJ4VXTdNnYug5ucHLBjEpt30701A3Ts+HEa73u6dT3FNWwflY86eMHPk+Yu+i6pzUpRrW7SNDg5JHR4KapmM5Wv2E8Tfcb1HoqqHMHU+uWDD7zg54mz5/2BSnizi9T1Dg4QQXLToGNCkb6tb1NU+QAlGr1++eADrzhn/u8Q2YZhQVlZ5+CAOtqfbhmaUCS1ezNFVm2imDbPmPng5wmz+gwh+oHDce0eUtQ6OGDIyR0uUhUsoO3vfDmmgOezH0mZN59x7MBi++WDL1g/eEiU3avlidO671bkLfwbw5XV2P8Pzo0ydy4t2/0eu33xYSOMOD8hTf4CrBtGMSoXfPLchX+J0ruSePw3LZeK0juPJbYzrhkH0io7B3k164hiGvawhOKMLkrQLyVpZg8rHFW7E2uHOL888IBPlNZ1FPzstSJM694fWr6RwpvcJK60+0HCILTBzZLFNdtAzJaohze60T8qBzyh5ZuOg5e7uwQppofEmf2++DYvmySqGBuKaicF1blQjhuHdvCIMvp8whTTfZzI7RldpwtSzL+F1+wkdZ2TBOW2gIF88PBTzD/gpeREAMEbxnJcaJHNHrpzji0gQCS6hdkEeYt9DF/2qPcEC8RM28Hwmr3sdNyht00byAut2k3gufWNtgtOEOFGUwcXWNDbdNbpgBGxEvKkOQsxivJx33iow0Vw5S6SVTrpVq11ysA2Rp7gTfPfktc6zhtXBBC+adRLshf6sG2RfHPZ5EAc4sVZ83yCN00Fk/4kggu40ZTvIEm5g24qtU4KjBrx/BTTH8ifVASAG7gKrnWxJDcU7x8X6Ecczhm3o6YicvsLXWfh3Ch1W0k8x0nXF+0fFxgt4phz8QvypiwCCFKMqXCnqXExjq10beH+UUA7+nG6mdG/Pu0f3LgFcGrl2s0kNNjpmoJ9o4B29CMO8dMT4Q5ox8uitF6fqsrJOr8qnwNbRzv6hSnG5wP+64C7h9lp30hKNtKdWjtdkbuPA19nJ7Tz3zR/ibgARbhb4AlhavcBebmTHcFl2fvYEnW0ox9xMxKBS8btJ+KiEbq9zA4RthQXDhPa0T9TEe69gWupwc6uBUphquXgf+/FrIjweHQS4/pduMe5ERUMHUd9xv8ZR98CxkS4F2n3EUrUZ10EYNw7BWm9x1GiPssi3GgiGRDKWRYZfXlON+dfNbM+GgIwYdwAAAAASUVORK5CYII=';
+
+          const defaultMarkerShadow =
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC';
+
+          let defaultIcon = new L.Icon({
+            iconUrl: defaultMarker,
+            iconAnchor: [12, 41],
+            shadowUrl: defaultMarkerShadow,
+          });
+
+          const marker = L.marker(this.coordinates, {
+            icon: defaultIcon,
+          })
+
+          const circlePolygon = L.polygon(this.getCircleCoordinates())
+          this.marker = L.featureGroup([marker, circlePolygon]).addTo(this.map);
+
         } else {
           const defaultMarker =
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAApCAYAAADAk4LOAAAFgUlEQVR4Aa1XA5BjWRTN2oW17d3YaZtr2962HUzbDNpjszW24mRt28p47v7zq/bXZtrp/lWnXr337j3nPCe85NcypgSFdugCpW5YoDAMRaIMqRi6aKq5E3YqDQO3qAwjVWrD8Ncq/RBpykd8oZUb/kaJutow8r1aP9II0WmLKLIsJyv1w/kqw9Ch2MYdB++12Onxee/QMwvf4/Dk/Lfp/i4nxTXtOoQ4pW5Aj7wpici1A9erdAN2OH64x8OSP9j3Ft3b7aWkTg/Fm91siTra0f9on5sQr9INejH6CUUUpavjFNq1B+Oadhxmnfa8RfEmN8VNAsQhPqF55xHkMzz3jSmChWU6f7/XZKNH+9+hBLOHYozuKQPxyMPUKkrX/K0uWnfFaJGS1QPRtZsOPtr3NsW0uyh6NNCOkU3Yz+bXbT3I8G3xE5EXLXtCXbbqwCO9zPQYPRTZ5vIDXD7U+w7rFDEoUUf7ibHIR4y6bLVPXrz8JVZEql13trxwue/uDivd3fkWRbS6/IA2bID4uk0UpF1N8qLlbBlXs4Ee7HLTfV1j54APvODnSfOWBqtKVvjgLKzF5YdEk5ewRkGlK0i33Eofffc7HT56jD7/6U+qH3Cx7SBLNntH5YIPvODnyfIXZYRVDPqgHtLs5ABHD3YzLuespb7t79FY34DjMwrVrcTuwlT55YMPvOBnRrJ4VXTdNnYug5ucHLBjEpt30701A3Ts+HEa73u6dT3FNWwflY86eMHPk+Yu+i6pzUpRrW7SNDg5JHR4KapmM5Wv2E8Tfcb1HoqqHMHU+uWDD7zg54mz5/2BSnizi9T1Dg4QQXLToGNCkb6tb1NU+QAlGr1++eADrzhn/u8Q2YZhQVlZ5+CAOtqfbhmaUCS1ezNFVm2imDbPmPng5wmz+gwh+oHDce0eUtQ6OGDIyR0uUhUsoO3vfDmmgOezH0mZN59x7MBi++WDL1g/eEiU3avlidO671bkLfwbw5XV2P8Pzo0ydy4t2/0eu33xYSOMOD8hTf4CrBtGMSoXfPLchX+J0ruSePw3LZeK0juPJbYzrhkH0io7B3k164hiGvawhOKMLkrQLyVpZg8rHFW7E2uHOL888IBPlNZ1FPzstSJM694fWr6RwpvcJK60+0HCILTBzZLFNdtAzJaohze60T8qBzyh5ZuOg5e7uwQppofEmf2++DYvmySqGBuKaicF1blQjhuHdvCIMvp8whTTfZzI7RldpwtSzL+F1+wkdZ2TBOW2gIF88PBTzD/gpeREAMEbxnJcaJHNHrpzji0gQCS6hdkEeYt9DF/2qPcEC8RM28Hwmr3sdNyht00byAut2k3gufWNtgtOEOFGUwcXWNDbdNbpgBGxEvKkOQsxivJx33iow0Vw5S6SVTrpVq11ysA2Rp7gTfPfktc6zhtXBBC+adRLshf6sG2RfHPZ5EAc4sVZ83yCN00Fk/4kggu40ZTvIEm5g24qtU4KjBrx/BTTH8ifVASAG7gKrnWxJDcU7x8X6Ecczhm3o6YicvsLXWfh3Ch1W0k8x0nXF+0fFxgt4phz8QvypiwCCFKMqXCnqXExjq10beH+UUA7+nG6mdG/Pu0f3LgFcGrl2s0kNNjpmoJ9o4B29CMO8dMT4Q5ox8uitF6fqsrJOr8qnwNbRzv6hSnG5wP+64C7h9lp30hKNtKdWjtdkbuPA19nJ7Tz3zR/ibgARbhb4AlhavcBebmTHcFl2fvYEnW0ox9xMxKBS8btJ+KiEbq9zA4RthQXDhPa0T9TEe69gWupwc6uBUphquXgf+/FrIjweHQS4/pduMe5ERUMHUd9xv8ZR98CxkS4F2n3EUrUZ10EYNw7BWm9x1GiPssi3GgiGRDKWRYZfXlON+dfNbM+GgIwYdwAAAAASUVORK5CYII=';
@@ -399,7 +473,7 @@ export default {
           const defaultMarkerShadow =
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC';
 
-          var defaultIcon = new L.Icon({
+          let defaultIcon = new L.Icon({
             iconUrl: defaultMarker,
             iconAnchor: [12, 41],
             shadowUrl: defaultMarkerShadow,
@@ -410,6 +484,25 @@ export default {
           }).addTo(this.map);
         }
       }
+    },
+    getCircleCoordinates() {
+      const radiusInKM = this.radius
+
+      let poleLengthInKM = 20003.147
+      let equatorLengthInKM = 40075.686
+
+      const N = 16
+      const a = Math.PI * 2 / N
+      const latRad = 180 / poleLengthInKM * radiusInKM
+      const lonRad = 360 / equatorLengthInKM * radiusInKM
+
+      let circle = []
+      for (let i = 0; i < N; i++) {
+        let lat = this.coordinates[0] + Math.sin(a * i) * latRad
+        let lon = this.coordinates[1] + Math.cos(a * i) * lonRad
+        circle.push([lat, lon])
+      }
+      return circle
     },
     createStringArray(arr) {
       const values = [];
@@ -426,7 +519,7 @@ export default {
   },
   computed: {
     isPolygon: function () {
-      return this.type == 'polygon';
+      return this.type.toLowerCase() == 'polygon';
     },
     lat: function () {
       if (this.coordinates == null || this.coordinates.length == 0) {
@@ -444,11 +537,13 @@ export default {
     },
     coordinateString: function () {
       this.updateString;
-      switch (this.type) {
+      switch (this.type.toLowerCase()) {
         case 'polygon':
           return this.polygonString;
         case 'point':
           return this.pointString;
+        case 'circle':
+          return this.circleString;
         default:
           console.error(`Undefined type in coordinateString ${this.type}!`);
           return 'undefined';
@@ -468,6 +563,10 @@ export default {
       if (this.coordinates == null || this.coordinates.length < 2) return '';
       else return this.createStringArray(this.coordinates);
     },
+    circleString: function () {
+      if (this.coordinates == null || this.coordinates.length < 2) return '';
+      else return this.createStringArray(this.coordinates);
+    },
   },
 };
 </script>
@@ -476,27 +575,27 @@ export default {
 .toolbar {
   display: flex;
 
-  > button {
+  >button {
     border-top-width: 0;
     border-right-width: 0;
   }
 
-  > div {
+  >div {
     position: relative;
     flex: 1;
     display: flex;
-    > input {
+
+    >input {
       flex: 1;
-      padding-left: 100px;
     }
 
-    > *,
+    >*,
     > :first-child {
       border-top-width: 0;
       border-right-width: 0;
     }
 
-    > label {
+    >label {
       position: absolute;
       top: 0;
       bottom: 0;
@@ -508,6 +607,14 @@ export default {
       opacity: 0.5;
     }
   }
+}
+
+select {
+  text-transform: uppercase;
+  font-weight: 900;
+  color: $gray;
+
+
 }
 
 .location-input {
@@ -536,6 +643,7 @@ export default {
     list-style-type: none;
     margin: $padding;
     padding: 0;
+
     li {
       margin: 0;
     }

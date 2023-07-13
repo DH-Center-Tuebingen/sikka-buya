@@ -80,6 +80,11 @@ export default {
   box-sizing: border-box;
   $disabled-color: $light-gray;
 
+  .icon:first-child,
+  svg:first-child {
+    margin-right: .5em;
+  }
+
   &[disabled] {
     color: $disabled-color;
     border: 1px solid $disabled-color;

@@ -5,18 +5,15 @@
     @click.stop.prevent="toggle"
   >
     <Tooltip v-if="tooltip">{{ tooltip }}</Tooltip>
-    <div
-      v-if="value"
-      class="active"
-    >
+    <slot
+      v-if="!$slots.active && !$slots.inactive"
+    ></slot>
+    <template v-if="value">
       <slot name="active"></slot>
-    </div>
-    <div
-      class="inactive"
-      v-else
-    >
+    </template>
+    <template v-else>
       <slot name="inactive"></slot>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -60,6 +57,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+
+  span {
+    text-overflow: ellipsis;
+  }
 
   &:not(.button)>.active {
     background-color: transparent;
@@ -70,6 +72,7 @@ export default {
 .button {
 
   &.active {
+    color: white;
     background-color: $primary-color;
   }
 

@@ -9,16 +9,49 @@ export default class Query {
         this.name = name
     }
 
+    get defaultProperties() {
+        return [
+            "id",
+            "name"
+        ]
+    }
+
     get capitalizedName() {
         return this.name[0].toUpperCase() + this.name.substr(1)
     }
 
-    async get(id, properties) {
+    async search(text, properties = this.defaultProperties) {
+        const query = `
+        {
+            search${this.capitalizedName}(text: "${text}") {
+                ${properties.join("\n")}
+            }
+    }`
+
+        return this.raw(query)
+    }
+
+    async get(id, properties = []) {
+
+        function recursivelyBuildBody(p) {
+            for (let [index, object] of p.entries()) {
+                if (typeof (object) == "object") {
+                    if (Array.isArray(object)) throw new Error("Invalid property type: array")
+                    let substring = ""
+                    for (const key of Object.keys(object)) {
+                        substring += key + " " + recursivelyBuildBody(object[key])
+                    }
+                    p[index] = substring
+                }
+            }
+            return `{ ${p.join(",")} }`
+        }
+
         const query = `
               {
-                get${this.capitalizedName} (id:${id})  {
-                    ${properties.join(",")}
-                }
+                get${this.capitalizedName} (id:${id})  
+                    ${recursivelyBuildBody(properties)}
+                
               }
             `
 
@@ -109,9 +142,11 @@ export default class Query {
         })
     }
 
+
+
     static async raw(query, variables = {}, debug = false) {
-        if (debug)
-            console.log(query, JSON.stringify(variables))
+        // if (debug)
+        console.log(query, JSON.stringify(variables))
         return AxiosHelper.request({
             url: graphqlEndpoint,
             method: "post",
