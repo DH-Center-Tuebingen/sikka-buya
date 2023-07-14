@@ -8,7 +8,10 @@
       class="slider-bar"
       ref="bar"
     >
-      <div class="slider-thumb"></div>
+      <div
+        class="slider-thumb"
+        v-if="!readonly"
+      ></div>
     </div>
     <div class="slider-foreground">
       <slot />
@@ -18,6 +21,7 @@
       <input
         type="range"
         ref="slider"
+        :disabled="readonly"
         :value="value"
         :min="min"
         :max="max"
@@ -49,6 +53,10 @@ export default {
       default: 1,
     },
     name: String,
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
   },
   watch: {
     value() {
@@ -200,4 +208,5 @@ $caretWidth: 5px;
     position: absolute;
     transform: translateX(50%);
   }
-}</style>
+}
+</style>

@@ -24,10 +24,11 @@
         :value="clampedValue"
         :labeledValue="10"
         :subdivisions="2"
+        :readonly="readonly"
         @change.stop="change"
         @input.stop="change"
-        @focus="()=> focussed = true"
-        @blur="()=> focussed = false"
+        @focus="() => focussed = true"
+        @blur="() => focussed = false"
         ref="timelineSlider"
       >
         <div class="input-wrapper">
@@ -81,6 +82,7 @@ export default {
     TimelineSlider,
   },
   props: {
+    readonly: Boolean,
     map: Object,
     from: Number,
     to: Number,
@@ -108,7 +110,7 @@ export default {
     input(event) {
 
       let value = parseFloat(event.currentTarget.value)
-      if(isNaN(value)) value = "";
+      if (isNaN(value)) value = "";
 
       this.$emit('input', value);
     },

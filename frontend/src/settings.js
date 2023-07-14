@@ -60,6 +60,9 @@ export const DefaultSettings = {
         maxRadius: 14,
         maxRadiusMinimum: 10,
         maxRadiusMaximum: 50
+    },
+    TreasureOverlay: {
+
     }
 }
 

@@ -121,6 +121,7 @@
                 :value="timelineValue"
                 :from="timelineFrom"
                 :to="timelineTo"
+                :readonly="timelineReadonly"
                 ref="timeline"
             >
 
@@ -167,6 +168,10 @@ export default {
          */
         timelineActive: {
             default: true,
+            type: Boolean,
+        },
+        timelineReadonly: {
+            default: false,
             type: Boolean,
         },
         /**
