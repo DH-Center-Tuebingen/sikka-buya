@@ -487,13 +487,13 @@ export default {
     getCircleCoordinates() {
       const radiusInKM = this.radius
 
-      let poleLengthInKM = 20003.147
-      let equatorLengthInKM = 40075.686
+      const earthRadius = 6371; // Earth's radius in kilometers
 
       const N = 16
       const a = Math.PI * 2 / N
-      const latRad = 180 / poleLengthInKM * radiusInKM
-      const lonRad = 360 / equatorLengthInKM * radiusInKM
+      const latRad = (radiusInKM / earthRadius) * (180 / Math.PI);
+      const lonRad = (radiusInKM / earthRadius) * (180 / Math.PI) / Math.cos(this.coordinates[0] * Math.PI / 180);
+
 
       let circle = []
       for (let i = 0; i < N; i++) {
