@@ -120,7 +120,6 @@ export default {
   },
   watch: {
     radius() {
-      console.log("radius changed", this.radius)
       this.updateMarker();
     },
     coordinates: function () {

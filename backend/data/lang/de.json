@@ -30,7 +30,7 @@
     },
     "custom": {
         "fint": {
-            "title": "Das Digitale Münzkabinett der Forschungsstelle für islamische Numismatik Tübingen (FINT)"
+            "title": "Digitales Münzkabinett der Forschungsstelle für Islamische Numismatik Tübingen (FINT)"
         }
     },
     "editor": {
@@ -91,7 +91,8 @@
     },
     "location": {
         "point": "Ort",
-        "polygon": "Gebiet"
+        "polygon": "Gebiet",
+        "circle": "Kreis"
     },
     "map": {
         "bookmarks": "Lesezeichen",
@@ -135,7 +136,7 @@
         "excludeFromTypeCatalogue": "Nicht für Typenkatalog",
         "field_text": "Feld | Felder",
         "fragment": "Fragment",
-        "honorific": "Ehrenname | Ehrennamen",
+        "honorific": "Ehrennamen | Ehrennamen",
         "inner_inscript": "innere Umschrift",
         "intermediate_inscript": "mittlere Umschrift",
         "internal_notes": "Interne Anmerkungen ",
