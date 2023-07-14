@@ -66,6 +66,16 @@ export class Treasure {
         return result?.data?.data?.getTreasure
     }
 
+    fixLocation(location) {
+        if (location.coordinates && Array.isArray(location.coordinates)) {
+            let flat = location.coordinates.flat(Infinity)
+            if (flat.length === 0) return null
+            else return location
+        } else {
+            return null
+        }
+    }
+
     async add() {
         await Query.raw(`
         mutation addTreasure($treasure: TreasureInput!) {
@@ -74,7 +84,7 @@ export class Treasure {
         `, {
             treasure: {
                 name: this.name,
-                location: this.location,
+                location: this.fixLocation(this.location),
                 literature: this.literature,
                 timespan: this.timespan,
                 items: this.items
@@ -92,7 +102,7 @@ export class Treasure {
             id,
             treasure: {
                 name: this.name,
-                location: this.location,
+                location: this.fixLocation(this.location),
                 literature: this.literature,
                 timespan: this.timespan,
                 items: this.items

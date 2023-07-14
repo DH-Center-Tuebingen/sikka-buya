@@ -65,7 +65,12 @@ class Treasure extends Table {
         return WriteableDatabase.tx(async t => {
 
             const { id } = await t.one(`INSERT INTO treasure (name, location, earliestYear, latestYear, literature) 
-            VALUES ($[name], $[location], $[earliestYear], $[latestYear], $[literature]) 
+            VALUES (
+                $[name],
+                ${location ? "ST_GeomFromGeoJSON($[location])" : null},
+                $[earliestYear],
+                $[latestYear],
+                $[literature]) 
             RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, literature })
             await this.insertItems(t, id, items)
         })
@@ -74,12 +79,11 @@ class Treasure extends Table {
     static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, literature = "" } = {}) {
         if (id == null) throw new Error("Treasure ID is required")
 
-        console.log(timespan.from, timespan.to, literature)
         return WriteableDatabase.tx(async t => {
             await t.none(`DELETE FROM treasure_item WHERE treasure = $[id]`, { id })
             await t.none(`UPDATE treasure SET 
             name=$[name],
-            location=$[location],
+            location=${location ? "ST_GeomFromGeoJSON($[location])" : null},
             earliestYear=$[earliestYear],
             latestYear=$[latestYear],
             literature=$[literature] 
