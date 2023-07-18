@@ -13,14 +13,15 @@ CREATE TABLE treasure (
 CREATE TABLE treasure_item (
   coinType INTEGER REFERENCES type(id),
   count INTEGER,
-
   dynasty INTEGER REFERENCES dynasty(id),
   fragment BOOLEAN,
   id SERIAL PRIMARY KEY,
   material INTEGER REFERENCES material(id),
   mint INTEGER REFERENCES mint(id),
+  uncertain_mint TEXT,
   nominal INTEGER REFERENCES nominal(id),
   treasure INTEGER NOT NULL REFERENCES treasure(id) ON DELETE CASCADE,
   weight FLOAT,
-  year TEXT
+  year INTEGER,
+  uncertain_year TEXT
 );
