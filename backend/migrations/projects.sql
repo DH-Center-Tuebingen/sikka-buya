@@ -1,0 +1,15 @@
+DROP TABLE IF EXISTS project CASCADE;
+DROP TABLE IF EXISTS project_items CASCADE;
+
+
+CREATE TABLE project (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  description TEXT
+);
+
+CREATE TABLE project_items (
+    id SERIAL PRIMARY KEY,
+    project INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
+    ref TEXT NOT NULL
+);
