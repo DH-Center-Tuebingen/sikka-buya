@@ -70,9 +70,11 @@ type TreasureItem {
   id: ID
   material: Material
   mint: Mint
+  uncertainMint: String
   nominal: Name
   weight: Float
-  year: String
+  year: Int
+  uncertainYear: String
 }
 
 input TreasureItemInput {
@@ -82,9 +84,11 @@ input TreasureItemInput {
   fragment: Boolean 
   material: ID
   mint: ID
+  uncertainMint: String
   nominal: ID
   weight: Float
-  year: String
+  year: Int
+  uncertainYear: String
 }
 
 type Treasure {
@@ -417,6 +421,7 @@ type Query {
   treasure:[Treasure]
   searchTreasure(text:String): [Treasure] 
   getTreasure(id:ID!): Treasure
+  treasureItem(treasure:ID): [TreasureItem]
 }
 
 type MintPersons { 

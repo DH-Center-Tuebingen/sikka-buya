@@ -17,6 +17,9 @@ module.exports = function (grunt) {
                 truncateThreshold: 0,
                 captureFile: "api-test-log.txt",
                 timeout: 10000,
+                reporterOption: {
+                    maxDiffSize: 90000
+                }
             },
             test: {
                 src: ["./tests/**/*.js"]
@@ -40,9 +43,10 @@ module.exports = function (grunt) {
     ])
 
     grunt.registerTask('test-keepalive', [
-        'setup-and-keepalive',
+        'setup',
         // Run all mocha tests.
-        'run-mocha'
+        'run-mocha',
+        'keepalive'
     ])
 
 

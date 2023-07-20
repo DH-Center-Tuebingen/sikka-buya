@@ -11,11 +11,11 @@ CREATE TABLE treasure (
 );
 
 CREATE TABLE treasure_item (
+  id SERIAL PRIMARY KEY,
   coinType INTEGER REFERENCES type(id),
   count INTEGER,
   dynasty INTEGER REFERENCES dynasty(id),
   fragment BOOLEAN,
-  id SERIAL PRIMARY KEY,
   material INTEGER REFERENCES material(id),
   mint INTEGER REFERENCES mint(id),
   uncertain_mint TEXT,

@@ -2,34 +2,6 @@ const { expect } = require('chai')
 const { graphql } = require('../helpers/graphql')
 const { User1 } = require('../mockdata/users')
 
-const startData = {
-    "data": {
-        "material": [
-            {
-                "id": "1",
-                "name": "Gøld"
-            },
-            {
-                "id": "2",
-                "name": "Kupfer"
-            },
-            {
-                "id": "3",
-                "name": "Perlmutt"
-            },
-            {
-                "id": "4",
-                "name": "Silber"
-            }
-        ]
-    }
-}
-
-const body = `{
-    id,
-    name
-}`
-
 describe(`Material Queries`, function () {
     it(`List`, async function () {
         let result = await graphql(`{material{id,name}}`)

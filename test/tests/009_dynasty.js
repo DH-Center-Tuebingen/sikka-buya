@@ -3,34 +3,7 @@ const { expect } = require('chai')
 const { graphql } = require('../helpers/graphql')
 const { User1 } = require('../mockdata/users')
 
-const startData = {
-    "data": {
-        "dynasty": [
-            {
-                "id": "5",
-                "name": "Atlant"
-            },
-            {
-                "id": "3",
-                "name": "Briten"
-            },
-            {
-                "id": "1",
-                "name": "Deutsche"
-            },
-            {
-                "id": "2",
-                "name": "Franzosen"
-            },
-            {
-                "id": "4",
-                "name": "Österreicher"
-            },
-        ]
-    }
-}
 
-const body = `{id,name}`
 
 
 describe(`Dynasty Queries`, function () {

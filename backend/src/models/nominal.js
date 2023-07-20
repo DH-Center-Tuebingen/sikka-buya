@@ -11,8 +11,10 @@ class Nominal {
 `
     }
 
-    static async get(id) {
-        return Database.one(`SELECT * FROM nominal WHERE id = $[id]`, { id })
+    static async get(id, transaction) {
+        if (transaction == null)
+            transaction = Database
+        return transaction.one(`SELECT * FROM nominal WHERE id = $[id]`, { id })
     }
 }
 

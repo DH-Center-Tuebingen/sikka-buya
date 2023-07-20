@@ -3,8 +3,11 @@ const { Database } = require('../utils/database');
 class Dynasty {
 
 
-    static async get(id) {
-        return Database.one(`SELECT * FROM dynasty WHERE id = $[id]`, { id })
+    static async get(id, transaction) {
+        if (transaction == null)
+            transaction = Database
+
+        return transaction.one(`SELECT * FROM dynasty WHERE id = $[id]`, { id })
     }
 }
 

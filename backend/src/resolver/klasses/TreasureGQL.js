@@ -6,12 +6,14 @@ class TreasureGQL extends GQL {
         return {
             addTreasure: (_, args) => Treasure.add(args.data),
             updateTreasure: (_, args) => Treasure.update(args.id, args.data),
-            deleteTreasure: (args) => Treasure.delete(args.data),
+            deleteTreasure: (_, args) => Treasure.delete(args.data),
         }
     }
 
     static get Queries() {
         return {
+            treasureItem: (_, args, context, info) => Treasure.listItems(_, args, context, info),
+            searchTreasure: (_, args, context, info) => Treasure.list(_, { filter: { name: args.text } }, context, info),
             getTreasure: (_, { id } = {}, context, info) => Treasure.get(id, context, info),
             treasure: (...args) => Treasure.list(...args),
         }

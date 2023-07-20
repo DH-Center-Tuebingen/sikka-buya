@@ -2,30 +2,6 @@ const { expect } = require('chai')
 const { graphql } = require('../helpers/graphql')
 const { User1 } = require('../mockdata/users')
 
-const startData = {
-    "data": {
-        "nominal": [
-            {
-                "id": "2",
-                "name": "1 Mark"
-            },
-            {
-                "id": "3",
-                "name": "1 Taler"
-            },
-            {
-                "id": "4",
-                "name": "1 Złoty"
-            }, {
-                "id": "1",
-                "name": "₳die"
-            },
-        ]
-    }
-}
-
-const body = `{id,name}`
-
 describe(`Nominal Queries`, function () {
     it(`List`, async function () {
         let result = await graphql(`{nominal ${body}}`)

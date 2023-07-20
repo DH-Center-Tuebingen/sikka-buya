@@ -1,14 +1,16 @@
-const { WriteableDatabase } = require('../utils/database')
+const { WriteableDatabase, Database } = require('../utils/database')
 
 
 class Material {
 
-    static get(id, { tableAlias = "ma", tableName = "material" } = {}) {
+    static get(id, { tableAlias = "ma", tableName = "material", transaction = null } = {}) {
+        if (transaction == null)
+            transaction = Database
         const query = `
         ${Material.select({ tableName: tableAlias })} 
         ${Material.colorJoin({ materialTableName: tableAlias })}
         WHERE ${tableAlias}.id = $[id]`
-        return WriteableDatabase.oneOrNone(query, { id })
+        return Database.oneOrNone(query, { id })
     }
 
     static select({
