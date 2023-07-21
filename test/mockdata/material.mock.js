@@ -22,15 +22,23 @@ const SILVER = {
 }
 
 
-const MATERIAL_START_DATA = {
-    "data": {
-        "material": [
-            GOLD,
-            COPPER,
-            PERLMUTT,
-            SILVER
-        ]
-    }
+
+const TITAN = {
+    id: "5",
+    name: "Titan",
+    color: "#030303"
+}
+
+const TITAN_UPDATED = {
+    id: "5",
+    name: "TITAN_BLACK",
+    color: "#111111"
+}
+
+const PLATIN = {
+    id: "6",
+    name: "Platin",
+    color: "#eeeeee"
 }
 
 const MATERIAL_GQL_BODY = `{
@@ -40,10 +48,12 @@ const MATERIAL_GQL_BODY = `{
 }`
 
 module.exports = {
-    GOLD,
     COPPER,
-    PERLMUTT,
-    SILVER,
-    MATERIAL_START_DATA,
+    GOLD,
     MATERIAL_GQL_BODY,
+    PERLMUTT,
+    PLATIN,
+    SILVER,
+    TITAN_UPDATED,
+    TITAN,
 }

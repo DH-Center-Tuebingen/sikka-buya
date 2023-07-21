@@ -1,6 +1,7 @@
 INSERT INTO
-    province (id, name)
+    province (name)
 VALUES
-    (1, 'France'),
-    (2, 'The Sea'),
-    (3, 'Germany');
+    ('France'),
+    ('The Sea'),
+    ('Germany'),
+    ('Sjælland');

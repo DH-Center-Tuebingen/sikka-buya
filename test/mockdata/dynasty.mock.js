@@ -21,26 +21,28 @@ const AUSTRIAN = {
     "name": "Österreicher"
 }
 
-const DYNASTY_START_DATA = {
-    "data": {
-        "dynasty": [
-            ATLANT,
-            BRIT,
-            GERMAN,
-            FRENCH,
-            AUSTRIAN,
-        ]
-    }
+const AUSTRIAN_UPDATED_DATA = {
+    "id": "4",
+    "name": "Australian"
 }
+
+const BUYID = {
+    "id": "6",
+    "name": "Būyid"
+}
+
+
+
 
 const DYNASTY_GQL_BODY = `{id,name}`
 
 module.exports = {
-    DYNASTY_START_DATA,
-    DYNASTY_GQL_BODY,
     ATLANT,
+    AUSTRIAN,
+    AUSTRIAN_UPDATED_DATA,
     BRIT,
-    GERMAN,
+    BUYID,
+    DYNASTY_GQL_BODY,
     FRENCH,
-    AUSTRIAN
+    GERMAN,
 }

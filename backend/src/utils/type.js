@@ -511,7 +511,7 @@ class Type {
         return { SELECT, JOINS, WHERE }
     }
 
-    static async getTypes(_, { pagination = { count: 50, total: 0, page: 0 }, filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = nullm, transaction = null }, context, info) {
+    static async getTypes(_, { pagination = { count: 50, total: 0, page: 0 }, filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null, transaction = null }, context, info) {
 
         /**
          * 

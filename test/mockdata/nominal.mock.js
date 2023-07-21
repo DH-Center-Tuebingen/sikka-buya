@@ -17,21 +17,32 @@ const ADIE = {
     "name": "₳die"
 }
 
-const NOMINAL_START_DATA = [
-    MARK,
-    TALER,
-    ZLOTY,
-    ADIE,
-]
+const YEN = {
+    "id": "5",
+    "name": "1 ¥"
+}
+
+const YEN_UPDATED = {
+    "id": "5",
+    "name": "1 ¥en"
+}
+
+const DOLLAR = {
+    "id": "6",
+    "name": "1 Dollar"
+}
+
 
 
 const NOMINAL_GQL_BODY = `{id name}`
 
 module.exports = {
-    NOMINAL_START_DATA,
-    NOMINAL_GQL_BODY,
+    ADIE,
+    DOLLAR,
     MARK,
+    NOMINAL_GQL_BODY,
     TALER,
+    YEN,
+    YEN_UPDATED,
     ZLOTY,
-    ADIE
 }

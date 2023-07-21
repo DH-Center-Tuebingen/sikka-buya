@@ -9,8 +9,8 @@ class Person {
         t.query(`INSERT INTO person_color (person, color) VALUES ($[person], $[color])`, { person, color })
     }
 
-    static async get(id) {
-        let result = await Database.one(`
+    static async get(t = Database, id) {
+        let result = await t.one(`
         SELECT p.id, p.name, p.short_name,
         r.id AS role_id, r.name AS role_name,
         d.id AS dynasty_id, d.name AS dynasty_name,

@@ -247,8 +247,6 @@ ORDER BY person.id;
     modGetTypes: async function (_, args, context) {
         Auth.verifyContext(context)
 
-
-
         args.additionalRows = [`CASE WHEN tc.type is null
         then False
         else True 

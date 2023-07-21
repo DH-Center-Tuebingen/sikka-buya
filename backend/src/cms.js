@@ -8,7 +8,6 @@ const Frontend = require('./frontend')
 const supportedExtensions = ["png", "jpg", "jpeg", "pdf"]
 class CMS {
 
-
     static get config() {
         return {
             data: {

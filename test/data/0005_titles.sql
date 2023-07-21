@@ -7,5 +7,5 @@ VALUES
     ('König'),
     ('Königin'),
     /* ^5 */
-    ('Tier')
-    ;
+    ('Tier'),
+    ('Sir');
