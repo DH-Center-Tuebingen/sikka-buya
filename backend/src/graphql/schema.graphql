@@ -514,8 +514,8 @@ type Mutation {
 
   # Tested in 012_person
   addPerson(data: PersonInput): Void
-  updatePerson(data: PersonInput): Void
-  deletePerson(id: ID): Void
+  updatePerson(id:ID!, data: PersonInput): Void
+  deletePerson(id: ID!): Void
 
   # Tested in 015_coin_type_review
   setTypeComplete(id: ID!, completed: Boolean = true): Boolean

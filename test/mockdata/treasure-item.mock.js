@@ -1,4 +1,4 @@
-const { ATLANT, GERMAN, AUSTRIAN, FRENCH } = require('./dynasty.mock')
+const { ATLANT, GERMAN, FRENCH, BRIT } = require('./dynasty.mock')
 const { GOLD, COPPER, PERLMUTT, SILVER } = require('./material.mock')
 const { PARIS, ATLANTIS, BERLIN } = require('./mint.mock')
 const { COIN_TYPE_BODY, GERMAN_TYPE, FRENCH_TYPE } = require('./type.mock')
@@ -32,6 +32,21 @@ const GERMAN_TWO_TREASURE_ITEM = {
     weight: 200,
     year: 1,
     uncertainYear: "222[a]"
+}
+
+const NEU_BERLIN_TREASURE_ITEM = {
+    id: "6",
+    coinType: FRENCH_TYPE,
+    count: 100,
+    dynasty: FRENCH,
+    fragment: true,
+    material: COPPER,
+    mint: BERLIN,
+    nominal: ZLOTY,
+    weight: 3,
+    year: -200,
+    uncertainYear: "xyz",
+    uncertainMint: "Neu Berlin",
 }
 
 const NEU_BERLIN_TREASURE_ITEM_INPUT = `{
@@ -85,7 +100,7 @@ const ATLANTIS_TWO_TREAURE_ITEM_INPUT = ` {
     uncertainMint: "Padianice",
     weight: 20.5,
     year: 2011,
-    dynasty: 4,
+    dynasty: 3,
     material: 2,
     nominal: 4,
     mint: 3,
@@ -102,7 +117,7 @@ const ATLANTIS_TWO_TREAURE_ITEM = {
     uncertainMint: "Padianice",
     weight: 20.5,
     year: 2011,
-    dynasty: AUSTRIAN,
+    dynasty: BRIT,
     material: COPPER,
     nominal: ZLOTY,
     mint: ATLANTIS,
@@ -174,5 +189,6 @@ module.exports = {
     GERMAN_TREASURE_ITEM,
     GERMAN_TWO_TREASURE_ITEM,
     NEU_BERLIN_TREASURE_ITEM_INPUT,
+    NEU_BERLIN_TREASURE_ITEM,
     TREASURE_ITEM_GQL_BODY,
 } 

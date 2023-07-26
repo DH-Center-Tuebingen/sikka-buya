@@ -93,7 +93,6 @@ export class Treasure {
     }
 
     async update(id) {
-        console.log(this.timespan)
         await Query.raw(`
         mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
             updateTreasure(id:$id, data: $treasure)

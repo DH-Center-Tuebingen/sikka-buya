@@ -217,7 +217,6 @@ Cypress.Commands.add("inputArrayCloseTo", (selector, target, offset = 0.05) => {
     cy.get(selector).should(($el) => {
         let arr = []
         try {
-            console.log($el)
             arr = JSON.parse($el[0].value)
         } catch (e) { console.log(e) }
         target.forEach((val, idx) => {

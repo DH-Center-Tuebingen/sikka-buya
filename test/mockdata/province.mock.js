@@ -25,8 +25,18 @@ const SAELLAND = {
     name: "Sjælland",
 }
 
-const BURGENLAND = {
+const TURKEY = {
     id: "5",
+    name: "Türkiye",
+}
+
+const ROMAN_EMPIRE = {
+    id: "6",
+    name: "Roman Empire",
+}
+
+const BURGENLAND = {
+    id: "7",
     name: "Burgenland",
 }
 
@@ -37,7 +47,9 @@ module.exports = {
     FRANCE,
     GERMANY,
     PROVINCE_GQL_BODY,
-    SAELLAND,
+    ROMAN_EMPIRE,
     SAELLAND_UPDATED,
+    SAELLAND,
     THE_SEA,
+    TURKEY,
 }

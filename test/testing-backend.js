@@ -98,10 +98,8 @@ async function main() {
             // to process the next request. So we wait for a short period of time
             // to let Postgres get acquainted with it's new situation and prevent
             // erros. - Don't ask me why!
-            // console.log("START")
             // if (status === 200)
             //     await (() => new Promise(resolve => setTimeout(resolve, 5000)))()
-            // console.log("STOP")
             resetLock = false
 
         } else {

@@ -5,7 +5,6 @@ const { search } = require('../../backend/src/models/mint')
 const { arrayRequired, required, messageFromValidator } = require('./requirements')
 
 
-
 class PropertyTest {
 
     constructor(name, {
@@ -22,6 +21,7 @@ class PropertyTest {
         updateData = null,
     } = {}) {
         this.name = name
+        this.additionalTests = {}
 
         const missingConfigOptions = []
 
@@ -108,6 +108,18 @@ class PropertyTest {
             })
         })
 
+        klass.runAdditionalTests(klass, "access")
+    }
+
+    addTest(category, ...testFunctions) {
+        if (testFunctions.length === 0) throw new Error("No test functions provided")
+        if (!this.additionalTests[category]) this.additionalTests[category] = []
+        this.additionalTests[category].push(...testFunctions)
+    }
+
+    runAdditionalTests(klass, category) {
+        if (!klass.additionalTests[category]) return
+        klass.additionalTests[category].forEach(fun => fun(klass))
     }
 
     search(klass) {
@@ -130,6 +142,8 @@ class PropertyTest {
                 let result = await graphql(query)
                 expect(result.data).to.deep.equal(expected)
             })
+
+            klass.runAdditionalTests(klass, "search")
         })
     }
 
@@ -156,7 +170,6 @@ class PropertyTest {
 
             it("Item was added", async function () {
                 let result = await graphql(klass.listQuery)
-                console.log(result.data.data[klass.name])
                 expect(result.data.data[klass.name]).to.deep.include(klass.addData)
             })
 
@@ -164,6 +177,9 @@ class PropertyTest {
                 let result = await graphql(klass.getQuery(klass.addData.id))
                 expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.addData)
             })
+
+            klass.runAdditionalTests(klass, "add")
+
         })
     }
 
@@ -188,6 +204,7 @@ class PropertyTest {
                 expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
             })
 
+            klass.runAdditionalTests(klass, "update")
         })
     }
 
@@ -220,6 +237,9 @@ class PropertyTest {
                 let result = await graphql(klass.listQuery)
                 expect(result.data.data[klass.name]).to.deep.equal(klass.deletedListData)
             })
+
+            klass.runAdditionalTests(klass, "delete")
+
         })
     }
 

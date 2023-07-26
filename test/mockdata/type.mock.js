@@ -23,7 +23,7 @@ const { KOHL,
     POSEIDON,
     ELIZABETH_II,
     GAUCK
-} = require('./persons')
+} = require('./person.mock')
 
 
 

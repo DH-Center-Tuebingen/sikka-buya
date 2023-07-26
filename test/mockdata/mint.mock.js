@@ -1,4 +1,4 @@
-const { GERMANY, THE_SEA, FRANCE } = require('./province.mock')
+const { GERMANY, THE_SEA, FRANCE, ROMAN_EMPIRE, TURKEY } = require('./province.mock')
 
 const ATLANTIS = {
     "id": "3",
@@ -29,27 +29,131 @@ const PARIS = {
     "province": FRANCE
 }
 
-const UPDATED_ATLANTIS = {
-    id: "3",
-    name: "Renamed",
-    location: { type: "Point", coordinates: [12, 51] },
-    uncertain: false,
-    uncertainArea: { type: "Polygon", coordinates: [[[11, 51], [11, 51], [12, 50], [12, 50], [13, 51], [12, 51], [11, 51]]] },
-    province: GERMANY
+const ISTANBUL = {
+    id: "4",
+    name: "Constantinople",
+    uncertain: true,
+    uncertainArea: {
+        "coordinates": [
+            [
+                [
+                    28.6101,
+                    40.8729
+                ],
+                [
+                    28.8800,
+                    40.7317
+                ],
+                [
+                    28.8800,
+                    40.7200
+                ],
+                [
+                    29.4791,
+                    40.7367
+                ],
+                [
+                    29.4769,
+                    40.9939
+                ],
+                [
+                    29.1148,
+                    41.2056
+                ],
+                [
+                    28.6101,
+                    40.8729
+                ]
+            ]
+        ],
+        "type": "Polygon"
+    },
+    location: {
+        "coordinates": [28.6624, 41.1598],
+        "type": "Point"
+    },
+    province: ROMAN_EMPIRE
 }
 
-const MINT_UPDATE_INPUT = `
-data: {
-    name: "Renamed",
-    location: {type:"Point",coordinates:[12,51]},
+const ISTANBUL_UPDATED = {
+    id: "4",
+    name: "Istanbul",
     uncertain: false,
-    uncertainArea: {type:"Polygon",coordinates:[[[11,51],[11,51],[12,50],[12,50],[13,51],[12,51],[11,51]]]}
-    , province: 3
+    uncertainArea: {
+        "coordinates": [
+            [
+                [
+                    28.8926,
+                    40.9981
+                ],
+                [
+                    29.1019,
+                    40.9586
+                ],
+                [
+                    29.0967,
+                    41.0770
+                ],
+                [
+                    28.8926,
+                    41.0849
+                ],
+                [
+                    28.8926,
+                    40.9981
+                ]
+            ]
+        ],
+        "type": "Polygon"
+    },
+    location: {
+        "coordinates": [28.9711, 41.0139],
+        "type": "Point"
+    },
+    province: TURKEY
+}
+
+const ISTANBUL_UPDATED_INPUT = `
+data: {
+    name: "Istanbul",
+    uncertain: false,
+    uncertainArea: {
+        coordinates: [
+            [
+                [
+                    28.8926,
+                    40.9981
+                ],
+                [
+                    29.1019,
+                    40.9586
+                ],
+                [
+                    29.0967,
+                    41.0770
+                ],
+                [
+                    28.8926,
+                    41.0849
+                ],
+                [
+                    28.8926,
+                    40.9981
+                ]
+            ]
+        ],
+        type: "Polygon"
+    },
+    location: {
+        coordinates: [28.9711, 41.0139],
+        type: "Point"
+    },
+    province: 5
 }`
 
 const TEST_MINT_DATA = {
     "name": "Test",
-    "id": "4",
+    "id": "5",
     "location": { type: "Point", coordinates: [8, 49] },
     "uncertain": true,
     "uncertainArea": { type: "Polygon", coordinates: [[[7.020263672, 50.979182427], [6.712646484, 49.138596537], [9.008789062, 48.922499264], [9.184570312, 50.972264889], [7.020263672, 50.979182427]]] },
@@ -75,10 +179,11 @@ const MINT_GQL_BODY = `{id,name,location , uncertain,uncertainArea, province {id
 module.exports = {
     ATLANTIS,
     BERLIN,
+    ISTANBUL_UPDATED_INPUT,
+    ISTANBUL_UPDATED,
+    ISTANBUL,
     MINT_GQL_BODY,
-    MINT_UPDATE_INPUT,
     PARIS,
     TEST_MINT_DATA,
     TEST_MINT_INPUT,
-    UPDATED_ATLANTIS,
 }

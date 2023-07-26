@@ -120,8 +120,6 @@ class Treasure extends Table {
             let fields = graphqlFields(info)
             let cache = {}
             items = await TreasureItem.build(t, items, fields, cache)
-            // console.log(items)
-
         })
 
         return items
@@ -129,6 +127,7 @@ class Treasure extends Table {
 
     static get treasureItemQuery() {
         return `SELECT
+                t.id,
                 t.treasure,
                 t.count,
                 t.dynasty,
@@ -140,6 +139,7 @@ class Treasure extends Table {
                 t.fragment,
                 t.uncertain_year,
                 t.uncertain_mint,
+                t.weight,
                 row_to_json(t) AS items_json
             FROM
                 treasure_item AS t`
@@ -227,7 +227,11 @@ class TreasureItem {
     }
 
     static filterFields(fields) {
-        let set = new Set(Object.keys(this.getters), Object.keys(this.mappings), Object.keys(this.nameMap))
+        let set = new Set([
+            ...Object.keys(this.getters),
+            ...Object.keys(this.mappings),
+            ...Object.keys(this.nameMap)])
+
         return Object.keys(fields).filter(key => set.has(key))
     }
 
@@ -241,22 +245,17 @@ class TreasureItem {
             for (let itemIdx = 0; itemIdx < items.length; itemIdx++) {
                 const item = items[itemIdx]
 
+
                 const dbField = TreasureItem.getDbName(field)
                 const dbValue = item[dbField]
                 if (dbValue) {
                     if (!cache[field])
                         cache[field] = {}
 
-                    console.log(cache[field], cache[field][dbValue])
                     if (!cache[field][dbValue]) {
-                        console.log(1)
                         let value = await TreasureItem.get(transaction, field, dbValue, fields)
-                        console.log(2)
-
-
                         cache[field][dbValue] = TreasureItem.map(field, value)
                     }
-                    console.log(cache[field])
 
                     item[field] = cache[field][dbValue]
                 }

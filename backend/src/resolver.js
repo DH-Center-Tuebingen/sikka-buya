@@ -68,11 +68,6 @@ class Resolver {
     }
 
     async list(_, { language, filters = {} } = {}) {
-
-        console.log(filters)
-
-
-
         function orderByColumn(column) {
             return `ORDER BY ${SQLUtils.normalizeString(column)} ASC`
         }

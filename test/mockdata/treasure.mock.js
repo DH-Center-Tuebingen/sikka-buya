@@ -9,7 +9,8 @@ const {
     GERMAN_TWO_TREASURE_ITEM,
     FRENCH_TREASURE_ITEM,
     NEU_BERLIN_TREASURE_ITEM_INPUT,
-    TREASURE_ITEM_GQL_BODY
+    TREASURE_ITEM_GQL_BODY,
+    NEU_BERLIN_TREASURE_ITEM
 } = require('./treasure-item.mock')
 
 const CORUNA_DATA = {
@@ -110,7 +111,7 @@ const UPDATED_LONDON_DATA = {
     },
     items: [
         ATLANTIS_TREASURE_ITEM,
-        FRENCH_TREASURE_ITEM
+        NEU_BERLIN_TREASURE_ITEM
     ]
 }
 

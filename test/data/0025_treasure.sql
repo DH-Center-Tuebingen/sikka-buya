@@ -66,7 +66,7 @@ INSERT INTO  treasure_item (
     year,
     uncertain_year
 ) VALUES (
-    --1,          -- id
+    -- GERMAN_TREASURE-ITEM, id: 1
     1,          -- treasure
     1,          -- coinType
     100,        -- count
@@ -82,7 +82,7 @@ INSERT INTO  treasure_item (
 )
 ,
 (
-    --2,             -- id
+    -- ALESIA_TREASURE_ITEM, id: 2
     1,             -- treasure
     2,             -- coinType
     5,             -- count
@@ -98,7 +98,7 @@ INSERT INTO  treasure_item (
 )
 ,
 (
-    --3,          -- id
+    -- GERMAN_TWO_TREASURE_ITEM, id: 3
     2,          -- treasure
     1,         -- coinType
     44,        -- count

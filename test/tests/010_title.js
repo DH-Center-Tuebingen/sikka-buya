@@ -13,7 +13,7 @@ new PropertyTest("title", {
     searchText: "ko",
     searchTextExact: "Kö",
     addData: LADY,
-    addInput: `name: "${LADY.name}"`,
+    addInput: `name:"${LADY.name}"`,
     updateId: SIR.id,
     updateData: SIR_UPDATED,
     updateInput: `name: "${SIR_UPDATED.name}"`,

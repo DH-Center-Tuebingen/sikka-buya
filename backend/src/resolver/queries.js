@@ -607,14 +607,12 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
         return Language.messages
     },
     propertyByName: async function (_, { property = null, name = null } = {}) {
-        console.log(property)
         if (!property || !name)
             throw new Error("Property and name must be provided!")
         const supportedProperties = ['material', 'mint', 'nominal', 'dynasty']
 
         if (supportedProperties.includes(property) === false)
             throw new Error("Unsupported property: " + property)
-        console.log("aa")
 
         return Database.oneOrNone(`SELECT id, name FROM ${property} WHERE  name=$1 LIMIT 1`, [name])
     }

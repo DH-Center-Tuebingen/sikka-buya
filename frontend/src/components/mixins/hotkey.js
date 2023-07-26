@@ -28,7 +28,6 @@ export default function (hotkeyConfig) {
             handleMap(evt) {
                 if (hotkeyConfig[evt.key]) {
                     const componentMethod = this.$options.methods[hotkeyConfig[evt.key]]
-                    console.log(componentMethod)
                     if (!componentMethod)
                         throw new Error(`Method '${hotkeyConfig[evt.key]}' does not exist on component ${this.$options.name}`)
                     else

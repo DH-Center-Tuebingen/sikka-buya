@@ -83,10 +83,8 @@ export default {
             return ["cms", "files", paramCase(this.$route.name), name].join("[$]")
         },
         executeAction: async function (action, file) {
-            console.log("ACTION", action)
             if (action === "delete") {
                 let identity = this.createIdentity(file.name)
-                console.log("DELETE", identity)
                 await Query.raw(`mutation deleteFile($identity: String!) {
                     deleteFile(identity: $identity)
                 }`, {

@@ -537,8 +537,6 @@ export default {
       if (!item) console.error(`Filter ${name} not found`)
       else {
         const active = this.activeFilters[name];
-      console.log(item)
-
         if (active !== undefined)
           this.$set(this.filters, name, item.defaultValue || null);
       }
@@ -586,7 +584,6 @@ export default {
         ...filters[FilterType.buttonGroup],
         ...filters[FilterType.number],
       ].forEach(({ name }) => {
-        if (name === "nominal") console.log("0")
         if (activeFilters[name] != null) {
           storage[name] = activeFilters[name];
         }
@@ -595,7 +592,6 @@ export default {
 
       filters[FilterType.multiSelect].forEach(
         (filter) => {
-          if (name === "nominal") console.log("1")
           storage[filter.name] = {
             mode: this.filterMode[filter.name] || Mode.And,
             value: activeFilters[filter.name] || [],
@@ -606,7 +602,6 @@ export default {
 
       filters[FilterType.multiSelect2D].forEach(
         (filter) => {
-          if (name === "nominal") console.log("2")
           storage[filter.name] = {
             mode: this.filterMode[filter.name] || Mode.And,
             value: activeFilters[filter.name] || [[]],

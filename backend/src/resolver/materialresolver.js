@@ -12,7 +12,6 @@ class MaterialResolver extends BaseResolver {
 
         return WriteableDatabase.tx(async t => {
             const { id } = await t.one("INSERT INTO material (name) VALUES ($1)  RETURNING id;", args.name)
-            console.log(args)
             if (args.color)
                 await t.none("INSERT INTO material_color (material, color) VALUES ($1, $2)", [id, args.color])
 

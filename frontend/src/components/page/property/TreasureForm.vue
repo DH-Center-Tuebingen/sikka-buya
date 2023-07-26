@@ -173,7 +173,6 @@ export default {
             let timespan = { from: null, to: null }
             this.items.forEach(item => {
                 let year = parseInt(item.year)
-                console.log(year)
                 if (!isNaN(year)) {
                     if (timespan.from == null || year < timespan.from) timespan.from = year
                     if (timespan.to == null || year > timespan.to) timespan.to = year
@@ -190,7 +189,6 @@ export default {
 
                 namedInputs.forEach(attribute => {
                     this.items[index][attribute] = data[attribute]
-                    console.log(this.items[index][attribute])
                 })
             }
         },
@@ -207,8 +205,6 @@ export default {
             const importer = new TreasureItemsImporter()
             await importer.exec(file)
             this.importErrors = importer.errors
-
-            console.log(importer.errorsObject)
             if (importer.errors.length === 0) {
                 this.items = importer.items
                 this.getCoinRangeFromItems()
@@ -224,7 +220,6 @@ export default {
                 this.name = treasure.name
                 this.timespan = treasure.timespan
                 this.literature = treasure.literature
-                console.log(treasure.literature, treasure.timespan)
 
                 let location = treasure.location || { coordinates: [0, 0], type: "point" }
                 if (location.type.toLowerCase() === "polygon")

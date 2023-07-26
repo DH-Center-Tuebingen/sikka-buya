@@ -6,7 +6,7 @@ class TreasureGQL extends GQL {
         return {
             addTreasure: (_, args) => Treasure.add(args.data),
             updateTreasure: (_, args) => Treasure.update(args.id, args.data),
-            deleteTreasure: (_, args) => Treasure.delete(args.data),
+            deleteTreasure: (_, args) => Treasure.delete(args.id),
         }
     }
 

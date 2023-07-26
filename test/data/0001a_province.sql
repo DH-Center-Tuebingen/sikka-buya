@@ -4,4 +4,6 @@ VALUES
     ('France'),
     ('The Sea'),
     ('Germany'),
-    ('Sjælland');
+    ('Sjælland'),
+    ('Türkiye'),
+    ('Roman Empire');

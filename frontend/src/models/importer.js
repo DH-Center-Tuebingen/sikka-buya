@@ -72,9 +72,6 @@ export class Importer {
         if (!requiredHeaders) {
             return true
         } else {
-
-            console.log(headers, requiredHeaders)
-
             const missingHeaders = requiredHeaders.filter(header => !headers.includes(header))
             if (missingHeaders.length > 0) {
                 const missingHeaderErrors = missingHeaders.map(header => `Header "${header}" is missing.`)
@@ -133,7 +130,6 @@ export class TreasureItemsImporter extends Importer {
             "Fragment": "fragment",
             "Anzahl": "count"
         }
-        console.log(headers)
 
         for (const header of this.headers) {
             let key = headersMapping[header] || header
@@ -231,7 +227,6 @@ export class TreasureItemsImporter extends Importer {
                 case "year":
                 case "count": {
                     item[key] = row[header] || ""
-                    console.log("WEIGHT", key, item[key])
                     break
                 }
                 case "material":

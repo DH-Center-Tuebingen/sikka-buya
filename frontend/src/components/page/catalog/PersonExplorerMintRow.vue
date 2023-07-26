@@ -35,7 +35,6 @@ export default {
   computed: {
     issuerMints() {
       let issuerTree = this.tree.issuerTree;
-      console.log(issuerTree);
       let list = [];
       if (issuerTree && issuerTree[this.year]) {
         list = Object.keys(issuerTree[this.year]);

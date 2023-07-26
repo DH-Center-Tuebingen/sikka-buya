@@ -8,13 +8,15 @@ const {
     PROVINCE_GQL_BODY,
     SAELLAND,
     THE_SEA,
-    SAELLAND_UPDATED
+    SAELLAND_UPDATED,
+    TURKEY,
+    ROMAN_EMPIRE
 } = require('../mockdata/province.mock');
 const PropertyTest = require('../src/property-test');
 
 new PropertyTest("province", {
     GQL_BODY: PROVINCE_GQL_BODY,
-    listData: [FRANCE, GERMANY, SAELLAND, THE_SEA],
+    listData: [FRANCE, GERMANY, ROMAN_EMPIRE, SAELLAND, THE_SEA, TURKEY],
     getData: THE_SEA,
     getDataId: THE_SEA.id,
     searchData: [SAELLAND],
@@ -27,6 +29,6 @@ new PropertyTest("province", {
     updateInput: `name: "${SAELLAND_UPDATED.name}"`,
     deleteId: BURGENLAND.id,
     deleteData: BURGENLAND,
-    deletedListData: [FRANCE, GERMANY, SAELLAND_UPDATED, THE_SEA],
+    deletedListData: [FRANCE, GERMANY, ROMAN_EMPIRE, SAELLAND_UPDATED, THE_SEA, TURKEY],
 }).run()
 
