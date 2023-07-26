@@ -1,6 +1,6 @@
 const { graphql } = require('../helpers/graphql')
 const chai = require('chai')
-const { User1, SuperUser } = require('../mockdata/users')
+const { User1 } = require('../mockdata/users')
 const {
     CORUNA_DATA,
     LONDON_DATA,
@@ -13,10 +13,12 @@ const {
 } = require('../mockdata/treasure.mock')
 
 const {
-    TREASURE_ITEM_GQL_BODY, GERMAN_TREASURE_ITEM, GERMAN_TWO_TREASURE_ITEM, ALESIA_TREASURE_ITEM, ATLANTIS_TREASURE_ITEM, NEU_BERLIN_TREASURE_ITEM, FRENCH_TREASURE_ITEM
+    TREASURE_ITEM_GQL_BODY,
+    GERMAN_TWO_TREASURE_ITEM,
+    ATLANTIS_TREASURE_ITEM,
+    NEU_BERLIN_TREASURE_ITEM
 } = require('../mockdata/treasure-item.mock')
-const { default: axios } = require('axios')
-const { setupTestDatabase, resetTestDatabase } = require('../tasks/setup')
+
 
 const expect = chai.expect
 

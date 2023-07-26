@@ -107,15 +107,6 @@ export class TreasureItemsImporter extends Importer {
         return super.exec(file, new CsvReader(file, { delimiter: ";" }))
     }
 
-
-    // function saveValue(key, textValue, value) {
-    //     if (value) {
-    //         item[key] = value
-    //         if (!cache[key]) cache[key] = {}
-    //         cache[key][textValue] = value
-    //     }
-    // }
-
     async format(row, headers, index = 0) {
 
         let item = {}

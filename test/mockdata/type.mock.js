@@ -1,5 +1,10 @@
 
 
+const { PI, U, A, E, EURO } = require('./coinmark.mock')
+const { ARABIC, KORAN30, KORAN9 } = require('./coinverse.mock')
+const { BLACK_GIANT, PEAR, OF_GERMANY, BULLDOZER, FRANCAIS, GENERAL, MERMAID, CREATURE_OF_THE_SEA, THE_GREAT } = require('./honorific.mock')
+const { GOLD, SILVER, PERLMUTT } = require('./material.mock')
+const { MARK, TALER, ADIE } = require('./nominal.mock')
 const { KOHL,
     WESTERWELLE,
     MERKEL,
@@ -24,6 +29,7 @@ const { KOHL,
     ELIZABETH_II,
     GAUCK
 } = require('./person.mock')
+const { PROF, DR, MONSIEUR, KOENIGIN, TIER, KOENIG } = require('./title.mock')
 
 
 
@@ -39,82 +45,32 @@ const GERMAN_TYPE = {
         "uncertainArea": null
     },
     "mintAsOnCoin": "Börlin",
-    "material": {
-        "id": "1",
-        "name": "Gøld"
-    },
+    "material": GOLD,
     "purity": 700,
-    "nominal": {
-        "id": "2",
-        "name": "1 Mark"
-    },
+    "nominal": MARK,
     "small": true,
     "yearOfMint": "1989",
     "donativ": true,
     "procedure": "pressed",
     "issuers": [
         Object.assign({
-            "titles": [
-                {
-                    "id": "1",
-                    "name": "Prof."
-                },
-                {
-                    "id": "2",
-                    "name": "Dr."
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "1",
-                    "name": "der Schwarze Riese"
-                },
-                {
-                    "id": "2",
-                    "name": "die Birne"
-                }
-            ]
+            "titles": [PROF, DR],
+            "honorifics": [BLACK_GIANT, PEAR]
         }, KOHL)
     ],
     "overlords": [
         Object.assign({
             "rank": 1,
-            "titles": [
-                {
-                    "id": "2",
-                    "name": "Dr."
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "6",
-                    "name": "von Deutschland"
-                }
-            ],
+            "titles": [DR],
+            "honorifics": [OF_GERMANY],
         }, WESTERWELLE),
         Object.assign({
             "rank": 2,
-            "titles": [
-                {
-                    "id": "1",
-                    "name": "Prof."
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "1",
-                    "name": "der Schwarze Riese"
-                },
-                {
-                    "id": "6",
-                    "name": "von Deutschland"
-                }
-            ]
+            "titles": [PROF],
+            "honorifics": [BLACK_GIANT, OF_GERMANY]
         }, MERKEL)
     ],
-    "otherPersons": [
-        DUERER
-    ],
+    "otherPersons": [DUERER],
     "caliph": KARL,
     "avers": {
         "fieldText": "<div>Abbildung des deutschen Michels</div>",
@@ -131,29 +87,10 @@ const GERMAN_TYPE = {
         "misc": "<div>Birnbaum ohne Früchte</div>"
     },
     "cursiveScript": false,
-    "coinMarks": [
-        {
-            "id": "1",
-            "name": "Ä"
-        },
-        {
-            "id": "2",
-            "name": "Ü"
-        },
-        {
-            "id": "4",
-            "name": "π"
-        }
-    ],
+    "coinMarks": [A, U, PI],
     "coinVerses": [
-        {
-            "id": "2",
-            "name": "محمد رسول الله"
-        },
-        {
-            "id": "3",
-            "name": "Koran 30:4‒5"
-        },
+        ARABIC,
+        KORAN30,
     ],
     "literature": "<div style=\" text - align: center;\">Av: Nationalhymne</div><div style=\" text - align: center;\">Rev. Gedicht Fontane</div>",
     "pieces": ["https://www.berlin.de/", "https://de.wikipedia.org/wiki/Berlin"],
@@ -183,15 +120,9 @@ const FRENCH_TYPE = {
         "uncertainArea": null
     },
     "mintAsOnCoin": "Paris",
-    "material": {
-        "id": "4",
-        "name": "Silber"
-    },
+    "material": SILVER,
     "purity": null,
-    "nominal": {
-        "id": "3",
-        "name": "1 Taler"
-    },
+    "nominal": TALER,
     "small": false,
     "yearOfMint": "1789",
     "donativ": true,
@@ -199,108 +130,30 @@ const FRENCH_TYPE = {
     "issuers": [
         Object.assign(
             {
-                "titles": [
-                    {
-                        "id": "1",
-                        "name": "Prof."
-                    },
-                    {
-                        "id": "2",
-                        "name": "Dr."
-                    },
-                    {
-                        "id": "3",
-                        "name": "Monsieur"
-                    }
-                ],
-                "honorifics": [
-                    {
-                        "id": "3",
-                        "name": "bulldozer"
-                    },
-                    {
-                        "id": "4",
-                        "name": "le Français"
-                    }
-                ]
+                "titles": [PROF, DR, MONSIEUR],
+                "honorifics": [BULLDOZER, FRANCAIS]
             }, CHIRAC),
         Object.assign({
-            "titles": [
-                {
-                    "id": "3",
-                    "name": "Monsieur"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "3",
-                    "name": "bulldozer"
-                },
-                {
-                    "id": "5",
-                    "name": "le générale"
-                }
-            ]
+            "titles": [MONSIEUR],
+            "honorifics": [BULLDOZER, GENERAL]
         },
             CHARLES_DE_GAULLE)
     ],
     "overlords": [
         Object.assign({
             "rank": 1,
-            "titles": [
-                {
-                    "id": "1",
-                    "name": "Prof."
-                },
-                {
-                    "id": "3",
-                    "name": "Monsieur"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "6",
-                    "name": "von Deutschland"
-                }
-            ],
+            "titles": [PROF, MONSIEUR],
+            "honorifics": [OF_GERMANY],
         }, MACRON),
         Object.assign({
             "rank": 2,
-            "titles": [
-                {
-                    "id": "2",
-                    "name": "Dr."
-                },
-                {
-                    "id": "3",
-                    "name": "Monsieur"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "4",
-                    "name": "le Français"
-                },
-                {
-                    "id": "3",
-                    "name": "bulldozer"
-                }
-            ],
+            "titles": [DR, MONSIEUR],
+            "honorifics": [FRANCAIS, BULLDOZER],
         }, HOLLANDE),
         Object.assign({
             "rank": 3,
-            "titles": [
-                {
-                    "id": "3",
-                    "name": "Monsieur"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "4",
-                    "name": "le Français"
-                }
-            ],
+            "titles": [MONSIEUR],
+            "honorifics": [FRANCAIS],
         }, SARKOZY)
     ],
     "otherPersons": [
@@ -323,22 +176,8 @@ const FRENCH_TYPE = {
         "misc": "<div>Hahn trägt Hose</div>"
     },
     "cursiveScript": false,
-    "coinMarks": [
-        {
-            "id": "3",
-            "name": "ê"
-        },
-        {
-            "id": "4",
-            "name": "π"
-        }
-    ],
-    "coinVerses": [
-        {
-            "id": "1",
-            "name": "Koran 9:33"
-        }
-    ],
+    "coinMarks": [E, PI],
+    "coinVerses": [KORAN9],
     "literature": "<div style=\" text - align: center;\">Av: Nationalhymne</div><div style=\" text - align: center;\">Rev. revolutionärer Asusspruch</div>",
     "pieces": [
         "https://de.wikipedia.org/wiki/Paris"
@@ -372,55 +211,21 @@ const ATLANTIS_TYPE = {
         "uncertainArea": { "type": "Polygon", "coordinates": [[[5.2734375, 41.697525911], [3.779296875, 40.838749138], [5.438232422, 39.300299186], [6.877441406, 39.283293869], [7.492675781, 40.513799155], [6.701660156, 41.557921578], [5.2734375, 41.697525911]]] }
     },
     "mintAsOnCoin": "Ẳtlảntis",
-    "material": {
-        "id": "3",
-        "name": "Perlmutt"
-    },
+    "material": PERLMUTT,
     "purity": 900,
-    "nominal": {
-        "id": "1",
-        "name": "₳die"
-    },
+    "nominal": ADIE,
     "small": true,
     "yearOfMint": "xxx",
     "donativ": true,
     "procedure": "cast",
     "issuers": [
         Object.assign({
-            "titles": [
-                {
-                    "id": "5",
-                    "name": "Königin"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "7",
-                    "name": "Meerjungfrau"
-                },
-                {
-                    "id": "9",
-                    "name": "Wesen des Meeres"
-                }
-            ]
+            "titles": [KOENIGIN],
+            "honorifics": [MERMAID, CREATURE_OF_THE_SEA]
         }, ARIELLE),
         Object.assign({
-            "titles": [
-                {
-                    "id": "3",
-                    "name": "Monsieur"
-                },
-                {
-                    "id": "6",
-                    "name": "Tier"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "9",
-                    "name": "Wesen des Meeres"
-                }
-            ]
+            "titles": [MONSIEUR, TIER],
+            "honorifics": [CREATURE_OF_THE_SEA]
         }, SEBASTIAN)
 
     ],
@@ -428,60 +233,18 @@ const ATLANTIS_TYPE = {
         Object.assign(
             {
                 "rank": 1,
-                "titles": [
-                    {
-                        "id": "3",
-                        "name": "Monsieur"
-                    },
-                    {
-                        "id": "6",
-                        "name": "Tier"
-                    }
-                ],
-                "honorifics": [
-                    {
-                        "id": "9",
-                        "name": "Wesen des Meeres"
-                    },
-                    {
-                        "id": "7",
-                        "name": "Meerjungfrau"
-                    }
-                ]
+                "titles": [MONSIEUR, TIER],
+                "honorifics": [CREATURE_OF_THE_SEA, MERMAID]
             }, PLANKTON),
         Object.assign({
             "rank": 2,
-            "titles": [
-                {
-                    "id": "6",
-                    "name": "Tier"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "8",
-                    "name": "der Große"
-                },
-                {
-                    "id": "9",
-                    "name": "Wesen des Meeres"
-                }
-            ]
+            "titles": [TIER],
+            "honorifics": [THE_GREAT, CREATURE_OF_THE_SEA]
         }, FISCH),
         Object.assign({
             "rank": 3,
-            "titles": [
-                {
-                    "id": "6",
-                    "name": "Tier"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "9",
-                    "name": "Wesen des Meeres"
-                }
-            ]
+            "titles": [TIER],
+            "honorifics": [CREATURE_OF_THE_SEA]
         }, WAL)
     ],
     "otherPersons": [
@@ -504,29 +267,8 @@ const ATLANTIS_TYPE = {
         "misc": "<div>Jahreszahl unter '₳' nicht lesbar.</div>"
     },
     "cursiveScript": true,
-    "coinMarks": [
-        {
-            "id": "1",
-            "name": "Ä"
-        },
-        {
-            "id": "2",
-            "name": "Ü"
-        },
-        {
-            "id": "3",
-            "name": "ê"
-        }
-    ], "coinVerses": [
-        {
-            "id": "1",
-            "name": "Koran 9:33"
-        },
-        {
-            "id": "3",
-            "name": "Koran 30:4‒5"
-        }
-    ],
+    "coinMarks": [A, U, E],
+    "coinVerses": [KORAN9, KORAN30],
     "literature": "<div>Keine Literatur vorhanden</div>",
     "pieces": [
         "https://de.wikipedia.org/wiki/Atlantis",
@@ -704,100 +446,33 @@ const ATLANTIS_TYPE_UPDATED = {
         "uncertainArea": null
     },
     "mintAsOnCoin": "Ẳtl",
-    "material": {
-        "id": "4",
-        "name": "Silber"
-    },
+    "material": SILVER,
     "purity": 500,
-    "nominal": {
-        "id": "3",
-        "name": "1 Taler"
-    },
+    "nominal": TALER,
     "small": false,
     "yearOfMint": "100",
     "donativ": false,
     "procedure": "pressed",
     "issuers": [
         Object.assign({
-            "titles": [
-                {
-                    "id": "2",
-                    "name": "Dr."
-                },
-                {
-                    "id": "4",
-                    "name": "König"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "1",
-                    "name": "der Schwarze Riese"
-                },
-                {
-                    "id": "2",
-                    "name": "die Birne"
-                }
-            ]
+            "titles": [DR, KOENIG],
+            "honorifics": [BLACK_GIANT, PEAR]
         }, KOHL),
         Object.assign({
-            "titles": [
-                {
-                    "id": "1",
-                    "name": "Prof."
-                },
-                {
-                    "id": "3",
-                    "name": "Monsieur"
-                }
-            ],
-            "honorifics": [
-                {
-                    "id": "4",
-                    "name": "le Français"
-                },
-                {
-                    "id": "5",
-                    "name": "le générale"
-                }
-            ],
+            "titles": [PROF, MONSIEUR],
+            "honorifics": [FRANCAIS, GENERAL],
         }, CHIRAC)
     ],
     "overlords": [
         Object.assign({
             "rank": 1,
-            "titles": [
-                {
-                    "id": "1",
-                    "name": "Prof."
-                },
-                {
-                    "id": "2",
-                    "name": "Dr."
-                }, {
-                    "id": "5",
-                    "name": "Königin"
-                }
-            ],
-            "honorifics": [{
-                "id": "6",
-                "name": "von Deutschland"
-            }, {
-                "id": "8",
-                "name": "der Große"
-            }
-            ]
+            "titles": [PROF, DR, KOENIGIN],
+            "honorifics": [OF_GERMANY, THE_GREAT]
         }, MERKEL),
         Object.assign({
             "rank": 2,
-            "titles": [{
-                "id": "2",
-                "name": "Dr."
-            }],
-            "honorifics": [{
-                "id": "4",
-                "name": "le Français"
-            }]
+            "titles": [DR],
+            "honorifics": [FRANCAIS]
         }, MACRON)
     ],
     "otherPersons": [
@@ -819,21 +494,8 @@ const ATLANTIS_TYPE_UPDATED = {
         "misc": "<div>nicht lesbar.</div>"
     },
     "cursiveScript": false,
-    "coinMarks": [
-        {
-            "id": "4",
-            "name": "π"
-        }, {
-            "id": "5",
-            "name": "€"
-        }
-    ],
-    "coinVerses": [
-        {
-            "id": "2",
-            "name": "محمد رسول الله"
-        }
-    ],
+    "coinMarks": [PI, EURO],
+    "coinVerses": [ARABIC],
     "literature": "<div>vorhanden</div>",
     "pieces": [
         "https://de.wikipedia.org/wiki/Pompeji"
@@ -867,6 +529,7 @@ nominal {
 material {
   id
   name
+  color
 }
 purity
 yearOfMint

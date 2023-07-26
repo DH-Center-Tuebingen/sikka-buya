@@ -248,6 +248,11 @@ const TREASURE_GQL_BODY = `{
     items ${TREASURE_ITEM_GQL_BODY}
 }`
 
+const TREASURE_ITEMS_IMPORT_CSV = `
+Id; Dynastie; Prägeort; Prägejahr; Dinar; Dirham; Fragment; Gewicht; Anzahl
+
+`
+
 module.exports = {
     CORUNA_DATA,
     LODZ_DATA,
@@ -258,3 +263,4 @@ module.exports = {
     UPDATED_LONDON_DATA_INPUT,
     UPDATED_LONDON_DATA,
 }
+
