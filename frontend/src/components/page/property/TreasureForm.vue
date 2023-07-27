@@ -57,7 +57,7 @@
                 :coordinates="location.coordinates"
                 ref="locationInput"
                 @update="(geojson) => location = geojson"
-                @updateRadius="(radius)=> locationRadius = radius"
+                @updateRadius="(radius) => locationRadius = radius"
             />
         </LabeledInputContainer>
 
@@ -202,7 +202,7 @@ export default {
 
 
             const importer = new TreasureItemsImporter()
-            await importer.exec(file)
+            await importer.execFromFile(file)
             this.importErrors = importer.errors
             if (importer.errors.length === 0) {
                 this.items = importer.items
@@ -240,7 +240,7 @@ export default {
 
             if (location.type.toLowerCase() === "polygon")
                 location.coordinates = [location.coordinates]
-            if(location.type.toLowerCase() === "circle")
+            if (location.type.toLowerCase() === "circle")
                 location = this.$refs.locationInput.getGeoJsonFromCircle()
 
             const treasure = new Treasure({

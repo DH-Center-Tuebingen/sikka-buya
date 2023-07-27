@@ -1,4 +1,4 @@
-import CsvReader from "../utils/CsvReader.mjs"
+import CsvReader from "../utils/CsvReader.js"
 import Query from "../database/query.js"
 import { TreasureItem } from "./property/treasure.js"
 
@@ -74,7 +74,10 @@ export class Importer {
         const requiredHeaders = this.headers
         this.errorObject.headers = []
 
-        if (!requiredHeaders) {
+        if (!headers) {
+            throw new Error("No headers passed")
+        }
+        else if (!requiredHeaders) {
             return true
         } else {
             const missingHeaders = requiredHeaders.filter(header => !headers.includes(header))
@@ -104,7 +107,18 @@ export class TreasureItemsImporter extends Importer {
 
     constructor() {
         super({
-            headers: ['Id', 'Dynastie', 'Prägeort', 'Unsicherer Prägeort', 'Prägejahr', 'Unsicheres Prägejahr', 'Dinar', 'Dirham', 'Fragment', 'Gewicht', 'Anzahl'],
+            headers: [
+                'Id',
+                'Dynastie',
+                'Prägeort',
+                'Unsicherer Prägeort',
+                'Prägejahr',
+                'Unsicheres Prägejahr',
+                'Dinar',
+                'Dirham',
+                'Fragment',
+                'Gewicht',
+                'Anzahl'],
         })
     }
 
@@ -134,15 +148,7 @@ export class TreasureItemsImporter extends Importer {
                 case "Nr.": continue
                 case "coinType":
                     if (value) {
-
-                        if (this.cache?.coinType?.[value]) {
-                            item["coinType"] = value
-                            item["material"] = this.cache.projectId[value].material
-                            item["nominal"] = this.cache.projectId[value].nominal
-                            item["mint"] = this.cache.projectId[value].mint
-                            break
-                        } else {
-
+                        if (!this.cache?.coinType?.[value]) {
                             const result = await Query.raw(`{
                                                                coinType (filters: {
                                                                    projectId:  "${value}"
@@ -175,17 +181,22 @@ export class TreasureItemsImporter extends Importer {
                             const coin = result.data.data.coinType?.types?.[0]
 
                             if (coin) {
-                                if (!this.cache.projectId)
-                                    this.cache.projectId = {}
-                                this.cache.projectId[value] = coin
-                                item["coinType"] = { projectId: value, id: coin.id }
-                                item["material"] = coin.material
-                                item["nominal"] = coin.nominal
-                                item["mint"] = coin.mint
+                                if (!this.cache.coinType)
+                                    this.cache.coinType = {}
+                                this.cache.coinType[value] = coin
                             } else {
-                                if (!this.errorObject.projectId) this.errorObject.projectId = {}
-                                this.errorObject.projectId[value] = `CoinType with projectId "${value}" not found`
+                                if (!this.errorObject.coinType) this.errorObject.coinType = {}
+                                this.errorObject.coinType[value] = `CoinType with projectId "${value}" not found`
                             }
+                        }
+
+                        if (this.cache?.coinType?.[value]) {
+                            const coin = this.cache?.coinType?.[value]
+                            item["coinType"] = { projectId: value, id: coin.id }
+                            item["material"] = coin.material
+                            item["nominal"] = coin.nominal
+                            item["mint"] = coin.mint
+                            item["year"] = coin.yearOfMint
                         }
 
                     }
@@ -219,10 +230,24 @@ export class TreasureItemsImporter extends Importer {
                     }
                     break
                 }
-                case "year":
-                case "count": {
-                    item[key] = row[header] || ""
-                    break
+                case "uncertainMint":
+                case "uncertainYear":
+                    {
+                        item[key] = row[header] || ""
+                        break
+                    }
+                case "count":
+                case "year": {
+                    item[key] = null
+                    if (value !== "") {
+                        const year = parseInt(value)
+                        if (isNaN(year)) {
+                            this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${item[key]}"`
+                        } else {
+                            item[key] = value
+                        }
+                    }
+                    break;
                 }
                 case "material":
                 case "mint": {
