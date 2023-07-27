@@ -1,5 +1,5 @@
 
-import Query from "@/database/query"
+import Query from "../../database/query"
 
 /**
  * Class representing a treasure.

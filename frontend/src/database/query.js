@@ -1,4 +1,4 @@
-import AxiosHelper from "@/utils/AxiosHelper.js";
+import AxiosHelper from "../utils/AxiosHelper.js";
 import Auth from "../utils/Auth";
 import { graphqlEndpoint } from './host';
 import { print } from 'graphql/language/printer';

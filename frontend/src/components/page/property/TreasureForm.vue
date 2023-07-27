@@ -108,7 +108,6 @@ import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
 import PreventNavigationMixin from "../../mixins/prevent-navigation-mixin"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
-import Query from "@/database/query"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"

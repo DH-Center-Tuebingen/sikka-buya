@@ -18,7 +18,8 @@ module.exports = function (grunt) {
                 captureFile: "api-test-log.txt",
                 timeout: 10000,
                 reporterOption: {
-                    maxDiffSize: 80000
+                    //Increase if your output gets truncated.
+                    maxDiffSize: 800
                 }
             },
             test: {

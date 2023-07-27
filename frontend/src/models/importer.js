@@ -1,6 +1,6 @@
 import CsvReader from "../utils/CsvReader.mjs"
-import Query from "@/database/query.js"
-import { TreasureItem } from "@/models/property/treasure.js"
+import Query from "../database/query.js"
+import { TreasureItem } from "./property/treasure.js"
 
 export class Importer {
 
@@ -18,12 +18,17 @@ export class Importer {
         this.items = []
     }
 
-    async exec(file, reader) {
+    async execFromFile(file) {
+        const reader = new CsvReader(file)
+        const { headers, rows } = await reader.read()
+        return await this.exec({ headers, rows })
+    }
+
+    async exec({ headers, rows }) {
         if (!this.importing) {
             try {
                 this.importing = true
                 this.resetItems()
-                let { headers, rows } = await reader.read(file)
                 this.validateHeaders(headers)
                 this.validateRows(rows)
 
@@ -99,13 +104,10 @@ export class TreasureItemsImporter extends Importer {
 
     constructor() {
         super({
-            headers: ['Id', 'Dynastie', 'Prägeort', 'Prägejahr', 'Dinar', 'Dirham', 'Fragment', 'Gewicht', 'Anzahl'],
+            headers: ['Id', 'Dynastie', 'Prägeort', 'Unsicherer Prägeort', 'Prägejahr', 'Unsicheres Prägejahr', 'Dinar', 'Dirham', 'Fragment', 'Gewicht', 'Anzahl'],
         })
     }
 
-    async exec(file) {
-        return super.exec(file, new CsvReader(file, { delimiter: ";" }))
-    }
 
     async format(row, headers, index = 0) {
 
@@ -119,7 +121,9 @@ export class TreasureItemsImporter extends Importer {
             "Material": "material",
             "Dynastie": "dynasty",
             "Fragment": "fragment",
-            "Anzahl": "count"
+            "Anzahl": "count",
+            "Unsicherer Prägeort": "uncertainMint",
+            "Unsicheres Prägejahr": "uncertainYear",
         }
 
         for (const header of this.headers) {
