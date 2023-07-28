@@ -7,20 +7,44 @@
         <h2>Add New User</h2>
 
         <span>Email</span>
-        <input type="email" v-model="inviteEmail" />
-        <input type="submit" value="Invite" @click.prevent="inviteUser" />
+        <input
+          type="email"
+          v-model="inviteEmail"
+        />
+        <input
+          type="submit"
+          value="Invite"
+          @click.prevent="inviteUser"
+        />
       </form>
     </section>
     <section>
       <h2>Registered Users</h2>
-      <div class="error" v-if="listError">{{ listError }}</div>
+      <div
+        class="error"
+        v-if="listError"
+      >{{ listError }}</div>
       <div class="user-list">
-        <div v-for="user in users" class="user" :key="`user-id-${user.id}`">
+        <div
+          v-for="user in users"
+          class="user"
+          :key="`user-id-${user.id}`"
+        >
           <span class="email">{{ user.email }}</span>
           <toggle
-            :value="user.creator"
-            @input="() => togglePermission(user, 'creator')"
-            :tooltip="$t('tooltip.user.creator')"
+            :value="user.cms"
+            @input="() => togglePermission(user, 'cms')"
+          >
+            <template v-slot:active>
+              <Newspaper />
+            </template>
+            <template v-slot:inactive>
+              <Newspaper />
+            </template>
+          </toggle>
+          <toggle
+            :value="user.editor"
+            @input="() => togglePermission(user, 'editor')"
           >
             <template v-slot:active>
               <ListBox />
@@ -30,20 +54,8 @@
             </template>
           </toggle>
           <toggle
-            :value="user.editor"
-            @input="() => togglePermission(user, 'editor')"
-            :tooltip="$t('tooltip.user.editor')"
-            ><template v-slot:active>
-              <Newspaper />
-            </template>
-            <template v-slot:inactive>
-              <Newspaper />
-            </template>
-          </toggle>
-          <toggle
             :value="user.super"
             @input="() => togglePermission(user, 'super')"
-            :tooltip="$t('tooltip.user.super')"
           >
             <template v-slot:active>
               <KingIcon />
@@ -122,7 +134,7 @@ export default {
             id: user.id,
             super: user.super,
             editor: user.permissions.includes('editor'),
-            creator: user.permissions.includes('creator'),
+            cms: user.permissions.includes('cms'),
             permissions: user.permissions,
           };
         });
@@ -134,15 +146,32 @@ export default {
       }
     },
     togglePermission: async function (user, permissionName) {
-      const method = user.permissions.includes(permissionName)
-        ? 'revokePermission'
-        : 'grantPermission';
-      await Query.raw(
-        `mutation TogglePermission($user: ID!, $permission:String!){
+
+      let grant
+      if (permissionName === 'super') {
+        grant = !user.super
+      } else {
+        grant = !user.permissions.includes(permissionName)
+      }
+
+      const method = grant
+        ? 'grantPermission'
+        : 'revokePermission';
+      try {
+        await Query.raw(
+          `mutation TogglePermission($user: ID!, $permission:String!){
         ${method}(user: $user, permission: $permission)
       }`,
-        { user: user.id, permission: permissionName }
-      );
+          { user: user.id, permission: permissionName }
+        );
+
+        this.refreshUserList()
+
+      } catch (err) {
+        console.error(err);
+        this.$store.commit('printError', err);
+      }
+
       this.$nextTick(() => this.refreshUserList());
     },
     inviteUser: async function () {
@@ -169,7 +198,7 @@ form {
   @include box;
 }
 
-form > * {
+form>* {
   display: block;
   margin-top: $padding;
 }

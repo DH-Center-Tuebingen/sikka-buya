@@ -117,6 +117,14 @@
     "navigation": {
         "back": "Zurück"
     },
+    "tooltip": {
+        "user": {
+            "cms": "Ersteller",
+            "editor": "Editor",
+            "recorder": "Bearbeiter",
+            "super": "Super"
+        }
+    },
     "property": {
         "additional_persons": "Sonstige Personen",
         "avers": {
@@ -271,7 +279,7 @@
     },
     "user": {
         "permission": {
-            "creator": "Ersteller",
+            "cms": "Ersteller",
             "editor": "Editor | Editoren",
             "recorder": "Bearbeiter",
             "super": "Super"

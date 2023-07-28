@@ -248,8 +248,7 @@ export class TreasureItemsImporter extends Importer {
                 case "uncertainMint":
                 case "uncertainYear":
                     {
-                        console.log(row[header], header)
-                        item[key] = row[header] || ""
+                        item[key] = value || ""
                         break
                     }
                 case "count":

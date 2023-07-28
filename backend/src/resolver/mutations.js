@@ -91,14 +91,22 @@ const SuperUserMutations = {
         return await WriteableDatabase.none("INSERT INTO app_user (email) VALUES ($1)", email)
     },
     async grantPermission(_, { user, permission } = {}) {
+        console.log("GRANT", permission)
+
         if (permission === "super")
             WriteableDatabase.none("UPDATE app_user SET super=TRUE WHERE id=$1", user)
         else
             WriteableDatabase.none("INSERT INTO app_user_privilege (app_user, privilege) VALUES ($[user], $[permission])", { user, permission })
     },
     async revokePermission(_, { user, permission } = {}, context) {
+        console.log("REVOKE", permission)
         if (permission === "super") {
-            return WriteableDatabase.none("UPDATE app_user SET super=FALSE WHERE id=$1", user)
+            return WriteableDatabase.tx(async t => {
+                const res = await t.manyOrNone("SELECT * FROM app_user WHERE super=TRUE")
+                if (res.length == 1) throw new Error("You cannot revoke the super permission from the last super user!")
+                await t.none("UPDATE app_user SET super=FALSE WHERE id=$1", user)
+                console.log("REVOKE")
+            })
         } else
             WriteableDatabase.none("DELETE FROM app_user_privilege WHERE app_user=$[user] AND privilege=$[permission]", { user, permission })
     },
