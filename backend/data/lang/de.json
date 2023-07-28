@@ -193,7 +193,9 @@
         "year_of_mint": "Prägejahr",
         "year_uncertain": "Jahr nicht sicher",
         "no_fragment": "kein Fragment",
-        "weight": "Gewicht"
+        "weight": "Gewicht",
+        "uncertain_mint": "Prägeort unsicher",
+        "year_of_mint_uncertain": "Prägejahr unsicher"
     },
     "role": {
         "caliph": "Kalif | Kalif",

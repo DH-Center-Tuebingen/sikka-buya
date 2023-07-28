@@ -80,8 +80,12 @@ export default {
   box-sizing: border-box;
   $disabled-color: $light-gray;
 
-  .icon:first-child,
-  svg:first-child {
+  svg {
+    display: block;
+  }
+
+  >.icon:first-child,
+  >svg:first-child:not(:last-child) {
     margin-right: .5em;
   }
 

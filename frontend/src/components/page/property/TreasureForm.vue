@@ -80,7 +80,10 @@
 
             <ErrorMessage :error="importErrors" />
 
-            <form-list @add="addItem">
+            <form-list
+                @add="addItem"
+                :overflowX="true"
+            >
 
                 <TreasureItemForm
                     v-for="(item, index) in items"
@@ -305,6 +308,9 @@ $template-columns: 50px 80px repeat(5, 1fr) 50px 32px;
     //     gap: .5em;
     // }
 
+    .treasure-item-list {
+        overflow-x: auto;
+    }
 
 
     .tools {

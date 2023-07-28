@@ -1,10 +1,16 @@
 <template>
   <div class="list">
     <div class="wrapper">
-      <Row class="title-row">
-        <label v-if="title || $slots.title" class="title"
-          ><slot name="title"></slot>{{ title }} {{ length !== null ? `(${length})` : '' }}</label
+      <Row
+        class="title-row"
+        :class="{ overflowX }"
+      >
+        <label
+          v-if="title || $slots.title"
+          class="title"
         >
+          <slot name="title"></slot>{{ title }} {{ length !== null ? `(${length})` : '' }}
+        </label>
         <button
           class="list-add-button-besides"
           type="button"
@@ -15,9 +21,20 @@
       </Row>
     </div>
 
-    <p v-if="description || $slots.description" class="description"><slot name="description" />{{ description }}</p>
+    <p
+      v-if="description || $slots.description"
+      class="description"
+    >
+      <slot name="description" />{{ description }}
+    </p>
     <div class="list-container">
-      <slot />
+
+      <div
+        class="list-scroll"
+        :class="{ overflowX }"
+      >
+        <slot />
+      </div>
     </div>
     <button
       class="list-add-button-below"
@@ -37,6 +54,7 @@ export default {
     title: String,
     description: String,
     length: { type: Number, default: null },
+    overflowX: { type: Boolean, default: false }
   },
   data: function () {
     return {
@@ -59,11 +77,15 @@ export default {
   padding-left: $left * 2;
   position: relative;
 
+  .list-scroll.overflowX {
+    overflow-x: auto;
+  }
+
   &.collapsed {
     display: none;
   }
 
-  > * {
+  >* {
     margin-bottom: math.div($padding, 2);
   }
 
@@ -107,13 +129,10 @@ export default {
   //   transform: translateX(-100%);
   // }
 }
-
 </style>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
-
-
 .description {
   font-size: 0.75rem;
 }
@@ -150,7 +169,7 @@ button {
 .title-row {
   align-items: baseline;
 
-  > * :first-child {
+  >* :first-child {
     flex: 1;
   }
 }

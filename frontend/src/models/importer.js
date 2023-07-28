@@ -159,7 +159,7 @@ export class TreasureItemsImporter extends Importer {
                                                                    types {
                                                                        id
                                                                        projectId
-
+                                                                       yearOfMint
                                                                        mint {
                                                                            id
                                                                            name
@@ -195,8 +195,23 @@ export class TreasureItemsImporter extends Importer {
                             item["coinType"] = { projectId: value, id: coin.id }
                             item["material"] = coin.material
                             item["nominal"] = coin.nominal
-                            item["mint"] = coin.mint
-                            item["year"] = coin.yearOfMint
+
+                            console.log("JAHR", coin.yearOfMint)
+                            if (coin.yearOfMint) {
+                                const year = parseInt(coin.yearOfMint)
+                                if (!isNaN(year))
+                                    item["year"] = year
+                                else {
+                                    item["uncertainYear"] = coin.yearOfMint
+                                }
+                            }
+
+                            if (coin.mint) {
+                                item["mint"] = coin.mint
+                            } else if (coin.mintAsOnCoin) {
+                                item["uncertainMint"] = coin.mintAsOnCoin
+                            }
+
                         }
 
                     }
@@ -233,13 +248,14 @@ export class TreasureItemsImporter extends Importer {
                 case "uncertainMint":
                 case "uncertainYear":
                     {
+                        console.log(row[header], header)
                         item[key] = row[header] || ""
                         break
                     }
                 case "count":
                 case "year": {
-                    item[key] = null
                     if (value !== "") {
+                        item[key] = null
                         const year = parseInt(value)
                         if (isNaN(year)) {
                             this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${item[key]}"`

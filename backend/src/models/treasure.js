@@ -18,10 +18,12 @@ class Treasure extends Table {
                 material = null,
                 mint = null,
                 nominal = null,
-                uncertainMint = false,
+                uncertainMint = null,
                 uncertainYear = null,
                 weight = null,
                 year = null } = items[i]
+
+            console.log(items[i].uncertainMint, items[i].uncertainYear)
 
             await t.none(`INSERT INTO treasure_item (
                     coinType,
@@ -201,9 +203,12 @@ class Treasure extends Table {
                     const treasure = treasures[treasureIdx]
                     await TreasureItem.build(t, treasure.items, requestedFields.items, cache)
                     treasures[treasureIdx] = treasure
+
                 }
             }
         })
+
+        console.log(treasures[0].items[0])
 
         return treasures
     }
