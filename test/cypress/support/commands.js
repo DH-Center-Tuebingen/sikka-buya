@@ -76,11 +76,12 @@ Cypress.Commands.add("selectFromDataSelect", (selector, targetText, type = "") =
 
     if (type !== "") {
         cy.get(selector + " .name-field").type(type)
+    } else {
+        const dataSelect = cy.get(selector)
+        dataSelect.click()
     }
 
-    const dataSelect = cy.get(selector)
-    dataSelect.click()
-    cy.contains(selector + " .search-box li", targetText, { timeout: 2000 }).click()
+    cy.contains(selector + " .search-box li", targetText, { timeout: 1000 }).click()
 
     /** 
      * The following is more natural for the user and therefore more desirable to test
@@ -119,7 +120,7 @@ Cypress.Commands.add("checkDataSelectList", (selector, items, relativeElement = 
             return cy.get(selector)
         }
     }
-    const itemSelector = "> .list-container > .list-item"
+    const itemSelector = "> .list-container .list-item"
     get().find(itemSelector).should("have.length", items.length)
 
     items.forEach((item, index) => {
@@ -133,7 +134,7 @@ Cypress.Commands.add("checkEmptyList", (selector) => {
 })
 
 Cypress.Commands.add("checkList", (selector, items) => {
-    cy.get(`${selector} > .list-container > .list-item`).should("have.length", items.length)
+    cy.get(`${selector} > .list-container .list-item`).should("have.length", items.length)
 
 
     cy.get(selector).find(".list-item").each(($el, idx) => {
@@ -142,7 +143,7 @@ Cypress.Commands.add("checkList", (selector, items) => {
 })
 
 Cypress.Commands.add("checkPersonList", (selector, items = []) => {
-    const selection = cy.get(`${selector} > .list-container > .list-item`)
+    const selection = cy.get(`${selector} > .list-container .titled-person-select`)
     selection.should("have.length", items.length)
     selection.each(function (listItem, idx) {
 
@@ -168,7 +169,7 @@ Cypress.Commands.add("checkPersonList", (selector, items = []) => {
 })
 
 Cypress.Commands.add("removeNthListItem", (selector, nthChild) => {
-    cy.get(selector).find(`> .list-container > .list-item:nth-child(${nthChild}) .remove-button`).dblclick()
+    cy.get(selector).find(`> .list-container .list-item:nth-child(${nthChild}) .remove-button`).dblclick()
 })
 
 Cypress.Commands.add("checkFormattedTextArea", (selector, html) => {

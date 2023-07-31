@@ -199,8 +199,4 @@ describe(`Treasure Queries`, function () {
             )
         })
     })
-
-
-
-
 })

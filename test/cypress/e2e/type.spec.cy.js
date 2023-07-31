@@ -170,7 +170,7 @@ describe("Testing Type", function () {
 
 
 
-    describe("Edit Type", function () {
+    describe.only("Edit Type", function () {
 
         it("Access edit page", function () {
             cy.visit('/editor/type/edit/4')
@@ -224,7 +224,7 @@ describe("Testing Type", function () {
 
             cy.selectFromDataSelect("#type-mint-field", "Fārs", "fa")
 
-            //Type as on Coin            
+            //Type as on Coin
             cy.clearRemovableInput("#type-as-on-coin-field")
             cy.get("#type-as-on-coin-field input[type=text]").type("Fāahrs")
 
@@ -246,32 +246,32 @@ describe("Testing Type", function () {
              * Start Issuers
              */
 
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1) .name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "izz")
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list .data-select.title", "malik")
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1) .data-select.name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "izz")
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list .data-select.title", "malik")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
-
-
-            cy.removeNthListItem("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list", 2)
-            cy.removeNthListItem("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list", 1)
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
 
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
-
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "mu")
+            cy.removeNthListItem("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list", 2)
+            cy.removeNthListItem("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list", 1)
 
 
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(2) .name", 'ʿUmdat ad-Daula Abū Isḥāq Ibrāhīm b. Muʿizz ad-Daula Aḥmad')
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
 
-            cy.removeNthListItem("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-title-list", 1)
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-title-list .data-select.title", "malik")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "mu")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
+
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(2) .data-select.name", 'ʿUmdat ad-Daula Abū Isḥāq Ibrāhīm b. Muʿizz ad-Daula Aḥmad')
+
+            cy.removeNthListItem("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-title-list", 1)
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-title-list .data-select.title", "malik")
+
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
 
 
             /**
@@ -279,35 +279,35 @@ describe("Testing Type", function () {
             */
             cy.get("#type-overlord-list > .wrapper > .title-row > .list-add-button-besides").click()
 
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1) .name", "Rukn ad-Daula Abū ʿAlī al-Ḥasan b. Būya", "al-has")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1) .data-select.name", "Rukn ad-Daula Abū ʿAlī al-Ḥasan b. Būya", "al-has")
 
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "malik")
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "šāhānšāh", "sah")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "malik")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "šāhānšāh", "sah")
 
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… al-Mulūk", "mu")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… al-Mulūk", "mu")
 
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… ad-Daula")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… ad-Daula")
 
             // // Second Overlord
             cy.get("#type-overlord-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(2) .name", "Sulṭān ad-Daula Abū Šuǧāʿ Fanā-Ḫusra b. Bahāʾ ad-Daula Ḫusra-Fīrūz", "ta")
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "malik", "malik")
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(2) .data-select.name", "Sulṭān ad-Daula Abū Šuǧāʿ Fanā-Ḫusra b. Bahāʾ ad-Daula Ḫusra-Fīrūz", "ta")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "malik", "malik")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
 
 
             // // Third overlord
             cy.get("#type-overlord-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list > .list-container > .list-item:nth-child(3) .name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "ABU")
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(1) .data-select.honorific", "… ad-Daula")
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "lu")
+            cy.selectFromDataSelect("#type-overlord-list > .list-container  .list-item:nth-child(3) .data-select.name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "ABU")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(1) .data-select.honorific", "… ad-Daula")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "lu")
 
 
 
@@ -315,8 +315,8 @@ describe("Testing Type", function () {
 
             cy.get("#type-other-person-list > .list-add-button-below").click()
             cy.get("#type-other-person-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-other-person-list > .list-container > .list-item:nth-child(1)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
-            cy.selectFromDataSelect("#type-other-person-list > .list-container > .list-item:nth-child(2)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
+            cy.selectFromDataSelect("#type-other-person-list > .list-container  .list-item:nth-child(1)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
+            cy.selectFromDataSelect("#type-other-person-list > .list-container  .list-item:nth-child(2)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
 
 
 
@@ -341,20 +341,20 @@ describe("Testing Type", function () {
             cy.get("#type-cursive label").click()
 
 
-            cy.selectFromDataSelect("#type-coin-mark-list > .list-container > .list-item:nth-child(1) .data-select", "bāʾ/tāʾ/ṯāʾ", "tā")
-            cy.selectFromDataSelect("#type-coin-mark-list > .list-container > .list-item:nth-child(2) .data-select", "drei Punkte (∴)", "dre")
+            cy.selectFromDataSelect("#type-coin-mark-list > .list-container  .list-item:nth-child(1) .data-select", "bāʾ/tāʾ/ṯāʾ", "tā")
+            cy.selectFromDataSelect("#type-coin-mark-list > .list-container  .list-item:nth-child(2) .data-select", "drei Punkte (∴)", "dre")
 
 
             cy.get("#type-coin-verse-list .list-add-button-below").click().click()
 
-            cy.selectFromDataSelect("#type-coin-verse-list > .list-container > .list-item:nth-child(1) .data-select", "Koran 30:4‒5", "ko")
-            cy.selectFromDataSelect("#type-coin-verse-list > .list-container > .list-item:nth-child(2) .data-select", "محمد رسول الله")
+            cy.selectFromDataSelect("#type-coin-verse-list > .list-container  .list-item:nth-child(1) .data-select", "Koran 30:4‒5", "ko")
+            cy.selectFromDataSelect("#type-coin-verse-list > .list-container  .list-item:nth-child(2) .data-select", "محمد رسول الله")
 
 
 
 
-            cy.get("#type-pieces-list > .list-container > .list-item:nth-child(1) .pieces-input").clear().type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID92")
-            cy.get("#type-pieces-list > .list-container > .list-item:nth-child(2) .pieces-input").clear().type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID81")
+            cy.get("#type-pieces-list > .list-container  .list-item:nth-child(1) .pieces-input").clear().type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID92")
+            cy.get("#type-pieces-list > .list-container  .list-item:nth-child(2) .pieces-input").clear().type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID81")
 
 
             cy.triggerDeleteButton("#type-literature-field .dynamic-delete-button")
@@ -676,28 +676,28 @@ describe("Testing Type", function () {
 
             cy.get("#type-issuers-list > .wrapper > .title-row > .list-add-button-besides").click()
             cy.get("#type-issuers-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1) .name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "izz")
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1) .data-select.name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "izz")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list .data-select.title", "malik")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list .data-select.title", "malik")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "mu")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "mu")
 
 
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(2) .name", 'ʿUmdat ad-Daula Abū Isḥāq Ibrāhīm b. Muʿizz ad-Daula Aḥmad')
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(2) .data-select.name", 'ʿUmdat ad-Daula Abū Isḥāq Ibrāhīm b. Muʿizz ad-Daula Aḥmad')
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-title-list .data-select.title", "malik")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-title-list .data-select.title", "malik")
 
-            cy.get("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-issuers-list > .list-container > .list-item:nth-child(2)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
+            cy.get("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-issuers-list > .list-container  .list-item:nth-child(2)  .titled-person-honorific-list .data-select.honorific", "… ad-Daula")
 
 
             /**
@@ -705,35 +705,35 @@ describe("Testing Type", function () {
             */
             cy.get("#type-overlord-list > .wrapper > .title-row > .list-add-button-besides").click()
 
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1) .name", "Rukn ad-Daula Abū ʿAlī al-Ḥasan b. Būya", "al-has")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1) .data-select.name", "Rukn ad-Daula Abū ʿAlī al-Ḥasan b. Būya", "al-has")
 
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "malik")
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "šāhānšāh", "sah")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "malik")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "šāhānšāh", "sah")
 
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… al-Mulūk", "mu")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .data-select.honorific", "… al-Mulūk", "mu")
 
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… ad-Daula")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(1)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… ad-Daula")
 
             // // Second Overlord
             cy.get("#type-overlord-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(2) .name", "Sulṭān ad-Daula Abū Šuǧāʿ Fanā-Ḫusra b. Bahāʾ ad-Daula Ḫusra-Fīrūz", "ta")
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "malik", "malik")
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(2) .data-select.name", "Sulṭān ad-Daula Abū Šuǧāʿ Fanā-Ḫusra b. Bahāʾ ad-Daula Ḫusra-Fīrūz", "ta")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(1) .data-select.title", "malik", "malik")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(2)  .titled-person-title-list .list-item:nth-child(2) .data-select.title", "šāhānšāh", "sah")
 
 
             // // Third overlord
             cy.get("#type-overlord-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list > .list-container > .list-item:nth-child(3) .name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "ABU")
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.get("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(1) .data-select.honorific", "… ad-Daula")
-            cy.selectFromDataSelect("#type-overlord-list> .list-container > .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "lu")
+            cy.selectFromDataSelect("#type-overlord-list > .list-container  .list-item:nth-child(3) .data-select.name", "ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad", "ABU")
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.get("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list > .list-add-button-below").click()
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(1) .data-select.honorific", "… ad-Daula")
+            cy.selectFromDataSelect("#type-overlord-list> .list-container  .list-item:nth-child(3)  .titled-person-honorific-list .list-item:nth-child(2) .data-select.honorific", "… al-Mulūk", "lu")
 
 
 
@@ -741,8 +741,8 @@ describe("Testing Type", function () {
 
             cy.get("#type-other-person-list > .list-add-button-below").click()
             cy.get("#type-other-person-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-other-person-list > .list-container > .list-item:nth-child(1)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
-            cy.selectFromDataSelect("#type-other-person-list > .list-container > .list-item:nth-child(2)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
+            cy.selectFromDataSelect("#type-other-person-list > .list-container  .list-item:nth-child(1)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
+            cy.selectFromDataSelect("#type-other-person-list > .list-container  .list-item:nth-child(2)", 'Abu ’l-Ḥasan Muḥammad b. al-Mustakfī', "muSta")
 
 
 
@@ -770,16 +770,16 @@ describe("Testing Type", function () {
 
             cy.get("#type-coin-mark-list > .list-add-button-below").click()
             cy.get("#type-coin-mark-list > .list-add-button-below").click()
-            cy.selectFromDataSelect("#type-coin-mark-list > .list-container > .list-item:nth-child(1) .data-select", "bāʾ/tāʾ/ṯāʾ", "ba")
-            cy.selectFromDataSelect("#type-coin-mark-list > .list-container > .list-item:nth-child(2) .data-select", "drei Punkte (∴)", "dre")
+            cy.selectFromDataSelect("#type-coin-mark-list > .list-container  .list-item:nth-child(1) .data-select", "bāʾ/tāʾ/ṯāʾ", "ba")
+            cy.selectFromDataSelect("#type-coin-mark-list > .list-container  .list-item:nth-child(2) .data-select", "drei Punkte (∴)", "dre")
 
 
 
             cy.get("#type-pieces-list > .list-add-button-below").click()
             cy.get("#type-pieces-list > .list-add-button-below").click()
 
-            cy.get("#type-pieces-list > .list-container > .list-item:nth-child(1) .pieces-input").type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID92")
-            cy.get("#type-pieces-list > .list-container > .list-item:nth-child(2) .pieces-input").type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID81")
+            cy.get("#type-pieces-list > .list-container  .list-item:nth-child(1) .pieces-input").type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID92")
+            cy.get("#type-pieces-list > .list-container  .list-item:nth-child(2) .pieces-input").type("https://www.fint-ikmk.uni-tuebingen.de/ikmk/object?lang=de&id=ID81")
 
 
             cy.typeLines("#type-literature-field .formatted-text-area", ["Besondere Zeichen", "#+-!\"§$%&/()=?"])
