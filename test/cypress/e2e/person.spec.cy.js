@@ -251,7 +251,7 @@ describe("Testing Person", function () {
         })
     })
 
-    describe.only("Delete Person",
+    describe("Delete Person",
         function () {
 
             it("Delete",
