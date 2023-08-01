@@ -23,8 +23,6 @@ class Treasure extends Table {
                 weight = null,
                 year = null } = items[i]
 
-            console.log(items[i].uncertainMint, items[i].uncertainYear)
-
             await t.none(`INSERT INTO treasure_item (
                     coinType,
                     count,
@@ -207,8 +205,6 @@ class Treasure extends Table {
                 }
             }
         })
-
-        console.log(treasures[0].items[0])
 
         return treasures
     }

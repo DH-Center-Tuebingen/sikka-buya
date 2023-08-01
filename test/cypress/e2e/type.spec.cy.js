@@ -168,9 +168,7 @@ describe("Testing Type", function () {
 
     })
 
-
-
-    describe.only("Edit Type", function () {
+    describe("Edit Type", function () {
 
         it("Access edit page", function () {
             cy.visit('/editor/type/edit/4')

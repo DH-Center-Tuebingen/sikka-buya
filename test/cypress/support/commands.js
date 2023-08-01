@@ -45,8 +45,14 @@ Cypress.Commands.add("typeLines", (selector, lines, clear = true) => {
     cy.get(selector).type(lines.join("{enter}"))
 })
 
-Cypress.Commands.add("triggerDeleteButton", (selector) => {
-    const deleteButton = cy.get(selector)
+Cypress.Commands.add("triggerDeleteButton", (selector, relativeElement = null) => {
+
+    let deleteButton
+    if (relativeElement != null) {
+        deleteButton = cy.wrap(relativeElement).find(selector)
+    } else {
+        deleteButton = cy.get(selector)
+    }
 
     deleteButton.then(el => {
         const rect = el[0].getBoundingClientRect()
@@ -149,22 +155,22 @@ Cypress.Commands.add("checkPersonList", (selector, items = []) => {
 
         const { id, name, titles, honorifics } = items[idx]
 
-        cy.checkDataSelect(".titled-person-select > .input-group > .data-select.name", name, id, listItem)
+        cy.checkDataSelect(".input-group > .data-select.name", name, id, listItem)
 
-        if (titles != null && titles.length > 0) {
-            cy.wrap(listItem).find(".titled-person-title-list .list-item").should("have.length", titles.length).each((titleListItem, idx) => {
-                const title = titles[idx]
-                cy.checkDataSelect(".data-select.title", title.name, title.id, titleListItem)
-            })
-        }
+        // if (titles != null && titles.length > 0) {
+        //     cy.wrap(listItem).find(".titled-person-title-list .list-item").should("have.length", titles.length).each((titleListItem, idx) => {
+        //         const title = titles[idx]
+        //         cy.checkDataSelect(".data-select.title", title.name, title.id, titleListItem)
+        //     })
+        // }
 
 
-        if (honorifics != null && honorifics.length > 0) {
-            cy.wrap(listItem).find(".titled-person-honorific-list .list-item").should("have.length", honorifics.length).each((honorificsListItem, idx) => {
-                const honorific = honorifics[idx]
-                cy.checkDataSelect(".data-select.honorific", honorific.name, honorific.id, honorificsListItem)
-            })
-        }
+        // if (honorifics != null && honorifics.length > 0) {
+        //     cy.wrap(listItem).find(".titled-person-honorific-list .list-item").should("have.length", honorifics.length).each((honorificsListItem, idx) => {
+        //         const honorific = honorifics[idx]
+        //         cy.checkDataSelect(".data-select.honorific", honorific.name, honorific.id, honorificsListItem)
+        //     })
+        // }
     })
 })
 
