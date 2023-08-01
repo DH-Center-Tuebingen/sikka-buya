@@ -70,11 +70,6 @@ export default {
             return this.$root.$i18n.locale
         }
     },
-    methods: {
-        clicked() {
-            console.log("CLICK")
-        }
-    },
     components: { Button, EarthIcon, EarthCloseIcon, Toggle, Tooltip }
 };
 </script>

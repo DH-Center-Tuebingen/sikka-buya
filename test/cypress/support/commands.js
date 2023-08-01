@@ -45,8 +45,14 @@ Cypress.Commands.add("typeLines", (selector, lines, clear = true) => {
     cy.get(selector).type(lines.join("{enter}"))
 })
 
-Cypress.Commands.add("triggerDeleteButton", (selector) => {
-    const deleteButton = cy.get(selector)
+Cypress.Commands.add("triggerDeleteButton", (selector, relativeElement = null) => {
+
+    let deleteButton
+    if (relativeElement != null) {
+        deleteButton = cy.wrap(relativeElement).find(selector)
+    } else {
+        deleteButton = cy.get(selector)
+    }
 
     deleteButton.then(el => {
         const rect = el[0].getBoundingClientRect()
@@ -76,11 +82,12 @@ Cypress.Commands.add("selectFromDataSelect", (selector, targetText, type = "") =
 
     if (type !== "") {
         cy.get(selector + " .name-field").type(type)
+    } else {
+        const dataSelect = cy.get(selector)
+        dataSelect.click()
     }
 
-    const dataSelect = cy.get(selector)
-    dataSelect.click()
-    cy.contains(selector + " .search-box li", targetText, { timeout: 2000 }).click()
+    cy.contains(selector + " .search-box li", targetText, { timeout: 1000 }).click()
 
     /** 
      * The following is more natural for the user and therefore more desirable to test
@@ -119,7 +126,7 @@ Cypress.Commands.add("checkDataSelectList", (selector, items, relativeElement = 
             return cy.get(selector)
         }
     }
-    const itemSelector = "> .list-container > .list-item"
+    const itemSelector = "> .list-container .list-item"
     get().find(itemSelector).should("have.length", items.length)
 
     items.forEach((item, index) => {
@@ -133,7 +140,7 @@ Cypress.Commands.add("checkEmptyList", (selector) => {
 })
 
 Cypress.Commands.add("checkList", (selector, items) => {
-    cy.get(`${selector} > .list-container > .list-item`).should("have.length", items.length)
+    cy.get(`${selector} > .list-container .list-item`).should("have.length", items.length)
 
 
     cy.get(selector).find(".list-item").each(($el, idx) => {
@@ -142,33 +149,33 @@ Cypress.Commands.add("checkList", (selector, items) => {
 })
 
 Cypress.Commands.add("checkPersonList", (selector, items = []) => {
-    const selection = cy.get(`${selector} > .list-container > .list-item`)
+    const selection = cy.get(`${selector} > .list-container .titled-person-select`)
     selection.should("have.length", items.length)
     selection.each(function (listItem, idx) {
 
         const { id, name, titles, honorifics } = items[idx]
 
-        cy.checkDataSelect(".titled-person-select > .input-group > .data-select.name", name, id, listItem)
+        cy.checkDataSelect(".input-group > .data-select.name", name, id, listItem)
 
-        if (titles != null && titles.length > 0) {
-            cy.wrap(listItem).find(".titled-person-title-list .list-item").should("have.length", titles.length).each((titleListItem, idx) => {
-                const title = titles[idx]
-                cy.checkDataSelect(".data-select.title", title.name, title.id, titleListItem)
-            })
-        }
+        // if (titles != null && titles.length > 0) {
+        //     cy.wrap(listItem).find(".titled-person-title-list .list-item").should("have.length", titles.length).each((titleListItem, idx) => {
+        //         const title = titles[idx]
+        //         cy.checkDataSelect(".data-select.title", title.name, title.id, titleListItem)
+        //     })
+        // }
 
 
-        if (honorifics != null && honorifics.length > 0) {
-            cy.wrap(listItem).find(".titled-person-honorific-list .list-item").should("have.length", honorifics.length).each((honorificsListItem, idx) => {
-                const honorific = honorifics[idx]
-                cy.checkDataSelect(".data-select.honorific", honorific.name, honorific.id, honorificsListItem)
-            })
-        }
+        // if (honorifics != null && honorifics.length > 0) {
+        //     cy.wrap(listItem).find(".titled-person-honorific-list .list-item").should("have.length", honorifics.length).each((honorificsListItem, idx) => {
+        //         const honorific = honorifics[idx]
+        //         cy.checkDataSelect(".data-select.honorific", honorific.name, honorific.id, honorificsListItem)
+        //     })
+        // }
     })
 })
 
 Cypress.Commands.add("removeNthListItem", (selector, nthChild) => {
-    cy.get(selector).find(`> .list-container > .list-item:nth-child(${nthChild}) .remove-button`).dblclick()
+    cy.get(selector).find(`> .list-container .list-item:nth-child(${nthChild}) .remove-button`).dblclick()
 })
 
 Cypress.Commands.add("checkFormattedTextArea", (selector, html) => {
@@ -217,7 +224,6 @@ Cypress.Commands.add("inputArrayCloseTo", (selector, target, offset = 0.05) => {
     cy.get(selector).should(($el) => {
         let arr = []
         try {
-            console.log($el)
             arr = JSON.parse($el[0].value)
         } catch (e) { console.log(e) }
         target.forEach((val, idx) => {

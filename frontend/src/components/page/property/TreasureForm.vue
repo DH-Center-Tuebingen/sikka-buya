@@ -57,7 +57,7 @@
                 :coordinates="location.coordinates"
                 ref="locationInput"
                 @update="(geojson) => location = geojson"
-                @updateRadius="(radius)=> locationRadius = radius"
+                @updateRadius="(radius) => locationRadius = radius"
             />
         </LabeledInputContainer>
 
@@ -80,7 +80,10 @@
 
             <ErrorMessage :error="importErrors" />
 
-            <form-list @add="addItem">
+            <form-list
+                @add="addItem"
+                :overflowX="true"
+            >
 
                 <TreasureItemForm
                     v-for="(item, index) in items"
@@ -108,7 +111,6 @@ import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
 import PreventNavigationMixin from "../../mixins/prevent-navigation-mixin"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
-import Query from "@/database/query"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"
@@ -173,7 +175,6 @@ export default {
             let timespan = { from: null, to: null }
             this.items.forEach(item => {
                 let year = parseInt(item.year)
-                console.log(year)
                 if (!isNaN(year)) {
                     if (timespan.from == null || year < timespan.from) timespan.from = year
                     if (timespan.to == null || year > timespan.to) timespan.to = year
@@ -190,7 +191,6 @@ export default {
 
                 namedInputs.forEach(attribute => {
                     this.items[index][attribute] = data[attribute]
-                    console.log(this.items[index][attribute])
                 })
             }
         },
@@ -205,10 +205,8 @@ export default {
 
 
             const importer = new TreasureItemsImporter()
-            await importer.exec(file)
+            await importer.execFromFile(file)
             this.importErrors = importer.errors
-
-            console.log(importer.errorsObject)
             if (importer.errors.length === 0) {
                 this.items = importer.items
                 this.getCoinRangeFromItems()
@@ -224,7 +222,6 @@ export default {
                 this.name = treasure.name
                 this.timespan = treasure.timespan
                 this.literature = treasure.literature
-                console.log(treasure.literature, treasure.timespan)
 
                 let location = treasure.location || { coordinates: [0, 0], type: "point" }
                 if (location.type.toLowerCase() === "polygon")
@@ -246,7 +243,7 @@ export default {
 
             if (location.type.toLowerCase() === "polygon")
                 location.coordinates = [location.coordinates]
-            if(location.type.toLowerCase() === "circle")
+            if (location.type.toLowerCase() === "circle")
                 location = this.$refs.locationInput.getGeoJsonFromCircle()
 
             const treasure = new Treasure({
@@ -311,6 +308,9 @@ $template-columns: 50px 80px repeat(5, 1fr) 50px 32px;
     //     gap: .5em;
     // }
 
+    .treasure-item-list {
+        overflow-x: auto;
+    }
 
 
     .tools {

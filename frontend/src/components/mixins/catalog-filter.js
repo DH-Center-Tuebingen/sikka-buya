@@ -62,11 +62,9 @@ export default function (storage, urlParamsConfig) {
                                     break
                                 case FilterType.multiSelect2D:
                                     data[objectKey] = URLParams.getMultiSelect2D(queryKey)
-                                    console.log(data[objectKey])
                                     break
                                 case FilterType.buttonGroup:
                                     data[objectKey] = URLParams.get(queryKey, "string")
-                                    console.log(queryKey)
                                     break
                                 default:
                                     throw new Error(`Unknown filter type "${filterNameMap[queryKey].type}"!`)

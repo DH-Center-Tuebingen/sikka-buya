@@ -4,11 +4,14 @@
       <h2>
         <locale path="editor.administration" />
       </h2>
+
+
     </header>
+
     <div class="flex row">
 
       <div class="flex-fill">
-        <template v-for="permission of ['super', 'creator', 'editor']">
+        <template v-for="permission of ['super', 'cms', 'editor']">
           <list
             :items="getPropertyByPermission(permission)"
             v-if="$store.getters.userHasPermission(permission) &&
@@ -101,7 +104,7 @@ export default {
     user_properties() {
       return {
         super: [{ name: 'user', to: { name: 'UserManagement' } }],
-        editor: this.properties,
+        cms: this.properties,
       };
     },
     supportPrograms() {

@@ -91,6 +91,7 @@ import Auth from "../utils/Auth.js"
  */
 import MapPage from "@/components/page/MapPage.vue"
 import PoliticalMap from "@/components/map/PoliticalMap"
+import TreasureMap from "@/components/map/TreasureMap"
 import MaterialMap from "@/components/map/MaterialMap"
 import PlaygroundPage from "@/components/map/Playground"
 
@@ -133,6 +134,11 @@ const routes = [
         path: "additional",
         name: "Additional Maps",
         component: MaterialMap
+      },
+      {
+        path: "treasure",
+        name: "Treasure Map",
+        component: TreasureMap
       },
       // TODO: Remove
       {

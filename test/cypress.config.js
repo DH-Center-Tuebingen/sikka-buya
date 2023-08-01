@@ -6,6 +6,7 @@ module.exports = {
   video: false,
   e2e: {
     baseUrl: "http://localhost:8080",
+    numTestsKeptInMemory: 10,
     setupNodeEvents(on, config) {
 
       require('cypress-terminal-report/src/installLogsPrinter')(on);

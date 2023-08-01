@@ -1,5 +1,4 @@
 function guardFunctionObject(obj, guardingFunction) {
-
     return Object.entries(obj).reduce((prev, [name, func]) => {
         prev[name] = guard(func, guardingFunction)
         return prev

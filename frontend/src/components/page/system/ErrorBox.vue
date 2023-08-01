@@ -40,7 +40,6 @@ export default {
   },
   computed: {
     iconPath() {
-      console.log(this.icons)
       return this.icons[this.type]
     },
     show() {

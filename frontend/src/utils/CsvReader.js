@@ -1,6 +1,6 @@
 export default class CsvReader {
 
-    constructor(file, { delimiter = ',', rowDelimiter = '\n' } = {}) {
+    constructor(file, { delimiter = ';', rowDelimiter = '\n' } = {}) {
         this.file = file;
         this.data = null
         this.delimiter = delimiter
@@ -19,7 +19,14 @@ export default class CsvReader {
         }
 
         const text = await this.readText()
-        const lines = text.split(this.rowDelimiter)
+        return CsvReader.rowsFromText(text, headers, {
+            delimiter: this.delimiter,
+            rowDelimiter: this.rowDelimiter
+        })
+    }
+
+    static rowsFromText(text, headers, { delimiter = ";", rowDelimiter = "\n" } = {}) {
+        const lines = text.split(rowDelimiter)
         lines.shift()
 
         // Remove emptylines from the end of the file
@@ -29,7 +36,7 @@ export default class CsvReader {
 
         const rows = []
         lines.forEach((line, idx) => {
-            const columns = line.split(this.delimiter)
+            const columns = line.split(delimiter)
             const row = {}
 
             headers.forEach((header, index) => {
@@ -51,13 +58,33 @@ export default class CsvReader {
 
     async readHeader() {
         const text = await this.readText()
-        const lines = text.split(this.rowDelimiter)
+        return CsvReader.headerFromText(text, {
+            delimiter: this.delimiter,
+            rowDelimiter: this.rowDelimiter
+        })
+    }
+
+    static fromText(text, { delimiter = ";", rowDelimiter = "\n" } = {}) {
+        const headers = this.headerFromText(text, { delimiter, rowDelimiter })
+        const rows = this.rowsFromText(text, headers, {
+            delimiter,
+            rowDelimiter
+        })
+        return { headers, rows }
+    }
+
+    static headerFromText(text, { delimiter = ";", rowDelimiter = "\n" } = {}) {
+        const lines = text.split(rowDelimiter)
+
+        while (lines.length > 0 && lines[0].trim() === "") {
+            lines.shift()
+        }
 
         if (lines.length === 0) {
             throw new Error('Empty file')
         }
         const header = lines[0]
-        return header.split(this.delimiter).map(h => h.trim())
+        return header.split(delimiter).map(h => h.trim())
     }
 
 }

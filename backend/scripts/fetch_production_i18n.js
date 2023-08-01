@@ -15,8 +15,6 @@ async function main() {
     https.get(`${process.env.PRODUCTION_URI}/graphql?query={i18n}`, (res) => {
 
         let body = ""
-        console.log(Object.keys(res))
-        console.log(res.statusCode)
 
         res.setEncoding("utf8")
         res.on("data", (chunk) => {

@@ -53,6 +53,13 @@ class MaterialResolver extends BaseResolver {
         `, args.id)
     }
 
+    async search(_, { text } = {}) {
+        return Database.manyOrNone(`
+        ${this.createListQuery()}
+        WHERE unaccent(material.name) ILIKE unaccent($1)
+        `, [`%${text}%`])
+    }
+
     async list(_, { language } = {}) {
         const query = `${this.createListQuery()} ORDER BY material.name`
         return Database.manyOrNone(query)

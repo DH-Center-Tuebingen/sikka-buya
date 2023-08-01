@@ -4,4 +4,5 @@ VALUES
     ('Gøld'),
     ('Kupfer'),
     ('Perlmutt'),
-    ('Silber');
+    ('Silber'),
+    ('Titan');

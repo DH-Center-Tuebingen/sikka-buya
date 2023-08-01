@@ -117,6 +117,14 @@
     "navigation": {
         "back": "Zurück"
     },
+    "tooltip": {
+        "user": {
+            "cms": "Ersteller",
+            "editor": "Editor",
+            "recorder": "Bearbeiter",
+            "super": "Super"
+        }
+    },
     "property": {
         "additional_persons": "Sonstige Personen",
         "avers": {
@@ -193,7 +201,9 @@
         "year_of_mint": "Prägejahr",
         "year_uncertain": "Jahr nicht sicher",
         "no_fragment": "kein Fragment",
-        "weight": "Gewicht"
+        "weight": "Gewicht",
+        "uncertain_mint": "Prägeort unsicher",
+        "year_of_mint_uncertain": "Prägejahr unsicher"
     },
     "role": {
         "caliph": "Kalif | Kalif",
@@ -269,7 +279,7 @@
     },
     "user": {
         "permission": {
-            "creator": "Ersteller",
+            "cms": "Ersteller",
             "editor": "Editor | Editoren",
             "recorder": "Bearbeiter",
             "super": "Super"

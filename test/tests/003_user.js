@@ -164,13 +164,8 @@ describe(`User management`, function () {
 
         it(`Requested user is correct`, async function () {
 
-            let obj = null
-            try {
-                let result = await graphql(req, {}, SuperUser.token)
-                obj = result.data.data.getUser
-            } catch (e) {
-                console.log(e)
-            }
+            let result = await graphql(req, {}, SuperUser.token)
+            let obj = result.data.data.getUser
 
             expect(obj).to.deep.equal(
                 {

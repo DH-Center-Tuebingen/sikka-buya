@@ -124,11 +124,11 @@ export default {
 
       if (this.person.id && this.person.id > 0) {
         variables.id = this.person.id;
-        query = `mutation($id:ID, $name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String)
+        query = `mutation($id:ID!, $name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String)
       {
             updatePerson (
+              id: $id,
               data: {
-                id: $id,
                 name: $name,
                 shortName: $shortName,
                 role: $role,

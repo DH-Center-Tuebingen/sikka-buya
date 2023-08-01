@@ -30,8 +30,10 @@ class PersonResolver extends Resolver {
     }
 
     async update(_, args) {
-        if (!args.data.id)
+        if (!args.id)
             throw new Error("Id must be set when updating a value!")
+
+        const id = args.id
 
         SQLUtils.removeNullProperty(args, "dynasty")
         SQLUtils.removeNullProperty(args, "role")
@@ -44,12 +46,18 @@ class PersonResolver extends Resolver {
                SET
                 name=$[name], short_name=$[short_name], role=$[role], dynasty=$[dynasty]
                 WHERE id=$[id]
-            `, args.data)
+            `, {
+                id, ...args.data
+            })
 
 
             if (args.data.color != null) {
-                const id = args.data.id
-                await t.none(`INSERT INTO person_color (person, color) VALUES ($[person], $[color]) ON CONFLICT (person) DO UPDATE SET color=$[color]`, { person: id, color: args.data.color })
+                await t.none(`
+                INSERT INTO person_color (person, color) 
+                VALUES ($[person], $[color]) 
+                ON CONFLICT (person) 
+                DO UPDATE SET color=$[color]`,
+                    { person: id, color: args.data.color })
             }
         })
     }

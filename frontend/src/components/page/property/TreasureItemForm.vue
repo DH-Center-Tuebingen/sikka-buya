@@ -40,8 +40,6 @@
                             type="mdi"
                         />
                     </div>
-
-                    <Locale path="property.fragment" />
                 </template>
                 <template #inactive>
                     <div>
@@ -51,7 +49,6 @@
                             type="mdi"
                         />
                     </div>
-                    <Locale path="property.no_fragment" />
                 </template>
             </Toggle>
         </LabeledInputContainer>
@@ -121,11 +118,26 @@
                 </template>
 
                 <input
-                    type="text"
+                    type="number"
                     name=""
                     id=""
                     :placeholder="$tc('property.yearOfMint')"
                     v-model="value.year"
+                >
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+
+                <template #label>
+                    <Locale path="property.year_of_mint_uncertain" />
+                </template>
+
+                <input
+                    type="text"
+                    name=""
+                    id=""
+                    :placeholder="$tc('property.yearOfMintUncertain')"
+                    v-model="value.uncertainYear"
                 >
             </LabeledInputContainer>
 
@@ -139,6 +151,18 @@
                     :debug="debug"
                     v-model="value.mint"
                 />
+            </LabeledInputContainer>
+
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.uncertain_mint" />
+                </template>
+
+                <input
+                    type="text"
+                    v-model="value.uncertainMint"
+                >
             </LabeledInputContainer>
 
 
@@ -236,14 +260,12 @@ export default {
 
 <style lang="scss" scoped>
 .treasure-item-form {
+    min-width: max-content;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    ;
+    grid-template-columns: 50px 100px 100px 100px min-content 50px;
 }
 
 .delete-button {
-    grid-row: 3;
-    grid-column-start: 4;
     justify-self: flex-end;
 }
 
@@ -253,8 +275,7 @@ export default {
     border: 1px solid $light-gray;
     padding: math.div($padding, 2) $padding;
 
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(7, 140px);
 }
 
 .treasure-item-form {

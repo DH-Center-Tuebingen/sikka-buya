@@ -35,7 +35,6 @@ export default {
       let i = 0
       while (name == null && i < this.targetProps.length) {
         
-        console.log(this.targetProps[i], person[this.targetProps[i]])
         if (person[this.targetProps[i]] != null) {
           name = person[this.targetProps[i]]
         }

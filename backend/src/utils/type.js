@@ -511,7 +511,7 @@ class Type {
         return { SELECT, JOINS, WHERE }
     }
 
-    static async getTypes(_, { pagination = { count: 50, total: 0, page: 0 }, filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null }, context, info) {
+    static async getTypes(_, { pagination = { count: 50, total: 0, page: 0 }, filters = {}, additionalJoin = "", additionalRows = [], postProcessFields = null, transaction = null }, context, info) {
 
         /**
          * 
@@ -526,6 +526,10 @@ class Type {
             GROUP BY type_coin_marks.type) AS cm
             ON cm.type = type.id
          */
+
+        if (transaction === null) {
+            transaction = Database
+        }
 
         pagination.count = (pagination.count < process.env.MAX_SEARCH) ? pagination.count : process.env.MAX_SEARCH
         const pageInfo = new PageInfo(pagination)
@@ -545,7 +549,7 @@ class Type {
         ${WHERE}
         `
 
-        const total = await Database.one(totalQuery)
+        const total = await transaction.one(totalQuery)
         pageInfo.updateTotal(total.count)
 
         const query = `
@@ -559,7 +563,7 @@ class Type {
         
 ; `
 
-        const result = await Database.manyOrNone(query)
+        const result = await transaction.manyOrNone(query)
 
         if (!postProcessFields) {
             let fields = graphqlFields(info)
@@ -567,7 +571,7 @@ class Type {
         }
 
         for (let [idx, type] of result.entries()) {
-            result[idx] = await this.postprocessType(type, postProcessFields, context)
+            result[idx] = await this.postprocessType(transaction, type, postProcessFields, context)
         }
 
         return { types: result, pageInfo }
@@ -698,7 +702,7 @@ class Type {
             throw new Error("Requested type does not exist: " + e)
         })
 
-        return await this.postprocessType(result, null, context);
+        return await this.postprocessType(transaction, result, null, context);
     }
 
     static get rows() {
@@ -766,7 +770,7 @@ class Type {
         return joins
     }
 
-    static async postprocessType(type, fields, context) {
+    static async postprocessType(transaction, type, fields, context) {
         if (!type) throw new Error(`Type was not provided!`)
 
         const config = [
@@ -821,29 +825,29 @@ class Type {
 
                 // Arrays
                 case "coinMarks":
-                    type.coinMarks = await Type.getCoinMarks(type.id)
+                    type.coinMarks = await Type.getCoinMarks(transaction, type.id)
                     break
                 case "coinVerses":
-                    type.coinVerses = await Type.getCoinVerses(type.id)
+                    type.coinVerses = await Type.getCoinVerses(transaction, type.id)
                     break
                 case "pieces":
-                    type.pieces = await Type.getPieces(type.id)
+                    type.pieces = await Type.getPieces(transaction, type.id)
                     break
 
                 // Persons
                 case 'caliph':
-                    type.caliph = (type.caliph == null) ? null : await Person.get(type.caliph)
+                    type.caliph = (type.caliph == null) ? null : await Person.get(transaction, type.caliph)
                     break;
                 case 'otherPersons':
-                    type.otherPersons = await Type.getOtherPersonsByType(type.id)
+                    type.otherPersons = await Type.getOtherPersonsByType(transaction, type.id)
                     break
 
                 // Titled Persons
                 case "overlords":
-                    type.overlords = await Type.getOverlordsByType(type.id)
+                    type.overlords = await Type.getOverlordsByType(transaction, type.id)
                     break;
                 case "issuers":
-                    type.issuers = await Type.getIssuerByType(type.id)
+                    type.issuers = await Type.getIssuerByType(transaction, type.id)
                     break;
             }
         }
@@ -880,9 +884,9 @@ class Type {
         }
     }
 
-    static async getOverlordsByType(type_id) {
+    static async getOverlordsByType(transaction, type_id) {
 
-        const response = await Database.multi(
+        const response = await transaction.multi(
             `
             SELECT o.id,
             o.rank,
@@ -926,8 +930,8 @@ class Type {
         return overlords
     }
 
-    static async getIssuerByType(type_id) {
-        const response = await Database.multi(`
+    static async getIssuerByType(transaction, type_id) {
+        const response = await transaction.multi(`
         SELECT i.id, i.type,p.id as person_id,
                 p.short_name as person_short_name,
                 p.name as person_name,
@@ -966,8 +970,8 @@ class Type {
         return issuers
     }
 
-    static async getCoinMarks(type_id) {
-        return await Database.manyOrNone(`
+    static async getCoinMarks(transaction, type_id) {
+        return await transaction.manyOrNone(`
         SELECT cm.* FROM type_coin_marks tcm
         LEFT JOIN coin_marks cm
             ON tcm.coin_mark = cm.id
@@ -975,8 +979,8 @@ class Type {
             `, type_id)
     }
 
-    static async getCoinVerses(type_id) {
-        return await Database.manyOrNone(`
+    static async getCoinVerses(transaction, type_id) {
+        return await transaction.manyOrNone(`
         SELECT cv.* FROM type_coin_verse tcv
         LEFT JOIN coin_verse cv
             ON tcv.coin_verse = cv.id
@@ -984,8 +988,8 @@ class Type {
             `, type_id)
     }
 
-    static async getOtherPersonsByType(type_id) {
-        let result = await Database.manyOrNone(`
+    static async getOtherPersonsByType(transaction, type_id) {
+        let result = await transaction.manyOrNone(`
         SELECT 
             p.*,
             d.id as dynasty_id,
@@ -1013,8 +1017,8 @@ class Type {
         return result.map(person => Person.decomposePersonResult(person))
     }
 
-    static async getPieces(type_id) {
-        let results = await Database.manyOrNone(`
+    static async getPieces(transaction, type_id) {
+        let results = await transaction.manyOrNone(`
         SELECT piece.piece FROM piece
 			WHERE piece.type = $1
             `, type_id)

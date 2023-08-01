@@ -1,4 +1,4 @@
-import AxiosHelper from "@/utils/AxiosHelper.js";
+import AxiosHelper from "../utils/AxiosHelper.js";
 import Auth from "../utils/Auth";
 import { graphqlEndpoint } from './host';
 import { print } from 'graphql/language/printer';
@@ -145,8 +145,8 @@ export default class Query {
 
 
     static async raw(query, variables = {}, debug = false) {
-        // if (debug)
-        console.log(query, JSON.stringify(variables))
+        if (debug)
+            console.log(query, JSON.stringify(variables))
         return AxiosHelper.request({
             url: graphqlEndpoint,
             method: "post",

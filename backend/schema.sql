@@ -631,6 +631,68 @@ ALTER SEQUENCE public.piece_id_seq OWNED BY public.piece.id;
 
 
 --
+-- Name: project; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text
+);
+
+
+--
+-- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_id_seq OWNED BY public.project.id;
+
+
+--
+-- Name: project_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_items (
+    id integer NOT NULL,
+    project integer NOT NULL,
+    ref text NOT NULL
+);
+
+
+--
+-- Name: project_items_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_items_id_seq OWNED BY public.project_items.id;
+
+
+--
 -- Name: province; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -688,6 +750,81 @@ CREATE SEQUENCE public.title_id_seq
 --
 
 ALTER SEQUENCE public.title_id_seq OWNED BY public.title.id;
+
+
+--
+-- Name: treasure; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.treasure (
+    id integer NOT NULL,
+    earliestyear integer,
+    latestyear integer,
+    literature text,
+    name character varying(255) NOT NULL,
+    location public.geometry
+);
+
+
+--
+-- Name: treasure_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.treasure_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: treasure_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.treasure_id_seq OWNED BY public.treasure.id;
+
+
+--
+-- Name: treasure_item; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.treasure_item (
+    cointype integer,
+    count integer,
+    dynasty integer,
+    fragment boolean,
+    id integer NOT NULL,
+    material integer,
+    mint integer,
+    uncertain_mint text,
+    nominal integer,
+    treasure integer NOT NULL,
+    weight double precision,
+    year integer,
+    uncertain_year text
+);
+
+
+--
+-- Name: treasure_item_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.treasure_item_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: treasure_item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.treasure_item_id_seq OWNED BY public.treasure_item.id;
 
 
 --
@@ -801,7 +938,6 @@ CREATE TABLE public.web_page (
     image integer,
     summary text,
     body text,
-    published boolean,
     page_group integer,
     created_timestamp timestamp without time zone NOT NULL,
     modified_timestamp timestamp without time zone NOT NULL,
@@ -1032,6 +1168,20 @@ ALTER TABLE ONLY public.piece ALTER COLUMN id SET DEFAULT nextval('public.piece_
 
 
 --
+-- Name: project id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project ALTER COLUMN id SET DEFAULT nextval('public.project_id_seq'::regclass);
+
+
+--
+-- Name: project_items id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_items ALTER COLUMN id SET DEFAULT nextval('public.project_items_id_seq'::regclass);
+
+
+--
 -- Name: province id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1043,6 +1193,20 @@ ALTER TABLE ONLY public.province ALTER COLUMN id SET DEFAULT nextval('public.pro
 --
 
 ALTER TABLE ONLY public.title ALTER COLUMN id SET DEFAULT nextval('public.title_id_seq'::regclass);
+
+
+--
+-- Name: treasure id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure ALTER COLUMN id SET DEFAULT nextval('public.treasure_id_seq'::regclass);
+
+
+--
+-- Name: treasure_item id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item ALTER COLUMN id SET DEFAULT nextval('public.treasure_item_id_seq'::regclass);
 
 
 --
@@ -1289,6 +1453,30 @@ ALTER TABLE ONLY public.piece
 
 
 --
+-- Name: project_items project_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_items
+    ADD CONSTRAINT project_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project project_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project
+    ADD CONSTRAINT project_name_key UNIQUE (name);
+
+
+--
+-- Name: project project_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project
+    ADD CONSTRAINT project_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: province province_name_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1310,6 +1498,30 @@ ALTER TABLE ONLY public.province
 
 ALTER TABLE ONLY public.title
     ADD CONSTRAINT title_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: treasure_item treasure_item_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: treasure treasure_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure
+    ADD CONSTRAINT treasure_name_key UNIQUE (name);
+
+
+--
+-- Name: treasure treasure_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure
+    ADD CONSTRAINT treasure_pkey PRIMARY KEY (id);
 
 
 --
@@ -1381,14 +1593,6 @@ ALTER TABLE ONLY public.web_page
 --
 
 CREATE INDEX idx_search_vectors ON public.type USING gin (search_vectors);
-
-
---
--- Name: app_user_privilege app_user_privilege_app_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.app_user_privilege
-    ADD CONSTRAINT app_user_privilege_app_user_fkey FOREIGN KEY (app_user) REFERENCES public.app_user(id);
 
 
 --
@@ -1573,6 +1777,62 @@ ALTER TABLE ONLY public.person
 
 ALTER TABLE ONLY public.piece
     ADD CONSTRAINT piece_type_fk FOREIGN KEY (type) REFERENCES public.type(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: project_items project_items_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_items
+    ADD CONSTRAINT project_items_project_fkey FOREIGN KEY (project) REFERENCES public.project(id) ON DELETE CASCADE;
+
+
+--
+-- Name: treasure_item treasure_item_cointype_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_cointype_fkey FOREIGN KEY (cointype) REFERENCES public.type(id);
+
+
+--
+-- Name: treasure_item treasure_item_dynasty_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_dynasty_fkey FOREIGN KEY (dynasty) REFERENCES public.dynasty(id);
+
+
+--
+-- Name: treasure_item treasure_item_material_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_material_fkey FOREIGN KEY (material) REFERENCES public.material(id);
+
+
+--
+-- Name: treasure_item treasure_item_mint_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_mint_fkey FOREIGN KEY (mint) REFERENCES public.mint(id);
+
+
+--
+-- Name: treasure_item treasure_item_nominal_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_nominal_fkey FOREIGN KEY (nominal) REFERENCES public.nominal(id);
+
+
+--
+-- Name: treasure_item treasure_item_treasure_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_treasure_fkey FOREIGN KEY (treasure) REFERENCES public.treasure(id) ON DELETE CASCADE;
 
 
 --

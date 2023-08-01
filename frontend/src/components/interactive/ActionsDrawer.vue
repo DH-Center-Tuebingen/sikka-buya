@@ -67,7 +67,6 @@ export default {
             this.open = false;
         },
         close(event) {
-            // console.log(this.$el.contains(event.target))
             if (!this.$el.contains(event.target)) {
                 this.open = false;
             }

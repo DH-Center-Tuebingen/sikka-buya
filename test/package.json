@@ -9,7 +9,7 @@
   "scripts": {
     "test": "npm run test:api && npm run test:cypress:run",
     "test:api": "grunt test",
-    "test:api:keepalive": "grunt test-keepalive",
+    "test:api:keepalive": "grunt test-keepalive --force",
     "test:backend:keepalive": "grunt backend:keepalive",
     "test:backend:reload": "nodemon testing-backend.js",
     "test:backend": "node testing-backend.js",

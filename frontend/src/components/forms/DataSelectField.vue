@@ -193,7 +193,7 @@ export default {
     },
   },
   methods: {
-    setValue: function (event,  data) {
+    setValue: function (event, data) {
       const target = event.target;
       const value = this.value;
       this.listVisible = false;
@@ -461,8 +461,9 @@ button {
   // padding: 10px;
   box-sizing: border-box;
   z-index: 2000;
-  max-height: 50vh;
+  max-height: 200px;
   overflow-y: auto;
+  overflow-x: hidden;
 
   box-shadow: 1px 2px 3px rgba($color: #000000, $alpha: 0.2);
 

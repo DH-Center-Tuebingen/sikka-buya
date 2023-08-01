@@ -10,5 +10,8 @@ VALUES
     ('von Deutschland'),
     ('Meerjungfrau'),
     ('der Große'),
-    ('Wesen des Meeres')
+    ('Wesen des Meeres'),
+    ('der Kahle'),
+    /* ^10 */
+    ('die Falsche')
     ;

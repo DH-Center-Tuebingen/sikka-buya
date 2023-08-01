@@ -7,9 +7,9 @@ class GeoJSON {
 
 
     static isEmpty(obj) {
-        switch (obj.type) {
-            case "Point": GeoJsonPointFeature.lengthOf(obj);
-            case "Polygon": GeoJsonPolygonFeature.lengthOf(obj);
+        switch (obj.type.toLowerCase()) {
+            case "point": GeoJsonPointFeature.lengthOf(obj);
+            case "polygon": GeoJsonPolygonFeature.lengthOf(obj);
             default:
                 console.error(`GeoJSON type "${obj.type}" is not implemented.`)
         }

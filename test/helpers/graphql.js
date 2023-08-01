@@ -26,7 +26,7 @@ function graphql(query, variables = {}, authToken = null, debug = false) {
                 resolve(result)
             } else {
                 let errors = AxiosHelper.getErrors(result)
-                reject(errors)
+                reject(errors.join("\n"))
             }
         }).catch(reject)
     })

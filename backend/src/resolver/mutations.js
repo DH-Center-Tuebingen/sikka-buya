@@ -98,7 +98,11 @@ const SuperUserMutations = {
     },
     async revokePermission(_, { user, permission } = {}, context) {
         if (permission === "super") {
-            return WriteableDatabase.none("UPDATE app_user SET super=FALSE WHERE id=$1", user)
+            return WriteableDatabase.tx(async t => {
+                const res = await t.manyOrNone("SELECT * FROM app_user WHERE super=TRUE")
+                if (res.length == 1) throw new Error("You cannot revoke the super permission from the last super user!")
+                await t.none("UPDATE app_user SET super=FALSE WHERE id=$1", user)
+            })
         } else
             WriteableDatabase.none("DELETE FROM app_user_privilege WHERE app_user=$[user] AND privilege=$[permission]", { user, permission })
     },

@@ -257,12 +257,15 @@ describe("Testing Person", function () {
             it("Delete",
                 function () {
                     cy.visit("/editor/person")
-                    cy.triggerDeleteButton(".list-item:nth-child(2) .dynamic-delete-button")
+
+                    cy.get(".list-item").contains('ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad').parents(".list-item").then($el => {
+                        cy.triggerDeleteButton(".dynamic-delete-button", $el)
+                    })
 
                     cy.get(".list-item").contains('Rukn ad-Daula Abū ʿAlī al-Ḥasan b. Būya').parents(".list-item").find(".color-indicator").should("have.css", "background-color", "rgb(255, 0, 255)")
                     cy.get(".list-item").contains('Sulṭān ad-Daula Abū Šuǧāʿ Fanā-Ḫusra b. Bahāʾ ad-Daula Ḫusra-Fīrūz').parents(".list-item").find(".color-indicator").should("have.css", "background-color", "rgb(0, 255, 255)")
                     cy.get(".list-item").contains('al-Muṭīʿ li-᾽llāh, Abu ᾽l-Qāsim al-Faḍl b. al-Muqtadir').parents(".list-item").find(".color-indicator").should("have.css", "background-color", "rgb(255, 255, 0)")
-                    cy.get(".list-item").contains("Abu ’l-Wafāʾ Tuzun").should("not.exist")
+                    cy.get(".list-item").contains("ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad").should("not.exist")
                 })
 
             it("Still Deleted On Reload", function () {
@@ -270,7 +273,8 @@ describe("Testing Person", function () {
                 cy.get(".list-item").contains('Rukn ad-Daula Abū ʿAlī al-Ḥasan b. Būya').parents(".list-item").find(".color-indicator").should("have.css", "background-color", "rgb(255, 0, 255)")
                 cy.get(".list-item").contains('Sulṭān ad-Daula Abū Šuǧāʿ Fanā-Ḫusra b. Bahāʾ ad-Daula Ḫusra-Fīrūz').parents(".list-item").find(".color-indicator").should("have.css", "background-color", "rgb(0, 255, 255)")
                 cy.get(".list-item").contains('al-Muṭīʿ li-᾽llāh, Abu ᾽l-Qāsim al-Faḍl b. al-Muqtadir').parents(".list-item").find(".color-indicator").should("have.css", "background-color", "rgb(255, 255, 0)")
-                cy.get(".list-item").contains("Abu ’l-Wafāʾ Tuzun").should("not.exist")
+                cy.get(".list-item").contains("ʿIzz ad-Daula Abū Manṣūr Baḫtiyār b. Muʿizz ad-Daula Aḥmad").should("not.exist")
+
             })
         })
 })

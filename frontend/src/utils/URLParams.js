@@ -150,8 +150,6 @@ export default class URLParams {
                     return acc
                 }, [])
 
-            console.log(value)
-
             obj.value = value
         }
 

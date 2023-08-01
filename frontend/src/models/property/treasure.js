@@ -1,5 +1,5 @@
 
-import Query from "@/database/query"
+import Query from "../../database/query"
 
 /**
  * Class representing a treasure.
@@ -59,11 +59,23 @@ export class Treasure {
                         { dynasty: ["id", "name"] },
                         { nominal: ["id", "name"] },
                         { material: ["id", "name"] },
+                        "uncertainYear",
+                        "uncertainMint",
                         "fragment"]
                 }
             ])
 
         return result?.data?.data?.getTreasure
+    }
+
+    fixLocation(location) {
+        if (location.coordinates && Array.isArray(location.coordinates)) {
+            let flat = location.coordinates.flat(Infinity)
+            if (flat.length === 0) return null
+            else return location
+        } else {
+            return null
+        }
     }
 
     async add() {
@@ -74,7 +86,7 @@ export class Treasure {
         `, {
             treasure: {
                 name: this.name,
-                location: this.location,
+                location: this.fixLocation(this.location),
                 literature: this.literature,
                 timespan: this.timespan,
                 items: this.items
@@ -83,7 +95,6 @@ export class Treasure {
     }
 
     async update(id) {
-        console.log(this.timespan)
         await Query.raw(`
         mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
             updateTreasure(id:$id, data: $treasure)
@@ -92,7 +103,7 @@ export class Treasure {
             id,
             treasure: {
                 name: this.name,
-                location: this.location,
+                location: this.fixLocation(this.location),
                 literature: this.literature,
                 timespan: this.timespan,
                 items: this.items
@@ -121,6 +132,8 @@ export class TreasureItem {
      * @param {string} [options.material=null] - The material of the coin.
      * @param {string} [options.mint=null] - The mint of the coin.
      * @param {string} [options.nominal=null] - The nominal of the coin.
+     * @param {boolean} [options.uncertainMint=null] - The name of the mint if it is not certain
+     * @param {boolean} [options.uncertainYear=null] - The year of the coin if it is not certain
      * @param {number} [options.weight=null] - The weight of the coin.
      * @param {number} [options.year=null] - The year of the coin.
      */
@@ -133,6 +146,8 @@ export class TreasureItem {
         material = null,
         mint = null,
         nominal = null,
+        uncertainMint = null,
+        uncertainYear = null,
         weight = null,
         year = null,
     } = {}
@@ -145,6 +160,8 @@ export class TreasureItem {
         this.material = material
         this.mint = mint
         this.nominal = nominal
+        this.uncertainMint = uncertainMint
+        this.uncertainYear = uncertainYear
         this.weight = weight
         this.year = year
     }
@@ -164,6 +181,7 @@ export class TreasureItem {
         obj = Object.assign({}, obj, {
             count: parseInt(obj.count),
             weight: parseFloat(obj.weight),
+            year: parseInt(obj.year),
             coinType: obj.coinType.hasOwnProperty("id") ? obj.coinType.id : obj.coinType,
             mint: obj.mint.hasOwnProperty("id") ? obj.mint.id : obj.mint,
             dynasty: obj.dynasty.hasOwnProperty("id") ? obj.dynasty.id : obj.dynasty,

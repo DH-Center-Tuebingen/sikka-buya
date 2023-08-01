@@ -1,6 +1,6 @@
-import CsvReader from "../utils/CsvReader.mjs"
-import Query from "@/database/query.js"
-import { TreasureItem } from "@/models/property/treasure.js"
+import CsvReader from "../utils/CsvReader.js"
+import Query from "../database/query.js"
+import { TreasureItem } from "./property/treasure.js"
 
 export class Importer {
 
@@ -18,12 +18,17 @@ export class Importer {
         this.items = []
     }
 
-    async exec(file, reader) {
+    async execFromFile(file) {
+        const reader = new CsvReader(file)
+        const { headers, rows } = await reader.read()
+        return await this.exec({ headers, rows })
+    }
+
+    async exec({ headers, rows }) {
         if (!this.importing) {
             try {
                 this.importing = true
                 this.resetItems()
-                let { headers, rows } = await reader.read(file)
                 this.validateHeaders(headers)
                 this.validateRows(rows)
 
@@ -69,12 +74,12 @@ export class Importer {
         const requiredHeaders = this.headers
         this.errorObject.headers = []
 
-        if (!requiredHeaders) {
+        if (!headers) {
+            throw new Error("No headers passed")
+        }
+        else if (!requiredHeaders) {
             return true
         } else {
-
-            console.log(headers, requiredHeaders)
-
             const missingHeaders = requiredHeaders.filter(header => !headers.includes(header))
             if (missingHeaders.length > 0) {
                 const missingHeaderErrors = missingHeaders.map(header => `Header "${header}" is missing.`)
@@ -102,22 +107,21 @@ export class TreasureItemsImporter extends Importer {
 
     constructor() {
         super({
-            headers: ['Id', 'Dynastie', 'Prägeort', 'Prägejahr', 'Dinar', 'Dirham', 'Fragment', 'Gewicht', 'Anzahl'],
+            headers: [
+                'Id',
+                'Dynastie',
+                'Prägeort',
+                'Unsicherer Prägeort',
+                'Prägejahr',
+                'Unsicheres Prägejahr',
+                'Dinar',
+                'Dirham',
+                'Fragment',
+                'Gewicht',
+                'Anzahl'],
         })
     }
 
-    async exec(file) {
-        return super.exec(file, new CsvReader(file, { delimiter: ";" }))
-    }
-
-
-    // function saveValue(key, textValue, value) {
-    //     if (value) {
-    //         item[key] = value
-    //         if (!cache[key]) cache[key] = {}
-    //         cache[key][textValue] = value
-    //     }
-    // }
 
     async format(row, headers, index = 0) {
 
@@ -131,9 +135,10 @@ export class TreasureItemsImporter extends Importer {
             "Material": "material",
             "Dynastie": "dynasty",
             "Fragment": "fragment",
-            "Anzahl": "count"
+            "Anzahl": "count",
+            "Unsicherer Prägeort": "uncertainMint",
+            "Unsicheres Prägejahr": "uncertainYear",
         }
-        console.log(headers)
 
         for (const header of this.headers) {
             let key = headersMapping[header] || header
@@ -143,15 +148,7 @@ export class TreasureItemsImporter extends Importer {
                 case "Nr.": continue
                 case "coinType":
                     if (value) {
-
-                        if (this.cache?.coinType?.[value]) {
-                            item["coinType"] = value
-                            item["material"] = this.cache.projectId[value].material
-                            item["nominal"] = this.cache.projectId[value].nominal
-                            item["mint"] = this.cache.projectId[value].mint
-                            break
-                        } else {
-
+                        if (!this.cache?.coinType?.[value]) {
                             const result = await Query.raw(`{
                                                                coinType (filters: {
                                                                    projectId:  "${value}"
@@ -162,7 +159,7 @@ export class TreasureItemsImporter extends Importer {
                                                                    types {
                                                                        id
                                                                        projectId
-
+                                                                       yearOfMint
                                                                        mint {
                                                                            id
                                                                            name
@@ -184,17 +181,37 @@ export class TreasureItemsImporter extends Importer {
                             const coin = result.data.data.coinType?.types?.[0]
 
                             if (coin) {
-                                if (!this.cache.projectId)
-                                    this.cache.projectId = {}
-                                this.cache.projectId[value] = coin
-                                item["coinType"] = { projectId: value, id: coin.id }
-                                item["material"] = coin.material
-                                item["nominal"] = coin.nominal
-                                item["mint"] = coin.mint
+                                if (!this.cache.coinType)
+                                    this.cache.coinType = {}
+                                this.cache.coinType[value] = coin
                             } else {
-                                if (!this.errorObject.projectId) this.errorObject.projectId = {}
-                                this.errorObject.projectId[value] = `CoinType with projectId "${value}" not found`
+                                if (!this.errorObject.coinType) this.errorObject.coinType = {}
+                                this.errorObject.coinType[value] = `CoinType with projectId "${value}" not found`
                             }
+                        }
+
+                        if (this.cache?.coinType?.[value]) {
+                            const coin = this.cache?.coinType?.[value]
+                            item["coinType"] = { projectId: value, id: coin.id }
+                            item["material"] = coin.material
+                            item["nominal"] = coin.nominal
+
+                            console.log("JAHR", coin.yearOfMint)
+                            if (coin.yearOfMint) {
+                                const year = parseInt(coin.yearOfMint)
+                                if (!isNaN(year))
+                                    item["year"] = year
+                                else {
+                                    item["uncertainYear"] = coin.yearOfMint
+                                }
+                            }
+
+                            if (coin.mint) {
+                                item["mint"] = coin.mint
+                            } else if (coin.mintAsOnCoin) {
+                                item["uncertainMint"] = coin.mintAsOnCoin
+                            }
+
                         }
 
                     }
@@ -228,11 +245,24 @@ export class TreasureItemsImporter extends Importer {
                     }
                     break
                 }
-                case "year":
-                case "count": {
-                    item[key] = row[header] || ""
-                    console.log("WEIGHT", key, item[key])
-                    break
+                case "uncertainMint":
+                case "uncertainYear":
+                    {
+                        item[key] = value || ""
+                        break
+                    }
+                case "count":
+                case "year": {
+                    if (value !== "") {
+                        item[key] = null
+                        const year = parseInt(value)
+                        if (isNaN(year)) {
+                            this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${item[key]}"`
+                        } else {
+                            item[key] = value
+                        }
+                    }
+                    break;
                 }
                 case "material":
                 case "mint": {

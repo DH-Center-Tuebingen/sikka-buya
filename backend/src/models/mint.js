@@ -118,7 +118,10 @@ class Mint {
         return arr
     }
 
-    static async getById(id) {
+    static async getById(id, transaction = null) {
+        if (transaction == null)
+            transaction = Database
+
         const query = `
         SELECT
         mi.*,
@@ -130,7 +133,7 @@ class Mint {
         ${this.JOIN}
         WHERE mi.id = $1; `
 
-        let mint = await Database.one(query, [id])
+        let mint = await transaction.one(query, [id])
         this.postProcessGet(mint)
         return mint
     }

@@ -1,3 +1,6 @@
+const { FRENCH, GERMAN } = require('./dynasty.mock')
+const { CUTTER, DAULA, CALIPH } = require('./role.mock')
+
 const UDERZO = {
     "id": "12",
     "name": "Albert Uderzo",
@@ -373,31 +376,78 @@ const CHURCHILL = {
     },
     "color": "#004433"
 }
+const PERSON_GQL_BODY = `{
+    id
+    name
+    shortName
+    role {
+        id
+        name
+    }
+    dynasty {
+        id
+        name
+    }
+    color
+}`
+
+const MONET_INPUT = `data: {name:"Claude Monet", shortName: "Monet", role: 2, dynasty:2, color: "#004433"}`
+
+const MONET = {
+    "id": "26",
+    "name": "Claude Monet",
+    "shortName": "Monet",
+    "role": CUTTER,
+    "dynasty": FRENCH,
+    "color": "#004433"
+}
+
+const MONET_UPDATED = {
+    "id": "26",
+    "name": "Édouard Manet",
+    "shortName": "Manet",
+    "role": CALIPH,
+    "dynasty": GERMAN,
+    "color": "#ffeeaa"
+}
+
+const MONET_UPDATED_INPUT = `data: {
+    name: "${MONET_UPDATED.name}"
+    shortName: "${MONET_UPDATED.shortName}"
+    role: ${MONET_UPDATED.role.id}
+    dynasty: ${MONET_UPDATED.dynasty.id}
+    color: "#ffeeaa"
+}`
 
 module.exports = {
-    UDERZO,
-    DUERER,
-    MERKEL,
     ARIELLE,
-    CHARLES_DE_GAULLE,
-    ELIZABETH_II,
-    MACRON,
-    FISCH,
-    HOLLANDE,
     BERNINI,
-    WESTERWELLE,
-    KOHL,
+    CHARLES_DE_GAULLE,
     CHIRAC,
+    CHURCHILL,
+    DUERER,
+    ELIZABETH_II,
+    FISCH,
     GAUCK,
+    GOSCINNY,
+    HOLLANDE,
     KARL,
+    KOHL,
     LOUIS,
+    MACRON,
+    MERKEL,
     MICHELANGELO,
-    SARKOZY,
+    MONET,
+    MONET_INPUT,
+    MONET_UPDATED,
+    MONET_UPDATED_INPUT,
+    PERSON_GQL_BODY,
     PLANKTON,
     POSEIDON,
-    GOSCINNY,
+    SARKOZY,
     SEBASTIAN,
-    WAL,
     TURNER,
-    CHURCHILL
+    UDERZO,
+    WAL,
+    WESTERWELLE,
 }

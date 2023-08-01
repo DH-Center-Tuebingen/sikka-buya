@@ -1,5 +1,5 @@
 export default {
     "editor": "Inhalte",
-    "creator": "Erfassen",
+    "cms": "Erfassen",
     "super": "Supernutzer"
 }
