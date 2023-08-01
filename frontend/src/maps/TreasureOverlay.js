@@ -66,7 +66,7 @@ export default class TreasureOverlay extends Overlay {
     }
 
     toMapObject(treasures) {
-        console.log(treasures)
+
         let geoJSON = []
         treasures.forEach(treasure => {
 
@@ -74,35 +74,71 @@ export default class TreasureOverlay extends Overlay {
                 geoJSON.push(treasure.location)
             }
 
+            const maxWidth = 20
+            const minWidth = 1
+
             if (treasure.items) {
                 let findLocation = treasure.location
+
+                const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
 
                 treasure.items.forEach(item => {
                     if (item?.mint?.location) {
                         let loc = item.mint.location
-                        geoJSON.push(loc)
+                        geoJSON.push({
+                            type: "Feature", geometry: loc, properties: {
+                                isMint: true,
+                            }
+                        })
+
+                        let center = [0, 0]
+
+                        for (let i = 1; i < treasure.location.coordinates[0].length; i++) {
+                            center[0] += treasure.location.coordinates[0][i][0]
+                            center[1] += treasure.location.coordinates[0][i][1]
+                        }
+
+                        center[0] /= treasure.location.coordinates[0].length - 1
+                        center[1] /= treasure.location.coordinates[0].length - 1
 
                         if (findLocation) {
                             let dist = Infinity
                             let start = null
-                            findLocation.coordinates[0].forEach((coordinate, index) => {
-                                console.log(coordinate, loc.coordinates)
 
-                                let _dist = Math.sqrt(Math.pow(coordinate[0] - loc.coordinates[0], 2) + Math.pow(coordinate[1] - loc.coordinates[1], 2))
-                                console.log(index, _dist)
+                            for (let i = 1; i < treasure.location.coordinates[0].length - 2; i++) {
+                                let a = treasure.location.coordinates[0][i]
+                                let b = treasure.location.coordinates[0][i + 1]
 
-                                if (_dist < dist) {
-                                    dist = _dist
-                                    start = coordinate
+                                //Line intersection between center to mint and treasure location
+                                let x1 = center[0]
+                                let y1 = center[1]
+                                let x2 = loc.coordinates[0]
+                                let y2 = loc.coordinates[1]
+                                let x3 = a[0]
+                                let y3 = a[1]
+                                let x4 = b[0]
+                                let y4 = b[1]
+
+                                let x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+                                let y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+
+                                let d = Math.sqrt((x - x1) ** 2 + (y - y1) ** 2)
+                                if (d < dist) {
+                                    dist = d
+                                    start = [x, y]
                                 }
-                            })
-                            console.log(start)
+                            }
 
                             if (start != null) {
-                                console.log("LIENSTRING", [start, loc.coordinates])
                                 let lineString = {
-                                    type: "LineString",
-                                    coordinates: [start, loc.coordinates]
+                                    type: "Feature",
+                                    properties: {
+                                        weight: Math.max(minWidth, Math.min(maxWidth, item.count / totalCount * maxWidth))
+                                    },
+                                    geometry: {
+                                        type: "LineString",
+                                        coordinates: [start, loc.coordinates]
+                                    }
                                 }
                                 geoJSON.push(lineString)
                             }
@@ -111,8 +147,6 @@ export default class TreasureOverlay extends Overlay {
                 })
             }
         })
-
-        console.log(geoJSON)
 
         return {
             geoJSON
@@ -126,8 +160,13 @@ export default class TreasureOverlay extends Overlay {
 
     get geoJSONOptions() {
         return {
-            style: {
-                fillOpacity: 0
+            style: function (feature) {
+                const weight = feature.properties.weight || 1
+                if (feature.geometry.type === "LineString") {
+                    return { color: "blue", weight, linecap: "butt" }
+                } else {
+                    return { color: "blue", fill: feature.properties.isMint }
+                }
             }
         }
     }
