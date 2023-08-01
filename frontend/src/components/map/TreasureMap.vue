@@ -1,8 +1,8 @@
 <template>
     <div class="material-map ui">
-        <Sidebar>
+        <!-- <Sidebar>
 
-        </Sidebar>
+        </Sidebar> -->
 
         <div class="center-ui center-ui-top">
             <map-toolbar
@@ -13,7 +13,7 @@
         <div class="center-ui center-ui-center"></div>
         <div class="center-ui center-ui-bottom">
 
-
+            <!-- 
             <TimelineSlideshowArea
                 ref="timeline"
                 :map="map"
@@ -31,15 +31,15 @@
                     > </canvas>
                 </template>
 
-            </TimelineSlideshowArea>
+            </TimelineSlideshowArea> -->
         </div>
 
-        <Sidebar
+        <!-- <Sidebar
             side="right"
             ref="catalogSidebar"
         >
 
-        </Sidebar>
+        </Sidebar> -->
     </div>
 </template>
   
@@ -59,7 +59,7 @@ import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
 
 // Other
-
+import TreasureOverlay from '../../maps/TreasureOverlay';
 import Settings from '../../settings';
 import URLParams from '../../utils/URLParams';
 import ListSelectionTools from '../interactive/ListSelectionTools.vue';
@@ -100,6 +100,12 @@ export default {
         }
     },
     created() {
+        window.graphics = this.featureGroup
+        this.overlay = new TreasureOverlay(this.featureGroup, settings, {
+
+        })
+
+
         // settings.onSettingsChanged((changedSettings) => {
         //     let settings = this.overlaySettings;
         //     changedSettings.forEach(([key, value]) => {
@@ -152,6 +158,9 @@ export default {
 
         await this.initTimeline();
         // this.updateTimeline(true);
+
+
+        this.overlay.update()
     },
     methods: {
         resetFilters() {

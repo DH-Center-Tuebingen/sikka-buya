@@ -97,6 +97,7 @@ export default class Overlay {
 
         patterns.forEach(pattern => pattern.addTo(this.parent._map))
 
+        console.log(geoJSON)
         const that = this
         this.layer = new L.geoJSON(geoJSON, Object.assign({}, {
             pointToLayer: function (feature, latlng) {
