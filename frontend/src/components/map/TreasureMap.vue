@@ -48,15 +48,22 @@
             </template>
 
             <MultiSelectList>
-                <MultiSelectListItem
-                    v-for="treasure in treasures"
-                    :key="treasure.id"
-                    :selected="isTreasureSelected(treasure.id)"
-                    @click.native="toggleTreasure(treasure.id)"
-                    @checkbox-selected="(val) => setTreasure(treasure.id, val)"
-                >
-                    {{ treasure.name }}
-                </MultiSelectListItem>
+                <template v-for="treasure in treasures">
+                    <MultiSelectListItem
+                        :key="`list-item-${treasure.id}`"
+                        :selected="isTreasureSelected(treasure.id)"
+                        @click.native="toggleTreasure(treasure.id)"
+                        @checkbox-selected="(val) => setTreasure(treasure.id, val)"
+                    >
+                        {{ treasure.name }}
+                    </MultiSelectListItem>
+                    <TreasureTable
+                        :key="`treasure-table-${treasure.id}`"
+                        v-if="isTreasureSelected(treasure.id)"
+                        :item="treasure"
+                    >
+                    </TreasureTable>
+                </template>
             </MultiSelectList>
 
         </Sidebar>
@@ -77,6 +84,7 @@ import LabeledInputContainer from '../LabeledInputContainer.vue';
 import MintList from '../MintList.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
+import TreasureTable from "./TreasureTable.vue";
 
 // Other
 import TreasureOverlay from '../../maps/TreasureOverlay';
@@ -94,6 +102,9 @@ const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
 
+
+import LocaleStorageMixin from "../mixins/local-storage-mixin"
+
 export default {
     components: {
         Button,
@@ -103,6 +114,7 @@ export default {
         Sidebar,
         Timeline,
         TimelineSlideshowArea,
+        TreasureTable,
         MultiSelectList,
         MultiSelectListItem
     },
@@ -119,6 +131,9 @@ export default {
         map,
         timeline,
         settingsMixin(overlaySettings),
+        LocaleStorageMixin("treasure-map", [
+            "selectedTreasures"
+        ])
     ],
     computed: {
         filtersActive() {
@@ -203,6 +218,7 @@ export default {
         },
         selectionChanged() {
             this.update()
+            this.local_storage_mixin_save()
         },
         isTreasureSelected(id) {
             return this.selectedTreasures.includes(id)

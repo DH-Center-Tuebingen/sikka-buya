@@ -3,6 +3,8 @@ import L from "leaflet"
 import Query from '../database/query';
 import Overlay from './Overlay';
 
+const lineWeight = 2
+
 export default class TreasureOverlay extends Overlay {
     constructor(parent, settings, {
         onDataTransformed,
@@ -117,7 +119,9 @@ export default class TreasureOverlay extends Overlay {
 
         ]
 
-        let geoJSON = []
+        let treasureGeometries = []
+        let mintGeometries = []
+        let lineGeometries = []
 
         for (let [index, treasure] of treasures.entries()) {
             console.log(selections.treasures, treasure.id)
@@ -125,9 +129,12 @@ export default class TreasureOverlay extends Overlay {
 
             let color = colorMap[index % colorMap.length]
             if (treasure.location) {
-                geoJSON.push({
+                treasureGeometries.push({
                     type: "Feature", geometry: treasure.location, properties: {
-                        color,
+                        style: {
+                            color,
+                            weight: lineWeight
+                        }
                     }
                 })
             }
@@ -143,10 +150,16 @@ export default class TreasureOverlay extends Overlay {
 
                     if (item?.mint?.location) {
                         let loc = item.mint.location
-                        geoJSON.push({
+                        mintGeometries.push({
                             type: "Feature", geometry: loc, properties: {
                                 isMint: true,
-                                color,
+                                style: {
+                                    color,
+                                    fillColor: color,
+                                    fillOpacity: .25,
+                                    weight: 1,
+                                },
+                                count: item.count,
                                 text: `Anzahl: ${item.count}`
                             }
                         })
@@ -211,15 +224,20 @@ export default class TreasureOverlay extends Overlay {
                                 let lineString = {
                                     type: "Feature",
                                     properties: {
-                                        weight: Math.max(minWidth, Math.min(maxWidth, item.count / totalCount * maxWidth)),
-                                        color
+
+                                        style: {
+                                            weight: lineWeight,
+                                            strokeOpacity: 0.5,
+                                            color,
+                                        }
+
                                     },
                                     geometry: {
                                         type: "LineString",
                                         coordinates: [start, loc.coordinates]
                                     }
                                 }
-                                geoJSON.push(lineString)
+                                lineGeometries.push(lineString)
                             }
                         }
 
@@ -230,12 +248,23 @@ export default class TreasureOverlay extends Overlay {
         }
 
         return {
-            geoJSON
+            geoJSON: [
+                ...lineGeometries,
+                ...treasureGeometries,
+                ...mintGeometries,
+            ]
         }
     }
 
     createMarker(latlng, feature) {
-        const marker = L.circleMarker(latlng, { radius: 5, fill: true, fillOpacity: 1 })
+
+        // Use the area as value for the radius
+        const minRadius = 1
+        let r = minRadius
+        if (feature.properties.count)
+            r = Math.sqrt(feature.properties.count / Math.PI) * 3
+
+        const marker = L.circleMarker(latlng, { radius: Math.max(r, minRadius) })
         if (feature.properties.text) {
             marker.bindTooltip(feature.properties.text)
         }
@@ -246,12 +275,10 @@ export default class TreasureOverlay extends Overlay {
     get geoJSONOptions() {
         return {
             style: function (feature) {
-                const color = feature.properties.color || "blue"
-                const weight = feature.properties.weight || 1
                 if (feature.geometry.type === "LineString") {
-                    return { color, weight, lineCap: "butt" }
+                    return Object.assign({ lineCap: "butt" }, feature.properties.style)
                 } else {
-                    return { color, fill: feature.properties.isMint }
+                    return Object.assign({ fill: feature.properties.isMint }, feature.properties.style)
                 }
             }
         }

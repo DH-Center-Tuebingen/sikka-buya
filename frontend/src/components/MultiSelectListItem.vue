@@ -19,6 +19,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.select-list-item {
+  display: flex;
+  align-items: center;
+  gap: $padding;
+}
 .checkbox {
   display: flex;
 

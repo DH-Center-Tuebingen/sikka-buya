@@ -3,7 +3,6 @@ export default function (name, variables = []) {
 
     const watch = variables.reduce((acc, key) => {
         acc[key] = function (newVal, oldVal) {
-            console.log("SAVE LOCALSTORAGE")
             this.local_storage_mixin_save()
         }
         return acc
