@@ -61,17 +61,75 @@ export default class TreasureOverlay extends Overlay {
         return treasures
     }
 
-    transform(treasures) {
-        return treasures
-    }
+    transform(treasures, {
+        selections = []
+    } = {}) {
 
-    toMapObject(treasures) {
-
-        let geoJSON = []
         treasures.forEach(treasure => {
 
+            let items = {}
+            for (let item of treasure.items) {
+                if (item.mint == null) continue
+
+                if (!items[item.mint.id]) {
+                    items[item.mint.id] = {
+                        mint: item.mint,
+                        count: 0
+                    }
+                }
+
+                items[item.mint.id].count += item.count
+            }
+            treasure.items = Object.values(items)
+        })
+
+        return treasures
+
+
+    }
+
+    toMapObject(treasures, selections = { treasures: [] }) {
+
+        let colorMap = [
+            "red",
+            "yellow",
+            "orange",
+            "purple",
+            "pink",
+            "black",
+            "white",
+            "brown",
+            "blue",
+            "gray",
+            "cyan",
+            "magenta",
+            "lime",
+            "maroon",
+            "navy",
+            "olive",
+            "teal",
+            "silver",
+            "gold",
+            "indigo",
+            "violet",
+            "turquoise",
+            "tan",
+
+        ]
+
+        let geoJSON = []
+
+        for (let [index, treasure] of treasures.entries()) {
+            console.log(selections.treasures, treasure.id)
+            if (selections.treasures.indexOf(treasure.id) === -1) continue
+
+            let color = colorMap[index % colorMap.length]
             if (treasure.location) {
-                geoJSON.push(treasure.location)
+                geoJSON.push({
+                    type: "Feature", geometry: treasure.location, properties: {
+                        color,
+                    }
+                })
             }
 
             const maxWidth = 20
@@ -79,15 +137,17 @@ export default class TreasureOverlay extends Overlay {
 
             if (treasure.items) {
                 let findLocation = treasure.location
-
                 const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
 
-                treasure.items.forEach(item => {
+                treasure.items.forEach((item, idx) => {
+
                     if (item?.mint?.location) {
                         let loc = item.mint.location
                         geoJSON.push({
                             type: "Feature", geometry: loc, properties: {
                                 isMint: true,
+                                color,
+                                text: `Anzahl: ${item.count}`
                             }
                         })
 
@@ -104,10 +164,13 @@ export default class TreasureOverlay extends Overlay {
                         if (findLocation) {
                             let dist = Infinity
                             let start = null
+                            let startIdx = -1
+                            let endIdx = -1
 
-                            for (let i = 1; i < treasure.location.coordinates[0].length - 2; i++) {
+                            const length = treasure.location.coordinates[0].length
+                            for (let i = 0; i < length; i++) {
                                 let a = treasure.location.coordinates[0][i]
-                                let b = treasure.location.coordinates[0][i + 1]
+                                let b = treasure.location.coordinates[0][(i + 1) % length]
 
                                 //Line intersection between center to mint and treasure location
                                 let x1 = center[0]
@@ -122,10 +185,25 @@ export default class TreasureOverlay extends Overlay {
                                 let x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
                                 let y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
 
-                                let d = Math.sqrt((x - x1) ** 2 + (y - y1) ** 2)
-                                if (d < dist) {
-                                    dist = d
-                                    start = [x, y]
+
+                                // determine if intersection is between the points a and b
+                                let xMin = Math.min(x3, x4)
+                                let xMax = Math.max(x3, x4)
+                                let yMin = Math.min(y3, y4)
+                                let yMax = Math.max(y3, y4)
+
+                                if (xMin <= x && x <= xMax && yMin <= y && y <= yMax) {
+
+
+
+                                    let d = Math.sqrt((x - x2) ** 2 + (y - y2) ** 2)
+
+                                    if (d < dist) {
+                                        dist = d
+                                        start = [x, y]
+                                        startIdx = i
+                                        endIdx = i + 1
+                                    }
                                 }
                             }
 
@@ -133,7 +211,8 @@ export default class TreasureOverlay extends Overlay {
                                 let lineString = {
                                     type: "Feature",
                                     properties: {
-                                        weight: Math.max(minWidth, Math.min(maxWidth, item.count / totalCount * maxWidth))
+                                        weight: Math.max(minWidth, Math.min(maxWidth, item.count / totalCount * maxWidth)),
+                                        color
                                     },
                                     geometry: {
                                         type: "LineString",
@@ -143,29 +222,36 @@ export default class TreasureOverlay extends Overlay {
                                 geoJSON.push(lineString)
                             }
                         }
+
                     }
                 })
+
             }
-        })
+        }
 
         return {
             geoJSON
         }
     }
 
-    createMarker(treasure) {
-        return L.circleMarker(treasure, { radius: 5, fill: true, fillOpacity: 1 })
+    createMarker(latlng, feature) {
+        const marker = L.circleMarker(latlng, { radius: 5, fill: true, fillOpacity: 1 })
+        if (feature.properties.text) {
+            marker.bindTooltip(feature.properties.text)
+        }
+        return marker
     }
 
 
     get geoJSONOptions() {
         return {
             style: function (feature) {
+                const color = feature.properties.color || "blue"
                 const weight = feature.properties.weight || 1
                 if (feature.geometry.type === "LineString") {
-                    return { color: "blue", weight, linecap: "butt" }
+                    return { color, weight, lineCap: "butt" }
                 } else {
-                    return { color: "blue", fill: feature.properties.isMint }
+                    return { color, fill: feature.properties.isMint }
                 }
             }
         }

@@ -2,6 +2,7 @@
     <div class="material-map ui">
         <!-- <Sidebar>
 
+
         </Sidebar> -->
 
         <div class="center-ui center-ui-top">
@@ -34,12 +35,31 @@
             </TimelineSlideshowArea> -->
         </div>
 
-        <!-- <Sidebar
+        <Sidebar
+            style="grid-column: 3;"
             side="right"
             ref="catalogSidebar"
         >
+            <template #title>
+                <Locale
+                    path="property.treasure"
+                    :count="2"
+                />
+            </template>
 
-        </Sidebar> -->
+            <MultiSelectList>
+                <MultiSelectListItem
+                    v-for="treasure in treasures"
+                    :key="treasure.id"
+                    :selected="isTreasureSelected(treasure.id)"
+                    @click.native="toggleTreasure(treasure.id)"
+                    @checkbox-selected="(val) => setTreasure(treasure.id, val)"
+                >
+                    {{ treasure.name }}
+                </MultiSelectListItem>
+            </MultiSelectList>
+
+        </Sidebar>
     </div>
 </template>
   
@@ -48,7 +68,7 @@
 import map from './mixins/map';
 import settingsMixin from '../map/mixins/settings';
 import timeline from './mixins/timeline';
-
+import Vue from 'vue';
 
 //Components
 import Button from '../layout/buttons/Button.vue';
@@ -66,6 +86,8 @@ import ListSelectionTools from '../interactive/ListSelectionTools.vue';
 import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
+import MultiSelectList from '../MultiSelectList.vue';
+import MultiSelectListItem from '../MultiSelectListItem.vue';
 
 
 const queryPrefix = 'map-filter-';
@@ -80,13 +102,17 @@ export default {
         MapToolbar,
         Sidebar,
         Timeline,
-        TimelineSlideshowArea
+        TimelineSlideshowArea,
+        MultiSelectList,
+        MultiSelectListItem
     },
     data: function () {
         return {
             filters: {},
             painter: null,
             chart: null,
+            treasures: [],
+            selectedTreasures: [],
         };
     },
     mixins: [
@@ -102,7 +128,9 @@ export default {
     created() {
         window.graphics = this.featureGroup
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
-
+            onDataTransformed: (data) => {
+                this.treasures = data
+            }
         })
 
 
@@ -160,11 +188,43 @@ export default {
         // this.updateTimeline(true);
 
 
-        this.overlay.update()
+        this.update()
     },
     methods: {
         resetFilters() {
             this.filters = {}
+        },
+        update() {
+            this.overlay.update({
+                selections: {
+                    treasures: this.selectedTreasures
+                }
+            })
+        },
+        selectionChanged() {
+            this.update()
+        },
+        isTreasureSelected(id) {
+            return this.selectedTreasures.includes(id)
+        },
+        toggleTreasure(id) {
+            if (this.isTreasureSelected(id)) {
+                this.selectedTreasures.splice(this.selectedTreasures.indexOf(id), 1)
+                this.selectionChanged()
+            } else {
+                this.selectedTreasures.push(id)
+                this.selectionChanged()
+            }
+        },
+        setTreasure(id, value) {
+            const selected = this.isTreasureSelected(id)
+            if (value && !selected) {
+                this.selectedTreasures.push(id)
+                this.selectionChanged()
+            } else if (!value && selected) {
+                this.selectedTreasures.splice(this.selectedTreasures.indexOf(id), 1)
+                this.selectionChanged()
+            }
         }
     }
 };

@@ -8,6 +8,7 @@ import { ConfigMixin } from './config'
 import I18n from './i18n/i18n';
 import VueI18n from 'vue-i18n';
 import { camelCase, snakeCase } from 'change-case';
+import Selection from './models/selection';
 
 async function main() {
 
@@ -22,6 +23,8 @@ async function main() {
   Vue.prototype.$utils = {
     capitalize
   }
+
+  Vue.prototype.$selection = Selection
 
   Vue.mixin(ConfigMixin)
   Vue.mixin({
