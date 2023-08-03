@@ -15,7 +15,9 @@
                         :current="sortBy"
                         :desc="desc"
                         @input="sortingChanged"
-                    >{{ name }}</TableSortButton>
+                    >
+                        <Locale :path="`property.${name}`" />
+                    </TableSortButton>
 
 
                 </tr>
@@ -34,6 +36,8 @@
 </template>
 
 <script>
+import Sort from '../../utils/Sorter';
+import Locale from '../cms/Locale.vue';
 import TableSortButton from '../layout/table/TableSortButton.vue'
 
 export default {
@@ -75,20 +79,24 @@ export default {
                         return b.count - a.count;
                 });
             }
-            else {
-                return Object.values(map).sort((a, b) => {
-
-                    if (this.desc)
-                        return b.mint.name.localeCompare(a.mint.name);
-                    else
-                        return a.mint.name.localeCompare(b.mint.name);
-                });
-            }
+            else if (this.sortBy === "mint") {
+                return Object.values(map).sort(Sort.stringPropAlphabetically("mint.name", !this.desc));
+            } else throw new Error("Unknown sort by: " + this.sortBy);
         }
     },
-    components: { TableSortButton }
+    components: { TableSortButton, Locale }
 }
 </script>
+
+<style lang="scss">
+.treasure-table {
+
+    td,
+    th {
+        padding: 0;
+    }
+}
+</style>
 
 <style lang='scss' scoped>
 h3 {
@@ -114,5 +122,6 @@ tr:nth-child(odd) {
 
 table {
     border-collapse: collapse;
+    gap: 0;
 }
 </style>

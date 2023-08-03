@@ -56,6 +56,8 @@ export default {
 </script>
 
 <style lang='scss' scoped>
+$border: 1px solid $light-gray;
+
 th {
     position: relative;
     border-collapse: collapse;
@@ -66,18 +68,37 @@ th {
             font-weight: bold;
         }
     }
+
+    .wrapper {
+        border-left: none;
+    }
+
+    &:first-child {
+        .wrapper {
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+            border-left: $border;
+        }
+    }
+
+    &:last-child {
+        .wrapper {
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+    }
 }
 
 .wrapper {
+    background-color: yellow;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: $padding;
 
     cursor: pointer;
-    border: 1px solid $light-gray;
-    border-radius: 3px;
-    padding: 0.25rem;
+    border: $border;
+    padding: 0.1em 0.25em;
     background: linear-gradient(to bottom, #f9f9f9 0%, #e9e9e9 100%);
     font-weight: normal;
 

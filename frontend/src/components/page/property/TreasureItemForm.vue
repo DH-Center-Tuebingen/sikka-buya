@@ -3,14 +3,14 @@
         <LabeledInputContainer>
 
             <template #label>
-                <Locale path="general.count" />
+                <Locale path="property.count" />
             </template>
 
             <input
                 type="number"
                 name=""
                 id=""
-                :placeholder="$tc('general.count')"
+                :placeholder="$tc('property.count')"
                 v-model="value.count"
             >
         </LabeledInputContainer>

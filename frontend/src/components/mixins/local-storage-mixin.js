@@ -30,7 +30,7 @@ export default function (name, variables = []) {
                     }
 
                     this.local_storage_mixin_variables.forEach(key => {
-                        if (Object.prototype.hasOwnProperty.call(this.$data, key)) {
+                        if (Object.prototype.hasOwnProperty.call(this.$data, key) && data[key] != undefined) {
                             this.$data[key] = data[key]
                         }
                     })

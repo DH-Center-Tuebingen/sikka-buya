@@ -1,9 +1,24 @@
 <template>
     <div class="material-map ui">
-        <!-- <Sidebar>
+        <Sidebar>
+            <template #title>
+                <Locale
+                    path="property.mint"
+                    :count="2"
+                />
+            </template>
+
+            <ul>
+                <li
+                    v-for="mint of mints"
+                    :key="`mint-list-item-${mint.id}`"
+                >
+                    {{ mint.name }} - {{ mint.count }}
+                </li>
+            </ul>
 
 
-        </Sidebar> -->
+        </Sidebar>
 
         <div class="center-ui center-ui-top">
             <map-toolbar
@@ -104,6 +119,7 @@ const overlaySettings = settings.load();
 
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
+import Sort from '../../utils/Sorter';
 
 export default {
     components: {
@@ -124,7 +140,7 @@ export default {
             painter: null,
             chart: null,
             treasures: [],
-            selectedTreasures: [],
+            selectedTreasuresIds: [],
         };
     },
     mixins: [
@@ -132,12 +148,46 @@ export default {
         timeline,
         settingsMixin(overlaySettings),
         LocaleStorageMixin("treasure-map", [
-            "selectedTreasures"
+            "selectedTreasuresIds"
         ])
     ],
     computed: {
         filtersActive() {
             return Object.values(this.filters).length > 0
+        },
+        selectedTreasures() {
+            console.log(this.selectedTreasuresIds)
+            return this.treasures.filter(t => this.selectedTreasuresIds.includes(t.id))
+        },
+        mints() {
+            let mints = {}
+
+            this.selectedTreasures.forEach(t => {
+                t.items.forEach(item => {
+                    const mint = item.mint
+                    const count = item.count || 1
+
+                    if (mint) {
+                        if (!mints[item.mint.id]) {
+                            mint.count = count
+                            mints[item.mint.id] = mint
+                        }
+                        else {
+                            mints[item.mint.id].count += mint.count
+                        }
+                    } else {
+                        if (!mints["unknown"]) {
+                            mints["unknown"] = { name: "unknown", id: -1, count }
+                        }
+                        else {
+                            mints["unknown"].count += count
+                        }
+                    }
+                })
+            })
+            console.log(mints)
+
+            return Object.values(mints).sort(Sort.stringPropAlphabetically("name"))
         }
     },
     created() {
@@ -212,7 +262,7 @@ export default {
         update() {
             this.overlay.update({
                 selections: {
-                    treasures: this.selectedTreasures
+                    treasures: this.selectedTreasuresIds
                 }
             })
         },
@@ -221,24 +271,24 @@ export default {
             this.local_storage_mixin_save()
         },
         isTreasureSelected(id) {
-            return this.selectedTreasures.includes(id)
+            return this.selectedTreasuresIds.includes(id)
         },
         toggleTreasure(id) {
             if (this.isTreasureSelected(id)) {
-                this.selectedTreasures.splice(this.selectedTreasures.indexOf(id), 1)
+                this.selectedTreasuresIds.splice(this.selectedTreasuresIds.indexOf(id), 1)
                 this.selectionChanged()
             } else {
-                this.selectedTreasures.push(id)
+                this.selectedTreasuresIds.push(id)
                 this.selectionChanged()
             }
         },
         setTreasure(id, value) {
             const selected = this.isTreasureSelected(id)
             if (value && !selected) {
-                this.selectedTreasures.push(id)
+                this.selectedTreasuresIds.push(id)
                 this.selectionChanged()
             } else if (!value && selected) {
-                this.selectedTreasures.splice(this.selectedTreasures.indexOf(id), 1)
+                this.selectedTreasuresIds.splice(this.selectedTreasuresIds.indexOf(id), 1)
                 this.selectionChanged()
             }
         }

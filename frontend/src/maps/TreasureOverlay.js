@@ -3,7 +3,6 @@ import L from "leaflet"
 import Query from '../database/query';
 import Overlay from './Overlay';
 
-const lineWeight = 2
 
 export default class TreasureOverlay extends Overlay {
     constructor(parent, settings, {
@@ -93,35 +92,27 @@ export default class TreasureOverlay extends Overlay {
     toMapObject(treasures, selections = { treasures: [] }) {
 
         let colorMap = [
-            "red",
-            "yellow",
-            "orange",
-            "purple",
-            "pink",
-            "black",
-            "white",
-            "brown",
-            "blue",
-            "gray",
-            "cyan",
-            "magenta",
-            "lime",
-            "maroon",
-            "navy",
-            "olive",
-            "teal",
-            "silver",
-            "gold",
-            "indigo",
-            "violet",
-            "turquoise",
-            "tan",
-
+            "#ff0080",
+            "#00ff00",
+            "#9d3cff",
+            "#000000",
+            "#54c8b8",
+            "#ffff00",
+            "#ffb09d",
+            "#802b40",
+            "#00ffff",
+            "#ffffff",
         ]
 
+        const shadowColor = "#000000"
+        const shadowOpacity = .5
+
         let treasureGeometries = []
+        let treasureGeometriesShadows = []
         let mintGeometries = []
+        let mintGeometriesShadows = []
         let lineGeometries = []
+        let lineGeometriesShadows = []
 
         for (let [index, treasure] of treasures.entries()) {
             console.log(selections.treasures, treasure.id)
@@ -133,10 +124,21 @@ export default class TreasureOverlay extends Overlay {
                     type: "Feature", geometry: treasure.location, properties: {
                         style: {
                             color,
-                            weight: lineWeight
+                            weight: 2
                         }
                     }
                 })
+
+                treasureGeometriesShadows.push({
+                    type: "Feature", geometry: treasure.location, properties: {
+                        style: {
+                            color: shadowColor,
+                            opacity: shadowOpacity,
+                            weight: 4
+                        }
+                    }
+                })
+
             }
 
             const maxWidth = 20
@@ -150,19 +152,37 @@ export default class TreasureOverlay extends Overlay {
 
                     if (item?.mint?.location) {
                         let loc = item.mint.location
-                        mintGeometries.push({
-                            type: "Feature", geometry: loc, properties: {
+                        const feature = {
+                            type: "Feature", geometry: loc
+                        }
+
+
+                        mintGeometries.push(Object.assign({}, feature, {
+                            properties: {
                                 isMint: true,
+                                count: item.count,
+                                text: `Anzahl: ${item.count}`,
                                 style: {
                                     color,
                                     fillColor: color,
                                     fillOpacity: .25,
-                                    weight: 1,
-                                },
-                                count: item.count,
-                                text: `Anzahl: ${item.count}`
+                                    weight: 2,
+                                }
                             }
-                        })
+                        }))
+
+                        mintGeometriesShadows.push(Object.assign({}, feature, {
+                            properties: {
+                                isMint: true,
+                                count: item.count,
+                                style: {
+                                    color: shadowColor,
+                                    opacity: shadowOpacity,
+                                    fillOpacity: 0,
+                                    weight: 3,
+                                }
+                            }
+                        }))
 
                         let center = [0, 0]
 
@@ -226,18 +246,27 @@ export default class TreasureOverlay extends Overlay {
                                     properties: {
 
                                         style: {
-                                            weight: lineWeight,
-                                            strokeOpacity: 0.5,
+                                            weight: 1,
+                                            opacity: 1,
                                             color,
                                         }
 
                                     },
                                     geometry: {
                                         type: "LineString",
-                                        coordinates: [start, loc.coordinates]
+                                        coordinates: [start, loc.coordinates],
                                     }
                                 }
                                 lineGeometries.push(lineString)
+                                lineGeometriesShadows.push(Object.assign({}, lineString, {
+                                    properties: {
+                                        style: {
+                                            weight: 2,
+                                            opacity: shadowOpacity,
+                                            color: shadowColor,
+                                        }
+                                    }
+                                }))
                             }
                         }
 
@@ -249,6 +278,11 @@ export default class TreasureOverlay extends Overlay {
 
         return {
             geoJSON: [
+                // Shadow layers
+                ...lineGeometriesShadows,
+                ...treasureGeometriesShadows,
+                ...mintGeometriesShadows,
+                // Normal layers
                 ...lineGeometries,
                 ...treasureGeometries,
                 ...mintGeometries,
