@@ -6,7 +6,9 @@ export default class Overlay {
     constructor(parent, settings, {
         onDataTransformed = null,
         onGeoJSONTransform = null,
-        onApplyData = null
+        onFetch = null,
+        onApplyData = null,
+        onEnd = null
     } = {}) {
         this.data = {}
         this.parent = parent
@@ -15,6 +17,8 @@ export default class Overlay {
         this._onDataTransformed = onDataTransformed
         this._onGeoJSONTransform = onGeoJSONTransform
         this._onApplyData = onApplyData
+        this._onEnd = onEnd
+        this._onFetch = onFetch
     }
 
 
@@ -97,7 +101,6 @@ export default class Overlay {
 
         patterns.forEach(pattern => pattern.addTo(this.parent._map))
 
-        console.log(geoJSON)
         const that = this
         this.layer = new L.geoJSON(geoJSON, Object.assign({}, {
             pointToLayer: function (feature, latlng) {
@@ -118,6 +121,7 @@ export default class Overlay {
         markerOptions = {},
     } = {}) {
         const data = await this.guardedFetch(filters)
+        if (this._onFetch) this._onFetch(data)
         if (!data) return null
 
         const transformedData = this.transform(data)
@@ -132,6 +136,8 @@ export default class Overlay {
             markerOptions
         })
 
+        if (this._onEnd)
+            this._onEnd()
     }
 
     // Saves the data for future repaints

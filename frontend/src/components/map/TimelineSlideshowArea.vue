@@ -121,7 +121,7 @@
                 :value="timelineValue"
                 :from="timelineFrom"
                 :to="timelineTo"
-                :readonly="timelineReadonly"
+                :interactive="timelineInteractive"
                 ref="timeline"
             >
 
@@ -163,15 +163,18 @@ export default {
     components: { Drawer, Grid, ButtonVue, Locale, PopupActivator, CopyField, Slideshow, Timeline },
     props: {
         /**
+         * Whether the timeline is active or not.
+         */
+        timelineInteractive: {
+            default: true,
+            type: Boolean,
+        },
+        /**
          * The 'toggle' state of the timeline.
          * Hidden when false
          */
         timelineActive: {
             default: true,
-            type: Boolean,
-        },
-        timelineReadonly: {
-            default: false,
             type: Boolean,
         },
         /**

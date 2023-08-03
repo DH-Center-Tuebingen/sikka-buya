@@ -29,15 +29,26 @@ export default function (name, variables = []) {
                         }
                     }
 
+                    let requiresReload = false
                     this.local_storage_mixin_variables.forEach(key => {
                         if (Object.prototype.hasOwnProperty.call(this.$data, key) && data[key] != undefined) {
+                            console.log("REQUIRED RELOAD!")
+
                             this.$data[key] = data[key]
+                            requiresReload = true
                         }
                     })
+
+                    if (requiresReload) {
+                        this.local_storage_mixin_loaded()
+                    }
                 }
             })
         },
         methods: {
+            local_storage_mixin_loaded() {
+                throw new Error("Not implemented error. You need to implement the 'local_storage_mixin_loaded' method in your component.")
+            },
             local_storage_mixin_save() {
                 const data = {}
                 this.local_storage_mixin_variables.forEach(key => {

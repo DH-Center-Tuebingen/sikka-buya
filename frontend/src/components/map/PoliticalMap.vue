@@ -176,7 +176,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
-import { RangeGraph, HorizontalLinesGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
+import { RangeGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();

@@ -10,7 +10,7 @@
     >
       <div
         class="slider-thumb"
-        v-if="!readonly"
+        v-if="interactive"
       ></div>
     </div>
     <div class="slider-foreground">
@@ -21,7 +21,7 @@
       <input
         type="range"
         ref="slider"
-        :disabled="readonly"
+        :disabled="!interactive"
         :value="value"
         :min="min"
         :max="max"
@@ -53,9 +53,9 @@ export default {
       default: 1,
     },
     name: String,
-    readonly: {
+    interactive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   watch: {

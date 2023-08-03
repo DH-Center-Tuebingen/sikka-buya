@@ -60,7 +60,23 @@ export class YGraph extends Graph {
     y(chart, value) {
         return chart.y(value, this.yOptions)
     }
+}
 
+
+export class BarGraph extends YGraph {
+    draw(context, chart) {
+        super.draw(context, chart)
+
+        const width = chart.unitWidth
+
+        this.data.forEach(({ x, y } = {}) => {
+            context.beginPath();
+            console.log(y, chart.y(y), this.yMax)
+            context.rect(chart.x(x) - width / 2, this.y(chart, y), width, chart.y(0) - this.y(chart, y))
+            context.fill()
+            context.stroke()
+        })
+    }
 }
 
 export class HorizontalLinesGraph extends YGraph {
@@ -194,8 +210,12 @@ export default class TimelineChart extends Chart {
 
 
     update({ graphs = null, timeline = null }) {
-        if (graphs != null)
-            this.graphs = graphs
+        if (graphs) {
+            if (Array.isArray(graphs))
+                this.graphs = graphs
+            else
+                this.graphs = [graphs]
+        }
         if (timeline)
             this.timeline = timeline
         this.draw()
@@ -222,6 +242,12 @@ export default class TimelineChart extends Chart {
         this.timeline = timeline
     }
 
+    get unitWidth() {
+        const timelineSpan = this.timeline.to - this.timeline.from
+        const widthPerYear = (this.canvas.width / timelineSpan)
+        return widthPerYear
+    }
+
 
     y(val, { max = null, offset = 0 } = {}) {
 
@@ -234,8 +260,7 @@ export default class TimelineChart extends Chart {
     }
 
     x(val, pos = "center") {
-        const timelineSpan = this.timeline.to - this.timeline.from
-        const widthPerYear = (this.canvas.width / timelineSpan)
+        const widthPerYear = this.unitWidth
         let x = (val - this.timeline.from) * widthPerYear
 
         let halfWidth = widthPerYear / 2

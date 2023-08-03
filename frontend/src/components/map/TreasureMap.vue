@@ -29,15 +29,15 @@
         <div class="center-ui center-ui-center"></div>
         <div class="center-ui center-ui-bottom">
 
-            <!-- 
             <TimelineSlideshowArea
-                ref="timeline"
+                ref="timelineSlideshowArea"
                 :map="map"
-                :timelineReadonly="true"
                 :timelineFrom="timeline.from"
                 :timelineTo="timeline.to"
                 :timelineValue="raw_timeline.value"
+                :timelineInteractive="false"
                 :timelineActive="timelineActive"
+                @toggle="toggleTimeline"
                 timelineName="additional-map"
             >
                 <template #background>
@@ -47,7 +47,7 @@
                     > </canvas>
                 </template>
 
-            </TimelineSlideshowArea> -->
+            </TimelineSlideshowArea>
         </div>
 
         <Sidebar
@@ -89,8 +89,8 @@
 // Mixins
 import map from './mixins/map';
 import settingsMixin from '../map/mixins/settings';
-import timeline from './mixins/timeline';
-import Vue from 'vue';
+import TimelineMixin from './mixins/timeline';
+import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
 
 //Components
 import Button from '../layout/buttons/Button.vue';
@@ -120,6 +120,7 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
+import { BarGraph } from '../../models/timeline/TimelineChart';
 
 export default {
     components: {
@@ -140,24 +141,28 @@ export default {
             painter: null,
             chart: null,
             treasures: [],
-            selectedTreasuresIds: [],
+            selectedTreasureIds: [],
         };
     },
     mixins: [
         map,
-        timeline,
+        TimelineMixin(),
         settingsMixin(overlaySettings),
         LocaleStorageMixin("treasure-map", [
-            "selectedTreasuresIds"
-        ])
+            "selectedTreasureIds"
+        ]),
+        MountedAndLoadedMixin(['storage', 'data'])
     ],
     computed: {
+        timelineChart() {
+            return this.$refs.timelineSlideshowArea.timelineChart
+        },
         filtersActive() {
             return Object.values(this.filters).length > 0
         },
         selectedTreasures() {
-            console.log(this.selectedTreasuresIds)
-            return this.treasures.filter(t => this.selectedTreasuresIds.includes(t.id))
+            const t = this.treasures.filter(t => this.selectedTreasureIds.includes(t.id))
+            return t
         },
         mints() {
             let mints = {}
@@ -185,16 +190,17 @@ export default {
                     }
                 })
             })
-            console.log(mints)
-
             return Object.values(mints).sort(Sort.stringPropAlphabetically("name"))
         }
     },
     created() {
         window.graphics = this.featureGroup
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
-            onDataTransformed: (data) => {
+            onFetch: (data) => {
                 this.treasures = data
+            },
+            onEnd: () => {
+                this.mounted_and_loaded_mixin_loaded("data")
             }
         })
 
@@ -224,30 +230,30 @@ export default {
     mounted: async function () {
 
 
-        this.$nextTick(() => {
-            for (let [key, val] of Object.entries(this.$route.query)) {
-                if (
-                    key.startsWith(queryPrefix) &&
-                    this.$refs?.catalogFilter?.activeFilters
-                ) {
-                    let value = val;
+        // this.$nextTick(() => {
+        //     for (let [key, val] of Object.entries(this.$route.query)) {
+        //         if (
+        //             key.startsWith(queryPrefix) &&
+        //             this.$refs?.catalogFilter?.activeFilters
+        //         ) {
+        //             let value = val;
 
-                    const filterKey = key.replace(queryPrefix, '');
-                    try {
-                        value = JSON.parse(val);
-                    } catch (e) {
-                        console.warn(e);
-                    }
+        //             const filterKey = key.replace(queryPrefix, '');
+        //             try {
+        //                 value = JSON.parse(val);
+        //             } catch (e) {
+        //                 console.warn(e);
+        //             }
 
-                    this.$refs.catalogFilter.setFilter(filterKey, value);
-                }
-            }
+        //             this.$refs.catalogFilter.setFilter(filterKey, value);
+        //         }
+        //     }
 
-            // We clear the URL params after we have set the filters
-            // This is to prevent the filters from being applied again on reload.
-            // The values are stored anyways in the localstorage.
-            URLParams.clear()
-        });
+        //     // We clear the URL params after we have set the filters
+        //     // This is to prevent the filters from being applied again on reload.
+        //     // The values are stored anyways in the localstorage.
+        //     URLParams.clear()
+        // });
 
         await this.initTimeline();
         // this.updateTimeline(true);
@@ -256,14 +262,64 @@ export default {
         this.update()
     },
     methods: {
+
+        local_storage_mixin_loaded() {
+            this.mounted_and_loaded_mixin_loaded("storage")
+        },
         resetFilters() {
             this.filters = {}
         },
-        update() {
-            this.overlay.update({
+        async update() {
+            await this.overlay.update({
                 selections: {
-                    treasures: this.selectedTreasuresIds
+                    treasures: this.selectedTreasureIds
                 }
+            })
+
+            this.updateTimelineGraph()
+        },
+        updateTimelineGraph() {
+
+            const data = {}
+            this.selectedTreasures.forEach(treasure => {
+                treasure.items.forEach(item => {
+                    const year = item.year
+                    const count = item.count || 1
+
+                    if (!data[year]) {
+                        data[year] = count
+                    } else {
+                        data[year] += count
+                    }
+                })
+            })
+
+            let arr = Object.entries(data)
+                .filter(([year, count]) => !isNaN(parseInt(year)))
+                .sort(([yearA], [yearB]) => yearA - yearB)
+                .map(([year, count]) => {
+                    return {
+                        x: year,
+                        y: count
+                    }
+                })
+
+            const max = Math.max(...arr.map(a => a.y))
+
+            const offset = 2
+            let from = parseInt(arr[0].x) - offset
+            let to = parseInt(arr[arr.length - 1].x) + offset
+
+            this.timeline_mixin_set({
+                from,
+                to
+            })
+
+            console.log(max)
+
+            this.timelineChart.update({
+                graphs: new BarGraph(arr, { yMax: max, yOffset: 10 }),
+                timeline: this.timeline
             })
         },
         selectionChanged() {
@@ -271,24 +327,24 @@ export default {
             this.local_storage_mixin_save()
         },
         isTreasureSelected(id) {
-            return this.selectedTreasuresIds.includes(id)
+            return this.selectedTreasureIds.includes(id)
         },
         toggleTreasure(id) {
             if (this.isTreasureSelected(id)) {
-                this.selectedTreasuresIds.splice(this.selectedTreasuresIds.indexOf(id), 1)
+                this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
                 this.selectionChanged()
             } else {
-                this.selectedTreasuresIds.push(id)
+                this.selectedTreasureIds.push(id)
                 this.selectionChanged()
             }
         },
         setTreasure(id, value) {
             const selected = this.isTreasureSelected(id)
             if (value && !selected) {
-                this.selectedTreasuresIds.push(id)
+                this.selectedTreasureIds.push(id)
                 this.selectionChanged()
             } else if (!value && selected) {
-                this.selectedTreasuresIds.splice(this.selectedTreasuresIds.indexOf(id), 1)
+                this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
                 this.selectionChanged()
             }
         }

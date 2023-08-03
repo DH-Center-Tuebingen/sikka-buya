@@ -5,7 +5,7 @@
     :min="min"
     :max="max"
     :step="step"
-    :readonly="readonly"
+    :interactive="interactive"
     @input="(arg) => $emit('input', arg)"
     @focus="(arg) => $emit('focus', arg)"
     @blur="(arg) => $emit('blur', arg)"
@@ -44,9 +44,9 @@ import Slider from './Slider.vue';
 export default {
   components: { Slider },
   props: {
-    readonly: {
+    interactive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     value: {
       type: Number,

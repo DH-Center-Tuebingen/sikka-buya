@@ -3,17 +3,12 @@ import L from "leaflet"
 import Query from '../database/query';
 import Overlay from './Overlay';
 
+import { cloneDeep } from 'lodash';
+
+
 
 export default class TreasureOverlay extends Overlay {
-    constructor(parent, settings, {
-        onDataTransformed,
-        onGeoJSONTransformed
-    }) {
-        super(parent, settings, {
-            onDataTransformed,
-            onGeoJSONTransformed
-        });
-    }
+
 
 
     async fetch() {
@@ -62,31 +57,27 @@ export default class TreasureOverlay extends Overlay {
         return treasures
     }
 
-    transform(treasures, {
-        selections = []
-    } = {}) {
+    transform(treasures) {
 
+        let transformedData = []
         treasures.forEach(treasure => {
-
             let items = {}
-            for (let item of treasure.items) {
+            for (let original of treasure.items) {
+                let item = cloneDeep(original)
                 if (item.mint == null) continue
 
                 if (!items[item.mint.id]) {
-                    items[item.mint.id] = {
-                        mint: item.mint,
-                        count: 0
-                    }
+                    items[item.mint.id] = item
                 }
 
                 items[item.mint.id].count += item.count
             }
-            treasure.items = Object.values(items)
+            transformedData.push(
+                cloneDeep(treasure)
+            )
         })
 
-        return treasures
-
-
+        return transformedData
     }
 
     toMapObject(treasures, selections = { treasures: [] }) {
