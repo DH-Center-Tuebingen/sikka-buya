@@ -118,11 +118,11 @@
 import catalogFilterMixin from '../mixins/catalog-filter';
 import map from './mixins/map';
 import {
-  mintLocationsMixin,
+  MintLocationsMixin,
   loadSelectedMints,
 } from './mixins/MintLocationsMixin';
-import settingsMixin from '../map/mixins/settings';
-import timeline from './mixins/timeline';
+import SettingsMixin from '../map/mixins/settings';
+import TimelineMixin from './mixins/timeline';
 import slideshow from '../mixins/slideshow';
 
 
@@ -137,7 +137,6 @@ import Slider from '../forms/Slider.vue';
 import Timeline from './timeline/Timeline.vue';
 
 // Other
-
 
 import Range from "../../models/timeline/range.js"
 import MaterialOverlay from '../../maps/MaterialOverlay';
@@ -195,10 +194,10 @@ export default {
   },
   mixins: [
     map,
-    timeline,
+    TimelineMixin(),
     slideshow,
-    settingsMixin(overlaySettings),
-    mintLocationsMixin({
+    SettingsMixin(overlaySettings),
+    MintLocationsMixin({
       showMarkers: false,
       onMintSelectionChanged(selection) {
         this.overwriteFilters.mint = selection;
@@ -422,8 +421,7 @@ export default {
       return old !== this.overwriteFilters.yearOfMint;
     },
     timelineToggled: async function () {
-      timeline.methods.toggleTimeline.call(this);
-
+      this.timeline_mixin_toggleTimeline()
       this.updateYearOverwrite(
         this.timelineActive ? this.timeline.value : null
       );

@@ -37,7 +37,7 @@
                 :timelineValue="raw_timeline.value"
                 :timelineInteractive="false"
                 :timelineActive="timelineActive"
-                @toggle="toggleTimeline"
+                @toggle="timeline_mixin_toggleTimeline"
                 timelineName="additional-map"
             >
                 <template #background>
@@ -262,7 +262,9 @@ export default {
         this.update()
     },
     methods: {
-
+        mounted_and_loaded_mixin_mountedAndLoaded() {
+            console.log("ready")
+        },
         local_storage_mixin_loaded() {
             this.mounted_and_loaded_mixin_loaded("storage")
         },

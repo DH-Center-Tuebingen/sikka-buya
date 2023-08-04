@@ -52,7 +52,7 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
             this.timeBuffer = new RequestBuffer(100)
         },
         methods: {
-            toggleTimeline() {
+            timeline_mixin_toggleTimeline() {
                 this.timelineActive = !this.timelineActive
                 save.call(this)
             },

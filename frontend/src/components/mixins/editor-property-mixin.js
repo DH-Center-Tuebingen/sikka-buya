@@ -16,7 +16,7 @@ const EditorPropertyMixin = {
         this.editor_property_create()
     },
     methods: {
-        mountedAndLoaded() {
+        mounted_and_loaded_mixin_mountedAndLoaded() {
             this.editor_property_load = false
         },
         async editor_property_create() {

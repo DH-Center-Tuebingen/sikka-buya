@@ -20,17 +20,17 @@ export default function (required = [], {
                 if (index > -1) {
                     this.loadingReqiurements.splice(index, 1)
                 }
-                this._mountedAndLoadedChanged()
+                this.mounted_and_loaded_mixin_mountedAndLoadedChanged()
             },
-            _mountedAndLoadedChanged() {
+            mounted_and_loaded_mixin_mountedAndLoadedChanged() {
                 if (this.loadingReqiurements.length === 0 && this.triggered === false) {
                     this.triggered = true
                     if (this.mounted_and_loaded_mixin_verbose)
                         console.log("All requirements loaded - Calling mountedAndLoaded method ...")
-                    this.mountedAndLoaded()
+                    this.mounted_and_loaded_mixin_mountedAndLoaded()
                 }
             },
-            mountedAndLoaded() {
+            mounted_and_loaded_mixin_mountedAndLoaded() {
                 console.warn("You are not using the mounted and loaded mixin. Either implement the mountedAndLoaded method or remove the mixin!")
             }
         }
