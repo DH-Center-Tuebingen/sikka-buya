@@ -196,7 +196,7 @@ export default {
     created() {
         window.graphics = this.featureGroup
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
-            onFetch: (data) => {
+            onDataTransformed: (data) => {
                 this.treasures = data
             },
             onEnd: () => {
@@ -279,46 +279,64 @@ export default {
             this.updateTimelineGraph()
         },
         updateTimelineGraph() {
+            let treasureData = {}
+            const colors = []
+            let maxMap = {}
 
-            const data = {}
-            this.selectedTreasures.forEach(treasure => {
-                treasure.items.forEach(item => {
-                    const year = item.year
-                    const count = item.count || 1
+            let yearSet = new Set()
 
-                    if (!data[year]) {
-                        data[year] = count
-                    } else {
+            this.selectedTreasures.forEach((treasure, treasureIndex) => {
+
+                colors.push(treasure.color)
+                let data = {}
+
+                treasure.items.forEach((item) => {
+                    const year = parseInt(item.year)
+                    const mint = item.mint
+
+                    if (!isNaN(year) && mint) {
+                        yearSet.add(year)
+
+                        if (!data[year]) {
+                            data[year] = 0
+                        }
+                        const count = item.count || 1
                         data[year] += count
                     }
                 })
+
+                treasureData[treasureIndex] = data
             })
 
-            let arr = Object.entries(data)
-                .filter(([year, count]) => !isNaN(parseInt(year)))
-                .sort(([yearA], [yearB]) => yearA - yearB)
-                .map(([year, count]) => {
-                    return {
-                        x: year,
-                        y: count
-                    }
+            let combied = {}
+            yearSet.forEach(year => {
+                combied[year] = { x: year, y: [] }
+                Object.entries(treasureData).forEach(([treasureIndex, data]) => {
+                    let y = (data[year] || 0)
+                    combied[year].y.push(y)
                 })
+            })
 
-            const max = Math.max(...arr.map(a => a.y))
+            let data = Object.values(combied).sort((a, b) => a.x - b.x)
 
-            const offset = 2
-            let from = parseInt(arr[0].x) - offset
-            let to = parseInt(arr[arr.length - 1].x) + offset
+            let yMax = Object.values(combied).reduce((max, current) => {
+                let currentMax = current.y.reduce((acc, a) => acc + a, 0)
+                return Math.max(max, currentMax)
+            }, -Infinity)
+
+            const yearOffset = 2
+            if (data.length == 0) return
+            let from = parseInt(data[0].x) - yearOffset
+            let to = parseInt(data[data.length - 1].x) + yearOffset
 
             this.timeline_mixin_set({
                 from,
                 to
             })
 
-            console.log(max)
 
             this.timelineChart.update({
-                graphs: new BarGraph(arr, { yMax: max, yOffset: 10 }),
+                graphs: new BarGraph(data, { colors, yMax, yOffset: 3 }),
                 timeline: this.timeline
             })
         },

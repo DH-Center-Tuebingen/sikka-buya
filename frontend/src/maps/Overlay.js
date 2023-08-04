@@ -124,7 +124,7 @@ export default class Overlay {
         if (this._onFetch) this._onFetch(data)
         if (!data) return null
 
-        const transformedData = this.transform(data)
+        const transformedData = this.transform(data, selections)
         if (this._onDataTransformed)
             this._onDataTransformed(transformedData)
 

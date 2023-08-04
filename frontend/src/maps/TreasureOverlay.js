@@ -9,6 +9,19 @@ import { cloneDeep } from 'lodash';
 
 export default class TreasureOverlay extends Overlay {
 
+    get colors() {
+        return [
+            "#ff0080",
+            "#9d3cff",
+            "#54c8b8",
+            "#ffff00",
+            "#ffb09d",
+            "#802b40",
+            "#00ffff",
+            "#ffffff",
+            "#00ff00",
+        ]
+    }
 
 
     async fetch() {
@@ -57,10 +70,14 @@ export default class TreasureOverlay extends Overlay {
         return treasures
     }
 
-    transform(treasures) {
+    transform(treasures, selections = { treasures: [] }) {
 
         let transformedData = []
+        let colorIndex = 0
         treasures.forEach(treasure => {
+
+            const selectedTreasures = (Array.isArray(selections.treasures)) ? selections.treasures : []
+
             let items = {}
             for (let original of treasure.items) {
                 let item = cloneDeep(original)
@@ -72,31 +89,23 @@ export default class TreasureOverlay extends Overlay {
 
                 items[item.mint.id].count += item.count
             }
-            transformedData.push(
-                cloneDeep(treasure)
-            )
+            const clone = cloneDeep(treasure)
+
+            if (selectedTreasures.length > 0 && selectedTreasures.indexOf(treasure.id) !== -1) {
+                clone.color = this.colors[colorIndex % this.colors.length]
+                clone.selected = true
+                colorIndex++
+            }
+            clone.items = Object.values(items)
+            transformedData.push(clone)
         })
 
         return transformedData
     }
 
     toMapObject(treasures, selections = { treasures: [] }) {
-
-        let colorMap = [
-            "#ff0080",
-            "#00ff00",
-            "#9d3cff",
-            "#000000",
-            "#54c8b8",
-            "#ffff00",
-            "#ffb09d",
-            "#802b40",
-            "#00ffff",
-            "#ffffff",
-        ]
-
-        const shadowColor = "#000000"
-        const shadowOpacity = .5
+        const shadowColor = "#000"
+        const shadowOpacity = 1
 
         let treasureGeometries = []
         let treasureGeometriesShadows = []
@@ -106,16 +115,18 @@ export default class TreasureOverlay extends Overlay {
         let lineGeometriesShadows = []
 
         for (let [index, treasure] of treasures.entries()) {
-            console.log(selections.treasures, treasure.id)
-            if (selections.treasures.indexOf(treasure.id) === -1) continue
+            if (!treasure.selected) continue
+            const color = treasure.color
 
-            let color = colorMap[index % colorMap.length]
             if (treasure.location) {
                 treasureGeometries.push({
                     type: "Feature", geometry: treasure.location, properties: {
                         style: {
+                            fill: true,
+                            fillColor: color,
+                            fillOpacity: .25,
                             color,
-                            weight: 2
+                            weight: 4
                         }
                     }
                 })
@@ -125,7 +136,7 @@ export default class TreasureOverlay extends Overlay {
                         style: {
                             color: shadowColor,
                             opacity: shadowOpacity,
-                            weight: 4
+                            weight: 8
                         }
                     }
                 })
@@ -140,8 +151,8 @@ export default class TreasureOverlay extends Overlay {
                 const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
 
                 treasure.items.forEach((item, idx) => {
-
-                    if (item?.mint?.location) {
+                    const mint = item.mint
+                    if (mint?.location) {
                         let loc = item.mint.location
                         const feature = {
                             type: "Feature", geometry: loc
@@ -152,11 +163,11 @@ export default class TreasureOverlay extends Overlay {
                             properties: {
                                 isMint: true,
                                 count: item.count,
-                                text: `Anzahl: ${item.count}`,
+                                text: `<b>${mint.name}</b><br>Anzahl: ${item.count}`,
                                 style: {
                                     color,
                                     fillColor: color,
-                                    fillOpacity: .25,
+                                    fillOpacity: 1,
                                     weight: 2,
                                 }
                             }
@@ -170,7 +181,7 @@ export default class TreasureOverlay extends Overlay {
                                     color: shadowColor,
                                     opacity: shadowOpacity,
                                     fillOpacity: 0,
-                                    weight: 3,
+                                    weight: 6,
                                 }
                             }
                         }))
@@ -237,7 +248,7 @@ export default class TreasureOverlay extends Overlay {
                                     properties: {
 
                                         style: {
-                                            weight: 1,
+                                            weight: 2,
                                             opacity: 1,
                                             color,
                                         }
@@ -252,7 +263,7 @@ export default class TreasureOverlay extends Overlay {
                                 lineGeometriesShadows.push(Object.assign({}, lineString, {
                                     properties: {
                                         style: {
-                                            weight: 2,
+                                            weight: 6,
                                             opacity: shadowOpacity,
                                             color: shadowColor,
                                         }
@@ -286,8 +297,11 @@ export default class TreasureOverlay extends Overlay {
         // Use the area as value for the radius
         const minRadius = 1
         let r = minRadius
+        const multiplier = 4
+
+
         if (feature.properties.count)
-            r = Math.sqrt(feature.properties.count / Math.PI) * 3
+            r = Math.sqrt(feature.properties.count / Math.PI) * multiplier
 
         const marker = L.circleMarker(latlng, { radius: Math.max(r, minRadius) })
         if (feature.properties.text) {

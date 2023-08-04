@@ -216,7 +216,6 @@ export default {
 
         },
         async loadProperty() {
-            this.editor_property_load = true
             try {
                 treasure = await new Treasure().get(this.editor_property_id)
                 this.name = treasure.name
@@ -234,7 +233,6 @@ export default {
                 if (e instanceof Error) message = e.message
                 this.error = Array.isArray(message) ? message.join("\n") : message
             }
-            this.editor_property_load = false
         },
         async submit() {
             this.error = ""

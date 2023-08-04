@@ -41,10 +41,7 @@
           name="list-item-before"
           :item="item"
         />
-        <ListItemCell :to="{
-          path: `${item.id}`,
-          append: true,
-        }">{{ item.name }}</ListItemCell>
+        <ListItemCell :to="getEditRoute(item)">{{ item.name }}</ListItemCell>
         <Button
           v-for="tool in tools"
           :key="'tool-' + tool"
@@ -113,6 +110,7 @@ export default {
     queryName: function () {
       return this.query ? this.query : camelCase(this.property);
     },
+
   },
   data: function () {
     return {
@@ -124,6 +122,11 @@ export default {
     };
   },
   methods: {
+    getEditRoute: function (item) {
+      return {
+        path: `/editor/${camelCase(this.property)}/${item.id}`
+      };
+    },
     async list() {
       new Query(this.queryName)
         .list(['id', 'name', ...this.parameters])

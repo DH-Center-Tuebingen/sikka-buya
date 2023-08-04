@@ -445,7 +445,7 @@ const routes = [
           },
           {
             path: "treasure/:id",
-            name: "TreasureCreate",
+            name: "TreasureEdit",
             component: TreasureForm
           },
           {
@@ -584,8 +584,10 @@ router.beforeEach(async (to, from, next) => {
   if (route) {
     console.log("Redirecting to", route)
     next(route)
-  } else
+  } else {
+    console.log(to)
     next()
+  }
 })
 
 export default router
