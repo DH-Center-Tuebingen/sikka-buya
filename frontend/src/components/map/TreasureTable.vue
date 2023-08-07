@@ -8,7 +8,7 @@
             <thead>
                 <tr>
                     <TableSortButton
-                        v-for="name of ['mint']"
+                        v-for="(name) of ['mint', 'count', 'yearOfMint', 'weight', 'fragment']"
                         :key="`head-${name}`"
                         :name="name"
                         :current="sortBy"
@@ -17,20 +17,28 @@
                     >
                         <Locale :path="`property.${name}`" />
                     </TableSortButton>
-
-                    <th>
-                        <Locale path="property.coin" />
-
-                    </th>
                 </tr>
             </thead>
             <tbody>
                 <tr
-                    v-for="value of sortedItems"
-                    :key="value.mint.id"
+                    v-for="(value, idx) of sortedItems"
+                    :key="idx"
                 >
-                    <td>{{ value.mint.name }}</td>
-                    <td>{{ value.count }}</td>
+                    <td>
+                        {{ value.mint?.name }}
+                    </td>
+                    <td>
+                        {{ value.count }}
+                    </td>
+                    <td>
+                        {{ value.year }}
+                    </td>
+                    <td>
+                        {{ value.weight }}g
+                    </td>
+                    <td>
+                        <span v-if="value.fragment">x</span>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -38,6 +46,7 @@
 </template>
 
 <script>
+import { Icon } from 'leaflet';
 import Sort from '../../utils/Sorter';
 import Locale from '../cms/Locale.vue';
 import TableSortButton from '../layout/table/TableSortButton.vue'
@@ -63,18 +72,12 @@ export default {
             return this.item?.items || [];
         },
         sortedItems() {
-            let map = this.items.reduce((acc, treasureItem) => {
-                const mint = treasureItem.mint;
-                if (mint && mint.id) {
-                    if (!acc[mint.id])
-                        acc[mint.id] = { count: 0, items: [], mint };
-                    acc[mint.id].count += treasureItem.count;
-                    acc[mint.id].items.push(treasureItem);
-                }
-                return acc;
-            }, {});
+            window.i = window.i || 0;
+
+            let items = [...Object.values(this.items).flatMap(i => i.items)]
+
             if (this.sortBy === "count") {
-                return Object.values(map).sort((a, b) => {
+                return Object.values(items).sort((a, b) => {
                     if (!this.desc)
                         return a.count - b.count
                     else
@@ -82,20 +85,26 @@ export default {
                 });
             }
             else if (this.sortBy === "mint") {
-                return Object.values(map).sort(Sort.stringPropAlphabetically("mint.name", !this.desc));
+                let i = Object.values(items).sort(Sort.stringPropAlphabetically("mint.name", !this.desc));
+                i.items = i.sort((a, b) => b.yearOfMint - a.yearOfMint);
+                console.log(i)
+                return i;
             } else throw new Error("Unknown sort by: " + this.sortBy);
         }
     },
-    components: { TableSortButton, Locale }
+    components: { TableSortButton, Locale, Icon }
 }
 </script>
 
 <style lang="scss">
 .treasure-table {
 
+    overflow-x: auto;
+
     td,
     th {
-        padding: 0;
+        vertical-align: top;
+        padding: 3px;
     }
 }
 </style>
@@ -111,6 +120,10 @@ td {
 }
 
 tr:nth-child(odd) {
+    background-color: $white;
+}
+
+tr:nth-child(even) {
     background-color: $dark-white;
 }
 

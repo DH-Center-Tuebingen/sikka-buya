@@ -73,6 +73,7 @@ export default class TreasureOverlay extends Overlay {
                     uncertainYear
                     year
                     weight
+                    fragment
                     nominal {
                         id
                         name
@@ -103,9 +104,11 @@ export default class TreasureOverlay extends Overlay {
 
                 if (!items[item.mint.id]) {
                     items[item.mint.id] = item
+                    items[item.mint.id].items = []
                 }
 
                 items[item.mint.id].count += item.count
+                items[item.mint.id].items.push(item)
             }
             const clone = cloneDeep(treasure)
 
