@@ -104,10 +104,11 @@ export default class TreasureOverlay extends Overlay {
 
                 if (!items[item.mint.id]) {
                     items[item.mint.id] = item
+                    items[item.mint.id].mintCount = 0
                     items[item.mint.id].items = []
                 }
 
-                items[item.mint.id].count += item.count
+                items[item.mint.id].mintCount += item.count
                 items[item.mint.id].items.push(item)
             }
             const clone = cloneDeep(treasure)
@@ -175,7 +176,7 @@ export default class TreasureOverlay extends Overlay {
 
             if (treasure.items) {
                 let findLocation = treasure.location
-                const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
+                const totalCount = treasure.items.reduce((acc, item) => acc + item.mintCount, 0)
 
                 treasure.items.forEach((item, idx) => {
                     const mint = item.mint
@@ -189,8 +190,8 @@ export default class TreasureOverlay extends Overlay {
                         mintGeometries.push(Object.assign({}, feature, {
                             properties: {
                                 isMint: true,
-                                count: item.count,
-                                text: `<b>${mint.name}</b><br>Anzahl: ${item.count}`,
+                                count: item.mintCount,
+                                text: `<b>${mint.name}</b><br>Anzahl: ${item.mintCount}`,
                                 style: {
                                     color,
                                     fillColor: color,
@@ -203,7 +204,7 @@ export default class TreasureOverlay extends Overlay {
                         mintGeometriesShadows.push(Object.assign({}, feature, {
                             properties: {
                                 isMint: true,
-                                count: item.count,
+                                count: item.mintCount,
                                 style: {
                                     color: shadowColor,
                                     opacity: shadowOpacity,

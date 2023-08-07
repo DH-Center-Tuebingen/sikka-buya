@@ -101,8 +101,7 @@ export default {
 
     overflow-x: auto;
 
-    td,
-    th {
+    td {
         vertical-align: top;
         padding: 3px;
     }

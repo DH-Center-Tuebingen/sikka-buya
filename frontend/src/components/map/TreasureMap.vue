@@ -8,16 +8,26 @@
                 />
             </template>
 
-            <ul>
-                <li
-                    v-for="mint of mints"
-                    :key="`mint-list-item-${mint.id}`"
-                >
-                    {{ mint.name }} - {{ mint.count }}
-                </li>
-            </ul>
 
-
+            <table>
+                <tbody>
+                    <tr
+                        v-for="mint of mints"
+                        :key="`mint-list-item-${mint.id}`"
+                    >
+                        <td>
+                            {{ mint.name }}
+                        </td>
+                        <td
+                            v-for="treasure of selectedTreasures"
+                            :key="`mint-count-${treasure.id}`"
+                            :style="`color: ${treasure.color}`"
+                        >
+                            {{ mint.counts[treasure.id] || 0 }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </Sidebar>
 
         <div class="center-ui center-ui-top">
@@ -112,6 +122,8 @@ import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 
+import cloneDeep from 'lodash/cloneDeep';
+
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'TreasureOverlay');
@@ -169,25 +181,21 @@ export default {
 
             this.selectedTreasures.forEach(t => {
                 t.items.forEach(item => {
-                    const mint = item.mint
-                    const count = item.count || 1
-
-                    if (mint) {
-                        if (!mints[item.mint.id]) {
-                            mint.count = count
-                            mints[item.mint.id] = mint
-                        }
-                        else {
-                            mints[item.mint.id].count += mint.count
-                        }
-                    } else {
-                        if (!mints["unknown"]) {
-                            mints["unknown"] = { name: "unknown", id: -1, count }
-                        }
-                        else {
-                            mints["unknown"].count += count
-                        }
+                    let mint = item.mint
+                    if (!mint) {
+                        mint = { name: "unknown", id: -1, counts: {} }
                     }
+
+                    if (!mints[item.mint.id]) {
+                        mints[item.mint.id] = cloneDeep(mint)
+                        mints[item.mint.id].counts = {}
+                    }
+
+                    const count = parseInt(item.mintCount) || 1
+                    console.log(count)
+                    const mintListItem = mints[item.mint.id]
+                    mintListItem.counts[t.id] = mintListItem.counts[t.id] ? mintListItem.counts[t.id] + count : count
+
                 })
             })
             return Object.values(mints).sort(Sort.stringPropAlphabetically("name"))
@@ -309,7 +317,7 @@ export default {
                         if (!data[year]) {
                             data[year] = 0
                         }
-                        const count = item.count || 1
+                        const count = item.mintCount || 1
                         data[year] += count
                     }
                 })
@@ -345,6 +353,9 @@ export default {
                 from,
                 to
             })
+
+
+            console.log(data)
 
 
             this.timelineChart.update({
