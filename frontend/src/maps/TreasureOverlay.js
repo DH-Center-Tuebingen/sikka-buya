@@ -6,8 +6,26 @@ import Overlay from './Overlay';
 import { cloneDeep } from 'lodash';
 
 
+function bringToFront(e) {
+    e.target.bringToFront()
+}
 
 export default class TreasureOverlay extends Overlay {
+
+    constructor(parent, settings, callbacks = {}) {
+        callbacks.onFeatureGroupAdded = function (group) {
+            group.on('mouseover', bringToFront)
+        }
+
+        callbacks.onFeatureGroupRemoved = function (group) {
+            group.off('mouseover', bringToFront)
+        }
+
+        super(parent, settings, callbacks)
+
+        this.bringTreasureToFront = this.bringTreasureToFront.bind(this)
+    }
+
 
     get colors() {
         return [
@@ -107,20 +125,25 @@ export default class TreasureOverlay extends Overlay {
         const shadowColor = "#000"
         const shadowOpacity = 1
 
-        let treasureGeometries = []
-        let treasureGeometriesShadows = []
-        let mintGeometries = []
-        let mintGeometriesShadows = []
-        let lineGeometries = []
-        let lineGeometriesShadows = []
+        let geoJSON = []
+
 
         for (let [index, treasure] of treasures.entries()) {
             if (!treasure.selected) continue
             const color = treasure.color
 
+
+            let treasureGeometries = []
+            let treasureGeometriesShadows = []
+            let mintGeometries = []
+            let mintGeometriesShadows = []
+            let lineGeometries = []
+            let lineGeometriesShadows = []
+
             if (treasure.location) {
                 treasureGeometries.push({
                     type: "Feature", geometry: treasure.location, properties: {
+                        treasure: treasure.id,
                         style: {
                             fill: true,
                             fillColor: color,
@@ -133,6 +156,7 @@ export default class TreasureOverlay extends Overlay {
 
                 treasureGeometriesShadows.push({
                     type: "Feature", geometry: treasure.location, properties: {
+                        treasure: treasure.id,
                         style: {
                             color: shadowColor,
                             opacity: shadowOpacity,
@@ -246,7 +270,7 @@ export default class TreasureOverlay extends Overlay {
                                 let lineString = {
                                     type: "Feature",
                                     properties: {
-
+                                        treasure: treasure.id,
                                         style: {
                                             weight: 2,
                                             opacity: 1,
@@ -262,6 +286,7 @@ export default class TreasureOverlay extends Overlay {
                                 lineGeometries.push(lineString)
                                 lineGeometriesShadows.push(Object.assign({}, lineString, {
                                     properties: {
+                                        treasure: treasure.id,
                                         style: {
                                             weight: 6,
                                             opacity: shadowOpacity,
@@ -276,10 +301,8 @@ export default class TreasureOverlay extends Overlay {
                 })
 
             }
-        }
 
-        return {
-            geoJSON: [
+            geoJSON.push([
                 // Shadow layers
                 ...lineGeometriesShadows,
                 ...treasureGeometriesShadows,
@@ -288,12 +311,16 @@ export default class TreasureOverlay extends Overlay {
                 ...lineGeometries,
                 ...treasureGeometries,
                 ...mintGeometries,
-            ]
+            ])
+        }
+
+
+        return {
+            geoJSON
         }
     }
 
     createMarker(latlng, feature) {
-
         // Use the area as value for the radius
         const minRadius = 1
         let r = minRadius
@@ -304,12 +331,20 @@ export default class TreasureOverlay extends Overlay {
             r = Math.sqrt(feature.properties.count / Math.PI) * multiplier
 
         const marker = L.circleMarker(latlng, { radius: Math.max(r, minRadius) })
-        if (feature.properties.text) {
-            marker.bindTooltip(feature.properties.text)
-        }
         return marker
     }
 
+    repaint() {
+        if (this.layer) {
+            this.layer.off('mouseover', this.bringTreasureToFront)
+        }
+
+        super.repaint(...arguments)
+
+        if (this.layer) {
+            this.layer.on('mouseover', this.bringTreasureToFront)
+        }
+    }
 
     get geoJSONOptions() {
         return {
@@ -319,7 +354,16 @@ export default class TreasureOverlay extends Overlay {
                 } else {
                     return Object.assign({ fill: feature.properties.isMint }, feature.properties.style)
                 }
+            },
+            onEachFeature: function (feature, layer) {
+                if (feature.properties.text) {
+                    layer.bindTooltip(feature.properties.text)
+                }
             }
         }
+    }
+
+    bringTreasureToFront() {
+
     }
 }

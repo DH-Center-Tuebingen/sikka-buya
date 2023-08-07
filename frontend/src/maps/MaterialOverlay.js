@@ -10,9 +10,24 @@ import Color from '../utils/Color'
 
 export default class MaterialOverlay extends Overlay {
 
+    constructor(parent, settings, callbacks) {
+
+        callbacks.onFeatureGroupAdded = (featureGroup) => {
+            featureGroup.on('mouseover', () => featureGroup.bringToFront());
+            featureGroup.on('click', () => featureGroup.bringToFront());
+        }
+
+        callbacks.onFeatureGroupRemoved = (featureGroup) => {
+            featureGroup.off('mouseover');
+            featureGroup.off('click');
+        }
+
+        super(parent, settings, callbacks)
+    }
+
 
     toMapObject(data) {
-        const mints = data.types.reduce((prev, type) => {
+        const mints = data.reduce((prev, type) => {
             const mint = type.mint;
 
             if (mint.id) {
@@ -72,13 +87,14 @@ export default class MaterialOverlay extends Overlay {
         }
         const featureGroup = L.featureGroup([...marker, materialCircles]);
         featureGroup.bindPopup(this.mintLocationPopup(feature.data));
-
-        featureGroup.on('mouseover', () => featureGroup.bringToFront());
-        featureGroup.on('click', () => featureGroup.bringToFront());
-
         featureGroup.bringToFront();
         return featureGroup;
 
+    }
+
+    filter(data) {
+        console.log(data)
+        return data.types.filter((d) => d.mint?.location);
     }
 
     mintLocationPopup(data) {

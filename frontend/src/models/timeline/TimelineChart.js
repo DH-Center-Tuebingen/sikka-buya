@@ -107,7 +107,6 @@ export class BarGraph extends YGraph {
                 context.lineWidth = .5
                 context.strokeStyle = "#111"
                 context.fillStyle = color
-                console.log(yVal)
                 yOffset += this.height(chart, yVal)
                 context.rect(chart.x(x) - width / 2, this.y(chart, 0) - yOffset, width, this.height(chart, yVal))
                 context.fill()
@@ -242,10 +241,17 @@ export default class TimelineChart extends Chart {
         super(canvas)
         this.graphs = graphs
         this.timeline = timeline
+
+        this.mousemove = this.mousemove.bind(this)
+        this.mouseListener = canvas.addEventListener("mousemove", this.mousemove)
+
         if (graphs.length > 0)
             this.draw()
     }
 
+    mousemove() {
+        console.log("MOVE")
+    }
 
     update({ graphs = null, timeline = null }) {
         if (graphs) {

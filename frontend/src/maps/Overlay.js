@@ -8,7 +8,9 @@ export default class Overlay {
         onGeoJSONTransform = null,
         onFetch = null,
         onApplyData = null,
-        onEnd = null
+        onEnd = null,
+        onFeatureGroupAdded = null,
+        onFeatureGroupRemoved = null,
     } = {}) {
         this.data = {}
         this.parent = parent
@@ -19,9 +21,9 @@ export default class Overlay {
         this._onApplyData = onApplyData
         this._onEnd = onEnd
         this._onFetch = onFetch
+        this._onFeatureGroupAdded = onFeatureGroupAdded
+        this._onFeatureGroupRemoved = onFeatureGroupRemoved
     }
-
-
 
     async guardedFetch(filters) {
         return this.fetchGuard.exec(filters)
@@ -85,13 +87,24 @@ export default class Overlay {
     }
 
     clearLayer() {
-        if (this.layer)
+        if (this.layer) {
+
+            // Here we can cleanup event listeners added to children
+            const children = this.layer.getLayers()
+            children.forEach(child => {
+                if (this._onFeatureGroupRemoved)
+                    this._onFeatureGroupRemoved(child)
+                child.remove()
+            })
+
             this.layer.remove()
+        }
     }
 
     async repaint({
         selections = {},
         markerOptions = {},
+
     } = {}) {
         this.clearLayer()
 
@@ -102,14 +115,24 @@ export default class Overlay {
         patterns.forEach(pattern => pattern.addTo(this.parent._map))
 
         const that = this
-        this.layer = new L.geoJSON(geoJSON, Object.assign({}, {
-            pointToLayer: function (feature, latlng) {
-                return that.createMarker.call(that, latlng, feature, { selections, markerOptions })
-            },
-            coordsToLatLng: function (coords) {
-                return new L.LatLng(coords[0], coords[1], coords[2]);
-            }
-        }, this.geoJSONOptions));
+
+        let _geoJSON = geoJSON
+        if (!Array.isArray(_geoJSON)) _geoJSON = [_geoJSON]
+        this.layer = L.featureGroup()
+        _geoJSON.forEach(feature => {
+            let group = new L.geoJSON(feature, Object.assign({}, {
+                pointToLayer: function (feature, latlng) {
+                    return that.createMarker.call(that, latlng, feature, { selections, markerOptions })
+                },
+                coordsToLatLng: function (coords) {
+                    return new L.LatLng(coords[0], coords[1], coords[2]);
+                }
+            }, this.geoJSONOptions));
+
+            group.addTo(this.layer)
+            if (this._onFeatureGroupAdded)
+                this._onFeatureGroupAdded(group)
+        })
 
         this.layer.addTo(this.parent)
     }
@@ -142,9 +165,16 @@ export default class Overlay {
 
     // Saves the data for future repaints
     setData(data) {
+        data = this.filter(data)
+
         if (this._onApplyData)
             data = this._onApplyData(data)
         this.data = data
+    }
+
+    filter(data) {
+        // Can be overloaded in subclass
+        return data
     }
 
 

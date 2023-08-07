@@ -327,9 +327,12 @@ export default {
             }, -Infinity)
 
             const yearOffset = 2
-            if (data.length == 0) return
-            let from = parseInt(data[0].x) - yearOffset
-            let to = parseInt(data[data.length - 1].x) + yearOffset
+            let from = 300
+            let to = 470
+            if (data.length > 0) {
+                from = parseInt(data[0].x) - yearOffset
+                to = parseInt(data[data.length - 1].x) + yearOffset
+            }
 
             this.timeline_mixin_set({
                 from,
@@ -338,7 +341,7 @@ export default {
 
 
             this.timelineChart.update({
-                graphs: new BarGraph(data, { colors, yMax, yOffset: 3 }),
+                graphs: new BarGraph(data, { colors, yMax, yOffset: 10 }),
                 timeline: this.timeline
             })
         },

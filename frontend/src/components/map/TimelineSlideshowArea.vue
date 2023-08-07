@@ -229,11 +229,9 @@ export default {
             deep: true,
         },
         timelineFrom() {
-            console.log("timelineFrom changed", this.timelineFrom, this.timelineTo)
             this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
         },
         timelineTo() {
-            console.log("timelineTo changed", this.timelineFrom, this.timelineTo)
             this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
         },
     },

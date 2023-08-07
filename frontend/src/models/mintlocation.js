@@ -138,15 +138,6 @@ export class MintLocationMarker {
         }
         return this.marker
     }
-
-    static addBringToFrontBehaviour(layer) {
-        layer.on('mouseover', () => {
-            layer.bringToFront()
-        });
-        layer.on('click', () => {
-            layer.bringToFront()
-        });
-    }
 }
 
 export class CountMarker {
