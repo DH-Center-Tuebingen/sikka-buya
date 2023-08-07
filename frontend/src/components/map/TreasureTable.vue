@@ -100,6 +100,7 @@ export default {
 .treasure-table {
 
     overflow-x: auto;
+    max-height: 300px;
 
     td {
         vertical-align: top;
