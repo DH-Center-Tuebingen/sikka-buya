@@ -37,7 +37,7 @@
                 :timelineValue="raw_timeline.value"
                 :timelineInteractive="false"
                 :timelineActive="timelineActive"
-                @toggle="timeline_mixin_toggleTimeline"
+                @toggle="toggleTimeline"
                 timelineName="additional-map"
             >
                 <template #background>
@@ -262,6 +262,14 @@ export default {
         this.update()
     },
     methods: {
+        toggleTimeline() {
+            this.timeline_mixin_toggleTimeline()
+            if (this.timelineActive) {
+                this.$nextTick(() => {
+                    this.updateTimelineGraph()
+                })
+            }
+        },
         mounted_and_loaded_mixin_mountedAndLoaded() {
             console.log("ready")
         },
@@ -284,7 +292,6 @@ export default {
             let treasureData = {}
             const colors = []
             let maxMap = {}
-
             let yearSet = new Set()
 
             this.selectedTreasures.forEach((treasure, treasureIndex) => {

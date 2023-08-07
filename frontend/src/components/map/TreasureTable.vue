@@ -1,6 +1,5 @@
 <template>
     <div class="treasure-table">
-        <h3>{{ item.name }}</h3>
         <div
             v-if="item.literature != ''"
             v-html="item.literature"
@@ -9,7 +8,7 @@
             <thead>
                 <tr>
                     <TableSortButton
-                        v-for="name of ['mint', 'count']"
+                        v-for="name of ['mint']"
                         :key="`head-${name}`"
                         :name="name"
                         :current="sortBy"
@@ -19,7 +18,10 @@
                         <Locale :path="`property.${name}`" />
                     </TableSortButton>
 
+                    <th>
+                        <Locale path="property.coin" />
 
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -116,7 +118,7 @@ tr:nth-child(odd) {
 .treasure-table {
     padding: $padding;
     background-color: white;
-    border-radius: $border-radius;
+    // border-radius: $border-radius;
     margin: $padding
 }
 
