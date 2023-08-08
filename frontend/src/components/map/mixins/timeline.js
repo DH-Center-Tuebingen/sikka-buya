@@ -2,43 +2,6 @@ import Query from '../../../database/query';
 import RequestBuffer from '../../../models/request-buffer';
 import URLParams from '../../../utils/URLParams';
 
-/**
- * The methods inside the object get merged with 
- * the implementing component.
- * 
- * To prevent giving internal methods a weird
- * prefix and harming readablilty, we just 
- * put them outside the object making them private.
- * 
- * Note: You must call the function with `method.call(this)` 
- * if you want to have access to `this`. 
- */
-function save() {
-    const option = { year: this.raw_timeline.value, timelineActive: this.timelineActive }
-    localStorage.setItem('map-timeline', JSON.stringify(option));
-}
-
-function load(options = {
-    year: 433,
-    timelineActive: true
-}) {
-    const optionsString = localStorage.getItem('map-timeline')
-
-    try {
-        let loadedOptions = JSON.parse(optionsString)
-        Object.assign(options, loadedOptions)
-    } catch (e) {
-        console.warn(e)
-    }
-
-    return {
-        year: URLParams.getInteger('year', options.year),
-        timelineActive: URLParams.getBoolean('timelineActive', options.timelineActive)
-    }
-}
-
-
-
 export default function ({ from = 0, to = 100, value = 50 } = {}) {
     return {
         data: function () {
@@ -52,9 +15,32 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
             this.timeBuffer = new RequestBuffer(100)
         },
         methods: {
+            timeline_mixin_save() {
+                const option = { year: this.raw_timeline.value, timelineActive: this.timelineActive }
+                localStorage.setItem('map-timeline', JSON.stringify(option));
+            },
+            timeline_mixin_load() {
+                let options = {
+                    timelineActive: this.$mconfig.get("map.default.timeline.active"),
+                    year: this.$mconfig.get("map.default.timeline.startYear")
+                }
+                const optionsString = localStorage.getItem('map-timeline')
+
+                try {
+                    let loadedOptions = JSON.parse(optionsString)
+                    Object.assign(options, loadedOptions)
+                } catch (e) {
+                    console.warn(e)
+                }
+
+                return {
+                    year: URLParams.getInteger('year', options.year),
+                    timelineActive: URLParams.getBoolean('timelineActive', options.timelineActive)
+                }
+            },
             timeline_mixin_toggleTimeline() {
                 this.timelineActive = !this.timelineActive
-                save.call(this)
+                this.timeline_mixin_save()
             },
             timeChanged: async function (val) {
                 this.timeBuffer.update(val, () => {
@@ -65,7 +51,7 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                      * timelineUpdated.
                      */
                     this.timelineUpdated();
-                    save.call(this)
+                    this.timeline_mixin_save()
                 })
 
             },
@@ -75,7 +61,7 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                 if (value !== null) this.raw_timeline.value = value
             },
             initTimeline: async function () {
-                let options = load.call(this)
+                let options = this.timeline_mixin_load();
 
                 try {
                     let result = await Query.raw(
@@ -87,7 +73,7 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                 }`);
 
                     let timeline = result.data.data.timespan;
-                    timeline.value = options.year || 433;
+                    timeline.value = options.year;
                     this.raw_timeline = timeline;
                     this.timelineActive = options.timelineActive
                 } catch (e) {

@@ -9,6 +9,7 @@ import I18n from './i18n/i18n';
 import VueI18n from 'vue-i18n';
 import { camelCase, snakeCase } from 'change-case';
 import Selection from './models/selection';
+import mconfig from './plugins/mconfig';
 
 async function main() {
 
@@ -23,6 +24,20 @@ async function main() {
   Vue.prototype.$utils = {
     capitalize
   }
+
+  Vue.use(mconfig, {
+    path: "project_settings",
+    structure: {
+      map: {
+        default: {
+          timeline: {
+            startYear: true,
+            timelineActive: true,
+          },
+        }
+      }
+    }
+  })
 
   Vue.prototype.$selection = Selection
 
