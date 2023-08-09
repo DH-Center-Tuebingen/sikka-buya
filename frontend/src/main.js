@@ -26,17 +26,7 @@ async function main() {
   }
 
   Vue.use(mconfig, {
-    path: "project_settings",
-    structure: {
-      map: {
-        default: {
-          timeline: {
-            startYear: true,
-            timelineActive: true,
-          },
-        }
-      }
-    }
+    path: "project_settings"
   })
 
   Vue.prototype.$selection = Selection

@@ -9,33 +9,13 @@
  * need for any API interaction.
  */
 export default class ManagedConfig {
-    constructor(path, structure = {}, root = window) {
+    constructor(path, root = window) {
         this.root = root
 
         if (!root[path]) {
             throw new Error(`Managed config was not found at ${path}`)
         } else {
             this.base = root[path]
-        }
-
-        if (!this.confirmStructure(structure)) {
-            throw new Error(`Managed config at ${path} does not match the structure`)
-        }
-    }
-
-    confirmStructure(structure, _parts = []) {
-        let parts = _parts.slice()
-        for (let key in structure) {
-            parts.push(key)
-            if (typeof structure[key] === "object") {
-                return this.confirmStructure(structure[key], parts)
-            } else {
-                let path = parts.join(".")
-                if (!this.has(path)) {
-                    console.error(`Managed config does not have the key ${path}`)
-                    return false
-                } else return true
-            }
         }
     }
 

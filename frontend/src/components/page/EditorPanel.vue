@@ -103,7 +103,10 @@ export default {
     },
     user_properties() {
       return {
-        super: [{ name: 'user', to: { name: 'UserManagement' } }],
+        super: [
+          { name: 'user', to: { name: 'UserManagement' } },
+          { name: 'settings', to: { name: 'Settings' } }
+        ],
         cms: this.properties,
       };
     },

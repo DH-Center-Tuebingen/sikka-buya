@@ -58,6 +58,7 @@ import UserManagementPage from "@/components/page/UserManagementPage.vue"
 import FixDiff from "@/components/page/FixDiff.vue"
 import PageNotFoundPage from "@/components/page/system/PageNotFoundPage"
 import ServerOfflinePage from "@/components/page/system/ServerOfflinePage"
+import SettingsPage from "@/components/page/SettingsPage.vue"
 
 import EditorPanel from "@/components/page/EditorPanel.vue"
 import ExpertSearch from "@/components/page/editor/ExpertSearch.vue"
@@ -307,6 +308,12 @@ const routes = [
             name: 'UserManagement',
             component: UserManagementPage,
             meta: { super: true }
+          },
+          {
+            path: 'settings',
+            name: "Settings",
+            component: SettingsPage,
+            meta: { super: true },
           },
           {
             path: "type",
