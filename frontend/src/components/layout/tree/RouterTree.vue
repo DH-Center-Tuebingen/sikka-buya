@@ -1,6 +1,6 @@
 <template>
     <div class="router-tree">
-        <b>{{ path }}</b>
+        <b>{{ name }}</b>
         <ul>
             <li
                 v-for="([key, value], index) in childrenList"
@@ -8,6 +8,7 @@
             >
                 <router-tree
                     v-if="(typeof value === 'object')"
+                    :name="key"
                     :children="value"
                     :path="getPath(key)"
                 ></router-tree>
@@ -15,8 +16,8 @@
                     <SettingInput
                         :label="key"
                         :value=value
+                        @apply="applySettings(key, value)"
                     >
-
                     </SettingInput>
                 </div>
             </li>
@@ -36,6 +37,10 @@ export default {
         SettingInput,
     },
     props: {
+        name: {
+            type: String,
+            required: true
+        },
         path: {
             type: String,
             required: true
@@ -51,6 +56,9 @@ export default {
         },
         input(e) {
             console.log(e)
+        },
+        applySettings(child, value) {
+            console.log(this.getPath(child), value)
         }
     },
     computed: {
@@ -61,4 +69,14 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped></style>
+<style lang='scss' scoped>
+
+ul {
+    list-style-type: none;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: $padding;
+}
+
+</style>

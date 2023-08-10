@@ -422,7 +422,11 @@ type Query {
   searchTreasure(text:String): [Treasure] 
   getTreasure(id:ID!): Treasure
   treasureItem(treasure:ID): [TreasureItem]
+  getSettings: String
 }
+
+
+
 
 type MintPersons { 
   mint: Mint,
@@ -532,14 +536,14 @@ type Mutation {
   deleteTreasure(id:ID!):Void
 
 
-  # TODO: missing Tests ---------------------------------------------
 
   # Tested in 031_coin_verse
   addCoinVerse(name: String!): Void
   updateCoinVerse(id: ID!, name: String!): Void
   deleteCoinVerse(id: ID): Void
-  moveCoinTypeToCoinVerse(id:ID):Void
-  moveCoinVerseToCoinType(id:ID):Void
+
+  
+  # TODO: missing Tests ---------------------------------------------
 
   deleteUser(id: ID): Void
 
@@ -575,6 +579,14 @@ type Mutation {
   deleteFile(identity:String!):Void
   uploadFile(identity:String!, file:Upload!):Void
   setLang(path:String!, lang:String!, singular:String!, plural:String):Void
+
+  updateSetting(path:String!, value:String!):Void
+}
+
+type SettingsResult {
+  success: Boolean
+  message: String
+  value: String
 }
 
 input PageInput {

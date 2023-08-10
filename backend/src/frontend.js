@@ -47,6 +47,10 @@ class Frontend {
         let parts = path.split(sep)
         return this.createByParts(...parts)
     }
+
+    static async readFile(...parts) {
+        return fs.readFile(this.getByParts(...parts))
+    }
 }
 
 module.exports = Frontend

@@ -5,6 +5,7 @@
             <!-- <Breadcrumbs /> -->
             <RouterTree
                 path=""
+                name=""
                 :children="tree"
             />
         </section>
@@ -22,13 +23,15 @@ export default {
     }, data() {
         return {
             tree: {
-                map: {
-                    active: false,
-                    startYear: 372
-                },
-                catalog: {
-                    size: 5,
-                    heading: "big"
+                project_settings: {
+                    map: {
+                        active: false,
+                        startYear: 372
+                    },
+                    catalog: {
+                        size: 5,
+                        heading: "big"
+                    }
                 }
             }
         }
