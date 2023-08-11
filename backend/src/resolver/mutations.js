@@ -14,6 +14,7 @@ const BlockGQL = require('./klasses/BlockGQL')
 const PageGQL = require('./klasses/PageGQL')
 const TreasureGQL = require('./klasses/TreasureGQL')
 const Frontend = require('../frontend')
+const SettingsGQL = require('./klasses/SettingsGQL')
 
 /**
  * Most mutations require the user to be logged in to
@@ -128,14 +129,6 @@ const SuperUserMutations = {
             await WriteableDatabase.none("DELETE FROM type_reviewed WHERE type=$1", id)
         }
         return reviewed
-    },
-    async updateSetting(_, {
-        path = null,
-        value = null
-    } = {}) {
-        const pieces = path.split("/")
-
-
     }
 }
 
@@ -287,7 +280,10 @@ const Mutations = Object.assign({},
             return Auth.verifyContext(context)
         }),
     guard(EditorMutations, async (_, __, context) => await Auth.requirePermission(context, 'editor')),
-    guard(SuperUserMutations, (_, __, context) => Auth.requireSuperUser(context))
+    guard(Object.assign(
+        SuperUserMutations,
+        SettingsGQL.Mutations,
+    ), (_, __, context) => Auth.requireSuperUser(context))
 )
 
 module.exports = Mutations

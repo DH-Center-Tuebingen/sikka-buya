@@ -16,6 +16,7 @@ const Frontend = require('../frontend.js')
 const { readdir } = require('fs/promises')
 const { join } = require('path')
 const TreasureGQL = require('./klasses/TreasureGQL.js')
+const SettingsGQL = require('./klasses/SettingsGQL.js')
 
 
 
@@ -615,38 +616,12 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
             throw new Error("Unsupported property: " + property)
 
         return Database.oneOrNone(`SELECT id, name FROM ${property} WHERE  name=$1 LIMIT 1`, [name])
-    },
-    getSettings: async function (_) {
-        const val = await Database.tx(async t => {
-
-            async function get(id) {
-                let obj = {}
-                let res = await t.manyOrNone(`SELECT * FROM settings WHERE parent=$1`, [id])
-                if (res) {
-                    for (let r of res) {
-                        obj[r.name] = r.value || await get(r.id)
-                    }
-                }
-                return obj
-            }
-
-            let many = await t.manyOrNone(`SELECT * FROM settings WHERE parent IS NULL`)
-            console.log(many)
-            if (many) {
-                let obj = {}
-                for (let m of many) {
-                    obj[m.name] = m.value || await get(m.id)
-                }
-                return obj
-            }
-        })
-
-        return JSON.stringify(val)
     }
 }
 
 module.exports = Object.assign(Queries,
     guard(SuperUserQueries, (_, __, context) => Auth.requirePermission(context, "super")),
     PageGQL.Queries,
+    SettingsGQL.Queries,
     TreasureGQL.Queries,
 )

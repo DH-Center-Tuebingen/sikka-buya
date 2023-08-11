@@ -48,8 +48,8 @@ class Frontend {
         return this.createByParts(...parts)
     }
 
-    static async readFile(...parts) {
-        return fs.readFile(this.getByParts(...parts))
+    static async writeFile(data, ...parts) {
+        return fs.promises.writeFile(this.getByParts(...parts), data)
     }
 }
 

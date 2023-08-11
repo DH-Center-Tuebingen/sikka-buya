@@ -422,7 +422,9 @@ type Query {
   searchTreasure(text:String): [Treasure] 
   getTreasure(id:ID!): Treasure
   treasureItem(treasure:ID): [TreasureItem]
-  getSettings: String
+
+  getSetting(path:String!):String 
+  settings: String
 }
 
 
@@ -561,8 +563,6 @@ type Mutation {
   ): Void
   addComment(text: String, user: ID, property: String, propertyId: ID): Void
 
-
-
   changePersonExplorerOrder(person: ID!, position: Int!): Void
 
   updateMaterialColor(id: ID!, color: String!): Void
@@ -580,13 +580,8 @@ type Mutation {
   uploadFile(identity:String!, file:Upload!):Void
   setLang(path:String!, lang:String!, singular:String!, plural:String):Void
 
+  deleteSetting(path:String!):Void
   updateSetting(path:String!, value:String!):Void
-}
-
-type SettingsResult {
-  success: Boolean
-  message: String
-  value: String
 }
 
 input PageInput {
