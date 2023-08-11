@@ -103,10 +103,14 @@ export default {
     align-items: center;
     gap: $padding;
     padding: math.div($padding, 2) $padding;
+    margin-left: -$padding;
     border-radius: $border-radius;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+
 
     &.active {
-        border: 1px solid gray;
+        border-color: gray;
     }
 }
 

@@ -36,6 +36,7 @@
 import Query from "../../../database/query"
 import RouterTree from "./RouterTree.vue";
 import SettingInput from "../../forms/SettingsInput.vue"
+import Sorter from "../../../utils/Sorter"
 
 export default {
     name: "RouterTree",
@@ -61,6 +62,7 @@ export default {
                 return typeof value === 'string' || value === null
             }
         }
+
     },
     methods: {
         settingsInputClicked(key, refName) {
@@ -101,7 +103,9 @@ export default {
     },
     computed: {
         childrenList() {
-            return Object.entries(this.children)
+            let childs = Object.entries(this.children)
+            const arr = childs.sort(([a, _1], [b, _2]) => a.localeCompare(b))
+            return arr
         }
     }
 };
