@@ -66,7 +66,7 @@ export default {
     },
     methods: {
         async reload() {
-            window.location.reload(true)
+            window.location.reload()
         },
         async clicked() {
             await Query.raw(`mutation UpdateSetting($path: String!, $value: String!) {updateSetting (path:$path, value:$value )}`, {

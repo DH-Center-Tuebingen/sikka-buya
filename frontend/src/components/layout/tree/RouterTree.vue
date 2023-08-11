@@ -74,7 +74,7 @@ export default {
         async applySettings(child, value) {
             try {
                 await Query.raw(`updateSetting ('${this.getPath(child)}', '${value}')`, {}, true)
-                location.reload(true)
+                window.location.reload()
             } catch (e) {
                 console.error(e)
             }

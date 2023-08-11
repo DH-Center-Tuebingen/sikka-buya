@@ -52,7 +52,7 @@ export default {
     },
     methods: {
         reload() {
-            window.location.reload(true)
+            window.location.reload()
         },
         async add() {
             if (this.addValue && this.addPath) {
