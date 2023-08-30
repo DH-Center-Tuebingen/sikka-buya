@@ -15,7 +15,7 @@
                         :desc="desc"
                         @input="sortingChanged"
                     >
-                        <Locale :path="`property.${name}`" />
+                        <Locale :path="`property.${snakeCase(name)}`" />
                     </TableSortButton>
                 </tr>
             </thead>

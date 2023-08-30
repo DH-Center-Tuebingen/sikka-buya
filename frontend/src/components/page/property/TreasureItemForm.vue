@@ -121,7 +121,7 @@
                     type="number"
                     name=""
                     id=""
-                    :placeholder="$tc('property.yearOfMint')"
+                    :placeholder="$tc('property.year_of_mint')"
                     v-model="value.year"
                 >
             </LabeledInputContainer>
@@ -136,7 +136,7 @@
                     type="text"
                     name=""
                     id=""
-                    :placeholder="$tc('property.yearOfMintUncertain')"
+                    :placeholder="$tc('property.year_of_mint_uncertain')"
                     v-model="value.uncertainYear"
                 >
             </LabeledInputContainer>
