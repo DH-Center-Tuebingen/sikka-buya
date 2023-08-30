@@ -1,9 +1,18 @@
 <template>
-  <li class="select-list-item" :class="{ selected }">
+  <li
+    class="select-list-item"
+    :class="{ selected }"
+  >
     <slot name="before" />
-    <div class="checkbox">
+    <div
+      class="checkbox"
+      v-if="!noCheckbox"
+    >
       <label @click.stop="() => $emit('checkbox-selected')">
-        <div class="box" :class="{ active: selected }"></div>
+        <div
+          class="box"
+          :class="{ active: selected }"
+        ></div>
       </label>
     </div>
     <slot />
@@ -14,6 +23,7 @@
 export default {
   props: {
     selected: Boolean,
+    noCheckbox: Boolean,
   },
 };
 </script>
@@ -24,11 +34,13 @@ export default {
   align-items: center;
   gap: $padding;
 }
+
 .checkbox {
   display: flex;
 
   .box {
     position: relative;
+
     &::after,
     &::before {
       content: '';
@@ -41,6 +53,7 @@ export default {
       transition: transform 0.3s;
       border-radius: 1px;
     }
+
     &::after {
       transform: scale(0) rotate(45deg);
     }
@@ -61,11 +74,13 @@ export default {
   }
 
   $size: 12px;
+
   label {
     display: flex;
     align-items: center;
 
     padding: 5px;
+
     .box {
       width: $size;
       height: $size;
@@ -73,5 +88,4 @@ export default {
       border-radius: 3px;
     }
   }
-}
-</style>
+}</style>

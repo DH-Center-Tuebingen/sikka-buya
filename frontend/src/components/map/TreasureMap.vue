@@ -76,10 +76,17 @@
                 <template v-for="treasure in treasures">
                     <MultiSelectListItem
                         :key="`list-item-${treasure.id}`"
+                        :no-checkbox="true"
                         :selected="isTreasureSelected(treasure.id)"
                         @click.native="toggleTreasure(treasure.id)"
                         @checkbox-selected="(val) => setTreasure(treasure.id, val)"
                     >
+                        <template #before>
+                            <ListColorIndicator
+                                :color="treasure.color"
+                                default-color="transparent"
+                            />
+                        </template>
                         {{ treasure.name }}
                     </MultiSelectListItem>
                     <TreasureTable
@@ -133,6 +140,7 @@ const overlaySettings = settings.load();
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
 import { BarGraph } from '../../models/timeline/TimelineChart';
+import ListColorIndicator from '../list/ListColorIndicator.vue';
 
 export default {
     components: {
@@ -145,7 +153,8 @@ export default {
         TimelineSlideshowArea,
         TreasureTable,
         MultiSelectList,
-        MultiSelectListItem
+        MultiSelectListItem,
+        ListColorIndicator,
     },
     data: function () {
         return {
@@ -192,7 +201,6 @@ export default {
                     }
 
                     const count = parseInt(item.mintCount) || 1
-                    console.log(count)
                     const mintListItem = mints[item.mint.id]
                     mintListItem.counts[t.id] = mintListItem.counts[t.id] ? mintListItem.counts[t.id] + count : count
 
@@ -206,6 +214,7 @@ export default {
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data
+                console.log(data)
             },
             onEnd: () => {
                 this.mounted_and_loaded_mixin_loaded("data")
@@ -354,9 +363,7 @@ export default {
                 to
             })
 
-
-            console.log(data)
-
+            console.log(this.treasures)
 
             this.timelineChart.update({
                 graphs: new BarGraph(data, { colors, yMax, yOffset: 10 }),

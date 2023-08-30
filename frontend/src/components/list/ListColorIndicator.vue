@@ -1,18 +1,26 @@
 <template>
-  <div class="color-indicator" :style="style"></div>
+  <div
+    class="color-indicator"
+    :style="style"
+  >
+  </div>
 </template>
 
 <script>
 export default {
   props: {
-    item: Object,
+    color: String,
+    defaultColor: {
+      type: String,
+      default: '#ffffff',
+    },
   },
   computed: {
-    color() {
-      return this.item.color || '#ffffff';
+    finalColor() {
+      return this.color || this.defaultColor || '#ffffff';
     },
     style() {
-      return `background-color: ${this.color};`;
+      return `background-color: ${this.finalColor};`;
     },
   },
 };
@@ -24,8 +32,8 @@ export default {
   width: $size;
   height: $size;
   border: $border;
+  border-color: $gray;
   box-sizing: border-box;
   border-radius: math.div($size, 2);
-  margin-right: 20px;
 }
 </style>
