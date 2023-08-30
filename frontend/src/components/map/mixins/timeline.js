@@ -21,8 +21,8 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
             },
             timeline_mixin_load() {
                 let options = {
-                    timelineActive: this.$mconfig.get("map.default.timeline.active"),
-                    year: this.$mconfig.get("map.default.timeline.startYear")
+                    timelineActive: this.$mconfig.getBoolean("map.default.timeline.active", true),
+                    year: this.$mconfig.getInteger("map.default.timeline.startYear", 377)
                 }
                 const optionsString = localStorage.getItem('map-timeline')
 
@@ -33,6 +33,7 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                     console.warn(e)
                 }
 
+                console.log(typeof options.year)
                 return {
                     year: URLParams.getInteger('year', options.year),
                     timelineActive: URLParams.getBoolean('timelineActive', options.timelineActive)

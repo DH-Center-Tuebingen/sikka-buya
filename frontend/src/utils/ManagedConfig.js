@@ -43,21 +43,57 @@ export default class ManagedConfig {
         return exists
     }
 
-    get(path) {
+    get(path, defaultValue = null) {
         let target = this.base
-        console.log(path)
+        let value = defaultValue
         let parts = path.split(".")
 
-        while (parts.length > 0) {
+        while (parts.length > 1) {
             let part = parts.shift()
             if (target[part] !== undefined) {
                 target = target[part]
             } else {
-                target = null
+                console.warn(`Invalid path ${path} using default value`)
                 break
             }
         }
 
-        return target
+        if (parts.length === 1) {
+            if (target.hasOwnProperty(parts[0])) {
+                value = target[parts[0]]
+            } else {
+                console.warn(`Invalid path ${path} using default value`)
+            }
+        }
+
+        return value
+    }
+
+    _typeValidatorFunction(path, defaultValue, type, validator) {
+        const raw_value = this.get(path)
+        if (raw_value == null) return null
+
+        let { valid, value } = validator(raw_value)
+        if (!valid) {
+            console.warn(`Value at ${path} is not an ${type}. Using default value: ${defaultValue}.`)
+            value = defaultValue
+        }
+        return value
+    }
+
+    getInteger(path, defaultValue = null) {
+        return this._typeValidatorFunction(path, defaultValue, "integer", (str) => {
+            const value = parseInt(str)
+            return { valid: !isNaN(value), value }
+        })
+    }
+
+    getBoolean(path, defaultValue = null) {
+        return this._typeValidatorFunction(path, defaultValue, "boolean", (str) => {
+            const value = (str === "true") ? true
+                : (str === "false") ? false
+                    : null
+            return { valid: value !== null, value }
+        })
     }
 }

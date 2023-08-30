@@ -140,8 +140,8 @@ export default {
     };
   },
   /**
-   * Mounted hooks are fired in dir child -> parent.
-   * Therefore we may access the mounted map here.
+   * Child components are mounted before the parent component.
+   * So we can access the map in the mounted function.
    */
   mounted: function () {
     this.$refs.input.addEventListener('paste', this.pasteEvtListener);
