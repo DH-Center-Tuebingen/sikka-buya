@@ -1,8 +1,13 @@
-class Model {
 
-    constructor(tableName){
-        this.tableName = tableName
+
+class Model {
+    constructor(tableName) {
+        this._tableName = tableName
     }
 
-    createTable(){}
+    get tableName() {
+        return this._tableName
+    }
 }
+
+module.exports = Model

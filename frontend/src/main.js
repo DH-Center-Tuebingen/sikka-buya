@@ -22,7 +22,9 @@ async function main() {
   Vue.config.productionTip = false
 
   Vue.prototype.$utils = {
-    capitalize
+    capitalize,
+    snakeCase,
+    camelCase,
   }
 
   Vue.use(mconfig, {
@@ -37,12 +39,6 @@ async function main() {
       log(...args) {
         console.log(...args)
       },
-      snakeCase(str) {
-        return snakeCase(str)
-      },
-      camelCase(str) {
-        return camelCase(str)
-      }
     }
   })
 

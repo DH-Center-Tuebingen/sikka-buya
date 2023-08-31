@@ -118,19 +118,20 @@ export default {
     },
     properties() {
       let props = [
-        'honorific',
         'coin_mark',
         'coin_verse',
+        'dynasty',
+        'honorific',
         'material',
         'mint',
+        'mint_area',
         'nominal',
         'person',
-        'title',
-        'type',
-        'dynasty',
-        'role',
         'province',
-        'treasure'
+        'role',
+        'title',
+        'treasure',
+        'type',
       ];
 
       let propertyMap = {

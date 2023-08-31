@@ -425,10 +425,19 @@ type Query {
 
   getSetting(path:String!):String 
   settings: String
+
+  mintArea: [MintArea]
+  getMintArea(id:ID!): MintArea
+  searchMintArea(text:String): [MintArea]
 }
 
 
-
+type MintArea {
+  id: ID
+  name: String
+  location:GeoJSON
+  uncertain: Boolean
+}
 
 type MintPersons { 
   mint: Mint,
@@ -582,6 +591,16 @@ type Mutation {
 
   deleteSetting(path:String!):Void
   updateSetting(path:String!, value:String!):Void
+
+  addMintArea(data: MintAreaInput): Void
+  updateMintArea(id: ID!, data: MintAreaInput): Void
+  deleteMintArea(id: ID!): Void
+}
+
+input MintAreaInput {
+  name: String!
+  location: GeoJSON
+  uncertain: Boolean
 }
 
 input PageInput {
