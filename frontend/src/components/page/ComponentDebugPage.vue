@@ -5,7 +5,7 @@
             <LocationInput
                 :interactive="true"
                 :type="type"
-                :allowRadius="true"
+                :allowCircle="true"
                 :radius="radius"
                 :coordinates="coordinates"
                 @update="updateInput"

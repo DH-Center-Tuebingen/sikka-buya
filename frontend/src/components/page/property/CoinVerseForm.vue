@@ -10,7 +10,11 @@
       :error="error"
       :disabled="disabled"
     >
-      <input id="coin-verse-id" v-model="value.id" type="hidden" />
+      <input
+        id="coin-verse-id"
+        v-model="value.id"
+        type="hidden"
+      />
       <input
         id="coin-verse-name"
         type="text"
@@ -30,7 +34,7 @@ import PropertyFormWrapper from '../PropertyFormWrapper.vue';
 export default {
   components: { PropertyFormWrapper },
   name: 'CoinVerseForm',
-  created: function () {
+  created() {
     let id = this.$route.params.id;
     if (id != null) {
       Query.raw(

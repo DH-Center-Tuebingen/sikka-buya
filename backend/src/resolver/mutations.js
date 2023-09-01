@@ -15,7 +15,7 @@ const PageGQL = require('./klasses/PageGQL')
 const TreasureGQL = require('./klasses/TreasureGQL')
 const Frontend = require('../frontend')
 const SettingsGQL = require('./klasses/SettingsGQL')
-const MintAreaGQL = require('./klasses/MintAreaGQL')
+const MintRegionGQL = require('./klasses/MintRegionGQL')
 
 /**
  * Most mutations require the user to be logged in to
@@ -277,7 +277,7 @@ const Mutations = Object.assign({},
             PageGQL.Mutations,
             BlockGQL.Mutations,
             TreasureGQL.Mutations,
-            MintAreaGQL.Mutations,
+            MintRegionGQL.Mutations,
         ), (_, __, context) => {
             return Auth.verifyContext(context)
         }),

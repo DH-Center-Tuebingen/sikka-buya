@@ -17,7 +17,7 @@ const { readdir } = require('fs/promises')
 const { join } = require('path')
 const TreasureGQL = require('./klasses/TreasureGQL.js')
 const SettingsGQL = require('./klasses/SettingsGQL.js')
-const MintAreaGQL = require('./klasses/MintAreaGQL.js')
+const MintRegionGQL = require('./klasses/MintRegionGQL.js')
 
 
 
@@ -625,5 +625,5 @@ module.exports = Object.assign(Queries,
     PageGQL.Queries,
     SettingsGQL.Queries,
     TreasureGQL.Queries,
-    MintAreaGQL.Queries,
+    MintRegionGQL.Queries,
 )

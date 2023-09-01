@@ -1,18 +1,30 @@
 const { Database, WriteableDatabase } = require('../utils/database')
 const { GeoJSON } = require('./geojson')
-class MintArea {
+class MintRegion {
 
     static get tableName() {
-        return "mint_area"
+        return "mint_region"
     }
 
     static async get(id) {
-        return Database.oneOrNone(`SELECT * FROM $1:name WHERE id=$2`, [MintArea.tableName, id])
+        const res = await Database.oneOrNone(`
+        SELECT
+            id,
+            name,
+            ST_AsGeoJSON(location)::json AS location
+        FROM $1:name WHERE id=$2
+        `, [MintRegion.tableName, id])
+        return res
 
     }
 
     static async list() {
-        return Database.manyOrNone(`SELECT * FROM $1:name`, [MintArea.tableName])
+        return Database.manyOrNone(`
+            SELECT 
+                id,
+                name,
+                ST_AsGeoJSON(location)::json AS location
+            FROM $1:name`, [MintRegion.tableName])
     }
 
     static async update(id, {
@@ -27,7 +39,7 @@ class MintArea {
         location = COALESCE(ST_GeomFromGeoJSON($[location]), location),
         uncertain = COALESCE($[uncertain], uncertain)
         `, {
-            tableName: MintArea.tableName,
+            tableName: MintRegion.tableName,
             name,
             location,
             uncertain
@@ -39,6 +51,10 @@ class MintArea {
         location = null,
         uncertain = false
     } = {}) {
+
+
+        console.log("location", location)
+
         return WriteableDatabase.query(`INSERT INTO 
         $[tableName:name]
         (name, location, uncertain)
@@ -47,7 +63,7 @@ class MintArea {
             ${location ? "ST_GeomFromGeoJSON($[location])" : null}, 
             $[uncertain])
         `, {
-            tableName: MintArea.tableName,
+            tableName: MintRegion.tableName,
             name,
             location,
             uncertain
@@ -56,14 +72,14 @@ class MintArea {
 
     static async delete(id) {
         return WriteableDatabase.query(`DELETE FROM $[tableName:name] WHERE id=$[id]`, {
-            tableName: MintArea.tableName,
+            tableName: MintRegion.tableName,
             id
         })
     }
 
     static async search(text) {
-        return Database.manyOrNone(`SELECT * FROM $1:name WHERE unaccent(name) ILIKE unaccent($2)`, [MintArea.tableName, `%${text}%`])
+        return Database.manyOrNone(`SELECT * FROM $1:name WHERE unaccent(name) ILIKE unaccent($2)`, [MintRegion.tableName, `%${text}%`])
     }
 }
 
-module.exports = MintArea
+module.exports = MintRegion

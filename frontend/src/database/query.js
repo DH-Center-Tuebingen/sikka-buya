@@ -2,6 +2,7 @@ import AxiosHelper from "../utils/AxiosHelper.js";
 import Auth from "../utils/Auth";
 import { graphqlEndpoint } from './host';
 import { print } from 'graphql/language/printer';
+import { capitalize } from "lodash";
 
 export default class Query {
 
@@ -17,7 +18,7 @@ export default class Query {
     }
 
     get capitalizedName() {
-        return this.name[0].toUpperCase() + this.name.substr(1)
+        return capitalize(this.name)
     }
 
     async search(text, properties = this.defaultProperties) {

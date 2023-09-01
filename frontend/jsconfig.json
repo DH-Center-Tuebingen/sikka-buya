@@ -26,7 +26,7 @@
     ".vue"
   ],
   "include": [
-    "node_modules/vue-material-design-icons/**"
+    "node_modules/vue-material-design-icons/*"
   ],
   "exclude": [
     "node_modules",

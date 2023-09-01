@@ -2,7 +2,6 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router/router'
 import store from "./store"
-import capitalize from 'capitalize';
 import Settings from './settings'
 import { ConfigMixin } from './config'
 import I18n from './i18n/i18n';
@@ -10,6 +9,7 @@ import VueI18n from 'vue-i18n';
 import { camelCase, snakeCase } from 'change-case';
 import Selection from './models/selection';
 import mconfig from './plugins/mconfig';
+import StringUtils from './utils/StringUtils'
 
 async function main() {
 
@@ -22,7 +22,7 @@ async function main() {
   Vue.config.productionTip = false
 
   Vue.prototype.$utils = {
-    capitalize,
+    capitalize: StringUtils.capitalize,
     snakeCase,
     camelCase,
   }

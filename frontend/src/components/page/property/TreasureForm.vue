@@ -52,7 +52,7 @@
             <LocationInput
                 :interactive="true"
                 :type="location.type"
-                :allowRadius="true"
+                :allowCircle="true"
                 :radius="locationRadius"
                 :coordinates="location.coordinates"
                 ref="locationInput"
@@ -142,7 +142,7 @@ export default {
             name: "",
             literature: "",
             timespan: { from: null, to: null },
-            location: { coordinates: [0, 0], type: "circle" },
+            location: { type: "Feature", geometry: { coordinates: [0, 0], type: "point" }, properties: { radius: 1000 } },
             locationRadius: 10,
             items: [],
             importErrors: []
@@ -241,8 +241,7 @@ export default {
 
             if (location.type.toLowerCase() === "polygon")
                 location.coordinates = [location.coordinates]
-            if (location.type.toLowerCase() === "circle")
-                location = this.$refs.locationInput.getGeoJsonFromCircle()
+
 
             const treasure = new Treasure({
                 name: this.name,

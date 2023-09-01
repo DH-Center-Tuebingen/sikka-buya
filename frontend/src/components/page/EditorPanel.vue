@@ -124,7 +124,7 @@ export default {
         'honorific',
         'material',
         'mint',
-        'mint_area',
+        'mint_region',
         'nominal',
         'person',
         'province',

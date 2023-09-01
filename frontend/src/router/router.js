@@ -78,6 +78,7 @@ import DynastyForm from "@/components/page/property/DynastyForm"
 import LocaleForm from "@/components/page/property/LocaleForm"
 import MaterialForm from "@/components/page/property/MaterialForm"
 import MintForm from "@/components/page/property/MintForm"
+import MintRegionForm from "@/components/page/property/MintRegionForm"
 import NominalForm from "@/components/page/property/NominalForm"
 import PersonForm from "@/components/page/property/PersonForm"
 import ProvinceForm from "@/components/page/property/ProvinceForm"
@@ -101,6 +102,7 @@ import TemplatePage from "@/components/page/TemplatePage"
 import { componentTestRoutes } from "@/component-test.js"
 import { superUserIsSet } from '../utils/Setup.js'
 import store from '../store.js'
+import PropertyRoute from './routes/property_routes.js'
 
 Vue.use(VueRouter)
 
@@ -355,106 +357,19 @@ const routes = [
             name: 'EditType',
             component: CreateTypePage
           },
-          {
-            path: "coin_mark/create",
-            name: "CreateCoinMark",
-            component: CoinMarkForm
-          }, {
-            path: "coin_mark/:id",
-            name: "EditCoinMark",
-            component: CoinMarkForm
-          },
-          {
-            path: "coin_verse/create",
-            name: "CreateCoinVerse",
-            component: CoinVerseForm
-          }, {
-            path: "coin_verse/:id",
-            name: "EditCoinVerse",
-            component: CoinVerseForm
-          }, {
-            path: "material/create",
-            name: "CreateMaterial",
-            component: MaterialForm
-          }, {
-            path: "material/:id",
-            name: "EditMaterial",
-            component: MaterialForm
-          }, {
-            path: "person/create",
-            name: "CreatePerson",
-            component: PersonForm
-          }, {
-            path: "person/:id",
-            name: "EditPerson",
-            component: PersonForm
-          }, {
-            path: "title/create",
-            name: "CreateTitle",
-            component: TitleForm
-          }, {
-            path: "title/:id",
-            name: "EditTitle",
-            component: TitleForm
-          }, {
-            path: "honorific/create",
-            name: "CreateHonorific",
-            component: HonorificForm
-          }, {
-            path: "honorific/:id",
-            name: "EditHonorific",
-            component: HonorificForm
-          }, {
-            path: "mint/create",
-            name: "CreateMint",
-            component: MintForm
-          }, {
-            path: "mint/:id",
-            name: "EditMint",
-            component: MintForm
-          }, {
-            path: "nominal/create",
-            name: "CreateNominal",
-            component: NominalForm
-          }, {
-            path: "nominal/:id",
-            name: "EditNominal",
-            component: NominalForm
-          }, {
-            path: "role/create",
-            name: "CreateRole",
-            component: RoleForm
-          }, {
-            path: "role/:id",
-            name: "EditRole",
-            component: RoleForm
-          }, {
-            path: "dynasty/create",
-            name: "CreateDynasty",
-            component: DynastyForm
-          }, {
-            path: "dynasty/:id",
-            name: "EditDynasty",
-            component: DynastyForm
-          }, {
-            path: "province/create",
-            name: "CreateProvince",
-            component: ProvinceForm
-          }, {
-            path: "province/:id",
-            name: "EditProvince",
-            component: ProvinceForm
-          },
-          {
-            path: "treasure/create",
-            name: "TreasureCreate",
-            component: TreasureForm
-          },
-          {
-            path: "treasure/:id",
-            name: "TreasureEdit",
-            component: TreasureForm
-          },
+          ...PropertyRoute.from('coin_mark', CoinMarkForm).routes,
+          ...PropertyRoute.from('coin_verse', CoinVerseForm).routes,
+          ...PropertyRoute.from('material', MaterialForm).routes,
+          ...PropertyRoute.from("person", PersonForm).routes,
+          ...PropertyRoute.from("title", TitleForm).routes,
+          ...PropertyRoute.from("honorific", HonorificForm).routes,
+          ...PropertyRoute.from("mint", MintForm).routes,
+          ...PropertyRoute.from("mint_region", MintRegionForm).routes,
+          ...PropertyRoute.from("nominal", NominalForm).routes,
+          ...PropertyRoute.from("role", RoleForm).routes,
+          ...PropertyRoute.from("dynasty", DynastyForm).routes,
+          ...PropertyRoute.from("province", ProvinceForm).routes,
+          ...PropertyRoute.from("treasure", TreasureForm).routes,
           {
             path: "locale/:lang/:path",
             name: "Locale",

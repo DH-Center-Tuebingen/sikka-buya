@@ -4,12 +4,14 @@ class GeoJSON {
     //All implemented GeoJSON types: https://www.rfc-editor.org/rfc/rfc7946 
     static types = ['point', 'polygon']
     static fields = ['type', 'coordinates']
+    static optionalFields = ['properties']
 
 
     static isEmpty(obj) {
+        if (!obj || !obj.type) return true
         switch (obj.type.toLowerCase()) {
-            case "point": GeoJsonPointFeature.lengthOf(obj);
-            case "polygon": GeoJsonPolygonFeature.lengthOf(obj);
+            case "point": GeoJsonPointGeoemtry.lengthOf(obj);
+            case "polygon": GeoJsonPolygonGeometry.lengthOf(obj);
             default:
                 console.error(`GeoJSON type "${obj.type}" is not implemented.`)
         }
@@ -34,8 +36,8 @@ class GeoJSON {
                     throw new GraphQLError(`GeoJSON type "${type}" is either not valid or not implemented!`)
                 } else {
                     switch (type) {
-                        case GeoJsonPointFeature.type:
-                        case GeoJsonPolygonFeature.type:
+                        case GeoJsonPointGeoemtry.type:
+                        case GeoJsonPolygonGeometry.type:
                             return value
                         default:
                             throw new GraphQLError(`GeoJSON type was not correctly implemented: ${type}`)
@@ -66,12 +68,14 @@ class GeoJSON {
                     let fields = ast.fields
                     parsedLiteral = {}
 
-                    if (fields.length != 2) throw new Error(`GeoJSON needs exactly two fields: type and coordinates! Found ${fields.length}`)
+                    const requiredFields = GeoJSON.fields.slice()
 
                     fields.forEach(field => {
-                        let name = field.name.value
+                        const name = field.name.value
 
-                        if (GeoJSON.fields.indexOf(name) === -1) {
+                        if (requiredFields.indexOf(name) !== -1) {
+                            requiredFields.splice(requiredFields.indexOf(name), 1)
+                        } else {
                             throw new Error(`Invalid key in GeoJSON: ${name}`)
                         }
 
@@ -93,33 +97,42 @@ class GeoJSON {
                         parsedLiteral[name] = value
                     })
 
+                    if (requiredFields.length > 0) {
+                        throw new Error(`Missing required fields: ${requiredFields.join(", ")}`)
+                    }
 
                 }
 
-                let err = `The coordinates field of a GeoJSON object of type '${parsedLiteral.type}' needs to be`
-                switch (parsedLiteral.type) {
-                    case "point":
-                        if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length === 2 && parsedLiteral.coordinates.every(value => !isNaN(value))))
-                            throw new Error(`${err} an array of exactly length 2 with numbers as values.`)
-                        break
-                    case "polygon":
-                        if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length > 0 && parsedLiteral.coordinates.every(arr => {
-                            return Array.isArray(arr) && arr.length > 3 && arr[0].every((value, index) => value === arr[arr.length - 1][index])
-                        })))
-                            throw new Error(`${err} an array of arrays with at least 1 element. All arrays need to have four or more items, where the first and last are the same coordinate.`)
-                        break
-                    default:
-                        throw new Error(`Coordinates validation for type "${parsedLiteral.type}" is not implemented!`)
-                }
-
+                GeoJSON.validateParsedLiteral(parsedLiteral)
                 return parsedLiteral
             }
+
+
         })
+    }
+
+
+    static validateParsedLiteral(parsedLiteral) {
+        let err = `The coordinates field of a GeoJSON object of type '${parsedLiteral.type}' needs to be`
+        switch (parsedLiteral.type) {
+            case "point":
+                if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length === 2 && parsedLiteral.coordinates.every(value => !isNaN(value))))
+                    throw new Error(`${err} an array of exactly length 2 with numbers as values.`)
+                break
+            case "polygon":
+                if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length > 0 && parsedLiteral.coordinates.every(arr => {
+                    return Array.isArray(arr) && arr.length > 3 && arr[0].every((value, index) => value === arr[arr.length - 1][index])
+                })))
+                    throw new Error(`${err} an array of arrays with at least 1 element. All arrays need to have four or more items, where the first and last are the same coordinate.`)
+                break
+            default:
+                throw new Error(`Coordinates validation for type "${parsedLiteral.type}" is not implemented!`)
+        }
     }
 }
 
 
-class GeoJsonFeature {
+class GeoJsonGeometry {
     static get type() {
         throw new Error("Abstract getter not implemented: type.")
     }
@@ -137,7 +150,7 @@ class GeoJsonFeature {
 }
 
 
-class GeoJsonPointFeature extends GeoJsonFeature {
+class GeoJsonPointGeoemtry extends GeoJsonGeometry {
     static get type() {
         return "point"
     }
@@ -147,7 +160,7 @@ class GeoJsonPointFeature extends GeoJsonFeature {
     }
 }
 
-class GeoJsonPolygonFeature extends GeoJsonFeature {
+class GeoJsonPolygonGeometry extends GeoJsonGeometry {
     static get type() {
         return "polygon"
     }
@@ -164,6 +177,6 @@ class GeoJsonPolygonFeature extends GeoJsonFeature {
 
 module.exports = {
     GeoJSON,
-    GeoJsonPointFeature,
-    GeoJsonPolygonFeature,
+    GeoJsonPointGeoemtry,
+    GeoJsonPolygonGeometry,
 }

@@ -1,19 +1,39 @@
 <template>
   <div class="property-page">
-    <h1><Locale :path="`property.${property}`" /> </h1>
-    <LoadingSpinner class="loading-spinner" v-if="loading" />
-    <form v-if="!loading" @submit.prevent>
+    <h1>
+      <Locale :path="`property.${property}`" />
+    </h1>
+    <LoadingSpinner
+      class="loading-spinner"
+      v-if="loading"
+    />
+    <form
+      v-if="!loading"
+      @submit.prevent.stop="() => log('PREVENTED SUBMIT')"
+    >
       <slot></slot>
-      <div v-if="error" class="information error">
+      <div
+        v-if="error"
+        class="information error"
+      >
         {{ error }}
       </div>
       <Row class="button-bar">
-        <button id="cancel-button" type="button" @click.prevent.stop="cancel">
+        <Button
+          id="cancel-button"
+          type="button"
+          @click="cancel"
+        >
           <Locale path="form.cancel" />
-        </button>
-        <button id="submit-button" type="submit" @click="submit" :disabled="disabled">
+        </Button>
+        <Button
+          id="submit-button"
+          type="submit"
+          @click="submit"
+          :disabled="disabled || !dirty"
+        >
           <Locale path="form.submit" />
-        </button>
+        </Button>
       </Row>
     </form>
   </div>
@@ -22,11 +42,16 @@
 <script>
 import Locale from '../cms/Locale.vue';
 import Row from '../layout/Row.vue';
+import Button from '../layout/buttons/Button.vue';
 import LoadingSpinner from '../misc/LoadingSpinner.vue';
 
 export default {
   name: 'PropertyFormWrapper',
   props: {
+    dirty: {
+      type: Boolean,
+      required: true,
+    },
     property: {
       type: String,
       required: true,
@@ -42,7 +67,8 @@ export default {
   components: {
     LoadingSpinner,
     Row,
-    Locale
+    Locale,
+    Button
   },
   methods: {
     submit: function () {
@@ -52,6 +78,7 @@ export default {
       if (this.overwriteRoute) {
         this.$router.push({ name: this.overwriteRoute });
       } else {
+        console.log('PropertyFormWrapper: Canceling', this.property)
         this.$router.push({
           name: 'Property',
           params: { property: this.property },
