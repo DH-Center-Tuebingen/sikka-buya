@@ -14,17 +14,12 @@
           :value="extendedType.toLowerCase()"
           @change="typeChange"
         >
-          <option value="point">
-            <Locale path="location.point" />
-          </option>
-          <option value="polygon">
-            <Locale path="location.polygon" />
-          </option>
           <option
-            value="circle"
-            v-if="allowCircle"
+            v-for="{ value, label } in options"
+            :value="value"
+            :key="value"
           >
-            <Locale path="location.circle" />
+            {{ label }}
           </option>
         </select>
         <label
@@ -107,6 +102,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    only: {
+      type: Array,
+      default: () => [],
+      validator: (arr) => {
+        console.log(arr);
+        return arr.every(value => ['point', 'polygon', 'circle'].includes(value.toLowerCase()));
+      },
+    },
     value: {
       type: Object,
       required: true,
@@ -120,6 +123,7 @@ export default {
   watch: {
     value: {
       handler() {
+        console.log("UPDATE")
         this.updateMarker();
       },
       deep: true
@@ -261,6 +265,7 @@ export default {
             let coordinates = this.coordinates;
             switch (prevPosition.action) {
               case 'set': {
+                console.log("SET")
                 if (!this.isPolygon) {
                   coordinates = prevPosition.coordinates;
                 } else {
@@ -347,6 +352,8 @@ export default {
       while (this.markerHistory.length > this.historyLimit)
         this.markerHistory.pop();
 
+      console.log(coordinates)
+
       this.emitUpdate({ coordinates });
     },
     removeMarker() {
@@ -380,6 +387,7 @@ export default {
             const coordinates =
               this.coordinates == null ? [] : this.coordinates;
             coordinates.splice(idx + 1, 0, point);
+
 
             this.markerHistory.unshift({
               action: 'insert',
@@ -422,6 +430,8 @@ export default {
           coordinates
         }
       }
+
+      console.log("EMIT")
 
       this.$emit('update', location);
     },
@@ -594,6 +604,21 @@ export default {
     properties() {
       return this.value.properties || {}
     },
+    options() {
+      const toOptionMap = (val) => {
+        val = val.toLowerCase()
+        return {
+          value: val,
+          label: this.$tc(val, 1)
+        }
+      }
+
+      if (this.only.length > 0) return this.only.map((val) => toOptionMap(val))
+      else return this.availableTypes.map((val) => toOptionMap(val))
+    },
+    availableTypes() {
+      return ["point", "polygon", "circle"]
+    },
     extendedType() {
       if (this.type === "feature" && this.properties.radius != null) {
         return "circle"
@@ -620,7 +645,8 @@ export default {
     },
     coordinateString: function () {
       return this.coordinatesToString(this.value);
-    }
+    },
+
   },
 };
 </script>

@@ -8,8 +8,13 @@
       :title="$tc('property.mint')"
       :error="error"
       :disabled="disabled"
+      :dirty="dirty"
     >
-      <input id="mint-id" v-model="mint.id" type="hidden" />
+      <input
+        id="mint-id"
+        v-model="mint.id"
+        type="hidden"
+      />
       <label for="mint-name">Name</label>
       <input
         type="text"
@@ -32,9 +37,10 @@
       <label for="location">Location</label>
       <location-input
         id="mint-location"
-        type="point"
-        :coordinates="mint.location.coordinates"
-        @update="updateLocation"
+        :interactive="false"
+        :only="['point']"
+        v-model="mint.location"
+        @update="(location) => $set(mint, 'location', location)"
       />
 
       <div id="uncertain-row">
@@ -49,10 +55,11 @@
         <label for="location">Geschätzte Verortung</label>
         <location-input
           id="mint-uncertain-location-input"
-          type="polygon"
-          :coordinates="mint.uncertainArea.coordinates"
-          @update="updateUncertainArea"
+          :interactive="true"
+          :only="['polygon', 'circle']"
+          v-model="mint.uncertainArea"
           ref="uncertainLocation"
+          @update="(location) => $set(mint, 'uncertainArea', location)"
         />
       </div>
 
@@ -158,21 +165,21 @@ export default {
 
       const location =
         !this.mint.location ||
-        this.mint.location?.type == 'empty' ||
-        this.mint.location.coordinates == null ||
-        this.mint.location.coordinates.length < 2
+          this.mint.location?.type == 'empty' ||
+          this.mint.location.coordinates == null ||
+          this.mint.location.coordinates.length < 2
           ? null
           : this.mint.location;
 
       const uncertainArea =
         !this.mint.uncertainArea ||
-        this.mint.uncertainArea?.type == 'empty' ||
-        this.mint.uncertainArea?.coordinates == null
+          this.mint.uncertainArea?.type == 'empty' ||
+          this.mint.uncertainArea?.coordinates == null
           ? null
           : {
-              type,
-              coordinates: [coordinates],
-            };
+            type,
+            coordinates: [coordinates],
+          };
       if (uncertainArea && uncertainArea.type === 'polygon') {
         const lastIndex = uncertainArea.coordinates.length - 1;
         if (uncertainArea.coordinates.length > 0) {
@@ -291,15 +298,10 @@ export default {
     cancel: function () {
       this.$router.push({ path: '/mint' });
     },
-    updateLocation: function (geoJson) {
-      this.mint.location = geoJson;
-    },
-    updateUncertainArea: function (geoJson) {
-      this.mint.uncertainArea = geoJson;
-    },
   },
   data: function () {
     return {
+      dirty: false,
       errors: [],
       loading: true,
       radius: 1000,
@@ -314,12 +316,16 @@ export default {
           name: '',
         },
         location: {
-          type: 'empty',
-          coordinates: [],
+          type: 'point',
+          coordinates: null,
         },
         uncertainArea: {
-          type: 'empty',
-          coordinates: [],
+          type: 'feature',
+          properties: { radius: 3000 },
+          geometry: {
+            type: 'point',
+            coordinates: null,
+          }
         },
       },
     };

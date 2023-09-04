@@ -32,7 +32,7 @@ export function isValidGeoJson(value) {
         if (!value.geometry) return false
         return isValidGeoJson(value.geometry)
     } else {
-        if (!value.coordinates) return false
+        if (value.coordinates === undefined) return false
     }
     return true
 }
