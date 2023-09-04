@@ -2,16 +2,37 @@ const { GraphQLError, GraphQLScalarType, Kind } = require('graphql')
 
 class GeoJSON {
     //All implemented GeoJSON types: https://www.rfc-editor.org/rfc/rfc7946 
-    static types = ['point', 'polygon']
+    static types = ['point', 'polygon', 'feature']
     static fields = ['type', 'coordinates']
-    static optionalFields = ['properties']
+
+
+    static separate(obj) {
+        if (!obj.type) throw new Error(`GeoJSON object needs a type!`)
+
+        const feature = {
+            geometry: null,
+            properties: null,
+        }
+
+        switch (obj.type.toLowerCase()) {
+            case GeoJsonPointGeoemtry.type:
+            case GeoJsonPolygonGeometry.type:
+                feature.geometry = obj
+                break
+            case GeoJsonFeature.type:
+                feature.geometry = obj.geometry
+                feature.properties = obj.properties
+        }
+        return feature
+    }
 
 
     static isEmpty(obj) {
         if (!obj || !obj.type) return true
         switch (obj.type.toLowerCase()) {
-            case "point": GeoJsonPointGeoemtry.lengthOf(obj);
-            case "polygon": GeoJsonPolygonGeometry.lengthOf(obj);
+            case "point": return GeoJsonPointGeoemtry.lengthOf(obj) === 0;
+            case "polygon": return GeoJsonPolygonGeometry.lengthOf(obj) === 0;
+            case "feature": return GeoJsonFeature.isEmpty(obj)
             default:
                 console.error(`GeoJSON type "${obj.type}" is not implemented.`)
         }
@@ -36,6 +57,7 @@ class GeoJSON {
                     throw new GraphQLError(`GeoJSON type "${type}" is either not valid or not implemented!`)
                 } else {
                     switch (type) {
+                        case GeoJsonFeature.type:
                         case GeoJsonPointGeoemtry.type:
                         case GeoJsonPolygonGeometry.type:
                             return value
@@ -45,14 +67,18 @@ class GeoJSON {
                 }
             },
             parseLiteral(ast) {
-                let parsedLiteral = null
-
-                function recurseArrayValue(astNode, debug = false) {
+                function parseAst(astNode, debug = false) {
                     switch (astNode.kind) {
+                        case Kind.OBJECT:
+                            let obj = {}
+                            astNode.fields.forEach(field => {
+                                obj[field.name.value] = parseAst(field.value)
+                            })
+                            return obj
                         case Kind.LIST:
                             let arr = []
                             astNode.values.forEach(child => {
-                                arr.push(recurseArrayValue(child))
+                                arr.push(parseAst(child))
                             })
                             return arr
                         case Kind.FLOAT: return parseFloat(astNode.value)
@@ -64,55 +90,18 @@ class GeoJSON {
 
                 }
 
-                if (ast.kind === Kind.OBJECT) {
-                    let fields = ast.fields
-                    parsedLiteral = {}
-
-                    const requiredFields = GeoJSON.fields.slice()
-
-                    fields.forEach(field => {
-                        const name = field.name.value
-
-                        if (requiredFields.indexOf(name) !== -1) {
-                            requiredFields.splice(requiredFields.indexOf(name), 1)
-                        } else {
-                            throw new Error(`Invalid key in GeoJSON: ${name}`)
-                        }
-
-                        let value;
-                        if (name === "coordinates") {
-                            let coordinatesValueNode = field.value
-                            if (coordinatesValueNode.kind !== Kind.LIST) {
-                                throw new Error(`Coordinates needs to be an array, got ${coordinatesValueNode.kind}`)
-                            }
-                            value = recurseArrayValue(coordinatesValueNode, name === "coordinates")
-                        } else { // if field is "type"
-                            let typeValueNode = field.value
-                            if (typeValueNode.kind != Kind.STRING) throw new Error(`Expected type value to be 'string', got: ${typeValueNode.kind}`)
-                            let type = typeValueNode.value.toLowerCase()
-                            if (GeoJSON.types.indexOf(type) === -1) throw new Error(`Invalid or not implemented type: ${type}`)
-                            value = type
-                        }
-
-                        parsedLiteral[name] = value
-                    })
-
-                    if (requiredFields.length > 0) {
-                        throw new Error(`Missing required fields: ${requiredFields.join(", ")}`)
-                    }
-
-                }
-
+                if (ast.kind !== Kind.OBJECT) throw new GraphQLError(`GeoJSON needs to be an object!`)
+                let parsedLiteral = parseAst(ast)
                 GeoJSON.validateParsedLiteral(parsedLiteral)
                 return parsedLiteral
             }
-
-
         })
     }
 
 
+
     static validateParsedLiteral(parsedLiteral) {
+        if (!parsedLiteral.type) throw new Error(`A GeoJSON object needs a type!`)
         let err = `The coordinates field of a GeoJSON object of type '${parsedLiteral.type}' needs to be`
         switch (parsedLiteral.type) {
             case "point":
@@ -125,17 +114,48 @@ class GeoJSON {
                 })))
                     throw new Error(`${err} an array of arrays with at least 1 element. All arrays need to have four or more items, where the first and last are the same coordinate.`)
                 break
+            case "feature":
+                if (!parsedLiteral.geometry) throw new Error(`A GeoJSON feature needs a 'geometry' object!`)
+                GeoJsonFeature.validateParsedLiteral(parsedLiteral);
+                break
             default:
                 throw new Error(`Coordinates validation for type "${parsedLiteral.type}" is not implemented!`)
         }
     }
 }
 
-
-class GeoJsonGeometry {
+class GeoJSONBase {
     static get type() {
         throw new Error("Abstract getter not implemented: type.")
     }
+
+}
+
+class GeoJsonFeature extends GeoJSONBase {
+    static get type() {
+        return "feature"
+    }
+
+    static isEmpty(obj) {
+        if (!obj || !obj.type) return true
+        switch (obj.type.toLowerCase()) {
+            case "feature":
+                return GeoJSON.isEmpty(obj.geometry)
+            default:
+                console.error(`GeoJSON type "${obj.type}" is not implemented.`)
+        }
+    }
+
+    static validateParsedLiteral(parsedLiteral) {
+        if (!parsedLiteral.geometry) {
+            throw new Error(`A GeoJSON feature needs a geometry!`)
+        }
+        GeoJSON.validateParsedLiteral(parsedLiteral.geometry)
+    }
+}
+
+
+class GeoJsonGeometry extends GeoJSONBase {
 
     static lengthOf(obj) {
         throw new Error("Abstract method not implemented: lengthOf.")

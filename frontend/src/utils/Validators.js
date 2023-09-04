@@ -13,3 +13,26 @@
 export function isNumberOrNull(value) {
     return value == null || !isNaN(value)
 }
+
+
+/**
+ * Checks if the provided value is a valid GeoJSON object.
+ * 
+ * Note: Currently only supports GeoJSON objects with a type of `Feature`, `Point`, or `Polygon`.
+ * 
+ * @param {object} value - The value to check. 
+ */
+export function isValidGeoJson(value) {
+    if (!value) return false
+    if (!value.type) return false
+    const validTypes = ['feature', 'point', 'polygon']
+    if (!validTypes.includes(value.type.toLowerCase())) return false
+
+    if (value.type.toLowerCase() === 'feature') {
+        if (!value.geometry) return false
+        return isValidGeoJson(value.geometry)
+    } else {
+        if (!value.coordinates) return false
+    }
+    return true
+}

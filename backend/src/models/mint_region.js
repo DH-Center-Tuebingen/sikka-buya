@@ -7,24 +7,43 @@ class MintRegion {
     }
 
     static async get(id) {
-        const res = await Database.oneOrNone(`
-        SELECT
-            id,
-            name,
-            ST_AsGeoJSON(location)::json AS location
-        FROM $1:name WHERE id=$2
-        `, [MintRegion.tableName, id])
-        return res
-
+        const list = await this.list({ id })
+        if (list.length > 1) throw new Error(`More than one mint region with id ${id} found.`)
+        return list[0]
     }
 
-    static async list() {
-        return Database.manyOrNone(`
-            SELECT 
-                id,
-                name,
-                ST_AsGeoJSON(location)::json AS location
-            FROM $1:name`, [MintRegion.tableName])
+    static async list(filters = {}) {
+
+        let query = `SELECT 
+                        id,
+                        name,
+                        ST_AsGeoJSON(location)::json AS location,
+                        properties::jsonb AS properties
+                    FROM $[tableName:name]`
+
+        if (Object.keys(filters).length > 0) {
+            query += `WHERE `
+            const filterQuery = Object.keys(filters).map((key) => {
+                return `${key} = $[${key}]`
+            }).join(" AND ")
+
+            query += filterQuery
+        }
+        const val = Object.assign({ tableName: MintRegion.tableName }, filters)
+        const result = await Database.manyOrNone(query, val)
+        return result.map((row) => MintRegion.postProcess(row))
+    }
+
+    static postProcess(result) {
+        if (Object.keys(result.properties).length > 0) {
+            let feature = {
+                type: "Feature",
+                properties: result.properties,
+                geometry: result.location
+            }
+            result.location = feature
+        }
+        return result
     }
 
     static async update(id, {
@@ -32,17 +51,24 @@ class MintRegion {
         location = null,
         uncertain = null
     } = {}) {
+
+        const { properties, geometry } = GeoJSON.separate(location)
+
         return WriteableDatabase.query(`UPDATE
         $[tableName:name]
             SET 
         name = COALESCE($[name], name),
         location = COALESCE(ST_GeomFromGeoJSON($[location]), location),
-        uncertain = COALESCE($[uncertain], uncertain)
+        uncertain = COALESCE($[uncertain], uncertain),
+        properties = COALESCE(to_jsonb($[properties]::jsonb), properties)
+        WHERE id=$[id]
         `, {
+            id,
             tableName: MintRegion.tableName,
             name,
-            location,
-            uncertain
+            location: geometry,
+            uncertain,
+            properties: JSON.stringify(properties)
         })
     }
 
@@ -52,21 +78,22 @@ class MintRegion {
         uncertain = false
     } = {}) {
 
-
-        console.log("location", location)
+        const { properties, geometry } = GeoJSON.separate(location)
 
         return WriteableDatabase.query(`INSERT INTO 
         $[tableName:name]
-        (name, location, uncertain)
+        (name, location, properties, uncertain)
         VALUES
         ($[name], 
             ${location ? "ST_GeomFromGeoJSON($[location])" : null}, 
+            ${properties ? "to_jsonb($[properties]::jsonb)" : null},
             $[uncertain])
         `, {
             tableName: MintRegion.tableName,
             name,
-            location,
-            uncertain
+            location: geometry,
+            uncertain,
+            properties: JSON.stringify(properties)
         })
     }
 

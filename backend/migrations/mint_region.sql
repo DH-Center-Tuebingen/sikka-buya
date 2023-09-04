@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS mint_region (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     location GEOMETRY,
+    properties JSONB,
     uncertain BOOLEAN NOT NULL DEFAULT FALSE
 );
 

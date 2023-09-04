@@ -169,7 +169,7 @@
             "pressed": "geprägt"
         },
         "project_id": "sikka:būya-ID | sikka:būya-IDs",
-        "province": "Region | Regionen",
+        "province": "Provinz | Provinzen",
         "purity": "Feingehalt",
         "reverse": {
             "fieldText": "Revers-Feld",
@@ -203,7 +203,8 @@
         "no_fragment": "kein Fragment",
         "weight": "Gewicht",
         "uncertain_mint": "Prägeort unsicher",
-        "year_of_mint_uncertain": "Prägejahr unsicher"
+        "year_of_mint_uncertain": "Prägejahr unsicher",
+        "mint_region": "Münzgebiet"
     },
     "role": {
         "caliph": "Kalif | Kalif",

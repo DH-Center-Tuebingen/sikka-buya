@@ -7,6 +7,8 @@
         :dirty="dirty"
         @submit="submit"
     >
+        <pre>
+    </pre>
         <input
             type="text"
             name="name"
@@ -25,11 +27,9 @@
             ref="locationInput"
             :interactive="true"
             :allowCircle="true"
-            :type="location.type"
-            :coordinates="location.coordinates"
-            :properties="location.properties"
+            :value="location"
             @update="updateLocation"
-        />
+        ></LocationInput>
     </PropertyFormWrapper>
 </template>
 
@@ -144,6 +144,11 @@ export default {
                 addMintRegion(data: $data)
             }`, { data: this.getMintRegion() }, true)
         },
+        update() {
+            return Query.raw(`mutation UpdateMintRegion($id:ID!, $data: MintRegionInput!){
+                updateMintRegion(id: $id,data: $data)
+            }`, { data: this.getMintRegion(), id: this.id }, true)
+        }
 
     },
     computed: {
