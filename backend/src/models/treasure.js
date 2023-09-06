@@ -2,7 +2,7 @@ const { WriteableDatabase, pgp, Database } = require('../utils/database');
 const Type = require('../utils/type');
 const Dynasty = require('./dynasty');
 const Material = require('./material');
-const Mint = require('./mint');
+const MintRegion = require('./mint_region');
 const Nominal = require('./nominal');
 const { Table } = require('./table.js')
 const graphqlFields = require('graphql-fields')
@@ -16,7 +16,7 @@ class Treasure extends Table {
                 dynasty = null,
                 fragment = false,
                 material = null,
-                mint = null,
+                mint_region = null,
                 nominal = null,
                 uncertainMint = null,
                 uncertainYear = null,
@@ -42,7 +42,7 @@ class Treasure extends Table {
                     $[dynasty],
                     $[fragment],
                     $[material],
-                    $[mint],
+                    $[mint_region],
                     $[nominal],
                     $[treasure],
                     $[uncertainMint],
@@ -55,7 +55,7 @@ class Treasure extends Table {
                 dynasty,
                 fragment,
                 material,
-                mint,
+                mint_region,
                 nominal,
                 treasure: treasure,
                 uncertainMint,
@@ -132,7 +132,7 @@ class Treasure extends Table {
                 t.count,
                 t.dynasty,
                 t.coinType,
-                t.mint,
+                t.mint_region,
                 t.year,
                 t.nominal,
                 t.material,
@@ -296,7 +296,7 @@ class TreasureItem {
                 return (types?.length > 0) ? types[0] : null
             },
             dynasty: async (transaction, id) => Dynasty.get(id, transaction),
-            mint: async (transaction, id) => Mint.getById(id, transaction),
+            mintRegion: async (transaction, id) => MintRegion.get(id, transaction),
             nominal: async (transaction, id) => Nominal.get(id, transaction),
             material: async (transaction, id) => Material.get(id, { transaction }),
         }

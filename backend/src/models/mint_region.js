@@ -6,13 +6,13 @@ class MintRegion {
         return "mint_region"
     }
 
-    static async get(id) {
-        const list = await this.list({ id })
+    static async get(id, transaction = Database) {
+        const list = await this.list({ id }, transaction)
         if (list.length > 1) throw new Error(`More than one mint region with id ${id} found.`)
         return list[0]
     }
 
-    static async list(filters = {}) {
+    static async list(filters = {}, transaction = Database) {
 
         let query = `SELECT 
                         id,
@@ -30,7 +30,7 @@ class MintRegion {
             query += filterQuery
         }
         const val = Object.assign({ tableName: MintRegion.tableName }, filters)
-        const result = await Database.manyOrNone(query, val)
+        const result = await transaction.manyOrNone(query, val)
         return result.map((row) => MintRegion.postProcess(row))
     }
 
