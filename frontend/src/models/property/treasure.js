@@ -41,7 +41,7 @@ export class Treasure {
     }
 
     async get(id) {
-        const result = await new Query("treasure")
+        return new Query("treasure")
             .get(id, [
                 "id",
                 "name",
@@ -64,8 +64,6 @@ export class Treasure {
                         "fragment"]
                 }
             ])
-
-        return result?.data?.data?.getTreasure
     }
 
     fixLocation(location) {

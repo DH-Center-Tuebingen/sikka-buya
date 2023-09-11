@@ -137,7 +137,6 @@ export default {
       let propertyMap = {
         person: 'PersonOverview',
         material: 'MaterialOverview',
-        coin_mark: 'CoinMarkOverview',
         type: 'TypeOverview',
       };
 

@@ -2,7 +2,7 @@
   <overview property="person" :parameters="['color']">
     <template #list-item-before="prop">
       <div class="color-indicator-container">
-        <list-color-indicator :item="prop.item" />
+        <list-color-indicator :color="prop.item.color" />
       </div>
     </template>
   </overview>

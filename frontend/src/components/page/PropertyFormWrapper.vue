@@ -60,7 +60,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    overwriteRoute: String,
+    overwriteRoute: Object,
     loading: Boolean,
     error: String,
   },
@@ -76,7 +76,7 @@ export default {
     },
     cancel: function () {
       if (this.overwriteRoute) {
-        this.$router.push({ name: this.overwriteRoute });
+        this.$router.push(this.overwriteRoute);
       } else {
         console.log('PropertyFormWrapper: Canceling', this.property)
         this.$router.push({

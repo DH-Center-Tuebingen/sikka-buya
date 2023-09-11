@@ -1,12 +1,11 @@
 <template>
   <div class="coin-mark-form">
     <PropertyFormWrapper
+      property="coin_mark"
       @submit="property_form_mixin_submit"
       @cancel="property_form_mixin_cancel"
       :loading="property_form_mixin_loading"
       :title="property_form_mixin_title"
-      property="coin_mark"
-      :overwriteRoute="property_form_mixin_overwriteRoute"
       :error="property_form_mixin_error"
       :disabled="property_form_mixin_disabled"
       :dirty="property_form_mixin_dirty"
@@ -37,15 +36,20 @@ export default {
   components: { PropertyFormWrapper },
   name: 'CoinMarkForm',
   mixins: [
-    PropertFormMixinFunc("value"),
+    PropertFormMixinFunc({ variable: "value", property: "coin_mark" }),
   ],
-  methods: {
-
-  },
   data: function () {
     return {
       value: { id: -1, name: '' },
     };
+  },
+  methods: {
+    getProperty: async function (id) {
+      return new Query("CoinMark").get(id)
+    },
+    updateProperty: async function (value) {
+      await new Query("CoinMark").update(value)
+    },
   },
 };
 </script>

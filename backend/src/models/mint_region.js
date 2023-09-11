@@ -17,6 +17,7 @@ class MintRegion {
         let query = `SELECT 
                         id,
                         name,
+                        uncertain,
                         ST_AsGeoJSON(location)::json AS location,
                         properties::jsonb AS properties
                     FROM $[tableName:name]`

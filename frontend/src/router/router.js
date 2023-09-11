@@ -51,8 +51,6 @@ import EditorPage from "@/components/page/editor/EditorPage.vue"
 import LandingPage from "@/components/page/LandingPage.vue"
 import ContactPage from "@/components/page/ContactPage.vue"
 import CreateTypePage from "@/components/page/CreateTypePage.vue"
-import CoinMarkOverview from "@/components/page/CoinMarkOverview.vue"
-import CoinVerseOverview from "@/components/page/CoinVerseOverview.vue"
 import InitialSetup from "@/components/page/InitialSetup.vue"
 import UserManagementPage from "@/components/page/UserManagementPage.vue"
 import FixDiff from "@/components/page/FixDiff.vue"
@@ -322,15 +320,6 @@ const routes = [
             name: "TypeOverview",
             component: TypeOverview,
             props: { adminView: true }
-          },
-          {
-            path: "coin_mark",
-            name: "CoinMarkOverview",
-            component: CoinMarkOverview
-          }, {
-            path: "coin_verse",
-            name: "CoinVerseOverview",
-            component: CoinVerseOverview
           },
           {
             path: "person",

@@ -1,14 +1,20 @@
 <template>
   <div class="honorific-form">
     <PropertyFormWrapper
-      @submit="submit"
-      :loading="loading"
-      :title="$tc('property.honorific')"
       property="honorific"
-      :error="error"
-      :disabled="disabled"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
+      :loading="property_form_mixin_loading"
+      :title="property_form_mixin_title"
+      :error="property_form_mixin_error"
+      :disabled="property_form_mixin_disabled"
+      :dirty="property_form_mixin_dirty"
     >
-      <input id="honorific-id" v-model="honorific.id" type="hidden" />
+      <input
+        id="honorific-id"
+        v-model="honorific.id"
+        type="hidden"
+      />
       <input
         id="honorific-name"
         type="text"
@@ -24,54 +30,27 @@
 <script>
 import Query from '../../../database/query.js';
 import PropertyFormWrapper from '../PropertyFormWrapper.vue';
+import PropertFormMixinFunc from '../../mixins/property-form-mixin-func'
 
 export default {
   components: { PropertyFormWrapper },
   name: 'HonorificForm',
-  created: function () {
-    let id = this.$route.params.id;
-    if (id != null) {
-      new Query('honorific')
-        .get(id, ['id', 'name'])
-        .then((result) => {
-          this.honorific = result.data.data.getHonorific;
-          this.disabled = false;
-        })
-        .catch((err) => {
-          this.$data.error = this.$t('error.loading_element');
-          console.error(err);
-        })
-        .finally(() => {
-          this.$data.loading = false;
-        });
-    } else {
-      this.$data.loading = false;
-      this.disabled = false;
-    }
-  },
-  methods: {
-    submit: function () {
-      new Query('honorific')
-        .update(this.honorific)
-        .then(() => {
-          this.$router.push({
-            name: 'Property',
-            params: { property: 'honorific' },
-          });
-        })
-        .catch((err) => {
-          this.error = this.$t('error.could_not_update_element');
-          console.error(err);
-        });
-    },
-  },
+  mixins: [
+    PropertFormMixinFunc({ variable: "honorific", property: "honorific" }),
+  ],
   data: function () {
     return {
-      error: '',
-      loading: true,
       honorific: { id: -1, name: '' },
-      disabled: true,
     };
   },
+  methods: {
+    getProperty: async function (id) {
+      return new Query("Honorific").get(id)
+    },
+    updateProperty: async function () {
+      await new Query("Honorific").update(this.honorific)
+    },
+  },
+
 };
 </script>

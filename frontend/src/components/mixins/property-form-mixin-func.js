@@ -1,25 +1,28 @@
-export default function ({ watchedVariableName, propertyName } = {}) {
+export default function ({ variable = null, property = null } = {}) {
+
+    if (!property) {
+        throw new Error("property must be defined")
+    }
+
+    if (!variable)
+        variable = property
+
     return {
-        created: function () {
-            let id = this.$route.params.id;
-            if (id != null) {
-                this.property_form_mixin_get(id);
-            } else {
-                this.disabled = false;
-                this.$data.loading = false;
-            }
+        created() {
+            this.property_form_mixin_initialize()
         },
         watch: {
-            [watchedVariableName]: {
+            [variable]: {
                 handler() {
-                    this.property_form_mixin_setDirty()
+                    if (this.property_form_mixin_initialized)
+                        this.property_form_mixin_setDirty()
                 },
                 deep: true
             }
         },
         data() {
             return {
-                property_form_mixin_disabled: true,
+                property_form_mixin_initialized: false,
                 property_form_mixin_error: "",
                 property_form_mixin_loading: true,
                 property_form_mixin_dirty: false,
@@ -35,44 +38,54 @@ export default function ({ watchedVariableName, propertyName } = {}) {
             updateProperty: async function (data) {
                 throw new Error("updateProperty not implemented", data);
             },
-            createProperty: async function (data) {
-                throw new Error("createProperty not implemented", data);
-            },
             //=================================
-            property_form_mixin_submit: async function () {
-                if (this.value.id && this.value.id >= 0) {
-                    this.updateProperty(this.$data[watchedVariableName]);
-                } else {
-                    this.createProperty(this.$data[watchedVariableName]);
+            property_form_mixin_initialize: async function () {
+                this.property_form_mixin_loading = true
+                try {
+                    if (this.id)
+                        this[variable] = await this.getProperty(this.id)
+
+                    // We set the initialized in the next cycle so that
+                    // the watcher is not triggered in this cycle.
+                    this.$nextTick(() => {
+                        this.property_form_mixin_initialized = true
+                    })
+                } catch (e) {
+                    this.property_form_mixin_raiseError(e)
                 }
+
+                this.property_form_mixin_loading = false
+            },
+            property_form_mixin_submit: async function () {
+                this.property_form_mixin_loading = true
+                try {
+                    await this.updateProperty(this.$data[variable]);
+                    this.property_form_mixin_cancel()
+                } catch (e) {
+                    console.error(e)
+                    this.property_form_mixin_raiseError(e.message)
+                }
+                this.property_form_mixin_loading = false
             },
             property_form_mixin_cancel: function () {
-                this.$router.push({ name: `${this.camelCase(propertyName)}Overview` });
+                this.$router.push({ path: `/editor/${property}` })
             },
             property_form_mixin_setDirty(value = true) {
                 this.property_form_mixin_dirty = value
             },
-            property_form_mixin_raiseError(error) {
-                this.property_form_mixin_error = error
-            },
-            property_form_mixin_get: async function (id) {
-                this.property_form_mixin_loading = true;
-                try {
-                    this.$data[watchedVariableName] = await this.getProperty(id);
-                    this.property_form_mixin_disabled = false;
-                } catch (err) {
-                    this.property_form_mixin_error = this.$t('error.loading_element');
-                    console.error(err);
-                }
-                this.property_form_mixin_loading = false;
+            property_form_mixin_raiseError(errorMessage) {
+                this.property_form_mixin_error = errorMessage
             },
         },
-        getters: {
-            property_form_mixin_overwriteRoute() {
-                return `${this.camelCase(propertyName)}Overview`
+        computed: {
+            property_form_mixin_disabled() {
+                return !this.property_form_mixin_initialized && !this.property_form_mixin_dirty && !this.property_form_mixin_loading
             },
             property_form_mixin_title() {
-                return this.$tc(`property.${this.snakeCase(propertyName)}}`)
+                return this.$tc(`property.${this.$utils.snakeCase(property)}}`)
+            },
+            id() {
+                return this.$route.params.id || null
             }
         }
     }

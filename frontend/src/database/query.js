@@ -32,7 +32,9 @@ export default class Query {
         return this.raw(query)
     }
 
-    async get(id, properties = []) {
+    async get(id, properties = this.defaultProperties) {
+
+        const getName = `get${this.capitalizedName}`
 
         function recursivelyBuildBody(p) {
             for (let [index, object] of p.entries()) {
@@ -50,13 +52,14 @@ export default class Query {
 
         const query = `
               {
-                get${this.capitalizedName} (id:${id})  
+                 ${getName}(id:${id})  
                     ${recursivelyBuildBody(properties)}
                 
               }
             `
 
-        return Query.raw(query)
+        const result = await Query.raw(query)
+        return result.data.data[getName]
     }
 
     async raw(query, variables) {

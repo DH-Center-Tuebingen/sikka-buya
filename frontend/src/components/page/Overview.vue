@@ -165,6 +165,7 @@ export default {
       if (this.createPage) {
         this.$router.push({ name: this.createPage });
       } else {
+        console.log("PATH", `${snakeCase(this.property)}/create`)
         this.$router.push({
           path: `${snakeCase(this.property)}/create`,
         });

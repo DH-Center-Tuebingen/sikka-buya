@@ -6,7 +6,7 @@ import Settings from './settings'
 import { ConfigMixin } from './config'
 import I18n from './i18n/i18n';
 import VueI18n from 'vue-i18n';
-import { camelCase, snakeCase } from 'change-case';
+import { camelCase, pascalCase, snakeCase } from 'change-case';
 import Selection from './models/selection';
 import mconfig from './plugins/mconfig';
 import StringUtils from './utils/StringUtils'
@@ -25,6 +25,7 @@ async function main() {
     capitalize: StringUtils.capitalize,
     snakeCase,
     camelCase,
+    pascalCase,
   }
 
   Vue.use(mconfig, {

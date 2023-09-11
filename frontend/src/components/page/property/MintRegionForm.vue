@@ -1,23 +1,24 @@
 <template>
     <PropertyFormWrapper
         property="mint_region"
-        @loading="loading"
-        :error="error"
-        :disabled="disabled"
-        :dirty="dirty"
-        @submit="submit"
+        @submit="property_form_mixin_submit"
+        @cancel="property_form_mixin_cancel"
+        :loading="property_form_mixin_loading"
+        :title="property_form_mixin_title"
+        :error="property_form_mixin_error"
+        :disabled="property_form_mixin_disabled"
+        :dirty="property_form_mixin_dirty"
     >
         <pre>
     </pre>
         <input
             type="text"
             name="name"
-            v-model="name"
+            v-model="mintRegion.name"
         >
         <Checkbox
             id="mrf-checkbox"
-            :value="uncertain"
-            v-model="uncertain"
+            v-model="mintRegion.uncertain"
         >
             <template #label>
                 <Locale path="property.location_uncertain" />
@@ -27,7 +28,7 @@
             ref="locationInput"
             :interactive="true"
             :allowCircle="true"
-            :value="location"
+            :value="mintRegion.location"
             @update="updateLocation"
         ></LocationInput>
     </PropertyFormWrapper>
@@ -39,105 +40,66 @@ import PropertyFormWrapper from '../PropertyFormWrapper.vue';
 import LocationInput from '../../forms/LocationInput.vue'
 import Locale from '../../cms/Locale.vue';
 import Query from '../../../database/query';
+import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 
 export default {
+    name: "MintRegionForm",
     components: {
         PropertyFormWrapper,
         Checkbox,
         LocationInput,
         Locale
     },
-    created() {
-        let id = this.$route.params.id;
-        if (this.isUpdate) {
-            Query.raw(
+    mixins: [
+        propertyFormMixinFunc({ property: "mintRegion" })
+    ],
+    data() {
+        return {
+            mintRegion: {
+                name: "",
+                uncertain: false,
+                location: {
+                    type: "point",
+                    coordinates: [0, 0],
+                    properties: {
+                        radius: 3000
+                    }
+                }
+            },
+        }
+    },
+    methods: {
+        getProperty: async function (id) {
+            const result = await Query.raw(
                 `query GetMintRegion($id: ID!){
                     getMintRegion(id: $id){
                         id,
                         name,
-                        location
+                        location,
+                        uncertain
                     }
                 }`, { id })
-                .then((result) => {
-                    const data = result.data.data.getMintRegion;
-                    this.name = data.name;
-                    this.location = data.location;
-                    this.loaded(true)
-                })
-                .catch((err) => {
-                    this.error = this.$t('error.loading_element');
-                    console.error(err);
-                    this.loaded(false)
-                })
-        } else {
-            this.loaded(true)
-        }
-    },
-    watch: {
-        name() {
-            this.dirty = true
+
+            console.log(result.data.data.getMintRegion.uncertain)
+
+            return result.data.data.getMintRegion;
         },
-        location: {
-            handler() {
-                this.dirty = true
-            },
-            deep: true
-        },
-        uncertain() {
-            this.dirty = true
-        }
-    },
-    data() {
-        return {
-            error: "",
-            dirty: false,
-            loading: true,
-            disabled: true,
-            name: "",
-            location: {
-                type: "point",
-                coordinates: [0, 0],
-                properties: {
-                    radius: 3000
-                }
-            },
-            uncertain: false
-        }
-    },
-    methods: {
-        loaded(success = true) {
-            this.loading = false
-            this.disabled = !success
+        updateProperty: async function () {
+            if (this.id) {
+                await this.update()
+            } else {
+                await this.create()
+            }
         },
         updateLocation(location) {
-            this.location = location
+            this.mintRegion.location = location
         },
         getMintRegion() {
             return {
-                name: this.name,
+                name: this.mintRegion.name,
                 location: this.$refs.locationInput.getGeoJSON(),
-                uncertain: this.uncertain
+                uncertain: this.mintRegion.uncertain
             }
-        },
-        async submit() {
-            this.loading = true
-            try {
-                if (this.isUpdate)
-                    await this.update()
-                else
-                    await this.create()
-
-                this.$router.push({
-                    name: 'Property',
-                    params: {
-                        property: 'mint_region'
-                    }
-                });
-            } catch (err) {
-                this.error = this.$t('error.could_not_create_element');
-                console.error(err);
-            }
-            this.loading = false
         },
         create() {
             return Query.raw(`mutation AddMintRegion($data: MintRegionInput!){
@@ -151,14 +113,6 @@ export default {
         }
 
     },
-    computed: {
-        id() {
-            return this.$route.params.id
-        },
-        isUpdate() {
-            return this.id != null
-        }
-    }
 }
 </script>
 

@@ -1,14 +1,14 @@
 <template>
   <div class="mint-form">
     <PropertyFormWrapper
-      @submit="submit"
-      @cancel="cancel"
-      :loading="loading"
       property="mint"
-      :title="$tc('property.mint')"
-      :error="error"
-      :disabled="disabled"
-      :dirty="dirty"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
+      :loading="property_form_mixin_loading"
+      :title="property_form_mixin_title"
+      :error="property_form_mixin_error"
+      :disabled="property_form_mixin_disabled"
+      :dirty="property_form_mixin_dirty"
     >
       <input
         id="mint-id"
@@ -84,6 +84,7 @@ import LocationInput from '../../forms/LocationInput.vue';
 import GraphQLUtils from '../../../utils/GraphQLUtils.js';
 import DataSelectField from '../../forms/DataSelectField.vue';
 import LabeledInputContainer from '../../LabeledInputContainer.vue';
+
 
 export default {
   components: {

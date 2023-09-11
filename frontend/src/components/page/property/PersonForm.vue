@@ -1,15 +1,21 @@
 <template>
   <div class="person-form">
     <PropertyFormWrapper
-      @submit="submit"
       property="person"
-      :loading="loading"
-      :title="$tc('property.person')"
-      :error="error"
-      :disabled="disabled"
-      overwriteRoute="PersonOverview"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
+      :loading="property_form_mixin_loading"
+      :title="property_form_mixin_title"
+      :error="property_form_mixin_error"
+      :disabled="property_form_mixin_disabled"
+      :dirty="property_form_mixin_dirty"
+      :overwriteRoute="{ name: 'PersonOverview' }"
     >
-      <input id="person-id" v-model="person.id" type="hidden" />
+      <input
+        id="person-id"
+        v-model="person.id"
+        type="hidden"
+      />
 
       <label for="person-name">Name</label>
       <input
@@ -47,7 +53,10 @@
       />
 
       <label for="person-color">Farbe</label>
-      <color-input id="person-color" v-model="person.color" />
+      <color-input
+        id="person-color"
+        v-model="person.color"
+      />
     </PropertyFormWrapper>
   </div>
 </template>
@@ -58,20 +67,35 @@ import PropertyFormWrapper from '../PropertyFormWrapper.vue';
 import DataSelectField from '@/components/forms/DataSelectField.vue';
 import LabeledInputContainer from '@/components/LabeledInputContainer.vue';
 import ColorInput from '@/components/forms/ColorInput.vue';
+
+import PropertyFormMixinFunc from '../../mixins/property-form-mixin-func';
+
 export default {
+  name: 'PersonForm',
   components: {
     PropertyFormWrapper,
     DataSelectField,
     LabeledInputContainer,
     ColorInput,
   },
-  name: 'PersonForm',
-  mounted: function () {
-    let id = +this.$route.params.id;
-
-    if (!isNaN(id)) {
-      Query.raw(
-        `
+  mixins: [
+    PropertyFormMixinFunc({ variable: "person", property: "person" })
+  ],
+  data: function () {
+    return {
+      person: {
+        id: -1,
+        name: '',
+        shortName: '',
+        role: { id: null, name: '' },
+        dynasty: { id: null, name: '' },
+        color: '#000000',
+      },
+    };
+  },
+  methods: {
+    getProperty: async function (id) {
+      const result = await Query.raw(`
       query ($id : ID!){
         getPerson(id: $id){
           id
@@ -87,32 +111,16 @@ export default {
           }
           color
         }
-      }
-      
-      `,
-        { id }
-      )
-        .then((result) => {
-          this.person = result.data.data.getPerson;
-          if (this.person.color === null) this.person.color = '#ffffff';
-          if (this.person.role == null) this.person.role = ' ';
-          this.disabled = false;
-        })
-        .catch((err) => {
-          this.$data.error = this.$t('error.loading_element');
-          console.log(err);
-        })
-        .finally(() => {
-          this.$data.loading = false;
-        });
-    } else {
-      this.disabled = false;
-      this.$data.loading = false;
-    }
-  },
-  methods: {
-    submit: function () {
+      }`, { id })
+
+      let person = result.data.data.getPerson;
+      if (person.color === null) person.color = '#ffffff';
+      if (person.role == null) person.role = ' ';
+      return person
+    },
+    updateProperty: async function (id) {
       let query;
+      let queryName;
 
       let variables = {
         name: this.person.name,
@@ -124,61 +132,41 @@ export default {
 
       if (this.person.id && this.person.id > 0) {
         variables.id = this.person.id;
+        queryName = "updatePerson"
         query = `mutation($id:ID!, $name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String)
-      {
-            updatePerson (
-              id: $id,
-              data: {
-                name: $name,
-                shortName: $shortName,
-                role: $role,
-                dynasty: $dynasty,
-                color: $color
-              }
-            )
-        }`;
+{
+      ${queryName} (
+        id: $id,
+        data: {
+          name: $name,
+          shortName: $shortName,
+          role: $role,
+          dynasty: $dynasty,
+          color: $color
+        }
+      )
+  }`;
       } else {
+        queryName = "addPerson"
         query = `mutation($name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String)
-      {
-            addPerson (
-              data: {
-                name: $name,
-                shortName: $shortName,
-                role: $role,
-                dynasty: $dynasty,
-                color: $color
-              }
-            )
-        }`;
+{
+      ${queryName} (
+        data: {
+          name: $name,
+          shortName: $shortName,
+          role: $role,
+          dynasty: $dynasty,
+          color: $color
+        }
+      )
+  }`;
       }
 
-      Query.raw(query, variables)
-        .then((result) => {
-          this.$router.push({ name: 'PersonOverview' });
-        })
-        .catch((err) => {
-          this.error = this.$t('error.could_not_update_element');
-          console.error(err);
-        });
-    },
-    cancel: function () {
-      this.$router.push({ name: 'PersonOverview' });
-    },
-  },
-  data: function () {
-    return {
-      error: '',
-      loading: true,
-      disabled: true,
-      person: {
-        id: -1,
-        name: '',
-        shortName: '',
-        role: { id: null, name: '' },
-        dynasty: { id: null, name: '' },
-        color: '#000000',
-      },
-    };
+      const result = await Query.raw(query, variables)
+      this.person = result.data.data[queryName]
+
+
+    }
   },
 };
 </script>

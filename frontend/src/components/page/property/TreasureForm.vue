@@ -1,12 +1,15 @@
 <template>
     <PropertyFormWrapper
-        class="treasure-form"
-        :class="{ dirty: prevent_navigation_mixin_isDirty }"
-        :loading="editor_property_load"
         property="treasure"
-        @submit="submit"
-        :error="error"
+        @submit="property_form_mixin_submit"
+        @cancel="property_form_mixin_cancel"
+        :loading="property_form_mixin_loading"
+        :title="property_form_mixin_title"
+        :error="property_form_mixin_error"
+        :disabled="property_form_mixin_disabled"
+        :dirty="property_form_mixin_dirty"
     >
+        {{ property_form_mixin_error }}
         <LabeledInputContainer>
             <template #label>
                 <Locale path="general.name" />
@@ -14,7 +17,7 @@
 
             <input
                 type="text"
-                v-model="name"
+                v-model="value.name"
             >
         </LabeledInputContainer>
 
@@ -25,7 +28,7 @@
 
             <textarea
                 type="text"
-                v-model="literature"
+                v-model="value.literature"
             ></textarea>
         </LabeledInputContainer>
 
@@ -35,7 +38,7 @@
             </template>
 
             <div class="coin-range">
-                <RangeInput v-model="timespan" />
+                <RangeInput v-model="value.timespan" />
                 <Button @click="getCoinRangeFromItems">
                     <Locale path="form.range_from_items" />
                 </Button>
@@ -51,13 +54,10 @@
             </template>
             <LocationInput
                 :interactive="true"
-                :type="location.type"
                 :allowCircle="true"
-                :radius="locationRadius"
-                :coordinates="location.coordinates"
+                :value="value.location"
                 ref="locationInput"
-                @update="(geojson) => location = geojson"
-                @updateRadius="(radius) => locationRadius = radius"
+                @update="(geojson) => value.location = geojson"
             />
         </LabeledInputContainer>
 
@@ -86,11 +86,11 @@
             >
 
                 <TreasureItemForm
-                    v-for="(item, index) in items"
+                    v-for="(item, index) in value.items"
                     :key="index"
                     :value="item"
                     @typeChanged="(data) => handleTypeChange(index, data)"
-                    @delete="() => items.splice(index, 1)"
+                    @delete="() => value.items.splice(index, 1)"
                 />
             </form-list>
         </LabeledInputContainer>
@@ -99,7 +99,6 @@
 
 <script>
 import { Treasure, TreasureItem } from '../../../models/property/treasure';
-import CsvReader from "@/utils/CsvReader"
 import EditorPropertyMixin from "../../mixins/editor-property-mixin"
 import ErrorMessage from "@/components/ErrorMessage"
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
@@ -109,17 +108,17 @@ import List from "@/components/layout/List"
 import LoadingSpinner from "@/components/misc/LoadingSpinner"
 import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
-import PreventNavigationMixin from "../../mixins/prevent-navigation-mixin"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"
 
 import { TreasureItemsImporter } from "@/models/importer"
+import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 
 let treasure = new Treasure();
 export default {
-    mixins: [EditorPropertyMixin, PreventNavigationMixin],
+    mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure" })],
     components: {
         ErrorMessage,
         FileUploadButton,
@@ -136,44 +135,62 @@ export default {
     },
     data() {
         return {
+            value: {
+                name: "",
+                literature: "",
+                timespan: { from: null, to: null },
+                location: { type: "Feature", geometry: { coordinates: [0, 0], type: "point" }, properties: { radius: 1000 } },
+                items: [],
+            },
             autoComplete: true,
             importing: false,
-            error: "",
-            name: "",
-            literature: "",
-            timespan: { from: null, to: null },
-            location: { type: "Feature", geometry: { coordinates: [0, 0], type: "point" }, properties: { radius: 1000 } },
-            locationRadius: 10,
-            items: [],
             importErrors: []
         }
     },
-    watch: {
-        name: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-        },
-        literature: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-        },
-        timespan: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-            deep: true
-        },
-        items: {
-            handler: function () {
-                this.prevent_navigation_mixin_setDirty()
-            },
-            deep: true
-        },
-        location: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-            deep: true
-        },
-    },
     methods: {
+        getProperty: async function (id) {
+            let treasure = await new Treasure().get(id)
+            console.log(treasure)
+            let location = treasure.location || { coordinates: [0, 0], type: "point" }
+            if (location.type.toLowerCase() === "polygon")
+                location.coordinates = location.coordinates[0]
+
+            if (!treasure.items) treasure.items = []
+            treasure.items = treasure.items.map(item => new TreasureItem(item).forInput())
+            return treasure
+        },
+        updateProperty: async function () {
+
+            const type = this.value?.location?.type
+            const coordinates = this.value?.location?.coordinates || [] 
+
+            let location = (type) ? { type, coordinates: coordinates.slice() } : null
+
+            if (location.type.toLowerCase() === "polygon")
+                location.coordinates = [location.coordinates]
+
+            const treasure = new Treasure({
+                name: this.value.name,
+                location: location,
+                literature: this.value.literature,
+                timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
+                items: this.value.items.map(item => {
+                    let ti = TreasureItem.fromInputs(item)
+                    delete ti.id
+                    return ti
+                })
+            })
+
+            if (this.editor_property_id) {
+                await treasure.update(this.editor_property_id)
+            } else {
+                await treasure.add()
+            }
+
+        },
         getCoinRangeFromItems() {
             let timespan = { from: null, to: null }
-            this.items.forEach(item => {
+            this.value.items.forEach(item => {
                 let year = parseInt(item.year)
                 if (!isNaN(year)) {
                     if (timespan.from == null || year < timespan.from) timespan.from = year
@@ -187,16 +204,16 @@ export default {
             if (this.autoComplete && data.id != null) {
                 const namedInputs = ["mint", "material", "nominal"]
 
-                this.items[index].year = data["yearOfMint"]
+                this.value.items[index].year = data["yearOfMint"]
 
                 namedInputs.forEach(attribute => {
-                    this.items[index][attribute] = data[attribute]
+                    this.value.items[index][attribute] = data[attribute]
                 })
             }
         },
         addItem() {
             const item = new TreasureItem().forInput()
-            this.items.push(item)
+            this.value.items.push(item)
         },
         async importItems(event) {
             this.importing = true
@@ -208,65 +225,13 @@ export default {
             await importer.execFromFile(file)
             this.importErrors = importer.errors
             if (importer.errors.length === 0) {
-                this.items = importer.items
+                this.value.items = importer.items
                 this.getCoinRangeFromItems()
             }
 
             this.importing = false
 
         },
-        async loadProperty() {
-            try {
-                treasure = await new Treasure().get(this.editor_property_id)
-                this.name = treasure.name
-                this.timespan = treasure.timespan
-                this.literature = treasure.literature
-
-                let location = treasure.location || { coordinates: [0, 0], type: "point" }
-                if (location.type.toLowerCase() === "polygon")
-                    location.coordinates = location.coordinates[0]
-
-                this.location = location
-                this.items = treasure.items.map(item => new TreasureItem(item).forInput())
-            } catch (e) {
-                let message = e
-                if (e instanceof Error) message = e.message
-                this.error = Array.isArray(message) ? message.join("\n") : message
-            }
-        },
-        async submit() {
-            this.error = ""
-
-            let location = { type: this.location.type, coordinates: this.location.coordinates.slice() }
-
-            if (location.type.toLowerCase() === "polygon")
-                location.coordinates = [location.coordinates]
-
-
-            const treasure = new Treasure({
-                name: this.name,
-                location: location,
-                literature: this.literature,
-                timespan: { from: parseInt(this.timespan.from), to: parseInt(this.timespan.to) },
-                items: this.items.map(item => {
-                    let ti = TreasureItem.fromInputs(item)
-                    delete ti.id
-                    return ti
-                })
-            })
-
-            try {
-                if (this.editor_property_id) {
-                    await treasure.update(this.editor_property_id)
-                } else {
-                    await treasure.add()
-                }
-                this.prevent_navigation_mixin_setClean()
-                this.$router.push({ name: "Property", params: { property: "treasure" } })
-            } catch (e) {
-                this.error = Array.isArray(e) ? e.join("\n") : e
-            }
-        }
     }
 }
 </script>
