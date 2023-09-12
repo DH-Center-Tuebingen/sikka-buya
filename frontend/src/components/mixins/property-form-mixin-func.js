@@ -42,8 +42,13 @@ export default function ({ variable = null, property = null } = {}) {
             property_form_mixin_initialize: async function () {
                 this.property_form_mixin_loading = true
                 try {
-                    if (this.id)
-                        this[variable] = await this.getProperty(this.id)
+                    if (this.id) {
+                        const result = await this.getProperty(this.id)
+                        if (result != null)
+                            this[variable] = result
+                        else throw new Error(`Property with id='${this.id}' does not exist.`)
+
+                    }
 
                     // We set the initialized in the next cycle so that
                     // the watcher is not triggered in this cycle.

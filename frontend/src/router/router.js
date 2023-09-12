@@ -62,8 +62,7 @@ import EditorPanel from "@/components/page/EditorPanel.vue"
 import ExpertSearch from "@/components/page/editor/ExpertSearch.vue"
 
 import Overview from "@/components/page/Overview.vue"
-import PersonOverview from "@/components/page/PersonOverview"
-import MaterialOverview from "@/components/page/MaterialOverview"
+import ColorOverview from "@/components/page/ColorOverview"
 
 import FileListPage from "@/components/page/FileListPage.vue"
 
@@ -324,12 +323,18 @@ const routes = [
           {
             path: "person",
             name: "PersonOverview",
-            component: PersonOverview
+            props: {
+              property: "person"
+            },
+            component: ColorOverview
           },
           {
             path: "material",
             name: "MaterialOverview",
-            component: MaterialOverview
+            props: {
+              property: "material"
+            },
+            component: ColorOverview
           },
           {
             path: ":property",

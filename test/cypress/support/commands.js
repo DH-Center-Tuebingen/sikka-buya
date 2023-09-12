@@ -243,7 +243,9 @@ Cypress.Commands.add("multiInputArrayCloseTo", (selector, target, offset = 0.05)
         } catch (e) {
             console.error(e)
         }
+
         expect(array).to.not.be.undefined
+        console.log(array, array.length, target, target.length)
         expect(array).to.have.same.length(target.length)
         target.forEach((arr, pos) => {
             arr.forEach((val, idx) => {

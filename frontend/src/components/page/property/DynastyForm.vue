@@ -46,10 +46,10 @@ export default {
   methods: {
     getProperty: async function (id) {
       return new Query("Dynasty").get(id)
-    }
-  },
-  updateProperty: async function () {
-    await new Query("Dynasty").update(this.dynasty)
-  },
+    },
+    updateProperty: async function () {
+      await new Query("Dynasty").update(this.dynasty)
+    },
+  }
 };
 </script>

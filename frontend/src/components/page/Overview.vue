@@ -4,8 +4,6 @@
     <header>
       <h1>{{ $tc(`property.${fixedPropertyName}`) }}</h1>
 
-
-
       <Button
         id="create-button"
         @click="create"

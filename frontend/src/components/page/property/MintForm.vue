@@ -322,10 +322,10 @@ export default {
         },
         uncertainArea: {
           type: 'feature',
-          properties: { radius: 3000 },
+          properties: {},
           geometry: {
-            type: 'point',
-            coordinates: null,
+            type: 'polygon',
+            coordinates: [[]],
           }
         },
       },
