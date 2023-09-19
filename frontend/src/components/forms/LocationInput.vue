@@ -123,7 +123,6 @@ export default {
   watch: {
     value: {
       handler() {
-        console.log("UPDATE")
         this.updateMarker();
       },
       deep: true
@@ -164,7 +163,9 @@ export default {
     // complete bigger restructuring.
     // TODO: Remove when Features are supported
     getGeoJSON() {
-      if (this.extendedType === "circle") {
+      if (!this.type) {
+        return null
+      } else if (this.extendedType === "circle") {
         return {
           type: "Feature",
           geometry: {
@@ -172,6 +173,12 @@ export default {
             coordinates: this.coordinates
           },
           properties: this.properties
+        }
+      }
+      else if (this.isPolygon()) {
+        return {
+          type: "Polygon",
+          coordinates: [this.coordinates]
         }
       } else {
         return {
@@ -431,15 +438,22 @@ export default {
         }
       }
 
-      console.log("EMIT")
-
       this.$emit('update', location);
     },
     updateMarker() {
       this.removeMarker();
-      if (this.coordinates == null) {
+
+      // Return when the coordinates are empty
+      if (this.coordinates == null) return
+
+      // Return when the coordinates contain no items
+      // Flattened because of various types: e.g. Polygon
+      const flatArr = this.coordinates.flat(5);
+      if (flatArr.length === 0) {
         return;
-      } else if (this.coordinates.length > 0) {
+      }
+
+      if (this.coordinates.length > 0) {
         if (this.isPolygon) {
           this.marker = L.polygon(this.coordinates).addTo(this.map);
 

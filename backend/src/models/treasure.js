@@ -29,7 +29,7 @@ class Treasure extends Table {
                     dynasty,
                     fragment,
                     material,
-                    mint,
+                    mint_region,
                     nominal,
                     treasure,
                     uncertain_mint,
@@ -215,6 +215,7 @@ class TreasureItem {
     static get nameMap() {
         return {
             "coinType": "cointype",
+            "mintRegion": "mint_region",
             "uncertainYear": "uncertain_year",
             "uncertainMint": "uncertain_mint",
         }

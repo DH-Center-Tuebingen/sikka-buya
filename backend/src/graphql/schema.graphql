@@ -69,7 +69,7 @@ type TreasureItem {
   fragment: Boolean
   id: ID
   material: Material
-  mint: Mint
+  mintRegion: MintRegion
   uncertainMint: String
   nominal: Name
   weight: Float
@@ -83,7 +83,7 @@ input TreasureItemInput {
   dynasty: ID
   fragment: Boolean 
   material: ID
-  mint: ID
+  mintRegion: ID
   uncertainMint: String
   nominal: ID
   weight: Float
@@ -288,6 +288,8 @@ type Query {
   locale: String
   ping: String
   environment: String
+
+  geojson(d: GeoJSON): Void
 
   # Tested in 004_coin_mark
   coinMark: [Name]

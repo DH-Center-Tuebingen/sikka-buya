@@ -7,6 +7,8 @@ class Mint {
     static async add(mint) {
         this.fixGeoJSON(mint)
 
+        console.log("ADD", mint.uncertain_area.coordinates)
+
         mint = Object.assign({
             name: null,
             location: null,
@@ -86,16 +88,24 @@ class Mint {
     }
 
 
-    static fixGeoJSON(obj) {
+    static fixGeoJSON(mint) {
         if (mint.location && mint.location.type.toLowerCase() === "feature") throw new Error("A mint location cannot be a feature!")
-        if (mint.uncertain_area && mint.uncertain_area.type.toLowerCase() === "feature") throw new Error("A mint uncertain area cannot be a feature!")
+        if (mint.uncertainArea && mint.uncertainArea.type.toLowerCase() === "feature") throw new Error("A mint uncertain area cannot be a feature!")
 
-        if (obj.uncertainArea != null && !GeoJSON.isEmpty(obj.uncertainArea) > 0) {
-            obj["uncertain_area"] = obj.uncertainArea
+        const location = mint.location
+        const uncertainArea = mint.uncertainArea
+
+        console.log(location, uncertainArea)
+
+        GeoJSON.validateObject(location)
+        GeoJSON.validateObject(uncertainArea)
+
+        if (uncertainArea != null && !GeoJSON.isEmpty(uncertainArea) > 0) {
+            mint["uncertain_area"] = uncertainArea
         } else {
-            obj["uncertain_area"] = null
+            mint["uncertain_area"] = null
         }
-        delete obj.uncertainArea
+        delete mint.uncertainArea
     }
 
 

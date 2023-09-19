@@ -59,7 +59,7 @@ INSERT INTO  treasure_item (
     dynasty,
     fragment,
     material,
-    mint,
+    mint_region,
     uncertain_mint,
     nominal,
     weight,

@@ -266,7 +266,7 @@ export default {
 
       const queryCommand = this.queryCommand
         ? this.queryCommand
-        : `search${this.table[0].toUpperCase() + this.table.slice(1)}`;
+        : `search${this.$utils.pascalCase(this.table)}`;
 
       if (!query) {
         query = `query search($text: String!){

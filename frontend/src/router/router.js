@@ -498,7 +498,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (route) {
-    console.log("Redirecting to", route)
+    console.trace("Redirecting to", route)
     next(route)
   } else {
     console.log(to)

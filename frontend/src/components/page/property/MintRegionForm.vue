@@ -80,8 +80,6 @@ export default {
                     }
                 }`, { id })
 
-            console.log(result.data.data.getMintRegion.uncertain)
-
             return result.data.data.getMintRegion;
         },
         updateProperty: async function () {

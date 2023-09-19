@@ -1,89 +1,92 @@
 <template>
     <div class="treasure-item-form">
-        <LabeledInputContainer>
 
-            <template #label>
-                <Locale path="property.count" />
-            </template>
-
-            <input
-                type="number"
-                name=""
-                id=""
-                :placeholder="$tc('property.count')"
-                v-model="value.count"
-            >
-        </LabeledInputContainer>
-
-        <LabeledInputContainer>
-            <template #label>
-                <Locale path="property.dynasty" />
-            </template>
-
-            <DataSelect
-                table="dynasty"
-                :debug="debug"
-                v-model="value.dynasty"
-            />
-        </LabeledInputContainer>
-
-        <LabeledInputContainer>
-            <template #label>
-                <Locale path="property.fragment" />
-            </template>
-            <Toggle v-model="value.fragment">
-                <template #active>
-                    <div>
-                        <Icon
-                            :path="icons.checked"
-                            :size="IconSize.Normal"
-                            type="mdi"
-                        />
-                    </div>
-                </template>
-                <template #inactive>
-                    <div>
-                        <Icon
-                            :path="icons.unchecked"
-                            :size="IconSize.Normal"
-                            type="mdi"
-                        />
-                    </div>
-                </template>
-            </Toggle>
-        </LabeledInputContainer>
-
-        <LabeledInputContainer>
-
-            <template #label>
-                <span>
-                    <Locale path="property.weight" /> (g)
-                </span>
-
-
-            </template>
-
-            <input
-                type="number"
-                step="0.01"
-                name=""
-                id=""
-                :placeholder="$tc('property.weight')"
-                v-model="value.weight"
-            >
-        </LabeledInputContainer>
-
-        <div class="type-group">
+        <div class="box index-box">
+            <span>
+                {{ index }}
+            </span>
+        </div>
+        <div class="fields">
             <LabeledInputContainer>
                 <template #label>
-                    <Locale path="property.type" />
+                    <Locale path="property.mint_region" />
                 </template>
 
                 <DataSelect
-                    table="coinType"
-                    attribute="projectId"
-                    dataPath="coinType.types"
-                    query="query search($text: String){
+                    table="mint_region"
+                    :debug="debug"
+                    v-model="value.mintRegion"
+                />
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.dynasty" />
+                </template>
+
+                <DataSelect
+                    table="dynasty"
+                    :debug="debug"
+                    v-model="value.dynasty"
+                />
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.fragment" />
+                </template>
+                <Toggle v-model="value.fragment">
+                    <template #active>
+                        <div>
+                            <Icon
+                                :path="icons.checked"
+                                :size="IconSize.Normal"
+                                type="mdi"
+                            />
+                        </div>
+                    </template>
+                    <template #inactive>
+                        <div>
+                            <Icon
+                                :path="icons.unchecked"
+                                :size="IconSize.Normal"
+                                type="mdi"
+                            />
+                        </div>
+                    </template>
+                </Toggle>
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+
+                <template #label>
+                    <span>
+                        <Locale path="property.weight" /> (g)
+                    </span>
+
+
+                </template>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    name=""
+                    id=""
+                    v-model="value.weight"
+                >
+            </LabeledInputContainer>
+
+            <div class="type-group">
+                <LabeledInputContainer>
+                    <template #label>
+                        <Locale path="property.type" />
+                    </template>
+
+                    <DataSelect
+                        table="coinType"
+                        attribute="projectId"
+                        dataPath="coinType.types"
+                        query="query search($text: String){
                 coinType(filters: {projectId:$text}) {
                     types{
                         id
@@ -104,98 +107,99 @@
                     }
                 }
             }"
-                    @select="(value, data) => this.$emit('typeChanged', data)"
-                    v-model="value.coinType"
-                >
+                        @select="(value, data) => this.$emit('typeChanged', data)"
+                        v-model="value.coinType"
+                    >
 
-                </DataSelect>
-            </LabeledInputContainer>
+                    </DataSelect>
+                </LabeledInputContainer>
+
+                <LabeledInputContainer>
+
+                    <template #label>
+                        <Locale path="property.year_of_mint" />
+                    </template>
+
+                    <input
+                        type="number"
+                        name=""
+                        id=""
+                        v-model="value.year"
+                    >
+                </LabeledInputContainer>
+
+                <LabeledInputContainer>
+
+                    <template #label>
+                        <Locale path="property.year_of_mint_uncertain" />
+                    </template>
+
+                    <input
+                        type="text"
+                        name=""
+                        id=""
+                        v-model="value.uncertainYear"
+                    >
+                </LabeledInputContainer>
+
+
+                <LabeledInputContainer>
+                    <template #label>
+                        <Locale path="property.uncertain_mint" />
+                    </template>
+
+                    <input
+                        type="text"
+                        v-model="value.uncertainMint"
+                    >
+                </LabeledInputContainer>
+
+
+                <LabeledInputContainer>
+                    <template #label>
+                        <Locale path="property.nominal" />
+                    </template>
+
+                    <DataSelect
+                        table="nominal"
+                        :debug="debug"
+                        v-model="value.nominal"
+                    />
+                </LabeledInputContainer>
+
+                <LabeledInputContainer>
+                    <template #label>
+                        <Locale path="property.material" />
+                    </template>
+                    <DataSelect
+                        table="material"
+                        :debug="debug"
+                        v-model="value.material"
+                    />
+                </LabeledInputContainer>
+
+            </div>
 
             <LabeledInputContainer>
 
                 <template #label>
-                    <Locale path="property.year_of_mint" />
+                    <Locale path="property.count" />
                 </template>
 
                 <input
                     type="number"
                     name=""
                     id=""
-                    :placeholder="$tc('property.year_of_mint')"
-                    v-model="value.year"
+                    v-model="value.count"
                 >
             </LabeledInputContainer>
-
-            <LabeledInputContainer>
-
-                <template #label>
-                    <Locale path="property.year_of_mint_uncertain" />
-                </template>
-
-                <input
-                    type="text"
-                    name=""
-                    id=""
-                    :placeholder="$tc('property.year_of_mint_uncertain')"
-                    v-model="value.uncertainYear"
-                >
-            </LabeledInputContainer>
-
-            <LabeledInputContainer>
-                <template #label>
-                    <Locale path="property.mint" />
-                </template>
-
-                <DataSelect
-                    table="mint"
-                    :debug="debug"
-                    v-model="value.mint"
-                />
-            </LabeledInputContainer>
-
-
-            <LabeledInputContainer>
-                <template #label>
-                    <Locale path="property.uncertain_mint" />
-                </template>
-
-                <input
-                    type="text"
-                    v-model="value.uncertainMint"
-                >
-            </LabeledInputContainer>
-
-
-            <LabeledInputContainer>
-                <template #label>
-                    <Locale path="property.nominal" />
-                </template>
-
-                <DataSelect
-                    table="nominal"
-                    :debug="debug"
-                    v-model="value.nominal"
-                />
-            </LabeledInputContainer>
-
-            <LabeledInputContainer>
-                <template #label>
-                    <Locale path="property.material" />
-                </template>
-                <DataSelect
-                    table="material"
-                    :debug="debug"
-                    v-model="value.material"
-                />
-            </LabeledInputContainer>
-
         </div>
-
-
-        <DynamicDeleteButton
-            class="delete-button"
-            @delete="$emit('delete')"
-        />
+        <div class="box">
+            <DynamicDeleteButton
+                class="delete-button"
+                @delete="$emit('delete')"
+            />
+        </div>
 
     </div>
 </template>
@@ -223,6 +227,10 @@ export default {
         Toggle,
     },
     props: {
+        index: {
+            type: Number,
+            required: true,
+        },
         value: {
             type: Object,
             required: true,
@@ -254,15 +262,45 @@ export default {
     .data-select {
         min-width: 0;
     }
+
+    .labeled-input-container {
+        label {
+            margin-bottom: 0.1em;
+        }
+    }
 }
 </style>
 
 
 <style lang="scss" scoped>
 .treasure-item-form {
+    display: flex;
+}
+
+.treasure-item-form:nth-child(2n) {
+
+    .fields,
+    .box {
+        background-color: rgba($light-gray, 0.2);
+    }
+
+}
+
+.labeled-input-container {
+    margin-bottom: 3px;
+}
+
+.treasure-item-form .fields {
     min-width: max-content;
     display: grid;
-    grid-template-columns: 50px 100px 100px 100px min-content 50px;
+    padding: 1px 5px;
+    gap: 5px;
+    grid-template-columns: 100px 100px 50px 60px min-content 50px;
+
+    >.labeled-input-container {
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
 }
 
 .delete-button {
@@ -273,25 +311,42 @@ export default {
     display: grid;
     gap: 1em;
     border: 1px solid $light-gray;
-    padding: math.div($padding, 2) $padding;
+    background-color: rgba($light-gray, 0.1);
 
-    grid-template-columns: repeat(7, 140px);
+    border-radius: $border-radius;
+    padding: 1px 5px;
+
+
+    grid-template-columns: repeat(6, 140px);
 }
 
-.treasure-item-form {
-    display: grid;
-    background-color: white;
-    border: 1px solid $light-gray;
-    padding: 2px .5em;
-
-    align-items: center;
-    gap: .5em;
 
 
 
-    input {
+.box {
+    min-width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
 
-        min-width: 0;
+    >* {
+        margin-bottom: 7px;
     }
+}
+
+.index-box {
+    font-size: .6rem;
+    font-weight: bold;
+
+    span {
+        padding: 3px 6px;
+        border-radius: 30px;
+        background-color: $gray;
+        color: $white;
+    }
+}
+
+label span {
+    font-size: .6rem;
 }
 </style>

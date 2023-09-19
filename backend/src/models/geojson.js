@@ -67,6 +67,7 @@ class GeoJSON {
                 }
             },
             parseLiteral(ast) {
+
                 function parseAst(astNode, debug = false) {
                     switch (astNode.kind) {
                         case Kind.OBJECT:
@@ -86,41 +87,86 @@ class GeoJSON {
                         default:
                             return astNode.value
                     }
-
-
                 }
 
                 if (ast.kind !== Kind.OBJECT) throw new GraphQLError(`GeoJSON needs to be an object!`)
                 let parsedLiteral = parseAst(ast)
-                GeoJSON.validateParsedLiteral(parsedLiteral)
+                GeoJSON.validateObject(parsedLiteral)
                 return parsedLiteral
             }
         })
     }
 
+    static validateGeometry(parsedLiteral) {
+        if (!parsedLiteral.type) throw new Error(`A GeoJSON geometry object needs a type!`)
+
+        const type = parsedLiteral.type.toLowerCase()
+        let prefix = `The coordinates field of a GeoJSON geometry object of type '${type}' needs to be`
+
+        if (!parsedLiteral.coordinates) throw new Error(`A GeoJSON object needs coordinates!`)
+        const coordinates = parsedLiteral.coordinates
+        if (!Array.isArray(coordinates))
+            throw new Error(`${prefix} an array!`)
 
 
-    static validateParsedLiteral(parsedLiteral) {
-        if (!parsedLiteral.type) throw new Error(`A GeoJSON object needs a type!`)
-        let err = `The coordinates field of a GeoJSON object of type '${parsedLiteral.type}' needs to be`
-        switch (parsedLiteral.type) {
+        switch (type) {
             case "point":
-                if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length === 2 && parsedLiteral.coordinates.every(value => !isNaN(value))))
-                    throw new Error(`${err} an array of exactly length 2 with numbers as values.`)
+                GeoJSON.pointValidator(coordinates, prefix)
                 break
             case "polygon":
-                if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length > 0 && parsedLiteral.coordinates.every(arr => {
-                    return Array.isArray(arr) && arr.length > 3 && arr[0].every((value, index) => value === arr[arr.length - 1][index])
-                })))
-                    throw new Error(`${err} an array of arrays with at least 1 element. All arrays need to have four or more items, where the first and last are the same coordinate.`)
-                break
-            case "feature":
-                if (!parsedLiteral.geometry) throw new Error(`A GeoJSON feature needs a 'geometry' object!`)
-                GeoJsonFeature.validateParsedLiteral(parsedLiteral);
+                if (coordinates.length < 1)
+                    throw new Error(`${prefix} an array of at least 1.`)
+
+                for (const [index, solidOrHoleArr] of coordinates.entries()) {
+                    let prefix = `The coordinates field of a GeoJSON geometry object of type '${type}' at subarray '${index}': `
+
+                    if (!Array.isArray(solidOrHoleArr))
+                        throw new Error(`${prefix} an array of arrays!`)
+
+                    if (solidOrHoleArr.length < 4) throw new Error(`${prefix} an array of arrays with at least 4 items!`)
+
+                    for (const pointArr of solidOrHoleArr) {
+                        prefix += ` an array of arrays where every element is a point: `
+                        GeoJSON.pointValidator(pointArr, prefix)
+                    }
+
+                    const firstPoint = solidOrHoleArr[0]
+                    const lastPoint = solidOrHoleArr[solidOrHoleArr.length - 1]
+                    if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1])
+                        throw new Error(`${prefix} an array of arrays where the first and last point are the same!`)
+
+                    //Note: We dont follow the right-hand rule, as the user might draw in the opposite direction
+
+
+                    // if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length > 0 && parsedLiteral.coordinates.every(arr => {
+                    //     return Array.isArray(arr) && arr.length > 3 && arr[0].every((value, index) => value === arr[arr.length - 1][index])
+                    // })))
+                    //     throw new Error(`${prefix} an array of arrays with at least 1 element. All arrays need to have four or more items, where the first and last are the same coordinate.`)
+                }
                 break
             default:
                 throw new Error(`Coordinates validation for type "${parsedLiteral.type}" is not implemented!`)
         }
+    }
+
+    static pointValidator(coordinates, prefix) {
+        if (!(coordinates.length === 2 && coordinates.every(value => !isNaN(value))))
+            throw new Error(`${prefix} an array of exactly length 2 with numbers as values.`)
+    }
+
+    static validateObject(parsedLiteral) {
+
+        console.log("VALIDATE", parsedLiteral)
+
+        if (!parsedLiteral.type) throw new Error(`A GeoJSON object needs a type!`)
+        const type = parsedLiteral.type.toLowerCase()
+        let geometry = parsedLiteral
+        if (type === "feature") {
+            if (!parsedLiteral.geometry) throw new Error(`A GeoJSON feature needs a 'geometry' object!`)
+            geometry = parsedLiteral.geometry
+        }
+
+        GeoJSON.validateGeometry(geometry)
     }
 }
 
@@ -146,11 +192,11 @@ class GeoJsonFeature extends GeoJSONBase {
         }
     }
 
-    static validateParsedLiteral(parsedLiteral) {
+    static validateObject(parsedLiteral) {
         if (!parsedLiteral.geometry) {
             throw new Error(`A GeoJSON feature needs a geometry!`)
         }
-        GeoJSON.validateParsedLiteral(parsedLiteral.geometry)
+        GeoJSON.validateObject(parsedLiteral.geometry)
     }
 }
 

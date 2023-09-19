@@ -1,6 +1,7 @@
 import CsvReader from "../utils/CsvReader.js"
 import Query from "../database/query.js"
 import { TreasureItem } from "./property/treasure.js"
+import { snakeCase } from 'lodash'
 
 export class Importer {
 
@@ -131,7 +132,7 @@ export class TreasureItemsImporter extends Importer {
             "Id": "coinType",
             "Gewicht": "weight",
             "Prägejahr": "year",
-            "Prägeort": "mint",
+            "Prägeort": "mintRegion",
             "Material": "material",
             "Dynastie": "dynasty",
             "Fragment": "fragment",
@@ -179,7 +180,6 @@ export class TreasureItemsImporter extends Importer {
                                                            }`)
 
                             const coin = result.data.data.coinType?.types?.[0]
-
                             if (coin) {
                                 if (!this.cache.coinType)
                                     this.cache.coinType = {}
@@ -196,11 +196,9 @@ export class TreasureItemsImporter extends Importer {
                             item["material"] = coin.material
                             item["nominal"] = coin.nominal
 
-                            console.log("JAHR", coin.yearOfMint)
                             if (coin.yearOfMint) {
-                                const year = parseInt(coin.yearOfMint)
-                                if (!isNaN(year))
-                                    item["year"] = year
+                                if (this.isValidInteger(coin.yearOfMint))
+                                    item["year"] = coin.yearOfMint
                                 else {
                                     item["uncertainYear"] = coin.yearOfMint
                                 }
@@ -254,25 +252,31 @@ export class TreasureItemsImporter extends Importer {
                 case "count":
                 case "year": {
                     if (value !== "") {
+                        console.log(item, key, value)
                         item[key] = null
-                        const year = parseInt(value)
-                        if (isNaN(year)) {
-                            this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${item[key]}"`
+
+
+                        if (this.isValidInteger(value)) {
+                            item[key] = parseInt(value)
+                            console.log("SET " + key + " to " + value)
                         } else {
-                            item[key] = value
+                            if (!this.errorObject[key]) this.errorObject[key] = {}
+                            this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${value}", sofern dies gewollt ist, verschiebe den Wert in die "Unsicheres Prägejahr" Spalte.`
                         }
                     }
                     break;
                 }
+                case "dynasty":
                 case "material":
-                case "mint": {
+                case "mintRegion": {
                     if (!item[key] && value)
-                        item[key] = await this.getProperty(key, value)
-                    break
-                }
-                case "dynasty": {
-                    if (!item[key] && value)
-                        item[key] = await this.getProperty(key, value)
+                        try {
+                            item[key] = await this.getProperty(key, value)
+                        } catch (e) {
+                            console.error(e)
+                            if (!this.errorObject[key]) this.errorObject[key] = {}
+                            this.errorObject[key][index] = `Item "${header}"(${index}) konnte nicht gefunden werden.`
+                        }
                     break
                 }
                 default:
@@ -284,6 +288,7 @@ export class TreasureItemsImporter extends Importer {
 
 
         }
+
 
         const treasureItem = new TreasureItem(item)
         return treasureItem.forInput()
@@ -312,7 +317,7 @@ export class TreasureItemsImporter extends Importer {
             return null
 
         const result = await Query.raw(`{
-                                propertyByName(property: "${property}", name: "${name}") {
+                                propertyByName(property: "${snakeCase(property)}", name: "${name}") {
                                     id
                                     name
                                 }
@@ -320,5 +325,9 @@ export class TreasureItemsImporter extends Importer {
 
         const item = result.data?.data?.propertyByName
         return item
+    }
+
+    isValidInteger(value) {
+        return value !== "" && value % 1 === 0 && !isNaN(value)
     }
 }

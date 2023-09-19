@@ -32,11 +32,13 @@ class MintRegion {
         }
         const val = Object.assign({ tableName: MintRegion.tableName }, filters)
         const result = await transaction.manyOrNone(query, val)
+
         return result.map((row) => MintRegion.postProcess(row))
     }
 
     static postProcess(result) {
-        if (Object.keys(result.properties).length > 0) {
+        if (result.properties == null) result.properties = {}
+        else if (Object.keys(result.properties).length > 0) {
             let feature = {
                 type: "Feature",
                 properties: result.properties,
@@ -78,7 +80,7 @@ class MintRegion {
         location = null,
         uncertain = false
     } = {}) {
-
+        console.log({ uncertain })
         const { properties, geometry } = GeoJSON.separate(location)
 
         return WriteableDatabase.query(`INSERT INTO 
