@@ -15,9 +15,10 @@
           @change="typeChange"
         >
           <option
-            v-for="{ value, label } in options"
+            v-for="{ value, label } in labeledOptions"
             :value="value"
             :key="value"
+            :selected="value === selectedType"
           >
             {{ label }}
           </option>
@@ -98,10 +99,6 @@ export default {
     ContentPaste,
   },
   props: {
-    interactive: {
-      type: Boolean,
-      default: false,
-    },
     only: {
       type: Array,
       default: () => [],
@@ -112,7 +109,6 @@ export default {
     },
     value: {
       type: Object,
-      required: true,
       validator: isValidGeoJson
     },
     allowCircle: {
@@ -122,8 +118,9 @@ export default {
   },
   watch: {
     value: {
-      handler() {
-        this.updateMarker();
+      handler(value) {
+        this.fixObject(value)
+
       },
       deep: true
     },
@@ -150,12 +147,28 @@ export default {
     this.$refs.input.addEventListener('paste', this.pasteEvtListener);
 
     this.enableMap();
-    this.updateMarker();
+
+    this.fixObject(this.value)
   },
   unmounted: function () {
     this.$refs.input.removeEventListener('paste', this.pasteEvtListener);
   },
   methods: {
+    fixObject(value) {
+      if (this.options.length === 0) return
+
+      const type = value?.type?.toLowerCase()
+
+      if (this.options.includes(type)) {
+        this.updateMarker();
+        return false
+      } else {
+        const defaultType = this.options[0]
+        const json = this.getEmptyObject(defaultType)
+        this.emitUpdate(json);
+        return true
+      }
+    },
     // If we work with a circle we need to create a
     // Feature from the provided object, as currently only
     // the geometry object is supported.
@@ -163,7 +176,7 @@ export default {
     // complete bigger restructuring.
     // TODO: Remove when Features are supported
     getGeoJSON() {
-      if (!this.type) {
+      if (!this.type || !this.coordinates) {
         return null
       } else if (this.extendedType === "circle") {
         return {
@@ -175,10 +188,10 @@ export default {
           properties: this.properties
         }
       }
-      else if (this.isPolygon()) {
+      else if (this.isPolygon) {
         return {
           type: "Polygon",
-          coordinates: [this.coordinates]
+          coordinates: [this.coordinates, ...this.coordinates.slice(0, 1)]
         }
       } else {
         return {
@@ -323,6 +336,18 @@ export default {
           this.activeMarkerIndex = null;
           this.emitUpdate({ coordinates });
         }
+      }
+    },
+    getEmptyObject(type) {
+      switch (type) {
+        case "point":
+          return { type: "Point", coordinates: null }
+        case "polygon":
+          return { type: "Polygon", coordinates: null }
+        case "circle":
+          return null
+        default:
+          throw new Error(`Unknown type '${type}'`)
       }
     },
     clear({ type = this.type, properties = this.properties } = {}) {
@@ -605,6 +630,9 @@ export default {
     }
   },
   computed: {
+    interactive(){
+      return this.options.length > 1
+    },
     coordinates() {
       if (this.type === "feature") {
         return this.value.geometry.coordinates
@@ -619,19 +647,28 @@ export default {
       return this.value.properties || {}
     },
     options() {
-      const toOptionMap = (val) => {
+      if (this.only.length > 0) return this.only
+      else return this.availableTypes
+    },
+    labeledOptions() {
+      return this.options.map((val) => {
         val = val.toLowerCase()
         return {
           value: val,
           label: this.$tc(val, 1)
         }
-      }
-
-      if (this.only.length > 0) return this.only.map((val) => toOptionMap(val))
-      else return this.availableTypes.map((val) => toOptionMap(val))
+      })
     },
     availableTypes() {
       return ["point", "polygon", "circle"]
+    },
+    selectedType() {
+      console.log("SELECTED TYPE", this.options)
+      if ((this.value === null || this.value.type === 0) && this.options.length > 0) {
+        return this.options[0].value
+      } else {
+        return this.value.extendedType
+      }
     },
     extendedType() {
       if (this.type === "feature" && this.properties.radius != null) {

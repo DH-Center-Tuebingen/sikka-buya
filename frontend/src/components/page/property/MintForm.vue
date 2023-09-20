@@ -37,7 +37,6 @@
       <label for="location">Location</label>
       <location-input
         id="mint-location"
-        :interactive="false"
         :only="['point']"
         v-model="mint.location"
         @update="(location) => $set(mint, 'location', location)"
@@ -56,7 +55,7 @@
         <location-input
           id="mint-uncertain-location-input"
           :interactive="true"
-          :only="['polygon', 'circle']"
+          :only="['polygon']"
           v-model="mint.uncertainArea"
           ref="uncertainLocation"
           @update="(location) => $set(mint, 'uncertainArea', location)"
@@ -243,7 +242,7 @@ export default {
         name: this.mint.name,
         location: this.mint.location,
         uncertain: this.mint.uncertain,
-        uncertainArea: this.mint.uncertainArea,
+        uncertainArea: this.$refs.uncertainLocation.getGeoJSON(),
         province: this.mint.province?.id,
         note: this.note,
       })
