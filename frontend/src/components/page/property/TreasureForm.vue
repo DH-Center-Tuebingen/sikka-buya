@@ -177,17 +177,11 @@ methods: {
     },
     updateProperty: async function () {
 
-        const type = this.value?.location?.type
-        const coordinates = this.value?.location?.coordinates || []
-
-        let location = (type) ? { type, coordinates: coordinates.slice() } : null
-
-        if (location.type.toLowerCase() === "polygon")
-            location.coordinates = [location.coordinates]
+        console.log(this.$refs.locationInput.getGeoJSON())
 
         const treasure = new Treasure({
             name: this.value.name,
-            location: location,
+            location: this.$refs.locationInput.getGeoJSON(),
             literature: this.value.literature,
             timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
             items: this.value.items.map(item => {

@@ -6,12 +6,23 @@ class GeoJSON {
     static fields = ['type', 'coordinates']
 
 
+    static rebuild(location, properties) {
+        if(properties?.isFeature){
+            delete properties.isFeature
+            return {
+                type: GeoJsonFeature.type,
+                geometry: location,
+                properties
+            }
+        } else return location
+    }
+
     static separate(obj) {
         if (!obj.type) throw new Error(`GeoJSON object needs a type!`)
 
-        const feature = {
+        let feature = {
             geometry: null,
-            properties: null,
+            properties: null
         }
 
         switch (obj.type.toLowerCase()) {
@@ -20,8 +31,13 @@ class GeoJSON {
                 feature.geometry = obj
                 break
             case GeoJsonFeature.type:
+                let properties = Object.assign({}, obj.properties, { isFeature: true })
                 feature.geometry = obj.geometry
-                feature.properties = obj.properties
+                feature.properties = properties
+                console.log(feature)
+                break
+            default:
+                throw new Error(`GeoJSON type "${obj.type}" is not implemented.`)
         }
         return feature
     }
@@ -105,6 +121,9 @@ class GeoJSON {
 
         if (!parsedLiteral.coordinates) throw new Error(`A GeoJSON object needs coordinates!`)
         const coordinates = parsedLiteral.coordinates
+
+        console.log("COORDINATES: ", coordinates.join(", "), coordinates.length)
+
         if (!Array.isArray(coordinates))
             throw new Error(`${prefix} an array!`)
 
@@ -126,13 +145,16 @@ class GeoJSON {
                     if (solidOrHoleArr.length < 4) throw new Error(`${prefix} an array of arrays with at least 4 items!`)
 
                     for (const pointArr of solidOrHoleArr) {
-                        prefix += ` an array of arrays where every element is a point: `
-                        GeoJSON.pointValidator(pointArr, prefix)
+                        let _prefix = `${prefix} an array of arrays where every element is a point: `
+                        GeoJSON.pointValidator(pointArr, _prefix)
                     }
 
                     const firstPoint = solidOrHoleArr[0]
                     const lastPoint = solidOrHoleArr[solidOrHoleArr.length - 1]
-                    if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1])
+
+
+                    console.log(firstPoint, lastPoint, solidOrHoleArr.join(", "))
+                    if (!(firstPoint[0] === lastPoint[0] && firstPoint[1] === lastPoint[1]))
                         throw new Error(`${prefix} an array of arrays where the first and last point are the same!`)
 
                     //Note: We dont follow the right-hand rule, as the user might draw in the opposite direction
@@ -155,8 +177,6 @@ class GeoJSON {
     }
 
     static validateObject(parsedLiteral) {
-
-        console.log("VALIDATE", parsedLiteral)
 
         if (!parsedLiteral.type) throw new Error(`A GeoJSON object needs a type!`)
         const type = parsedLiteral.type.toLowerCase()

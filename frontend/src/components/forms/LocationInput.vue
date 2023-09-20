@@ -1,9 +1,11 @@
 <template>
+  <!-- The tabindex is required to make the element focusable. -->
   <div
+    tabindex="-1"
     class="location-input"
     @keydown="keydown($event)"
     @focus.capture="focus()"
-    @blur.capture="unfocus()"
+    @blur.capture="unfocus($event)"
     :class="{ focused, interactive }"
     ref="root"
   >
@@ -103,7 +105,6 @@ export default {
       type: Array,
       default: () => [],
       validator: (arr) => {
-        console.log(arr);
         return arr.every(value => ['point', 'polygon', 'circle'].includes(value.toLowerCase()));
       },
     },
@@ -157,12 +158,18 @@ export default {
     fixObject(value) {
       if (this.options.length === 0) return
 
-      const type = value?.type?.toLowerCase()
+      let type = value?.type?.toLowerCase()
+      const properties = value?.properties || {}
+
+      if (type === "feature" && properties.hasOwnProperty("radius")) {
+        type = "circle"
+      }
 
       if (this.options.includes(type)) {
         this.updateMarker();
         return false
       } else {
+        console.warn(`Fixed an invalid object in the LocationInput:  ${JSON.stringify(value)}`)
         const defaultType = this.options[0]
         const json = this.getEmptyObject(defaultType)
         this.emitUpdate(json);
@@ -191,7 +198,7 @@ export default {
       else if (this.isPolygon) {
         return {
           type: "Polygon",
-          coordinates: [this.coordinates, ...this.coordinates.slice(0, 1)]
+          coordinates: [[...this.coordinates, ...this.coordinates.slice(0, 1)]]
         }
       } else {
         return {
@@ -202,16 +209,7 @@ export default {
     },
     typeChange(event) {
       let type = event.target.value
-
-      let properties = this.properties
-      if (type === "circle") {
-        type = "feature"
-        properties = { radius: 3000 }
-      } else if (type === "point") {
-        properties = {}
-      }
-
-      this.clear({ type, properties })
+      this.clear(this.getEmptyObject(type))
     },
     async pasteEvtListener(evt) {
       let paste = (evt.clipboardData || window.clipboardData).getData('text');
@@ -266,7 +264,8 @@ export default {
     focus() {
       this.focused = true;
     },
-    unfocus() {
+    unfocus(e) {
+      e.preventDefault();
       this.focused = false;
       this.activeMarkerIndex = null;
       this.updateMarker();
@@ -282,10 +281,9 @@ export default {
           }
 
           if (prevPosition) {
-            let coordinates = this.coordinates;
+            let coordinates = this.coordinates[0];
             switch (prevPosition.action) {
               case 'set': {
-                console.log("SET")
                 if (!this.isPolygon) {
                   coordinates = prevPosition.coordinates;
                 } else {
@@ -306,16 +304,26 @@ export default {
                 break;
               }
               case 'remove': {
+
                 coordinates.splice(
                   prevPosition.index,
                   0,
                   prevPosition.coordinates
                 );
+
+                this.activeMarkerIndex = prevPosition.index;
+
+                // If we undo the removal of the first point
+                // we need to add the last point again
+                if (this.isPolygon) {
+                  coordinates.push(coordinates[0]);
+                }
+
                 break;
               }
             }
 
-            this.emitUpdate({ coordinates });
+            this.emitUpdate({ coordinates: [coordinates] });
           }
         }
 
@@ -324,7 +332,7 @@ export default {
             e.key.toLowerCase() == 'delete') &&
           this.activeMarkerIndex != null
         ) {
-          const coordinates = this.coordinates;
+          let coordinates = this.coordinates[0];
 
           this.markerHistory.unshift({
             action: 'remove',
@@ -332,20 +340,32 @@ export default {
             coordinates: coordinates[this.activeMarkerIndex],
           });
 
+          // As we need to make sure that the last coordinate is 
+          // the same as the first:
+          if (this.activeMarkerIndex === 0) {
+            //.. we either update the last coordinate to the new first coordinate,
+            if (coordinates.length > 1) {
+              coordinates[coordinates.length - 1] = coordinates[0];
+            } else {
+              //.. or we remove the whole polygon
+              coordinates = []
+            }
+          }
+
           coordinates.splice(this.activeMarkerIndex, 1);
           this.activeMarkerIndex = null;
-          this.emitUpdate({ coordinates });
+          this.emitUpdate({ coordinates: [coordinates] });
         }
       }
     },
     getEmptyObject(type) {
       switch (type) {
         case "point":
-          return { type: "Point", coordinates: null }
+          return { type: "Point", properties: {}, coordinates: null }
         case "polygon":
-          return { type: "Polygon", coordinates: null }
+          return { type: "Polygon", properties: {}, coordinates: null }
         case "circle":
-          return null
+          return { type: "Feature", properties: { radius: this.getRadius() }, coordinates: null }
         default:
           throw new Error(`Unknown type '${type}'`)
       }
@@ -369,9 +389,19 @@ export default {
       });
     },
     addPoint(location) {
-      let coordinates = this.coordinates == null ? [] : this.coordinates;
+      let coordinates
       if (this.isPolygon) {
-        coordinates.push([location.lat, location.lng]);
+
+        let solid = this.coordinates?.[0] == null ? [] : this.coordinates[0];
+
+        // If the polygon is not closed, we need to add the first point
+        // GeoJSON requires the first and last point to be the same this unfortunately
+        // adds complexity, as leaflet does not support this.
+        if (solid.length == 0)
+          solid.push([location.lat, location.lng]);
+        solid.splice(-1, 0, [location.lat, location.lng]);
+
+        coordinates = [solid]
       } else {
         coordinates = [location.lat, location.lng];
       }
@@ -383,8 +413,6 @@ export default {
 
       while (this.markerHistory.length > this.historyLimit)
         this.markerHistory.pop();
-
-      console.log(coordinates)
 
       this.emitUpdate({ coordinates });
     },
@@ -402,22 +430,30 @@ export default {
         this.lineHandles = [];
       }
     },
-    drawLineHandles() {
-      if (this.coordinates !== null && this.coordinates.length > 1) {
-        this.coordinates.forEach((point, idx) => {
-          let nextPoint = this.coordinates[(idx + 1) % this.coordinates.length];
+    /*
+    * We draw an extra set of transparent lines ontop
+    * of out polygon to make it easier to add new points.
+    */
+    drawPolygonInteractiveLines(lineString) {
+      if (lineString !== null && lineString.length > 1) {
+        lineString = lineString.slice(0, -1);
+        lineString.forEach((point, idx) => {
+
+
+          let nextPoint = lineString[(idx + 1) % lineString.length];
 
           let lineHandle = L.polyline([point, nextPoint], {
             color: '#ff0000',
             weight: 15,
             opacity: 0,
           }).addTo(this.map);
+          this.lineHandles.push(lineHandle);
 
           lineHandle.on('mousedown', (evt) => {
             const point = [evt.latlng.lat, evt.latlng.lng];
 
             const coordinates =
-              this.coordinates == null ? [] : this.coordinates;
+              lineString == null ? [] : lineString;
             coordinates.splice(idx + 1, 0, point);
 
 
@@ -426,14 +462,22 @@ export default {
               index: idx + 1,
             });
 
-            this.updateMarker();
-            this.setActiveMarker(idx + 1);
-            this.handles[this.activeMarkerIndex].fire('mousedown', evt);
 
-            this.emitUpdate({ coordinates });
+            this.updateMarker();
+            this.emitUpdate({ coordinates: [[...coordinates, coordinates[0]]] });
+
+            /**
+             * Somehow this is not working when called directly.
+             * TODO: Find out why
+             */
+            setTimeout(() => {
+              this.setActiveMarker(idx + 1);
+              this.handles[this.activeMarkerIndex].fire('mousedown', evt);
+              this.$refs.root.focus();
+            }, 0);
+
           });
 
-          this.lineHandles.push(lineHandle);
         });
       }
     },
@@ -447,9 +491,11 @@ export default {
       properties = this.properties
     } = {}) {
       let location
-      if (type === "feature") {
+      type = type.toLowerCase()
+      if (type === "feature" || type === "circle") {
+
         location = {
-          type,
+          type: "feature",
           geometry: {
             type: 'point',
             coordinates
@@ -480,39 +526,53 @@ export default {
 
       if (this.coordinates.length > 0) {
         if (this.isPolygon) {
-          this.marker = L.polygon(this.coordinates).addTo(this.map);
+          const coordinates = this.coordinates[0].length > 1 ? this.coordinates[0].slice(0, -1) : []
+          if (coordinates.length < 1) return
 
-          this.drawLineHandles();
+          this.marker = L.polygon(coordinates).addTo(this.map);
 
-          this.handles = this.coordinates.map((point, i) => {
+          this.drawPolygonInteractiveLines(this.coordinates[0]);
+
+          if (!Array.isArray(this.coordinates[0])) {
+            throw new Error("Invalid Polygon ...", this.coordinates)
+          }
+
+          // We ignore the last element as in GeoJSON its the same as the first
+          this.handles = coordinates.map((point, i) => {
+
             let marker = L.circleMarker(point, {
               radius: this.polygonPointRadius,
               fillOpacity: 1,
               fillColor: this.activeMarkerIndex == i ? '#ffffff' : '#3388ff',
+              color: i === coordinates.length - 1 ? '#cccccc' : '#3388ff',
               draggable: true,
             }).addTo(this.map);
 
             let trackCursor = (evt) => {
               if (this.activeMarkerIndex != null) {
                 let a = this.activeMarkerIndex;
-                let b =
-                  this.activeMarkerIndex - 1 < 0
-                    ? this.lineHandles.length - 1
-                    : a - 1;
+                // let b =
+                //   this.activeMarkerIndex - 1 < 0
+                //     ? this.lineHandles.length - 1
+                //     : a - 1;
 
                 const marker = this.handles[this.activeMarkerIndex];
                 const location = evt.latlng;
                 marker.setLatLng(location);
-                this.coordinates[a] = [location.lat, location.lng];
+                this.coordinates[0][a] = [location.lat, location.lng];
 
-                for (let [handle, point] of [
-                  [a, 0],
-                  [b, 1],
-                ]) {
-                  let polyPoints = this.lineHandles[handle].getLatLngs();
-                  polyPoints[point] = location;
-                  this.lineHandles[handle].setLatLngs(polyPoints);
-                }
+                // for (let [handle, point] of [
+                //   [a, 0],
+                //   [b, 1],
+                // ]) {
+                //   console.log(handle, this.lineHandles.join(", "), point)
+                //   if (this.lineHandles[handle] != null) {
+                //     let polyPoints = this.lineHandles[handle].getLatLngs();
+                //     polyPoints[point] = location;
+                //     this.lineHandles[handle].setLatLngs(polyPoints);
+                //   }
+
+                // }
 
                 this.updateMarker();
               }
@@ -588,6 +648,7 @@ export default {
       const values = [];
       let str = '[';
       arr.forEach((val, idx) => {
+        console.log(val);
         values.push(val.toFixed(2));
       });
       str += values.join(', ');
@@ -615,14 +676,9 @@ export default {
       }
     },
     polygonString: function (coords) {
-      if (coords == null) return '';
-      return JSON.stringify(coords, (key, arr) => {
-        const childArrays = [];
-        arr.forEach((coordinates, pos) => {
-          childArrays.push(this.createStringArray(coordinates));
-        });
-        return `[${childArrays.join(', ')}]`;
-      }).slice(1, -1); // The slice returns the " at start and end of string
+      let str = ""
+      if (coords == null) return str;
+      return JSON.stringify(coords).slice(1, -1); // The slice returns the " at start and end of string
     },
     pointString: function (coords) {
       if (coords == null || coords.length < 2) return '';
@@ -630,7 +686,7 @@ export default {
     }
   },
   computed: {
-    interactive(){
+    interactive() {
       return this.options.length > 1
     },
     coordinates() {
@@ -663,7 +719,6 @@ export default {
       return ["point", "polygon", "circle"]
     },
     selectedType() {
-      console.log("SELECTED TYPE", this.options)
       if ((this.value === null || this.value.type === 0) && this.options.length > 0) {
         return this.options[0].value
       } else {
