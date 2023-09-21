@@ -69,7 +69,7 @@ export default function ({ variable = null, property = null } = {}) {
                     this.property_form_mixin_cancel()
                 } catch (e) {
                     console.error(e)
-                    this.property_form_mixin_raiseError(e.message)
+                    this.property_form_mixin_raiseError(e)
                 }
                 this.property_form_mixin_loading = false
             },

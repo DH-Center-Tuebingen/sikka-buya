@@ -98,7 +98,7 @@ describe("Testing Mints", function () {
             }).click(100, 10, {
                 ctrlKey: true
             })
-            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[38.68, 31.16], [35.52, 31.16], [35.52, 35.11], [38.68, 35.11]], coarseness)
+            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[38.68, 31.16], [35.52, 31.16], [35.52, 35.11], [38.68, 35.11], [38.68, 31.16]], coarseness)
 
 
             cy.get("#mint-notes").type("This will be cancelled soon!")
@@ -115,62 +115,62 @@ describe("Testing Mints", function () {
         })
 
 
-        // it("Can create new mint", function () {
+        it("Can create new mint", function () {
 
-        //     cy.visit("/editor/mint/create")
-        //     cy.get("#mint-name").type("Aiḏaǧ")
-        //     cy.selectFromDataSelect("#mint-province", "Ḫūzistān")
+            cy.visit("/editor/mint/create")
+            cy.get("#mint-name").type("Aiḏaǧ")
+            cy.selectFromDataSelect("#mint-province", "Ḫūzistān")
 
-        //     cy.get("#mint-location .leaflet-container").click("center", {
-        //         ctrlKey: true
-        //     })
+            cy.get("#mint-location .leaflet-container").click("center", {
+                ctrlKey: true
+            })
 
-        //     cy.inputArrayCloseTo("#mint-location input", [30.03, 50.93], coarseness)
+            cy.inputArrayCloseTo("#mint-location input", [30.03, 50.93], coarseness)
 
-        //     cy.get("#mint-location-uncertain label").click()
-        //     cy.inputArrayCloseTo("#mint-location input", [30.03, 50.93], coarseness)
+            cy.get("#mint-location-uncertain label").click()
+            cy.inputArrayCloseTo("#mint-location input", [30.03, 50.93], coarseness)
 
 
-        //     cy.get("#mint-uncertain-location-input .leaflet-container").click(10, 10, {
-        //         ctrlKey: true
-        //     }).click(10, 100, {
-        //         ctrlKey: true
-        //     }).click(100, 100, {
-        //         ctrlKey: true
-        //     }).click(100, 10, {
-        //         ctrlKey: true
-        //     })
+            cy.get("#mint-uncertain-location-input .leaflet-container").click(10, 10, {
+                ctrlKey: true
+            }).click(10, 100, {
+                ctrlKey: true
+            }).click(100, 100, {
+                ctrlKey: true
+            }).click(100, 10, {
+                ctrlKey: true
+            })
 
-        //     cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[38.68, 31.16], [35.52, 31.16], [35.52, 35.11], [38.68, 35.11]], coarseness)
+            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[38.68, 31.16], [35.52, 31.16], [35.52, 35.11], [38.68, 35.11], [38.68, 31.16]], coarseness)
 
-        //     cy.get("#mint-notes").type("Newly created mint!")
+            cy.get("#mint-notes").type("Newly created mint!")
 
-        //     cy.get("#submit-button").click()
-        //     cy.location("pathname").should((pathname) => {
-        //         expect(pathname).to.eq("/editor/mint")
-        //     })
+            cy.get("#submit-button").click()
+            cy.location("pathname").should((pathname) => {
+                expect(pathname).to.eq("/editor/mint")
+            })
 
-        //     cy.get(".list-item").contains("Fārs")
-        //     cy.get(".list-item").contains('Šīrāz')
-        //     cy.get(".list-item").contains("Aiḏaǧ")
-        //     cy.get(".list-item").children().should("have.length", 3)
-        // })
+            cy.get(".list-item").contains("Fārs")
+            cy.get(".list-item").contains('Šīrāz')
+            cy.get(".list-item").contains("Aiḏaǧ")
+            cy.get(".list-item").children().should("have.length", 3)
+        })
 
-        // it("Created mint should be correct", function () {
-        //     cy.visit("/editor/mint/3")
+        it("Created mint should be correct", function () {
+            cy.visit("/editor/mint/3")
 
-        //     cy.get("#mint-name").should("have.value", "Aiḏaǧ")
+            cy.get("#mint-name").should("have.value", "Aiḏaǧ")
 
-        //     cy.get("#mint-province .name-field").should("have.value", 'Ḫūzistān')
-        //     cy.get("#mint-province .data-select-id").should("have.value", 10)
+            cy.get("#mint-province .name-field").should("have.value", 'Ḫūzistān')
+            cy.get("#mint-province .data-select-id").should("have.value", 10)
 
-        //     cy.get("#mint-location-uncertain input").should("be.checked")
+            cy.get("#mint-location-uncertain input").should("be.checked")
 
-        //     // On save we add as the last item the first item if first and last differ.
-        //     cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[38.68, 31.16], [35.52, 31.16], [35.52, 35.11], [38.68, 35.11], [38.68, 31.16]], coarseness)
+            // On save we add as the last item the first item if first and last differ.
+            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[38.68, 31.16], [35.52, 31.16], [35.52, 35.11], [38.68, 35.11], [38.68, 31.16], [38.68, 31.16]], coarseness)
 
-        //     cy.get("#mint-notes").should("have.value", "Newly created mint!")
-        // })
+            cy.get("#mint-notes").should("have.value", "Newly created mint!")
+        })
 
     })
 

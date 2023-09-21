@@ -87,20 +87,22 @@ class Mint {
 
 
     static fixGeoJSON(mint) {
-        if (mint.location && mint.location.type.toLowerCase() === "feature") throw new Error("A mint location cannot be a feature!")
-        if (mint.uncertainArea && mint.uncertainArea.type.toLowerCase() === "feature") throw new Error("A mint uncertain area cannot be a feature!")
-
-        const location = mint.location
-        const uncertainArea = mint.uncertainArea
-
-        GeoJSON.validateObject(location)
-        GeoJSON.validateObject(uncertainArea)
-
-        if (uncertainArea != null && !GeoJSON.isEmpty(uncertainArea) > 0) {
-            mint["uncertain_area"] = uncertainArea
-        } else {
-            mint["uncertain_area"] = null
+        let location = null
+        if (mint.location != null) {
+            if (mint.location && mint.location.type.toLowerCase() === "feature") throw new Error("A mint location cannot be a feature!")
+            location = mint.location
+            GeoJSON.validateObject(location)
         }
+
+        let uncertainArea = null
+        if (mint.uncertainArea != null) {
+            if (mint.uncertainArea && mint.uncertainArea.type.toLowerCase() === "feature") throw new Error("A mint uncertain area cannot be a feature!")
+            uncertainArea = mint.uncertainArea
+            GeoJSON.validateObject(uncertainArea)
+        }
+
+        mint["location"] = location
+        mint["uncertain_area"] = uncertainArea
         delete mint.uncertainArea
     }
 

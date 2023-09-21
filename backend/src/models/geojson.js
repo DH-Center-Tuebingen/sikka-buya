@@ -113,6 +113,9 @@ class GeoJSON {
     }
 
     static validateGeometry(parsedLiteral) {
+        // GeoJSON can be null
+        console.log(parsedLiteral)
+        if (parsedLiteral == null) return true
         if (!parsedLiteral.type) throw new Error(`A GeoJSON geometry object needs a type!`)
 
         const type = parsedLiteral.type.toLowerCase()
