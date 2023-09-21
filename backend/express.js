@@ -84,9 +84,6 @@ async function start({
             Query, Mutation
         }
 
-
-
-
         /**
          * The schema file describes the requests a user can query 
          * to the graphql interface. 

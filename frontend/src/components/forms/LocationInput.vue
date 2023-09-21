@@ -64,7 +64,8 @@
     </div>
     <div class="map">
       <map-view
-        ref="map"
+        :use-boundaries="false"
+        ref="mapview"
         height="500px"
         :location="[29.99300228455108, 50.96557617187501]"
         :zoom="5"
@@ -146,15 +147,34 @@ export default {
    */
   mounted: function () {
     this.$refs.input.addEventListener('paste', this.pasteEvtListener);
-
     this.enableMap();
-
     this.fixObject(this.value)
+
+    if (this.value.coordinates && this.value.coordinates.length > 0) {
+      const focusPoint = this.getCenter(this.value);
+      if(focusPoint)
+        this.$refs.mapview.map.setView(focusPoint, 6);
+    }
   },
   unmounted: function () {
     this.$refs.input.removeEventListener('paste', this.pasteEvtListener);
   },
   methods: {
+    getCenter(object) {
+      if (!object) return null
+
+      if (object.type.toLowerCase() === "feature") {
+        return this.getCenter(object.geometry)
+      }
+
+      if (object.coordinates == null) return null
+
+      if (object.type.toLowerCase() === "polygon") {
+        return this.coordinates[0][0]
+      } else {
+        return this.coordinates[0]
+      }
+    },
     fixObject(value) {
       if (this.options.length === 0) return
 
@@ -193,12 +213,6 @@ export default {
             coordinates: this.coordinates
           },
           properties: this.properties
-        }
-      }
-      else if (this.isPolygon) {
-        return {
-          type: "Polygon",
-          coordinates: [[...this.coordinates, ...this.coordinates.slice(0, 1)]]
         }
       } else {
         return {
@@ -378,7 +392,7 @@ export default {
       this.emitUpdate({ coordinates, type, properties });
     },
     enableMap() {
-      this.map = this.$refs.map.map;
+      this.map = this.$refs.mapview.map;
       this.map.doubleClickZoom.disable();
 
       this.map.on('click', (e) => {
@@ -655,7 +669,7 @@ export default {
       return str + ']';
     },
     sizeChanged() {
-      this.$refs.map.map.invalidateSize();
+      this.$refs.mapview.map.invalidateSize();
     },
     getRadius() {
       return this.properties?.radius || 0

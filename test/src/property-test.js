@@ -66,8 +66,8 @@ class PropertyTest {
             this.access,
             this.search,
             this.add,
-            // this.update,
-            // this.delete
+            this.update,
+            this.delete
         ]
     }
 

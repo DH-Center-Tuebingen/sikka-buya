@@ -96,7 +96,7 @@ type Treasure {
   name: String
   location: GeoJSON
   timespan: Range
-  literature: String
+  description: String
   items: [TreasureItem]
 }
 
@@ -104,7 +104,7 @@ input TreasureInput {
   name: String
   location: GeoJSON
   timespan: RangeInput
-  literature: String
+  description: String
   items: [TreasureItemInput]
 }
 
@@ -439,6 +439,7 @@ type MintRegion {
   name: String
   location:GeoJSON
   uncertain: Boolean
+  description: String
 }
 
 type MintPersons { 
@@ -603,6 +604,7 @@ input MintRegionInput {
   name: String!
   location: GeoJSON
   uncertain: Boolean
+  description: String
 }
 
 input PageInput {

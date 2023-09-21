@@ -1,6 +1,9 @@
 const { ATLANT, GERMAN, FRENCH, BRIT } = require('./dynasty.mock')
 const { GOLD, COPPER, PERLMUTT, SILVER } = require('./material.mock')
-const { PARIS, ATLANTIS, BERLIN } = require('./mint.mock')
+const { GERMANY_REGION,
+    PARIS_REGION,
+    ATLANTIS_REGION,
+    CONSTANTINOPLE } = require("./mintregion.mock")
 const { COIN_TYPE_BODY, GERMAN_TYPE, FRENCH_TYPE } = require('./type.mock')
 const { MARK, ZLOTY, ADIE } = require("../mockdata/nominal.mock")
 
@@ -11,7 +14,7 @@ const GERMAN_TREASURE_ITEM = {
     dynasty: GERMAN,
     fragment: true,
     material: GOLD,
-    mint: PARIS,
+    mintRegion: PARIS_REGION,
     uncertainMint: null,
     nominal: MARK,
     weight: 0.54,
@@ -26,7 +29,7 @@ const GERMAN_TWO_TREASURE_ITEM = {
     dynasty: ATLANT,
     fragment: false,
     material: SILVER,
-    mint: ATLANTIS,
+    mintRegion: ATLANTIS_REGION,
     uncertainMint: "UNKNOWN",
     nominal: ZLOTY,
     weight: 200,
@@ -41,7 +44,7 @@ const NEU_BERLIN_TREASURE_ITEM = {
     dynasty: FRENCH,
     fragment: true,
     material: COPPER,
-    mint: BERLIN,
+    mintRegion: GERMANY_REGION,
     nominal: ZLOTY,
     weight: 3,
     year: -200,
@@ -55,7 +58,7 @@ const NEU_BERLIN_TREASURE_ITEM_INPUT = `{
     dynasty: ${FRENCH.id},
     fragment: true,
     material: ${COPPER.id},
-    mint: ${BERLIN.id},
+    mintRegion: ${GERMANY_REGION.id},
     nominal: ${ZLOTY.id},
     weight: 3,
     year: -200,
@@ -73,7 +76,7 @@ const ATLANTIS_TREASURE_ITEM_INPUT = ` {
     dynasty: ${ATLANT.id},
     material: ${PERLMUTT.id},
     nominal: ${ADIE.id},
-    mint: ${ATLANTIS.id},
+    mintRegion: ${ATLANTIS_REGION.id},
     coinType: ${FRENCH_TYPE.id},
 }`
 
@@ -89,7 +92,7 @@ const ATLANTIS_TREASURE_ITEM = {
     dynasty: ATLANT,
     material: PERLMUTT,
     nominal: ADIE,
-    mint: ATLANTIS,
+    mintRegion: ATLANTIS_REGION,
     coinType: FRENCH_TYPE,
 }
 
@@ -103,9 +106,8 @@ const ATLANTIS_TWO_TREAURE_ITEM_INPUT = ` {
     dynasty: 3,
     material: 2,
     nominal: 4,
-    mint: 3,
+    mintRegion: 3,
     coinType: 2,
-
 }
 `
 
@@ -120,7 +122,7 @@ const ATLANTIS_TWO_TREAURE_ITEM = {
     dynasty: BRIT,
     material: COPPER,
     nominal: ZLOTY,
-    mint: ATLANTIS,
+    mintRegion: ATLANTIS_REGION,
     coinType: FRENCH_TYPE,
 }
 
@@ -131,7 +133,7 @@ const FRENCH_TREASURE_ITEM = {
     dynasty: FRENCH,
     fragment: true,
     material: COPPER,
-    mint: BERLIN,
+    mintRegion: GERMANY_REGION,
     nominal: ZLOTY,
     weight: 3,
     year: -200,
@@ -146,7 +148,7 @@ const ALESIA_TREASURE_ITEM = {
     dynasty: FRENCH,
     fragment: false,
     material: PERLMUTT,
-    mint: null,
+    mintRegion: null,
     nominal: ADIE,
     weight: 3,
     year: null,
@@ -175,7 +177,7 @@ const TREASURE_ITEM_GQL_BODY = `{
         id
         name
     }
-    mint {id name location uncertain uncertainArea province {id name}}
+    mintRegion {id name location uncertain description}
     coinType { ${COIN_TYPE_BODY} }
 }`
 

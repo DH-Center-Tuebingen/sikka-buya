@@ -6,6 +6,18 @@ class MintRegion {
         return "mint_region"
     }
 
+    static get selectQuery() {
+        return `SELECT 
+                    id,
+                    name,
+                    uncertain,
+                    ST_AsGeoJSON(location)::json AS location,
+                    properties::jsonb AS properties,
+                    description
+                FROM mint_region
+                `
+    }
+
     static async get(id, transaction = Database) {
         const list = await this.list({ id }, transaction)
         if (list.length > 1) throw new Error(`More than one mint region with id ${id} found.`)
@@ -14,13 +26,7 @@ class MintRegion {
 
     static async list(filters = {}, transaction = Database) {
 
-        let query = `SELECT 
-                        id,
-                        name,
-                        uncertain,
-                        ST_AsGeoJSON(location)::json AS location,
-                        properties::jsonb AS properties
-                    FROM $[tableName:name]`
+        let query = MintRegion.selectQuery
 
         if (Object.keys(filters).length > 0) {
             query += `WHERE `
@@ -30,29 +36,23 @@ class MintRegion {
 
             query += filterQuery
         }
-        const val = Object.assign({ tableName: MintRegion.tableName }, filters)
-        const result = await transaction.manyOrNone(query, val)
 
+        query += ` ORDER BY unaccent(name)`
+        const result = await transaction.manyOrNone(query, filters)
         return result.map((row) => MintRegion.postProcess(row))
     }
 
-    static postProcess(result) {
-        if (result.properties == null) result.properties = {}
-        else if (Object.keys(result.properties).length > 0) {
-            let feature = {
-                type: "Feature",
-                properties: result.properties,
-                geometry: result.location
-            }
-            result.location = feature
-        }
-        return result
+    static postProcess(row) {
+        if (row.properties == null) row.properties = {}
+        row.location = GeoJSON.rebuild(row.location, row.properties)
+        return row
     }
 
     static async update(id, {
         name,
         location = null,
-        uncertain = null
+        uncertain = null,
+        description = ""
     } = {}) {
 
         const { properties, geometry } = GeoJSON.separate(location)
@@ -63,12 +63,14 @@ class MintRegion {
         name = COALESCE($[name], name),
         location = COALESCE(ST_GeomFromGeoJSON($[location]), location),
         uncertain = COALESCE($[uncertain], uncertain),
-        properties = COALESCE(to_jsonb($[properties]::jsonb), properties)
+        properties = COALESCE(to_jsonb($[properties]::jsonb), properties),
+        description = $[description]
         WHERE id=$[id]
         `, {
             id,
             tableName: MintRegion.tableName,
             name,
+            description,
             location: geometry,
             uncertain,
             properties: JSON.stringify(properties)
@@ -78,25 +80,28 @@ class MintRegion {
     static async add({
         name,
         location = null,
-        uncertain = false
+        uncertain = false,
+        description = ""
     } = {}) {
-        console.log({ uncertain })
         const { properties, geometry } = GeoJSON.separate(location)
 
         return WriteableDatabase.query(`INSERT INTO 
         $[tableName:name]
-        (name, location, properties, uncertain)
+        (name, location, properties, uncertain, description)
         VALUES
         ($[name], 
             ${location ? "ST_GeomFromGeoJSON($[location])" : null}, 
             ${properties ? "to_jsonb($[properties]::jsonb)" : null},
-            $[uncertain])
+            $[uncertain],
+            $[description]
+            )
         `, {
             tableName: MintRegion.tableName,
             name,
             location: geometry,
             uncertain,
-            properties: JSON.stringify(properties)
+            properties: JSON.stringify(properties),
+            description
         })
     }
 
@@ -108,7 +113,12 @@ class MintRegion {
     }
 
     static async search(text) {
-        return Database.manyOrNone(`SELECT * FROM $1:name WHERE unaccent(name) ILIKE unaccent($2)`, [MintRegion.tableName, `%${text}%`])
+        let query = MintRegion.selectQuery
+        const result = await Database.manyOrNone(query + `WHERE unaccent(name) ILIKE unaccent($[text])`, {
+            text: `%${text}%`
+        })
+
+        return result.map((row) => MintRegion.postProcess(row))
     }
 }
 

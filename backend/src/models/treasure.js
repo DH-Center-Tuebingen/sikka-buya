@@ -17,7 +17,7 @@ class Treasure extends Table {
                 dynasty = null,
                 fragment = false,
                 material = null,
-                mint_region = null,
+                mintRegion = null,
                 nominal = null,
                 uncertainMint = null,
                 uncertainYear = null,
@@ -43,7 +43,7 @@ class Treasure extends Table {
                     $[dynasty],
                     $[fragment],
                     $[material],
-                    $[mint_region],
+                    $[mintRegion],
                     $[nominal],
                     $[treasure],
                     $[uncertainMint],
@@ -56,7 +56,7 @@ class Treasure extends Table {
                 dynasty,
                 fragment,
                 material,
-                mint_region,
+                mintRegion,
                 nominal,
                 treasure: treasure,
                 uncertainMint,
@@ -67,21 +67,20 @@ class Treasure extends Table {
         }
     }
 
-    static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, literature = "" } = {}) {
-        
-        let { location: _loc, properties } = GeoJSON.separate(location)
+    static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, description = "" } = {}) {
+        let { geometry: _loc, properties } = GeoJSON.separate(location)
         location = _loc
 
         return WriteableDatabase.tx(async t => {
-            const { id } = await t.one(`INSERT INTO treasure (name, location, earliestYear, latestYear, literature) 
+            const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description ) 
             VALUES (
                 $[name],
                 ${location ? "ST_GeomFromGeoJSON($[location])" : null},
                 $[properties],
                 $[earliestYear],
                 $[latestYear],
-                $[literature]) 
-            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, literature, properties })
+                $[description]) 
+            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
 
             await this.insertItems(t, id, items)
         })
@@ -89,13 +88,11 @@ class Treasure extends Table {
         // 
     }
 
-    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, literature = "" } = {}) {
+    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, description = "" } = {}) {
         if (id == null) throw new Error("Treasure ID is required")
 
         let { geometry, properties } = GeoJSON.separate(location)
         location = geometry
-
-        console.log(location, properties)
 
         return WriteableDatabase.tx(async t => {
             await t.none(`DELETE FROM treasure_item WHERE treasure = $[id]`, { id })
@@ -103,10 +100,10 @@ class Treasure extends Table {
             name=$[name],
             location=${location ? "ST_GeomFromGeoJSON($[location])" : null},
             properties=$[properties],
-            earliestYear=$[earliestYear],
-            latestYear=$[latestYear],
-            literature=$[literature] 
-            WHERE id=$[id]`, { name, location, id, earliestYear: timespan.from, latestYear: timespan.to, literature, properties })
+            earliest_year=$[earliestYear],
+            latest_year=$[latestYear],
+            description=$[description] 
+            WHERE id=$[id]`, { name, location, id, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
             await this.insertItems(t, id, items)
         })
     }
@@ -182,10 +179,10 @@ class Treasure extends Table {
             SELECT 
             treasure.id,
                     treasure.name,
-                    treasure.earliestYear,
-                    treasure.latestYear,
-                    treasure.literature,
-                    treasure.properties,
+                    treasure.earliest_year,
+                    treasure.latest_year,
+                    treasure.description,
+                    treasure.properties::jsonb AS properties,
                     ST_AsGeoJSON(treasure.location) AS location,
                     COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
             FROM 
@@ -202,9 +199,8 @@ class Treasure extends Table {
 
 
             treasures = treasures.map(treasure => {
-                treasure.timespan = { from: treasure.earliestyear, to: treasure.latestyear }
+                treasure.timespan = { from: treasure.earliest_year, to: treasure.latest_year }
                 treasure.location = GeoJSON.rebuild(JSON.parse(treasure.location), treasure.properties)
-                console.log(treasure.location)
                 return treasure
             })
 

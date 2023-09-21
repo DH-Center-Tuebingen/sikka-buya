@@ -56,6 +56,7 @@ export default function ({ variable = null, property = null } = {}) {
                         this.property_form_mixin_initialized = true
                     })
                 } catch (e) {
+                    console.error(e)
                     this.property_form_mixin_raiseError(e)
                 }
 

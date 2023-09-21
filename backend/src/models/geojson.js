@@ -7,10 +7,10 @@ class GeoJSON {
 
 
     static rebuild(location, properties) {
-        if(properties?.isFeature){
+        if (properties?.isFeature) {
             delete properties.isFeature
             return {
-                type: GeoJsonFeature.type,
+                type: "Feature",
                 geometry: location,
                 properties
             }
@@ -34,7 +34,6 @@ class GeoJSON {
                 let properties = Object.assign({}, obj.properties, { isFeature: true })
                 feature.geometry = obj.geometry
                 feature.properties = properties
-                console.log(feature)
                 break
             default:
                 throw new Error(`GeoJSON type "${obj.type}" is not implemented.`)
@@ -122,8 +121,6 @@ class GeoJSON {
         if (!parsedLiteral.coordinates) throw new Error(`A GeoJSON object needs coordinates!`)
         const coordinates = parsedLiteral.coordinates
 
-        console.log("COORDINATES: ", coordinates.join(", "), coordinates.length)
-
         if (!Array.isArray(coordinates))
             throw new Error(`${prefix} an array!`)
 
@@ -137,7 +134,7 @@ class GeoJSON {
                     throw new Error(`${prefix} an array of at least 1.`)
 
                 for (const [index, solidOrHoleArr] of coordinates.entries()) {
-                    let prefix = `The coordinates field of a GeoJSON geometry object of type '${type}' at subarray '${index}': `
+                    let prefix = `Invalid coordinates field of a GeoJSON geometry object of type '${type}' at subarray '${index}': `
 
                     if (!Array.isArray(solidOrHoleArr))
                         throw new Error(`${prefix} an array of arrays!`)
@@ -153,17 +150,10 @@ class GeoJSON {
                     const lastPoint = solidOrHoleArr[solidOrHoleArr.length - 1]
 
 
-                    console.log(firstPoint, lastPoint, solidOrHoleArr.join(", "))
                     if (!(firstPoint[0] === lastPoint[0] && firstPoint[1] === lastPoint[1]))
                         throw new Error(`${prefix} an array of arrays where the first and last point are the same!`)
 
                     //Note: We dont follow the right-hand rule, as the user might draw in the opposite direction
-
-
-                    // if (!(Array.isArray(parsedLiteral.coordinates) && parsedLiteral.coordinates.length > 0 && parsedLiteral.coordinates.every(arr => {
-                    //     return Array.isArray(arr) && arr.length > 3 && arr[0].every((value, index) => value === arr[arr.length - 1][index])
-                    // })))
-                    //     throw new Error(`${prefix} an array of arrays with at least 1 element. All arrays need to have four or more items, where the first and last are the same coordinate.`)
                 }
                 break
             default:

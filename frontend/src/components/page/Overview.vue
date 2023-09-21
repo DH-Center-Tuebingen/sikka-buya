@@ -131,8 +131,9 @@ export default {
         .then((obj) => {
           this.$data.items = obj.data.data[this.queryName];
         })
-        .catch(() => {
+        .catch((e) => {
           this.listError = this.$t('error.loading_list');
+          console.error(e)
         })
         .finally(() => {
           this.$data.loading = false;

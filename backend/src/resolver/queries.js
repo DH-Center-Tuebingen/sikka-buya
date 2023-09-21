@@ -35,7 +35,6 @@ const SuperUserQueries = {
 const Queries = {
     geojson(_, { d } = {}) {
         GeoJSON.validateObject(d)
-        console.log(...arguments)
     },
     ping: () => Date.now(),
     locale: async function () {
@@ -71,7 +70,6 @@ const Queries = {
             switch (orderBy) {
                 case "created":
                 case "modified":
-                    namedDownloads.forEach(a => console.log(a[orderBy]))
                     namedDownloads.sort((a, b) => b[orderBy] - a[orderBy])
                     break
                 case "name":

@@ -257,7 +257,7 @@ const EditorMutations = {
             const fileURI = await CMS.writeFileFromPromise(parts, filename, filePromise)
             console.log("File was uploaded to: " + fileURI)
         } catch (e) {
-            console.log("ERROR OCCURED: ", e)
+            console.error("ERROR OCCURED: ", e)
         }
     },
     async deleteFile(_, { identity }) {

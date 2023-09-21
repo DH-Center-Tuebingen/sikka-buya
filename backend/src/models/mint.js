@@ -7,8 +7,6 @@ class Mint {
     static async add(mint) {
         this.fixGeoJSON(mint)
 
-        console.log("ADD", mint.uncertain_area.coordinates)
-
         mint = Object.assign({
             name: null,
             location: null,
@@ -94,8 +92,6 @@ class Mint {
 
         const location = mint.location
         const uncertainArea = mint.uncertainArea
-
-        console.log(location, uncertainArea)
 
         GeoJSON.validateObject(location)
         GeoJSON.validateObject(uncertainArea)

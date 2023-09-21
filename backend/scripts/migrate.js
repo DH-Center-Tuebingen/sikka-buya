@@ -13,6 +13,7 @@ const { log, error, notice } = require('./modules/logging');
 
 
 async function main() {
+    console.log("Applying migrations to database " + process.env.DB_NAME)
     const migrationsPath = join(__dirname, "..", "migrations")
     let dir = await readdir(migrationsPath)
     let errors = []

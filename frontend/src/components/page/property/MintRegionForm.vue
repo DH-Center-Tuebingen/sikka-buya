@@ -28,6 +28,7 @@
             ref="locationInput"
             :interactive="true"
             :allowCircle="true"
+            :only="['circle', 'polygon']"
             :value="mintRegion.location"
             @update="updateLocation"
         ></LocationInput>
@@ -51,7 +52,7 @@ export default {
         Locale
     },
     mixins: [
-        propertyFormMixinFunc({ property: "mintRegion" })
+        propertyFormMixinFunc({ variable: "mintRegion", property: "mint_region" })
     ],
     data() {
         return {

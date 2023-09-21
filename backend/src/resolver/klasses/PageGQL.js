@@ -56,7 +56,7 @@ class PageGQL extends GQL {
                 ($[title], $[groupId], NOW(), NOW()) 
                 RETURNING id`, { title, groupId })
                 } catch (e) {
-                    console.log(e)
+                    console.error(e)
                 }
 
                 return pageResult.id || null
@@ -161,7 +161,7 @@ class PageGQL extends GQL {
                     ORDER BY ${orderBY};
                 `, group)
                 } catch (e) {
-                    console.log(e)
+                    console.error(e)
                 }
 
                 return resultsToGraphQLPage(results)

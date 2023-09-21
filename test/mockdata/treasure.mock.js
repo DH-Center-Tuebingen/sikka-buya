@@ -7,7 +7,6 @@ const {
     ATLANTIS_TWO_TREAURE_ITEM,
     GERMAN_TREASURE_ITEM,
     GERMAN_TWO_TREASURE_ITEM,
-    FRENCH_TREASURE_ITEM,
     NEU_BERLIN_TREASURE_ITEM_INPUT,
     TREASURE_ITEM_GQL_BODY,
     NEU_BERLIN_TREASURE_ITEM
@@ -16,17 +15,23 @@ const {
 const CORUNA_DATA = {
     id: "2",
     name: "La Coruña",
-    literature: "https://en.wikipedia.org/wiki/A_Coru%C3%B1a",
+    description: "https://en.wikipedia.org/wiki/A_Coru%C3%B1a",
     timespan: {
         from: 20,
         to: 30
     },
     location: {
-        type: "Point",
-        coordinates: [
-            -8.403,
-            43.369
-        ],
+        type: "Feature",
+        geometry: {
+            type: "Point",
+            coordinates: [
+                -8.403,
+                43.369
+            ],
+        },
+        properties: {
+            radius: 10000
+        }
     },
     items: [
         GERMAN_TWO_TREASURE_ITEM
@@ -35,7 +40,7 @@ const CORUNA_DATA = {
 
 const UPDATED_LONDON_DATA_INPUT = `{
     name: "Ǎtlantis",
-    literature: "https://en.wikipedia.org/wiki/Atlantis",
+    description: "https://en.wikipedia.org/wiki/Atlantis",
     timespan: {
         from: -300,
         to: 100
@@ -77,7 +82,7 @@ const UPDATED_LONDON_DATA_INPUT = `{
 const UPDATED_LONDON_DATA = {
     id: "1",
     name: "Ǎtlantis",
-    literature: "https://en.wikipedia.org/wiki/Atlantis",
+    description: "https://en.wikipedia.org/wiki/Atlantis",
     timespan: {
         from: -300,
         to: 100
@@ -118,7 +123,7 @@ const UPDATED_LONDON_DATA = {
 const LONDON_DATA = {
     id: "1",
     name: "London",
-    literature: "https://en.wikipedia.org/wiki/Londinium",
+    description: "https://en.wikipedia.org/wiki/Londinium",
     timespan: {
         from: 100,
         to: 130
@@ -154,7 +159,7 @@ const LONDON_DATA = {
 
 const LODZ_INPUT = `{
     name: "Łódź",
-    literature: "https://en.wikipedia.org/wiki/%C5%81%C3%B3d%C5%BA",
+    description: "https://en.wikipedia.org/wiki/%C5%81%C3%B3d%C5%BA",
     timespan: {
         from: 1089,
         to: 1200
@@ -193,7 +198,7 @@ const LODZ_INPUT = `{
 const LODZ_DATA = {
     id: "3",
     name: "Łódź",
-    literature: "https://en.wikipedia.org/wiki/%C5%81%C3%B3d%C5%BA",
+    description: "https://en.wikipedia.org/wiki/%C5%81%C3%B3d%C5%BA",
     timespan: {
         from: 1089,
         to: 1200
@@ -244,7 +249,7 @@ const TREASURE_GQL_BODY = `{
         from
         to
     }
-    literature
+    description
     items ${TREASURE_ITEM_GQL_BODY}
 }`
 
