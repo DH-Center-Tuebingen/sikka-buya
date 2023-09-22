@@ -156,7 +156,7 @@ const TEST_MINT_DATA = {
     "id": "5",
     "location": { type: "Point", coordinates: [8, 49] },
     "uncertain": true,
-    "uncertainArea": { type: "Polygon", coordinates: [[[7.020263672, 50.979182427], [6.712646484, 49.138596537], [9.008789062, 48.922499264], [9.184570312, 50.972264889], [7.020263672, 50.979182427]]] },
+    "uncertainArea": { type: "Polygon", coordinates: [[[7.0202, 50.9791], [6.7126, 49.1385], [9.0087, 48.9224], [9.1845, 50.9722], [7.0202, 50.9791]]] },
     "province": {
         "id": "1",
         "name": "France"
@@ -167,7 +167,7 @@ const TEST_MINT_INPUT = `data: {
     name: "Test",
     location: {type:"Point",coordinates:[8,49]},
     uncertain: true,
-    uncertainArea: {type:"Polygon",coordinates:[[[7.020263671875,50.97918242660188],[6.712646484375,49.13859653703879],[9.0087890625,48.922499263758255],[9.184570312499998,50.972264889367494],[7.020263671875,50.97918242660188]]]}
+    uncertainArea: {type:"Polygon",coordinates:[[[7.0202, 50.9791], [6.7126, 49.1385], [9.0087, 48.9224], [9.1845, 50.9722], [7.0202, 50.9791]]] }
     , province: 1
 }`
 

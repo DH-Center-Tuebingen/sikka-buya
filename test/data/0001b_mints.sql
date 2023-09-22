@@ -25,7 +25,7 @@ VALUES
         'Ǎtlantis',
         'POINT(40.450505694 6.15439645)',
         true,
-        ST_AsGeoJson(
+        ST_GeomFromGeoJSON(
             '{ "type": "Polygon",
             "coordinates": [ [ 
                 [5.2734375, 41.697525911],
@@ -43,7 +43,7 @@ VALUES
         'Constantinople',
         'POINT(28.6624 41.1598)',
         true,
-        ST_AsGeoJson('{
+        ST_GeomFromGeoJSON('{
         "coordinates": [
             [
                  [
