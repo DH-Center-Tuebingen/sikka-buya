@@ -401,6 +401,7 @@ export default {
   box-sizing: border-box;
   display: flex;
   height: 100%;
+  pointer-events: none;
 
   >* {
     display: flex;

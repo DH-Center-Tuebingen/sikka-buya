@@ -46,7 +46,7 @@ export default {
       return new Query('title').get(id)
     },
     updateProperty: async function () {
-      await Query.title
+      await new Query('title').update(this.title)
     }
   }
 };

@@ -5,10 +5,10 @@
     </h1>
     <LoadingSpinner
       class="loading-spinner"
-      v-if="loading"
+      v-show="loading"
     />
     <form
-      v-if="!loading"
+      v-show="!loading"
       @submit.prevent.stop="() => log('PREVENTED SUBMIT')"
     >
       <slot></slot>
@@ -16,7 +16,12 @@
         v-if="error"
         class="information error"
       >
-        {{ error }}
+        <template v-if="Array.isArray(error)">
+          <p v-for="[idx, err] of error.entries()" :key="'error-' + idx">{{ err }}</p>
+        </template>
+        <span v-else>
+          {{ error }}
+        </span>
       </div>
       <Row class="button-bar">
         <Button
@@ -62,7 +67,11 @@ export default {
     },
     overwriteRoute: Object,
     loading: Boolean,
-    error: String,
+    error: {
+      type: [String, Array],
+      default: null,
+
+    },
   },
   components: {
     LoadingSpinner,

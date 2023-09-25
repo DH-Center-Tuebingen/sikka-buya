@@ -13,6 +13,7 @@
                 </template>
 
                 <DataSelect
+                    class="mint-region-data-select"
                     table="mint_region"
                     :debug="debug"
                     v-model="value.mintRegion"
@@ -21,10 +22,24 @@
 
             <LabeledInputContainer>
                 <template #label>
+                    <Locale path="property.uncertain_mint_region" />
+                </template>
+
+                <input
+                    class="mint-region-uncertain-input"
+                    type="text"
+                    v-model="value.uncertainMint"
+                >
+            </LabeledInputContainer>
+
+
+            <LabeledInputContainer>
+                <template #label>
                     <Locale path="property.dynasty" />
                 </template>
 
                 <DataSelect
+                    class="dynasty-data-select"
                     table="dynasty"
                     :debug="debug"
                     v-model="value.dynasty"
@@ -35,7 +50,10 @@
                 <template #label>
                     <Locale path="property.fragment" />
                 </template>
-                <Toggle v-model="value.fragment">
+                <Toggle
+                    v-model="value.fragment"
+                    class="fragment-toggle"
+                >
                     <template #active>
                         <div>
                             <Icon
@@ -68,6 +86,7 @@
                 </template>
 
                 <input
+                    class="weight-input"
                     type="number"
                     step="0.01"
                     name=""
@@ -109,6 +128,7 @@
             }"
                         @select="(value, data) => this.$emit('typeChanged', data)"
                         v-model="value.coinType"
+                        class="coin-type-data-select"
                     >
 
                     </DataSelect>
@@ -121,6 +141,7 @@
                     </template>
 
                     <input
+                        class="year-input"
                         type="number"
                         name=""
                         id=""
@@ -135,6 +156,7 @@
                     </template>
 
                     <input
+                        class="year-uncertain-input"
                         type="text"
                         name=""
                         id=""
@@ -143,16 +165,6 @@
                 </LabeledInputContainer>
 
 
-                <LabeledInputContainer>
-                    <template #label>
-                        <Locale path="property.uncertain_mint" />
-                    </template>
-
-                    <input
-                        type="text"
-                        v-model="value.uncertainMint"
-                    >
-                </LabeledInputContainer>
 
 
                 <LabeledInputContainer>
@@ -164,6 +176,7 @@
                         table="nominal"
                         :debug="debug"
                         v-model="value.nominal"
+                        class="nominal-data-select"
                     />
                 </LabeledInputContainer>
 
@@ -175,6 +188,7 @@
                         table="material"
                         :debug="debug"
                         v-model="value.material"
+                        class="material-data-select"
                     />
                 </LabeledInputContainer>
 
@@ -191,6 +205,7 @@
                     name=""
                     id=""
                     v-model="value.count"
+                    class="count-input"
                 >
             </LabeledInputContainer>
         </div>
@@ -295,7 +310,7 @@ export default {
     display: grid;
     padding: 1px 5px;
     gap: 5px;
-    grid-template-columns: 100px 100px 50px 60px min-content 50px;
+    grid-template-columns: 100px 100px 100px 50px 60px min-content 50px;
 
     >.labeled-input-container {
         padding-top: 2px;
@@ -317,7 +332,7 @@ export default {
     padding: 1px 5px;
 
 
-    grid-template-columns: repeat(6, 140px);
+    grid-template-columns: repeat(5, 140px);
 }
 
 

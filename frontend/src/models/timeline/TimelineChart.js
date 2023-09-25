@@ -242,15 +242,8 @@ export default class TimelineChart extends Chart {
         this.graphs = graphs
         this.timeline = timeline
 
-        this.mousemove = this.mousemove.bind(this)
-        this.mouseListener = canvas.addEventListener("mousemove", this.mousemove)
-
         if (graphs.length > 0)
             this.draw()
-    }
-
-    mousemove() {
-        console.log("MOVE")
     }
 
     update({ graphs = null, timeline = null }) {

@@ -204,7 +204,8 @@
         "weight": "Gewicht",
         "uncertain_mint": "Prägeort unsicher",
         "year_of_mint_uncertain": "Prägejahr unsicher",
-        "mint_region": "Münzgebiet"
+        "mint_region": "Münzgebiet",
+        "uncertain_mint_region": "Münzregion unsicher"
     },
     "role": {
         "caliph": "Kalif | Kalif",

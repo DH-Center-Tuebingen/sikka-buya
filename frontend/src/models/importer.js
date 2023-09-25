@@ -252,13 +252,11 @@ export class TreasureItemsImporter extends Importer {
                 case "count":
                 case "year": {
                     if (value !== "") {
-                        console.log(item, key, value)
                         item[key] = null
 
 
                         if (this.isValidInteger(value)) {
                             item[key] = parseInt(value)
-                            console.log("SET " + key + " to " + value)
                         } else {
                             if (!this.errorObject[key]) this.errorObject[key] = {}
                             this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${value}", sofern dies gewollt ist, verschiebe den Wert in die "Unsicheres Prägejahr" Spalte.`

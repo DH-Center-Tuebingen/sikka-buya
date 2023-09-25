@@ -13,12 +13,12 @@ describe("Testing Province", function () {
 
     it("Item in editor list", function () {
         cy.visit('/editor')
-        cy.get(".list-item").contains("Region")
+        cy.get(".list-item").contains("Provinz")
     })
 
     it("Navigate to List", function () {
         cy.visit('/editor')
-        cy.get(".list-item").contains("Region").click()
+        cy.get(".list-item").contains("Provinz").click()
         cy.location("pathname").should((pathname) => {
             expect(pathname).to.eq("/editor/province")
         })

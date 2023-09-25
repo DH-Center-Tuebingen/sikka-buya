@@ -14,13 +14,24 @@ const { log, error, notice } = require('./modules/logging');
 
 async function main() {
     console.log("Applying migrations to database " + process.env.DB_NAME)
-    const migrationsPath = join(__dirname, "..", "migrations")
-    let dir = await readdir(migrationsPath)
     let errors = []
+    const migrationsPath = join(__dirname, "..", "migrations")
+    const functionsPath = join(migrationsPath, "functions")
+    await applyDirectory(functionsPath, errors)
+    await applyDirectory(migrationsPath, errors)
 
-    for (let file of dir) {
+    if (errors.length === 0) return "Applied all migrations successfully!"
+    else throw new Error(errors.join("\n\n") + "\n\nProgram exited with errors!")
+}
+
+async function applyDirectory(path, errors = []) {
+    let dirents = await readdir(path, {withFileTypes : true})
+
+    for (let dirent of dirents) {
+        if (dirent.isDirectory()) continue
+        let file = dirent.name
         try {
-            let sql = await readFile(join(migrationsPath, file), { encoding: "utf-8" })
+            let sql = await readFile(join(path, file), { encoding: "utf-8" })
             log(`Apply migration ${file} to database ${process.env.DB_NAME}:`)
             notice(sql)
             await WriteableDatabase.any(sql)
@@ -28,9 +39,6 @@ async function main() {
             errors.push(e)
         }
     }
-
-    if (errors.length === 0) return "Applied all migrations successfully!"
-    else throw new Error(errors.join("\n\n") + "\n\nProgram exited with errors!")
 }
 
 

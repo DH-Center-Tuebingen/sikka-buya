@@ -19,18 +19,21 @@
             <input
                 type="text"
                 v-model="value.name"
+                id="treasure-name-input"
             >
         </LabeledInputContainer>
 
         <LabeledInputContainer>
             <template #label>
-                <Locale path="general.literature" />
+                <Locale path="general.description" />
             </template>
 
-            <textarea
-                type="text"
-                v-model="value.literature"
-            ></textarea>
+            <SimpleFormattedField
+                :allowLinks="true"
+                ref="descriptionField"
+                id="treasure-description-input"
+            >
+            </SimpleFormattedField>
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -39,15 +42,16 @@
             </template>
 
             <div class="coin-range">
-                <RangeInput v-model="value.timespan" />
+                <RangeInput
+                    v-model="value.timespan"
+                    id="treasure-timespan-input"
+                />
                 <Button @click="getCoinRangeFromItems">
                     <Locale path="form.range_from_items" />
                 </Button>
             </div>
 
         </LabeledInputContainer>
-
-
 
         <LabeledInputContainer>
             <template #label>
@@ -58,7 +62,8 @@
                 :allowCircle="true"
                 :value="value.location"
                 ref="locationInput"
-                @update="(geojson) => value.location = geojson"
+                id="treasure-location-input"
+                @update="updateLocation"
             />
         </LabeledInputContainer>
 
@@ -82,7 +87,10 @@
             <ErrorMessage :error="importErrors" />
 
             <div class="list-shadow">
-                <form-list @add="addItem">
+                <form-list
+                    @add="addItem"
+                    id="treasure-item-list"
+                >
 
                     <TreasureItemForm
                         v-for="(item, index) in value.items"
@@ -100,7 +108,6 @@
 
 <script>
 import { Treasure, TreasureItem } from '../../../models/property/treasure';
-import EditorPropertyMixin from "../../mixins/editor-property-mixin"
 import ErrorMessage from "@/components/ErrorMessage"
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
 import FormList from "@/components/forms/FormList"
@@ -113,12 +120,13 @@ import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"
+import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
 import { TreasureItemsImporter } from "@/models/importer"
 import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
-import Query from '../../../database/query';
 
-let treasure = new Treasure();
+const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
+
 export default {
     mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure" })],
     components: {
@@ -132,117 +140,116 @@ export default {
         LocationInput,
         PropertyFormWrapper,
         RangeInput,
+        SimpleFormattedField,
         Toggle,
         TreasureItemForm,
     },
-    mounted: async function () {
-        try {
-            await Query.raw(`query Geo($d: GeoJSON){
-        geojson(d: $d)
-            }`,
-                {d:{
-                    type: "Polygon",
-                    coordinates: [[35.000753578642396, 57.72305529156035], [35.000753578642396, 61.67865367097683], [30.114245744598513, 61.67865367097683], [30.871582821957475, 55.74525610185211], [35.000753578642396, 57.72305529156035]]
-        }}, true)
-    }catch(e) {
-        console.error(e)
-    }
-},
-data() {
-    return {
-        value: {
-            name: "",
-            literature: "",
-            timespan: { from: null, to: null },
-            location: { type: "Feature", geometry: { coordinates: [0, 0], type: "point" }, properties: { radius: 1000 } },
-            items: [],
+    data() {
+        return {
+            value: {
+                name: "",
+                description: "",
+                timespan: { from: null, to: null },
+                location: defaultLocation,
+                items: [],
+            },
+            autoComplete: true,
+            importing: false,
+            importErrors: []
+        }
+    },
+    mounted() {
+        this.property_form_mixin_mount()
+    },
+    methods: {
+        updateLocation(value){
+            this.value.location = value
         },
-        autoComplete: true,
-        importing: false,
-        importErrors: []
-    }
-},
-methods: {
-    getProperty: async function (id) {
-        let treasure = await new Treasure().get(id)
-        console.log(treasure)
-        let location = treasure.location || { coordinates: [0, 0], type: "point" }
-        if (location.type.toLowerCase() === "polygon")
-            location.coordinates = location.coordinates[0]
-        treasure.location = location
+        onPropertyLoaded() {
+            // When the location input was hidden and
+            // is shown, the leaflet map does not have the 
+            // correct size which leads to a malfunctioning map.
+            // This fixes it.
+            this.$refs.locationInput.updateSize()
+        },
+        getProperty: async function (id) {
+            let treasure = await new Treasure().get(id)
+            let location = treasure.location || defaultLocation
 
-        if (!treasure.items) treasure.items = []
-        treasure.items = treasure.items.map(item => new TreasureItem(item).forInput())
-        return treasure
-    },
-    updateProperty: async function () {
+            if (location.type.toLowerCase() === "polygon")
+                location.coordinates = location.coordinates[0]
+            treasure.location = location
+            this.$refs.descriptionField.setContent(treasure.description)
 
-        console.log(this.$refs.locationInput.getGeoJSON())
-
-        const treasure = new Treasure({
-            name: this.value.name,
-            location: this.$refs.locationInput.getGeoJSON(),
-            literature: this.value.literature,
-            timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
-            items: this.value.items.map(item => {
-                let ti = TreasureItem.fromInputs(item)
-                delete ti.id
-                return ti
+            if (!treasure.items) treasure.items = []
+            treasure.items = treasure.items.map(item => new TreasureItem(item).forInput())
+            return treasure
+        },
+        updateProperty: async function () {
+            const treasure = new Treasure({
+                name: this.value.name,
+                location: this.$refs.locationInput.getGeoJSON(),
+                description: this.$refs.descriptionField.getContent(),
+                timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
+                items: this.value.items.map(item => {
+                    let ti = TreasureItem.fromInputs(item)
+                    delete ti.id
+                    return ti
+                })
             })
-        })
 
-        if (this.id) {
-            await treasure.update(this.id)
-        } else {
-            await treasure.add()
-        }
-
-    },
-    getCoinRangeFromItems() {
-        let timespan = { from: null, to: null }
-        this.value.items.forEach(item => {
-            let year = parseInt(item.year)
-            if (!isNaN(year)) {
-                if (timespan.from == null || year < timespan.from) timespan.from = year
-                if (timespan.to == null || year > timespan.to) timespan.to = year
+            if (this.id) {
+                await treasure.update(this.id)
+            } else {
+                await treasure.add()
             }
-        })
 
-        this.timespan = timespan
-    },
-    handleTypeChange(index, data) {
-        if (this.autoComplete && data.id != null) {
-            const namedInputs = ["mint", "material", "nominal"]
-
-            this.value.items[index].year = data["yearOfMint"]
-
-            namedInputs.forEach(attribute => {
-                this.value.items[index][attribute] = data[attribute]
+        },
+        getCoinRangeFromItems() {
+            let timespan = { from: null, to: null }
+            this.value.items.forEach(item => {
+                let year = parseInt(item.year)
+                if (!isNaN(year)) {
+                    if (timespan.from == null || year < timespan.from) timespan.from = year
+                    if (timespan.to == null || year > timespan.to) timespan.to = year
+                }
             })
-        }
-    },
-    addItem() {
-        const item = new TreasureItem().forInput()
-        this.value.items.push(item)
-    },
+
+            this.timespan = timespan
+        },
+        handleTypeChange(index, data) {
+            if (this.autoComplete && data.id != null) {
+                const namedInputs = ["mint", "material", "nominal"]
+
+                this.value.items[index].year = data["yearOfMint"]
+
+                namedInputs.forEach(attribute => {
+                    this.value.items[index][attribute] = data[attribute]
+                })
+            }
+        },
+        addItem() {
+            const item = new TreasureItem().forInput()
+            this.value.items.push(item)
+        },
         async importItems(event) {
-        this.importing = true
-        this.importErrors = []
-        const file = event.target.files[0]
+            this.importing = true
+            this.importErrors = []
+            const file = event.target.files[0]
 
 
-        const importer = new TreasureItemsImporter()
-        await importer.execFromFile(file)
-        this.importErrors = importer.errors
-        if (importer.errors.length === 0) {
-            this.value.items = importer.items
-            this.getCoinRangeFromItems()
-        }
+            const importer = new TreasureItemsImporter()
+            await importer.execFromFile(file)
+            this.importErrors = importer.errors
+            if (importer.errors.length === 0) {
+                this.value.items = importer.items
+                this.getCoinRangeFromItems()
+            }
 
-        this.importing = false
+            this.importing = false
 
-    },
-}
+        },
+    }
 }
 </script>
 

@@ -71,6 +71,8 @@ class Treasure extends Table {
         let { geometry: _loc, properties } = GeoJSON.separate(location)
         location = _loc
 
+        console.log( { name, location, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
+
         return WriteableDatabase.tx(async t => {
             const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description ) 
             VALUES (

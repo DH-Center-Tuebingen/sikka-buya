@@ -18,14 +18,14 @@ export class Treasure {
     constructor({
         id = null,
         name = null,
-        literature = null,
+        description = null,
         location = null,
         timespan = { from: null, to: null },
         items = []
     } = {}) {
         this.id = id
         this.name = name
-        this.literature = literature
+        this.description = description
         this.location = location
         this.timespan = timespan
         this.items = items
@@ -46,7 +46,7 @@ export class Treasure {
                 "id",
                 "name",
                 "location",
-                "literature",
+                "description",
                 { timespan: ["from", "to"] },
                 {
                     items: [
@@ -86,7 +86,7 @@ export class Treasure {
             treasure: {
                 name: this.name,
                 location: this.fixLocation(this.location),
-                literature: this.literature,
+                description: this.description,
                 timespan: this.timespan,
                 items: this.items
             }
@@ -96,7 +96,6 @@ export class Treasure {
     async update(id) {
 
         let location = this.fixLocation(this.location)
-        console.log(location)
         await Query.raw(`
         mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
             updateTreasure(id:$id, data: $treasure)
@@ -106,7 +105,7 @@ export class Treasure {
             treasure: {
                 name: this.name,
                 location,
-                literature: this.literature,
+                description: this.description,
                 timespan: this.timespan,
                 items: this.items
             }

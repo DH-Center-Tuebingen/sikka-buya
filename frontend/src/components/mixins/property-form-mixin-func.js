@@ -8,8 +8,8 @@ export default function ({ variable = null, property = null } = {}) {
         variable = property
 
     return {
-        created() {
-            this.property_form_mixin_initialize()
+        mounted() {
+            this.property_form_mixin_mount()
         },
         watch: {
             [variable]: {
@@ -30,6 +30,9 @@ export default function ({ variable = null, property = null } = {}) {
             }
         },
         methods: {
+            property_form_mixin_mount(){
+                this.property_form_mixin_initialize()
+            },
             // Methods that must be implemented
             //=================================
             getProperty: async function (id) {
@@ -37,6 +40,9 @@ export default function ({ variable = null, property = null } = {}) {
             },
             updateProperty: async function (data) {
                 throw new Error("updateProperty not implemented", data);
+            },
+            onPropertyLoaded: async function(){
+                // optional callback when the component is ready.
             },
             //=================================
             property_form_mixin_initialize: async function () {
@@ -54,6 +60,7 @@ export default function ({ variable = null, property = null } = {}) {
                     // the watcher is not triggered in this cycle.
                     this.$nextTick(() => {
                         this.property_form_mixin_initialized = true
+                        this.onPropertyLoaded()
                     })
                 } catch (e) {
                     console.error(e)

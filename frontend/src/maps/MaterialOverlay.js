@@ -93,7 +93,6 @@ export default class MaterialOverlay extends Overlay {
     }
 
     filter(data) {
-        console.log(data)
         return data.types.filter((d) => d.mint?.location);
     }
 

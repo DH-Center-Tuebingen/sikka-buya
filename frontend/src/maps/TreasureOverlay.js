@@ -84,7 +84,7 @@ export default class TreasureOverlay extends Overlay {
 
             treasures = result.data.data.treasure
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
         return treasures
     }

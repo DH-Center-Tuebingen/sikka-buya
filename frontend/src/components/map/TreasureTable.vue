@@ -1,8 +1,8 @@
 <template>
     <div class="treasure-table">
         <div
-            v-if="item.literature != ''"
-            v-html="item.literature"
+            v-if="item.description != ''"
+            v-html="item.description" 
         />
         <table>
             <thead>
@@ -87,7 +87,6 @@ export default {
             else if (this.sortBy === "mint") {
                 let i = Object.values(items).sort(Sort.stringPropAlphabetically("mint.name", !this.desc));
                 i.items = i.sort((a, b) => b.yearOfMint - a.yearOfMint);
-                console.log(i)
                 return i;
             } else throw new Error("Unknown sort by: " + this.sortBy);
         }

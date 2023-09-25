@@ -239,7 +239,7 @@ export default {
           // v-if would work as expected out of the box, but would result in other
           // issues
           if (this.$refs.uncertainLocation)
-            this.$refs.uncertainLocation.sizeChanged();
+            this.$refs.uncertainLocation.updateSize();
         });
       }
     },

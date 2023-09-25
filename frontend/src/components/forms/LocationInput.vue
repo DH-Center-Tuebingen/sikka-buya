@@ -33,6 +33,7 @@
           v-if="extendedType === 'circle'"
           type="range"
           :value="getRadius()"
+          class="circle-slider"
           @input="($event) => this.updateRadius(parseFloat($event.target.value))"
           min="1000"
           max="1000000"
@@ -150,11 +151,18 @@ export default {
     this.enableMap();
     this.fixObject(this.value)
 
-    if (this.value.coordinates && this.value.coordinates.length > 0) {
+    if (this.coordinates && this.coordinates.length > 0) {
       const focusPoint = this.getCenter(this.value);
-      if(focusPoint)
+      if (focusPoint)
         this.$refs.mapview.map.setView(focusPoint, 6);
     }
+
+    this.updateSize()
+  },
+  updated: function () {
+    this.$nextTick(function () {
+      this.updateSize()
+    })
   },
   unmounted: function () {
     this.$refs.input.removeEventListener('paste', this.pasteEvtListener);
@@ -506,13 +514,14 @@ export default {
     } = {}) {
       let location
       type = type.toLowerCase()
-      if (type === "feature" || type === "circle") {
 
+
+      if (type === "feature" || type === "circle") {
         location = {
           type: "feature",
           geometry: {
             type: 'point',
-            coordinates
+            coordinates: coordinates || null
           },
           properties
         }
@@ -527,6 +536,8 @@ export default {
     },
     updateMarker() {
       this.removeMarker();
+
+      console.log(this.coordinates)
 
       // Return when the coordinates are empty
       if (this.coordinates == null) return
@@ -662,13 +673,12 @@ export default {
       const values = [];
       let str = '[';
       arr.forEach((val, idx) => {
-        console.log(val);
         values.push(val.toFixed(2));
       });
       str += values.join(', ');
       return str + ']';
     },
-    sizeChanged() {
+    updateSize() {
       this.$refs.mapview.map.invalidateSize();
     },
     getRadius() {
@@ -676,7 +686,7 @@ export default {
     },
     coordinatesToString(obj) {
       this.updateString;
-      if (!obj.type) throw new Error(`No type in object: ${obj}`)
+      if (!obj || !obj.type) return ''
       switch (obj.type.toLowerCase()) {
         case 'polygon':
           return this.polygonString(obj.coordinates);
@@ -697,6 +707,18 @@ export default {
     pointString: function (coords) {
       if (coords == null || coords.length < 2) return '';
       else return this.createStringArray(coords);
+    },
+    getCoordinates(value) {
+      if (!value || !value.type) return null
+
+      if (value.type.toLowerCase() === 'feature') {
+        return this.getCoordinates(value.geometry)
+      } else {
+        if (!value.coordinates)
+          return null
+        else
+          return value.coordinates
+      }
     }
   },
   computed: {
@@ -704,14 +726,12 @@ export default {
       return this.options.length > 1
     },
     coordinates() {
-      if (this.type === "feature") {
-        return this.value.geometry.coordinates
-      } else {
-        return this.value.coordinates
-      }
+      return this.getCoordinates(this.value)
     },
     type() {
-      return this.value.type.toLowerCase();
+      const type = this.value?.type
+      if (type) return type.toLowerCase();
+      else return "point"
     },
     properties() {
       return this.value.properties || {}
@@ -733,10 +753,10 @@ export default {
       return ["point", "polygon", "circle"]
     },
     selectedType() {
-      if ((this.value === null || this.value.type === 0) && this.options.length > 0) {
+      if (this.type == null && this.options.length > 0) {
         return this.options[0].value
       } else {
-        return this.value.extendedType
+        return this.extendedType
       }
     },
     extendedType() {

@@ -56,12 +56,10 @@ export default {
         },
         async add() {
             if (this.addValue && this.addPath) {
-                console.log("add")
                 await Query.raw(`mutation UpdateSetting($path: String!, $value: String!) {updateSetting (path:$path, value:$value )}`, {
                     path: this.addPath,
                     value: this.addValue
                 }, true)
-                console.log("RELOAD")
                 this.reload()
 
             }

@@ -33,7 +33,6 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                     console.warn(e)
                 }
 
-                console.log(typeof options.year)
                 return {
                     year: URLParams.getInteger('year', options.year),
                     timelineActive: URLParams.getBoolean('timelineActive', options.timelineActive)

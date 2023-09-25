@@ -214,7 +214,6 @@ export default {
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data
-                console.log(data)
             },
             onEnd: () => {
                 this.mounted_and_loaded_mixin_loaded("data")
@@ -286,9 +285,6 @@ export default {
                     this.updateTimelineGraph()
                 })
             }
-        },
-        mounted_and_loaded_mixin_mountedAndLoaded() {
-            console.log("ready")
         },
         local_storage_mixin_loaded() {
             this.mounted_and_loaded_mixin_loaded("storage")
@@ -362,8 +358,6 @@ export default {
                 from,
                 to
             })
-
-            console.log(this.treasures)
 
             this.timelineChart.update({
                 graphs: new BarGraph(data, { colors, yMax, yOffset: 10 }),

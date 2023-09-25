@@ -7,7 +7,6 @@ export default class Selection {
     }
 
     toggle(id) {
-        console.log("Toggle", this.has(id))
         if (this.has(id)) this.remove(id)
         else this.add(id)
     }

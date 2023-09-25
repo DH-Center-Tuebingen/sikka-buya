@@ -149,8 +149,6 @@ export default class Query {
 
 
     static async raw(query, variables = {}, debug = false) {
-        console.log(query, JSON.stringify(variables))
-
         if (debug)
             console.log(query, JSON.stringify(variables))
         return AxiosHelper.request({
