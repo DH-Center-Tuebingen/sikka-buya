@@ -13,36 +13,40 @@ describe("Testing Mints", function () {
         cy.restoreLocalStorage()
     })
 
-    it("Item in editor list", function () {
-        cy.visit('/editor')
-        cy.get(".list-item").contains("Prägeort")
-    })
+    describe(`List showing correctly`, function () {
 
-    it("Navigate to List", function () {
-        cy.visit('/editor')
-        cy.get(".list-item").contains("Prägeort").click()
-        cy.location("pathname").should((pathname) => {
-            expect(pathname).to.eq("/editor/mint")
+        it("Item in editor list", function () {
+            cy.visit('/editor')
+            cy.get(".list-item").contains("Prägeort")
         })
-    })
 
-    it("Prägeort list is showing", function () {
-        cy.visit('/editor/mint')
-        cy.get(".list").children().should("have.length", 2)
-        cy.get(".list-item").contains("Fārs")
-        cy.get(".list-item").contains('Šīrāz')
-    })
+        it("Navigate to List", function () {
+            cy.visit('/editor')
+            cy.get(".list-item").contains("Prägeort").click()
+            cy.location("pathname").should((pathname) => {
+                expect(pathname).to.eq("/editor/mint")
+            })
+        })
 
-    it("List item is visible", function () {
-        cy.visit('/editor/mint')
-        cy.get(".list-item").contains("Fārs").should("be.visible")
-    })
+        it("Prägeort list is showing", function () {
+            cy.visit('/editor/mint')
+            cy.get(".list").children().should("have.length", 2)
+            cy.get(".list-item").contains("Fārs")
+            cy.get(".list-item").contains('Šīrāz')
+        })
 
-    it("Can filter", function () {
-        cy.visit('/editor/mint')
-        cy.get("input[type=search]").type("fa")
-        cy.get(".list-item").contains("Fārs")
-        cy.get(".list").children().should("have.length", 1)
+        it("List item is visible", function () {
+            cy.visit('/editor/mint')
+            cy.get(".list-item").contains("Fārs").should("be.visible")
+        })
+
+        it("Can filter", function () {
+            cy.visit('/editor/mint')
+            cy.get("input[type=search]").type("fa")
+            cy.get(".list-item").contains("Fārs")
+            cy.get(".list").children().should("have.length", 1)
+        })
+
     })
 
     describe("Create Prägeort", function () {
@@ -224,7 +228,7 @@ describe("Testing Mints", function () {
                 ctrlKey: true
             })
 
-            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[31.37, 43.73], [30.99, 45.26], [29.098, 44.38], [31.37, 43.73]], coarseness)
+            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[37.96,32.13],[37.27,35.20],[33.69,33.45],[37.96,32.13]], coarseness)
 
             cy.get("#mint-notes").type("Oh we changed the notes completely!")
 
@@ -276,7 +280,7 @@ describe("Testing Mints", function () {
                 ctrlKey: true
             })
 
-            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[31.37, 43.73], [30.99, 45.26], [29.098, 44.38], [31.37, 43.73]], coarseness)
+            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[37.96,32.13],[37.27,35.20],[33.69,33.45],[37.96,32.13]], coarseness)
 
             cy.get("#mint-notes").clear().type("Oh we changed the notes completely!")
 
@@ -303,7 +307,7 @@ describe("Testing Mints", function () {
 
             // When the last element differs from the first element, we'll add the first element as last. 
             // This conforms the GeoJSON specification for polygons., [37.99, 32.04]
-            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[31.37, 43.73], [30.99, 45.26], [29.098, 44.38], [31.37, 43.73]], coarseness)
+            cy.multiInputArrayCloseTo("#mint-uncertain-location-input input.location-input-field", [[37.96,32.13],[37.27,35.20],[33.69,33.45],[37.96,32.13]], coarseness)
 
             cy.get("#mint-notes").should("have.value", "Oh we changed the notes completely!")
 

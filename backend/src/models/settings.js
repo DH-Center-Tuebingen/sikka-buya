@@ -142,8 +142,6 @@ class Settings {
     }
 
     static async writeManagedFile() {
-        console.log(Frontend.getByParts("config.managed.js"))
-
         const file = [
             "// This file is managed by the backend and will be overwritten when settings change.",
             "",
@@ -159,6 +157,16 @@ class Settings {
         }
 
         await Frontend.writeFile(file.join("\n"), "config.managed.js")
+        console.log(`Managed Settings file was written to: ${Frontend.getByParts("config.managed.js")}`)
+    }
+
+    static async writeManagedFileIfNecessary() {
+        const managed = Frontend.getByParts("config.managed.js")
+        try {
+            await access(managed)
+        } catch {
+            await this.writeManagedFile()
+        }
     }
 }
 

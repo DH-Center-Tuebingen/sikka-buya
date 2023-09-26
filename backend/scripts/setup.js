@@ -50,6 +50,7 @@ async function applySchema() {
 
     try {
         const child_process = await exec(`psql --no-password -U ${process.env.DB_USER} -d ${process.env.DB_NAME} -f ${schemaFilePath}`)
+        await Settings.writeManagedFile()
 
         if (child_process.stdout)
             Message.log(`stdout: ${child_process.stdout}`);
