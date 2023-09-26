@@ -64,9 +64,10 @@ export default class TreasureOverlay extends Overlay {
                         id
                         name
                     }
-                    mint {
+                    mintRegion {
                         id
                         name
+                        uncertain
                         location 
                     }
                     uncertainMint
@@ -100,16 +101,16 @@ export default class TreasureOverlay extends Overlay {
             let items = {}
             for (let original of treasure.items) {
                 let item = cloneDeep(original)
-                if (item.mint == null) continue
+                if (item.mintRegion == null) continue
 
-                if (!items[item.mint.id]) {
-                    items[item.mint.id] = item
-                    items[item.mint.id].mintCount = 0
-                    items[item.mint.id].items = []
+                if (!items[item.mintRegion.id]) {
+                    items[item.mintRegion.id] = item
+                    items[item.mintRegion.id].mintCount = 0
+                    items[item.mintRegion.id].items = []
                 }
 
-                items[item.mint.id].mintCount += item.count
-                items[item.mint.id].items.push(item)
+                items[item.mintRegion.id].mintCount += item.count
+                items[item.mintRegion.id].items.push(item)
             }
             const clone = cloneDeep(treasure)
 
@@ -136,185 +137,115 @@ export default class TreasureOverlay extends Overlay {
             if (!treasure.selected) continue
             const color = treasure.color
 
+            const style = {
+                color,
+                weight: 4
+            }
+
 
             let treasureGeometries = []
             let treasureGeometriesShadows = []
-            let mintGeometries = []
+            let itemGeometries = []
             let mintGeometriesShadows = []
             let lineGeometries = []
             let lineGeometriesShadows = []
 
             if (treasure.location) {
-                treasureGeometries.push({
-                    type: "Feature", geometry: treasure.location, properties: {
+
+                let geometry
+                let properties = {}
+                if (treasure.location.type.toLowerCase() === "feature") {
+                    geometry = treasure.location.geometry
+                    properties = treasure.location.properties
+                } else {
+                    geometry = treasure.location
+                }
+
+                const feature = {
+                    type: "Feature", geometry, properties: Object.assign({
                         treasure: treasure.id,
-                        style: {
+                        style: Object.assign({}, style, {
                             fill: true,
                             fillColor: color,
                             fillOpacity: .25,
-                            color,
-                            weight: 4
-                        }
-                    }
-                })
-
-                treasureGeometriesShadows.push({
-                    type: "Feature", geometry: treasure.location, properties: {
-                        treasure: treasure.id,
-                        style: {
-                            color: shadowColor,
-                            opacity: shadowOpacity,
-                            weight: 8
-                        }
-                    }
-                })
-
-            }
-
-            const maxWidth = 20
-            const minWidth = 1
-
-            if (treasure.items) {
-                let findLocation = treasure.location
-                const totalCount = treasure.items.reduce((acc, item) => acc + item.mintCount, 0)
-
-                treasure.items.forEach((item, idx) => {
-                    const mint = item.mint
-                    if (mint?.location) {
-                        let loc = item.mint.location
-                        const feature = {
-                            type: "Feature", geometry: loc
-                        }
+                        })
+                    }, properties)
+                }
 
 
-                        mintGeometries.push(Object.assign({}, feature, {
-                            properties: {
-                                isMint: true,
-                                count: item.mintCount,
-                                text: `<b>${mint.name}</b><br>Anzahl: ${item.mintCount}`,
-                                style: {
-                                    color,
-                                    fillColor: color,
-                                    fillOpacity: 1,
-                                    weight: 2,
-                                }
-                            }
-                        }))
+                treasureGeometries.push(feature)
 
-                        mintGeometriesShadows.push(Object.assign({}, feature, {
-                            properties: {
-                                isMint: true,
-                                count: item.mintCount,
-                                style: {
-                                    color: shadowColor,
-                                    opacity: shadowOpacity,
-                                    fillOpacity: 0,
-                                    weight: 6,
-                                }
-                            }
-                        }))
+                // treasureGeometriesShadows.push({
+                //     type: "Feature", geometry: treasure.location, properties: {
+                //         treasure: treasure.id,
+                //         style: {
+                //             color: shadowColor,
+                //             opacity: shadowOpacity,
+                //             weight: 8
+                //         }
+                //     }
+                // })
 
-                        let center = [0, 0]
+                const maxWidth = 20
+                const minWidth = 1
 
-                        for (let i = 1; i < treasure.location.coordinates[0].length; i++) {
-                            center[0] += treasure.location.coordinates[0][i][0]
-                            center[1] += treasure.location.coordinates[0][i][1]
-                        }
+                if (treasure.items) {
+                    let findLocation = treasure.location
+                    const totalCount = treasure.items.reduce((acc, item) => acc + item.mintCount, 0)
 
-                        center[0] /= treasure.location.coordinates[0].length - 1
-                        center[1] /= treasure.location.coordinates[0].length - 1
+                    treasure.items.forEach((item, idx) => {
 
-                        if (findLocation) {
-                            let dist = Infinity
-                            let start = null
-                            let startIdx = -1
-                            let endIdx = -1
-
-                            const length = treasure.location.coordinates[0].length
-                            for (let i = 0; i < length; i++) {
-                                let a = treasure.location.coordinates[0][i]
-                                let b = treasure.location.coordinates[0][(i + 1) % length]
-
-                                //Line intersection between center to mint and treasure location
-                                let x1 = center[0]
-                                let y1 = center[1]
-                                let x2 = loc.coordinates[0]
-                                let y2 = loc.coordinates[1]
-                                let x3 = a[0]
-                                let y3 = a[1]
-                                let x4 = b[0]
-                                let y4 = b[1]
-
-                                let x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
-                                let y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
-
-
-                                // determine if intersection is between the points a and b
-                                let xMin = Math.min(x3, x4)
-                                let xMax = Math.max(x3, x4)
-                                let yMin = Math.min(y3, y4)
-                                let yMax = Math.max(y3, y4)
-
-                                if (xMin <= x && x <= xMax && yMin <= y && y <= yMax) {
-
-
-
-                                    let d = Math.sqrt((x - x2) ** 2 + (y - y2) ** 2)
-
-                                    if (d < dist) {
-                                        dist = d
-                                        start = [x, y]
-                                        startIdx = i
-                                        endIdx = i + 1
-                                    }
-                                }
-                            }
-
-                            if (start != null) {
-                                let lineString = {
+                        if (item?.mintRegion?.location) {
+                            let geometry
+                            let location = item.mintRegion.location
+                            if (location.type.toLowerCase() != "feature") {
+                                geometry = location
+                                location = {
                                     type: "Feature",
+                                    geometry: location,
                                     properties: {
-                                        treasure: treasure.id,
-                                        style: {
-                                            weight: 2,
-                                            opacity: 1,
-                                            color,
-                                        }
-
-                                    },
-                                    geometry: {
-                                        type: "LineString",
-                                        coordinates: [start, loc.coordinates],
+                                        style
                                     }
                                 }
-                                lineGeometries.push(lineString)
-                                lineGeometriesShadows.push(Object.assign({}, lineString, {
-                                    properties: {
-                                        treasure: treasure.id,
-                                        style: {
-                                            weight: 6,
-                                            opacity: shadowOpacity,
-                                            color: shadowColor,
-                                        }
-                                    }
-                                }))
+                            } else {
+                                geometry = location.geometry
+                                location.properties.style = style
                             }
+                            itemGeometries.push(location)
+                            
+
+                            lineGeometries.push({
+                                type: "Feature",
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: [
+                                        feature.geometry.coordinates,
+                                        geometry.coordinates
+                                    ]
+                                },
+                                properties: {
+                                    style: Object.assign({}, style, {
+                                        fill: false,
+                                    })
+                                }
+                            })
                         }
-
-                    }
-                })
-
+                    })
+                }
             }
+
+
+
 
             geoJSON.push([
                 // Shadow layers
-                ...lineGeometriesShadows,
-                ...treasureGeometriesShadows,
-                ...mintGeometriesShadows,
+                // ...lineGeometriesShadows,
+                // ...treasureGeometriesShadows,
+                // ...mintGeometriesShadows,
                 // Normal layers
                 ...lineGeometries,
                 ...treasureGeometries,
-                ...mintGeometries,
+                ...itemGeometries,
             ])
         }
 
@@ -323,6 +254,7 @@ export default class TreasureOverlay extends Overlay {
             geoJSON
         }
     }
+
 
     createMarker(latlng, feature) {
         // Use the area as value for the radius

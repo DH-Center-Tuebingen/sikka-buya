@@ -190,18 +190,18 @@ export default {
 
             this.selectedTreasures.forEach(t => {
                 t.items.forEach(item => {
-                    let mint = item.mint
+                    let mint = item.mintRegion
                     if (!mint) {
                         mint = { name: "unknown", id: -1, counts: {} }
                     }
 
-                    if (!mints[item.mint.id]) {
-                        mints[item.mint.id] = cloneDeep(mint)
-                        mints[item.mint.id].counts = {}
+                    if (!mints[item.mintRegion.id]) {
+                        mints[item.mintRegion.id] = cloneDeep(mint)
+                        mints[item.mintRegion.id].counts = {}
                     }
 
-                    const count = parseInt(item.mintCount) || 1
-                    const mintListItem = mints[item.mint.id]
+                    const count = parseInt(item.mintRegionCount) || 1
+                    const mintListItem = mints[item.mintRegion.id]
                     mintListItem.counts[t.id] = mintListItem.counts[t.id] ? mintListItem.counts[t.id] + count : count
 
                 })

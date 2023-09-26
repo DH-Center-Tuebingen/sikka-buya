@@ -21,12 +21,23 @@ CREATE TABLE IF NOT EXISTS treasure (
 ALTER TABLE
     treasure
 ADD
+    IF NOT EXISTS color text;
+
+ALTER TABLE
+    treasure
+ADD
     IF NOT EXISTS latest_year integer;
 
 ALTER TABLE
     treasure
 ADD
     IF NOT EXISTS earliest_year integer;
+
+ALTER TABLE
+    treasure DROP COLUMN IF EXISTS latestyear;
+
+ALTER TABLE
+    treasure DROP COLUMN IF EXISTS earliestyear;
 
 CREATE TABLE IF NOT EXISTS treasure_item (
     id SERIAL PRIMARY KEY,

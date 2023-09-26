@@ -71,8 +71,6 @@ class Treasure extends Table {
         let { geometry: _loc, properties } = GeoJSON.separate(location)
         location = _loc
 
-        console.log( { name, location, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
-
         return WriteableDatabase.tx(async t => {
             const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description ) 
             VALUES (
@@ -263,17 +261,18 @@ class TreasureItem {
 
                 const dbField = TreasureItem.getDbName(field)
                 const dbValue = item[dbField]
+
+
                 if (dbValue) {
                     if (!cache[field])
                         cache[field] = {}
-
                     if (!cache[field][dbValue]) {
                         let value = await TreasureItem.get(transaction, field, dbValue, fields)
                         cache[field][dbValue] = TreasureItem.map(field, value)
                     }
-
-                    item[field] = cache[field][dbValue]
                 }
+
+                item[field] = cache?.[field]?.[dbValue] || null
             }
         }
         return items
@@ -292,7 +291,15 @@ class TreasureItem {
     }
 
     static get mappings() {
+        function toInt(value) {
+            const val = parseInt(value)
+            return (isNaN(val)) ? null : val
+        }
+
         return {
+            year: toInt,
+            earliestYear: toInt,
+            latestYear: toInt,
             material: (material) => {
                 return {
                     id: material.material_id,

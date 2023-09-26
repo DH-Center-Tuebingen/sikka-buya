@@ -7,9 +7,8 @@ OR REPLACE FUNCTION RENAME_IF_COLUMN_EXISTS(tname TEXT, old_name TEXT, new_name 
   WHERE
     table_name = tname
     and column_name = old_name
-) THEN
-ALTER TABLE
-  tname RENAME COLUMN old_name TO new_name;
+) THEN -- Use EXECUTE to construct and execute the ALTER TABLE statement dynamically
+EXECUTE 'ALTER TABLE ' || tname || ' RENAME COLUMN ' || old_name || ' TO ' || new_name;
 
 END IF;
 

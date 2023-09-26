@@ -26,5 +26,5 @@ for (let [target, source] of Object.entries(map)) {
 
 
 run(process.env).then(() => {
-    Settings.writeManagedFile().catch(e)
+    Settings.writeManagedFile().catch(console.error)
 }).catch(console.error)

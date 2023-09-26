@@ -20,23 +20,28 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                 localStorage.setItem('map-timeline', JSON.stringify(option));
             },
             timeline_mixin_load() {
-                let options = {
-                    timelineActive: this.$mconfig.getBoolean("map.default.timeline.active", true),
-                    year: this.$mconfig.getInteger("map.default.timeline.startYear", 377)
+
+                const queryOptions ={
+                    year: URLParams.getInteger('year'),
+                    timelineActive: URLParams.getBoolean('timelineActive')
+                }
+
+                let managedOptions = {
+                    timelineActive: this.$mconfig.getBoolean("map.default.timeline.active"),
+                    year: this.$mconfig.getInteger("map.default.timeline.startYear")
                 }
                 const optionsString = localStorage.getItem('map-timeline')
-
+                let loadedOptions = {}
                 try {
-                    let loadedOptions = JSON.parse(optionsString)
-                    Object.assign(options, loadedOptions)
+                    loadedOptions = JSON.parse(optionsString)
                 } catch (e) {
                     console.warn(e)
                 }
-
-                return {
-                    year: URLParams.getInteger('year', options.year),
-                    timelineActive: URLParams.getBoolean('timelineActive', options.timelineActive)
-                }
+                
+                return this.$utils.objectCombine({
+                    year: 433,
+                    timelineActive: false
+                }, managedOptions,  loadedOptions, queryOptions)
             },
             timeline_mixin_toggleTimeline() {
                 this.timelineActive = !this.timelineActive

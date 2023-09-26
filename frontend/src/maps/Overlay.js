@@ -57,6 +57,13 @@ export default class Overlay {
         console.error("Error in Overlay: Abstract method not overloaded: createMarker().")
     }
 
+    /*
+    * Draws the circle onto the map.
+    */
+    createCircle(latlng, feature, { selections, markerOptions }) {
+        return new L.Circle(latlng, feature.properties.radius, markerOptions)
+    }
+
     parseGeoJSON(result) {
         if (result.mint) {
             for (let idx in result.mint) {
@@ -122,7 +129,11 @@ export default class Overlay {
         _geoJSON.forEach(feature => {
             let group = new L.geoJSON(feature, Object.assign({}, {
                 pointToLayer: function (feature, latlng) {
-                    return that.createMarker.call(that, latlng, feature, { selections, markerOptions })
+                    const radius = parseInt(feature?.properties?.radius)
+                    if (!isNaN(radius)) {
+                        return that.createCircle.call(that, latlng, feature, { selections, markerOptions })
+                    } else
+                        return that.createMarker.call(that, latlng, feature, { selections, markerOptions })
                 },
                 coordsToLatLng: function (coords) {
                     return new L.LatLng(coords[0], coords[1], coords[2]);

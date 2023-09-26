@@ -150,7 +150,7 @@ export default class Query {
 
     static async raw(query, variables = {}, debug = false) {
         if (debug)
-            console.log(query, JSON.stringify(variables))
+            console.trace(query, JSON.stringify(variables))
         return AxiosHelper.request({
             url: graphqlEndpoint,
             method: "post",

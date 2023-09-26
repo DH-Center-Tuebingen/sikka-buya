@@ -439,7 +439,6 @@ type MintRegion {
   name: String
   location:GeoJSON
   uncertain: Boolean
-  description: String
 }
 
 type MintPersons { 

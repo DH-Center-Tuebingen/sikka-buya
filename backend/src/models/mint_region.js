@@ -12,8 +12,7 @@ class MintRegion {
                     name,
                     uncertain,
                     ST_AsGeoJSON(location)::json AS location,
-                    properties::jsonb AS properties,
-                    description
+                    properties::jsonb AS properties
                 FROM mint_region
                 `
     }
@@ -38,6 +37,7 @@ class MintRegion {
         }
 
         query += ` ORDER BY unaccent(name)`
+        console.log(query)
         const result = await transaction.manyOrNone(query, filters)
         return result.map((row) => MintRegion.postProcess(row))
     }
@@ -52,7 +52,6 @@ class MintRegion {
         name,
         location = null,
         uncertain = null,
-        description = ""
     } = {}) {
 
         const { properties, geometry } = GeoJSON.separate(location)
@@ -63,14 +62,12 @@ class MintRegion {
         name = COALESCE($[name], name),
         location = COALESCE(ST_GeomFromGeoJSON($[location]), location),
         uncertain = COALESCE($[uncertain], uncertain),
-        properties = COALESCE(to_jsonb($[properties]::jsonb), properties),
-        description = $[description]
+        properties = COALESCE(to_jsonb($[properties]::jsonb), properties)
         WHERE id=$[id]
         `, {
             id,
             tableName: MintRegion.tableName,
             name,
-            description,
             location: geometry,
             uncertain,
             properties: JSON.stringify(properties)
@@ -81,27 +78,24 @@ class MintRegion {
         name,
         location = null,
         uncertain = false,
-        description = ""
     } = {}) {
         const { properties, geometry } = GeoJSON.separate(location)
 
         return WriteableDatabase.query(`INSERT INTO 
         $[tableName:name]
-        (name, location, properties, uncertain, description)
+        (name, location, properties, uncertain)
         VALUES
         ($[name], 
             ${location ? "ST_GeomFromGeoJSON($[location])" : null}, 
             ${properties ? "to_jsonb($[properties]::jsonb)" : null},
-            $[uncertain],
-            $[description]
+            $[uncertain]
             )
         `, {
             tableName: MintRegion.tableName,
             name,
             location: geometry,
             uncertain,
-            properties: JSON.stringify(properties),
-            description
+            properties: JSON.stringify(properties)
         })
     }
 
