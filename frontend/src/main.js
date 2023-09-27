@@ -26,17 +26,19 @@ async function main() {
     snakeCase,
     camelCase,
     pascalCase,
-    objectCombine: function(...args){
-      if(!args.length || args.length < 2) throw new Error(`Function 'objectCombine' requires at least two arguments.`)
+    objectCombine: function (...args) {
+      if (!args.length || args.length < 2) throw new Error(`Function 'objectCombine' requires at least two arguments.`)
       let obj = {}
+
       do {
         const nextObj = args.shift()
-
-        for(const [nextKey, nextVal] of Object.entries(nextObj)){
-          if(nextVal == null) continue
+        
+        if (nextObj == null) continue
+        for (const [nextKey, nextVal] of Object.entries(nextObj)) {
+          if (nextVal == null) continue
           obj[nextKey] = nextVal
         }
-      }while(args.length > 0)
+      } while (args.length > 0)
 
       return obj
     }

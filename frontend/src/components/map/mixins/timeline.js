@@ -21,7 +21,7 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
             },
             timeline_mixin_load() {
 
-                const queryOptions ={
+                const queryOptions = {
                     year: URLParams.getInteger('year'),
                     timelineActive: URLParams.getBoolean('timelineActive')
                 }
@@ -37,11 +37,13 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                 } catch (e) {
                     console.warn(e)
                 }
-                
-                return this.$utils.objectCombine({
-                    year: 433,
-                    timelineActive: false
-                }, managedOptions,  loadedOptions, queryOptions)
+
+                const options = this.$utils.objectCombine({
+                    timelineActive: false,
+                    startYear: 433
+                }, managedOptions, loadedOptions, queryOptions)
+
+                return options
             },
             timeline_mixin_toggleTimeline() {
                 this.timelineActive = !this.timelineActive

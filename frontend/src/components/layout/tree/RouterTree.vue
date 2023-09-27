@@ -14,6 +14,7 @@
                     :path="getPath(key)"
                     :activeElementPath="activeElementPath"
                     @requestActive="requestActive"
+                    @requestAdd="$emit('requestAdd', $event)"
                 ></router-tree>
                 <div v-else>
                     <SettingInput
@@ -28,6 +29,12 @@
                     </SettingInput>
                 </div>
             </li>
+            <li>
+                <Button @click="$emit('requestAdd', path)">
+                    +
+                </Button>
+            </li>
+
         </ul>
     </div>
 </template>
@@ -37,12 +44,14 @@ import Query from "../../../database/query"
 import RouterTree from "./RouterTree.vue";
 import SettingInput from "../../forms/SettingsInput.vue"
 import Sorter from "../../../utils/Sorter"
+import Button from "../buttons/Button.vue";
 
 export default {
     name: "RouterTree",
     components: {
         RouterTree,
         SettingInput,
+        Button
     },
     props: {
         name: {
@@ -119,4 +128,5 @@ ul {
     flex-direction: column;
     gap: $padding;
 }
+
 </style>

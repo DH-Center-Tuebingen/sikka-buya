@@ -8,11 +8,14 @@
                     type="text"
                     v-model="addPath"
                     placeholder="Pfad"
+                    ref="addPath"
+
                 >
                 <input
                     type="text"
                     v-model="addValue"
                     placeholder="Wert"
+                    ref="addValue"
                 >
                 <button @click="add">Add</button>
             </div>
@@ -24,6 +27,7 @@
                 :activeElementPath="activePath"
                 :children="tree"
                 @requestActive="activate"
+                @requestAdd="requestAdd"
             />
         </section>
 
@@ -51,6 +55,10 @@ export default {
         this.load()
     },
     methods: {
+        requestAdd(path){
+            this.addPath = path + "/"
+            this.$refs.addPath.focus()
+        },
         reload() {
             window.location.reload()
         },
@@ -93,7 +101,7 @@ export default {
         setAddPath(path) {
             const arr = path.split("/")
             arr.pop()
-            this.addPath = arr.join("/")
+            this.addPath = arr.join("/") + "/"
         }
     }
 };
