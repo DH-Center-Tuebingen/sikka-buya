@@ -13,8 +13,7 @@ const GERMANY_REGION = {
         properties: {
             radius: 20000
         }
-    },
-    description: "<h2>Germany</h2><p>Germany is a country in central Europe.</p>"
+    }
 }
 
 const PARIS_REGION = {
@@ -30,8 +29,7 @@ const PARIS_REGION = {
         properties: {
             radius: 10000
         }
-    },
-    description: "<h2>Paris</h2><p>Paris is the capital of France.</p>"
+    }
 }
 
 const ATLANTIS_REGION = {
@@ -41,8 +39,7 @@ const ATLANTIS_REGION = {
     location: {
         type: "Polygon",
         coordinates: [[[5.27, 41.69], [3.77, 40.83], [5.43, 39.30], [6.87, 39.28], [7.49, 40.51], [6.70, 41.55], [5.27, 41.69]]]
-    },
-    description: "<h2>Ǎtlantis</h2><p>Ǎtlantis is a fictional island.</p>"
+    }
 }
 
 const CONSTANTINOPLE_REGION = {
@@ -52,8 +49,7 @@ const CONSTANTINOPLE_REGION = {
     location: {
         type: "Polygon",
         coordinates: [[[28.61, 40.87], [28.88, 40.73], [28.88, 40.72], [29.47, 40.73], [29.47, 40.99], [29.11, 41.20], [28.61, 40.87]]]
-    },
-    description: null
+    }
 }
 
 const CONSTANTINOPLE_REGION_UPDATED = {
@@ -69,8 +65,7 @@ const CONSTANTINOPLE_REGION_UPDATED = {
         properties: {
             radius: 20000
         }
-    },
-    description: "<h2>Byzanzt</h2><p>Byzanz is a city in Turkey.</p>"
+    }
 }
 
 const CONSTANTINOPLE_REGION_UPDATED_INPUT = `data: {
@@ -85,8 +80,7 @@ const CONSTANTINOPLE_REGION_UPDATED_INPUT = `data: {
         properties: {
             radius: 20000
         }
-    },
-    description: "<h2>Byzanzt</h2><p>Byzanz is a city in Turkey.</p>"   
+    }
 }`
 
 const TEST_MINT_REGION_INPUT = `data: {
@@ -101,8 +95,7 @@ const TEST_MINT_REGION_INPUT = `data: {
         properties: {
             radius: 100
         }
-    },
-    description: "This is just a test."
+    }
 }`
 
 const TEST_MINT_REGION_DATA = {
@@ -118,8 +111,7 @@ const TEST_MINT_REGION_DATA = {
         properties: {
             radius: 100
         }
-    },
-    description: "This is just a test."
+    }
 }
 
 const MINT_REGION_GQL_BODY = `{
@@ -127,7 +119,6 @@ const MINT_REGION_GQL_BODY = `{
     name
     uncertain
     location
-    description
 }`
 
 

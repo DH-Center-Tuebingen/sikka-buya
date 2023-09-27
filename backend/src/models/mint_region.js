@@ -37,7 +37,6 @@ class MintRegion {
         }
 
         query += ` ORDER BY unaccent(name)`
-        console.log(query)
         const result = await transaction.manyOrNone(query, filters)
         return result.map((row) => MintRegion.postProcess(row))
     }

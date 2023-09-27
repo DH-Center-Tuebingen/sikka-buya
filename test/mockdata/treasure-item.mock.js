@@ -177,7 +177,7 @@ const TREASURE_ITEM_GQL_BODY = `{
         id
         name
     }
-    mintRegion {id name location uncertain description}
+    mintRegion {id name location uncertain}
     coinType { ${COIN_TYPE_BODY} }
 }`
 
