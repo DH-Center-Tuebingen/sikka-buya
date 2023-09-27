@@ -27,7 +27,7 @@ describe("Testing Role", function () {
         cy.get(".list-item").contains('caliph')
     })
 
-    it("Coin mark list is showing", function () {
+    it("Role list is showing", function () {
         cy.visit('/editor/role')
         cy.get(".list").children().should("have.length", 3)
     })
@@ -47,7 +47,7 @@ describe("Testing Role", function () {
         cy.get(".list").children().should("have.length", 2)
     })
 
-    describe("Create Coin mark", function () {
+    describe("Create Role", function () {
 
         it("Can reach create page", function () {
             cy.visit("/editor/role")
@@ -90,7 +90,7 @@ describe("Testing Role", function () {
 
     })
 
-    describe("Edit Coin mark", function () {
+    describe("Edit Role", function () {
 
         it("Access edit page", function () {
             cy.visit('/editor/role')
@@ -152,7 +152,7 @@ describe("Testing Role", function () {
         })
     })
 
-    describe("Delete Coin mark", function () {
+    describe("Delete Role", function () {
 
         it("Delete", function () {
             cy.visit("/editor/role")
