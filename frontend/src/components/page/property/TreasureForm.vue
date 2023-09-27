@@ -175,9 +175,7 @@ export default {
         getProperty: async function (id) {
             let treasure = await new Treasure().get(id)
             let location = treasure.location || defaultLocation
-
-            if (location.type.toLowerCase() === "polygon")
-                location.coordinates = location.coordinates[0]
+            
             treasure.location = location
             this.$refs.descriptionField.setContent(treasure.description)
 
