@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "Vue.volar",
+        "adpyke.vscode-sql-formatter",
+        "bradymholt.pgformatter",
+        "github.copilot",
+        "github.copilot-chat",
+        "eamodio.gitlens"
+    ],
+    "unwantedRecommendations": [
+        "esbenp.prettier-vscode",
+        "octref.vetur"
+    ]
+}

@@ -33,7 +33,7 @@
                 v-for="filter in activeFilters"
                 :key="`active-filter-button-${filter.key}`"
                 @click.native="() => $emit('resetFilter', filter.key)"
-            >{{ $tc("property." + snakeCase(filter.key)) }}</FilterButton>
+            >{{ $tc("property." + $utils.snakeCase(filter.key)) }}</FilterButton>
         </div>
     </div>
 </template>

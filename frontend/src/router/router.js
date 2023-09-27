@@ -51,20 +51,18 @@ import EditorPage from "@/components/page/editor/EditorPage.vue"
 import LandingPage from "@/components/page/LandingPage.vue"
 import ContactPage from "@/components/page/ContactPage.vue"
 import CreateTypePage from "@/components/page/CreateTypePage.vue"
-import CoinMarkOverview from "@/components/page/CoinMarkOverview.vue"
-import CoinVerseOverview from "@/components/page/CoinVerseOverview.vue"
 import InitialSetup from "@/components/page/InitialSetup.vue"
 import UserManagementPage from "@/components/page/UserManagementPage.vue"
 import FixDiff from "@/components/page/FixDiff.vue"
 import PageNotFoundPage from "@/components/page/system/PageNotFoundPage"
 import ServerOfflinePage from "@/components/page/system/ServerOfflinePage"
+import SettingsPage from "@/components/page/SettingsPage.vue"
 
 import EditorPanel from "@/components/page/EditorPanel.vue"
 import ExpertSearch from "@/components/page/editor/ExpertSearch.vue"
 
 import Overview from "@/components/page/Overview.vue"
-import PersonOverview from "@/components/page/PersonOverview"
-import MaterialOverview from "@/components/page/MaterialOverview"
+import ColorOverview from "@/components/page/ColorOverview"
 
 import FileListPage from "@/components/page/FileListPage.vue"
 
@@ -77,6 +75,7 @@ import DynastyForm from "@/components/page/property/DynastyForm"
 import LocaleForm from "@/components/page/property/LocaleForm"
 import MaterialForm from "@/components/page/property/MaterialForm"
 import MintForm from "@/components/page/property/MintForm"
+import MintRegionForm from "@/components/page/property/MintRegionForm"
 import NominalForm from "@/components/page/property/NominalForm"
 import PersonForm from "@/components/page/property/PersonForm"
 import ProvinceForm from "@/components/page/property/ProvinceForm"
@@ -100,6 +99,7 @@ import TemplatePage from "@/components/page/TemplatePage"
 import { componentTestRoutes } from "@/component-test.js"
 import { superUserIsSet } from '../utils/Setup.js'
 import store from '../store.js'
+import PropertyRoute from './routes/property_routes.js'
 
 Vue.use(VueRouter)
 
@@ -309,29 +309,32 @@ const routes = [
             meta: { super: true }
           },
           {
+            path: 'settings',
+            name: "Settings",
+            component: SettingsPage,
+            meta: { super: true },
+          },
+          {
             path: "type",
             name: "TypeOverview",
             component: TypeOverview,
             props: { adminView: true }
           },
           {
-            path: "coin_mark",
-            name: "CoinMarkOverview",
-            component: CoinMarkOverview
-          }, {
-            path: "coin_verse",
-            name: "CoinVerseOverview",
-            component: CoinVerseOverview
-          },
-          {
             path: "person",
             name: "PersonOverview",
-            component: PersonOverview
+            props: {
+              property: "person"
+            },
+            component: ColorOverview
           },
           {
             path: "material",
             name: "MaterialOverview",
-            component: MaterialOverview
+            props: {
+              property: "material"
+            },
+            component: ColorOverview
           },
           {
             path: ":property",
@@ -348,106 +351,19 @@ const routes = [
             name: 'EditType',
             component: CreateTypePage
           },
-          {
-            path: "coin_mark/create",
-            name: "CreateCoinMark",
-            component: CoinMarkForm
-          }, {
-            path: "coin_mark/:id",
-            name: "EditCoinMark",
-            component: CoinMarkForm
-          },
-          {
-            path: "coin_verse/create",
-            name: "CreateCoinVerse",
-            component: CoinVerseForm
-          }, {
-            path: "coin_verse/:id",
-            name: "EditCoinVerse",
-            component: CoinVerseForm
-          }, {
-            path: "material/create",
-            name: "CreateMaterial",
-            component: MaterialForm
-          }, {
-            path: "material/:id",
-            name: "EditMaterial",
-            component: MaterialForm
-          }, {
-            path: "person/create",
-            name: "CreatePerson",
-            component: PersonForm
-          }, {
-            path: "person/:id",
-            name: "EditPerson",
-            component: PersonForm
-          }, {
-            path: "title/create",
-            name: "CreateTitle",
-            component: TitleForm
-          }, {
-            path: "title/:id",
-            name: "EditTitle",
-            component: TitleForm
-          }, {
-            path: "honorific/create",
-            name: "CreateHonorific",
-            component: HonorificForm
-          }, {
-            path: "honorific/:id",
-            name: "EditHonorific",
-            component: HonorificForm
-          }, {
-            path: "mint/create",
-            name: "CreateMint",
-            component: MintForm
-          }, {
-            path: "mint/:id",
-            name: "EditMint",
-            component: MintForm
-          }, {
-            path: "nominal/create",
-            name: "CreateNominal",
-            component: NominalForm
-          }, {
-            path: "nominal/:id",
-            name: "EditNominal",
-            component: NominalForm
-          }, {
-            path: "role/create",
-            name: "CreateRole",
-            component: RoleForm
-          }, {
-            path: "role/:id",
-            name: "EditRole",
-            component: RoleForm
-          }, {
-            path: "dynasty/create",
-            name: "CreateDynasty",
-            component: DynastyForm
-          }, {
-            path: "dynasty/:id",
-            name: "EditDynasty",
-            component: DynastyForm
-          }, {
-            path: "province/create",
-            name: "CreateProvince",
-            component: ProvinceForm
-          }, {
-            path: "province/:id",
-            name: "EditProvince",
-            component: ProvinceForm
-          },
-          {
-            path: "treasure/create",
-            name: "TreasureCreate",
-            component: TreasureForm
-          },
-          {
-            path: "treasure/:id",
-            name: "TreasureCreate",
-            component: TreasureForm
-          },
+          ...PropertyRoute.from('coin_mark', CoinMarkForm).routes,
+          ...PropertyRoute.from('coin_verse', CoinVerseForm).routes,
+          ...PropertyRoute.from('material', MaterialForm).routes,
+          ...PropertyRoute.from("person", PersonForm).routes,
+          ...PropertyRoute.from("title", TitleForm).routes,
+          ...PropertyRoute.from("honorific", HonorificForm).routes,
+          ...PropertyRoute.from("mint", MintForm).routes,
+          ...PropertyRoute.from("mint_region", MintRegionForm).routes,
+          ...PropertyRoute.from("nominal", NominalForm).routes,
+          ...PropertyRoute.from("role", RoleForm).routes,
+          ...PropertyRoute.from("dynasty", DynastyForm).routes,
+          ...PropertyRoute.from("province", ProvinceForm).routes,
+          ...PropertyRoute.from("treasure", TreasureForm).routes,
           {
             path: "locale/:lang/:path",
             name: "Locale",
@@ -582,10 +498,12 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (route) {
-    console.log("Redirecting to", route)
+    console.trace("Redirecting to", route)
     next(route)
-  } else
+  } else {
+    console.log(to)
     next()
+  }
 })
 
 export default router

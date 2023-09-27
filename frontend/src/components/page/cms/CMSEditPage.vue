@@ -172,7 +172,6 @@ import Spacer from '../../layout/Spacer.vue';
 import LocalStorageMixin from '../../mixins/local-storage-mixin';
 import IconMixin from '../../mixins/icon-mixin';
 import CopyAndPasteMixin from '../../mixins/copy-and-paste';
-import MountedAndLoadedMixin from '../../mixins/mounted-and-loaded';
 import PreventNavigationMixin from '../../mixins/prevent-navigation-mixin';
 import TimeMixin from '../../mixins/time-mixin';
 
@@ -200,7 +199,6 @@ export default {
       save: mdiContentSaveOutline,
       autoSave: mdiSync
     }),
-    MountedAndLoadedMixin,
     PreventNavigationMixin,
     TimeMixin,
   ],
@@ -262,7 +260,7 @@ export default {
         const page = await CMSPage.get(this.id)
         const loadedPublishedTimestamp = parseInt(page.publishedTimestamp);
         this.lastPublishedTimestamp = loadedPublishedTimestamp;
-        
+
         if (isNaN(loadedPublishedTimestamp) || loadedPublishedTimestamp === 0) {
           delete page.publishedTimestamp
         }
@@ -274,7 +272,6 @@ export default {
       }
 
       this.loading = false;
-      this.isLoaded();
     },
     execToolbarAction(action) {
       switch (action) {

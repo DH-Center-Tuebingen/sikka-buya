@@ -47,6 +47,10 @@ class Frontend {
         let parts = path.split(sep)
         return this.createByParts(...parts)
     }
+
+    static async writeFile(data, ...parts) {
+        return fs.promises.writeFile(this.getByParts(...parts), data)
+    }
 }
 
 module.exports = Frontend

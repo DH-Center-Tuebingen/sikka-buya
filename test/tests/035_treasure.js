@@ -29,95 +29,102 @@ describe(`Treasure Queries`, function () {
         await User1.login()
     })
 
+    describe("List", function () {
 
-    it(`List`, async function () {
-        const treasure = `{treasure ${TREASURE_GQL_BODY}}`
-        let result = await graphql(treasure)
+        it(`List`, async function () {
+            const treasure = `{treasure ${TREASURE_GQL_BODY}}`
+            let result = await graphql(treasure)
 
-        expect(result.data).to.deep.equal({
-            "data": {
-                "treasure": [
-                    CORUNA_DATA,
-                    LONDON_DATA
-                ]
-            }
+            expect(result.data).to.deep.equal({
+                "data": {
+                    "treasure": [
+                        CORUNA_DATA,
+                        LONDON_DATA
+                    ]
+                }
+            })
         })
-    })
 
-    it("Get", async function () {
-        const queryName = "getTreasure"
-        let result = await graphql(`{${queryName}(id:2)${TREASURE_GQL_BODY}}`)
+        it("Get", async function () {
+            const queryName = "getTreasure"
+            let result = await graphql(`{${queryName}(id:2)${TREASURE_GQL_BODY}}`)
 
-        expect(result.data).to.deep.equal({
-            "data": {
-                [queryName]: CORUNA_DATA
-            }
+            expect(result.data).to.deep.equal({
+                "data": {
+                    [queryName]: CORUNA_DATA
+                }
+            })
         })
-    })
 
-    it("Search with regular characters", async function () {
-        const queryName = "searchTreasure"
+        it("Search with regular characters", async function () {
+            const queryName = "searchTreasure"
 
-        let result = await graphql(`
+            let result = await graphql(`
             {${queryName}(text: "ña") ${TREASURE_GQL_BODY}}`)
 
-        expect(result.data).to.deep.equal({
-            "data": {
-                [queryName]: [
-                    CORUNA_DATA
-                ]
-            }
+            expect(result.data).to.deep.equal({
+                "data": {
+                    [queryName]: [
+                        CORUNA_DATA
+                    ]
+                }
+            })
         })
-    })
 
-    it("Search with exact characters", async function () {
-        const queryName = "searchTreasure"
+        it("Search with exact characters", async function () {
+            const queryName = "searchTreasure"
 
-        let result = await graphql(`
+            let result = await graphql(`
             {${queryName}(text: "La Coruña") ${TREASURE_GQL_BODY}}`)
 
-        expect(result.data).to.deep.equal({
-            "data": {
-                [queryName]: [
-                    CORUNA_DATA
-                ]
-            }
+            expect(result.data).to.deep.equal({
+                "data": {
+                    [queryName]: [
+                        CORUNA_DATA
+                    ]
+                }
+            })
         })
+
     })
 
-    it("Unauthorized Add Rejected", async function () {
-        const queryName = "addTreasure"
+    describe("Add", function () {
 
-        let promise = graphql(`
+        it("Unauthorized Add Rejected", async function () {
+            const queryName = "addTreasure"
+
+            let promise = graphql(`
             mutation{${queryName}(data: ${LODZ_INPUT})})
             `)
 
-        await expect(promise).to.be.rejectedWith(["401"])
-    })
+            await expect(promise).to.be.rejectedWith(["401"])
+        })
 
-    it("Add", async function () {
-        const queryName = "addTreasure"
+        it("Add", async function () {
+            const queryName = "addTreasure"
 
-        const query = `
+            const query = `
         mutation{${queryName}(data: ${LODZ_INPUT})}
         `
-        let promise = graphql(query, {}, User1.token)
-        await expect(promise).to.be.fulfilled
-    })
-
-    it("Added correctly", async function () {
-        const queryName = "treasure"
-
-        let result = await graphql(`{${queryName} ${TREASURE_GQL_BODY}}`)
-        expect(result.data).to.deep.equal({
-            "data": {
-                [queryName]: [
-                    START_DATA[0],
-                    LODZ_DATA,
-                    START_DATA[1]
-                ]
-            }
+            let promise = graphql(query, {}, User1.token)
+            await expect(promise).to.be.fulfilled
         })
+
+        it("Added correctly", async function () {
+            const queryName = "treasure"
+
+            let result = await graphql(`{${queryName} ${TREASURE_GQL_BODY}}`)
+            expect(result.data).to.deep.equal({
+                "data": {
+                    [queryName]: [
+                        START_DATA[0],
+                        LODZ_DATA,
+                        START_DATA[1]
+                    ]
+                }
+            })
+        })
+
     })
 
     describe("Update", function () {

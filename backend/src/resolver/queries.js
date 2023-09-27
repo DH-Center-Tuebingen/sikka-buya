@@ -16,6 +16,9 @@ const Frontend = require('../frontend.js')
 const { readdir } = require('fs/promises')
 const { join } = require('path')
 const TreasureGQL = require('./klasses/TreasureGQL.js')
+const SettingsGQL = require('./klasses/SettingsGQL.js')
+const MintRegionGQL = require('./klasses/MintRegionGQL.js')
+const { GeoJSON } = require('../models/geojson.js')
 
 
 
@@ -30,6 +33,9 @@ const SuperUserQueries = {
 }
 
 const Queries = {
+    geojson(_, { d } = {}) {
+        GeoJSON.validateObject(d)
+    },
     ping: () => Date.now(),
     locale: async function () {
         const { lc_collate: locale } = await Database.one(`SHOW lc_collate`)
@@ -64,7 +70,6 @@ const Queries = {
             switch (orderBy) {
                 case "created":
                 case "modified":
-                    namedDownloads.forEach(a => console.log(a[orderBy]))
                     namedDownloads.sort((a, b) => b[orderBy] - a[orderBy])
                     break
                 case "name":
@@ -609,7 +614,7 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
     propertyByName: async function (_, { property = null, name = null } = {}) {
         if (!property || !name)
             throw new Error("Property and name must be provided!")
-        const supportedProperties = ['material', 'mint', 'nominal', 'dynasty']
+        const supportedProperties = ['material', 'mint', 'mint_region', 'nominal', 'dynasty']
 
         if (supportedProperties.includes(property) === false)
             throw new Error("Unsupported property: " + property)
@@ -621,5 +626,7 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
 module.exports = Object.assign(Queries,
     guard(SuperUserQueries, (_, __, context) => Auth.requirePermission(context, "super")),
     PageGQL.Queries,
+    SettingsGQL.Queries,
     TreasureGQL.Queries,
+    MintRegionGQL.Queries,
 )

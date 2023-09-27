@@ -4,8 +4,6 @@
     <header>
       <h1>{{ $tc(`property.${fixedPropertyName}`) }}</h1>
 
-
-
       <Button
         id="create-button"
         @click="create"
@@ -41,10 +39,7 @@
           name="list-item-before"
           :item="item"
         />
-        <ListItemCell :to="{
-          path: `${item.id}`,
-          append: true,
-        }">{{ item.name }}</ListItemCell>
+        <ListItemCell :to="getEditRoute(item)">{{ item.name }}</ListItemCell>
         <Button
           v-for="tool in tools"
           :key="'tool-' + tool"
@@ -70,7 +65,7 @@ import ListItemIdField from '../layout/list/ListItemIdField.vue';
 
 import ListItemCell from '../layout/list/ListItemCell.vue';
 import ListItem from '../layout/ListItem.vue';
-import { camelCase } from 'change-case';
+import { camelCase, snakeCase } from 'change-case';
 
 import DeleteButtonMixin from '../mixins/deletebutton';
 import Button from '../layout/buttons/Button.vue';
@@ -113,6 +108,7 @@ export default {
     queryName: function () {
       return this.query ? this.query : camelCase(this.property);
     },
+
   },
   data: function () {
     return {
@@ -124,22 +120,27 @@ export default {
     };
   },
   methods: {
+    getEditRoute: function (item) {
+      return {
+        path: `/editor/${snakeCase(this.property)}/${item.id}`
+      };
+    },
     async list() {
       new Query(this.queryName)
         .list(['id', 'name', ...this.parameters])
         .then((obj) => {
           this.$data.items = obj.data.data[this.queryName];
         })
-        .catch(() => {
+        .catch((e) => {
           this.listError = this.$t('error.loading_list');
+          console.error(e)
         })
         .finally(() => {
           this.$data.loading = false;
         }, true);
     },
     search() {
-      let queryCommand = `search${this.queryName[0].toUpperCase() + this.queryName.substr(1)
-        }`;
+      let queryCommand = `search${this.$utils.capitalize(this.queryName)}`;
       Query.raw(
         `{
             ${queryCommand}
@@ -152,7 +153,7 @@ export default {
           this.$data.items = obj.data.data[queryCommand];
         })
         .catch((e) => {
-          console.err('Could not search', e);
+          console.error('Could not search', e);
           this.error = this.$t('error.loading_list');
         })
         .finally(() => {
@@ -164,7 +165,7 @@ export default {
         this.$router.push({ name: this.createPage });
       } else {
         this.$router.push({
-          path: `${camelCase(this.property)}/create`,
+          path: `${snakeCase(this.property)}/create`,
         });
       }
     },

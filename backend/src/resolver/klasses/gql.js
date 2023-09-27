@@ -12,14 +12,14 @@ class GQL {
      * mutations implement all mutations
      */
     static get Mutations() {
-        return {}
+        throw new Error('Mutations not implemented')
     }
 
     /**
      * queries implement all public queries
      */
     static get Queries() {
-        return {}
+        throw new Error('Queries not implemented')
     }
 }
 

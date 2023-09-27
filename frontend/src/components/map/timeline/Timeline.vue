@@ -1,7 +1,7 @@
 <template>
   <div
     class="timeline"
-    :class="{ focussed }"
+    :class="{ focussed, readonly: !interactive }"
     ref="element"
   >
     <!-- <button class="play-btn" @click="play">
@@ -11,6 +11,7 @@
 
     <div class="timeline-container">
       <button
+        v-if="interactive"
         type="button"
         @click.stop.prevent="down"
         @focus="focusTimeline"
@@ -24,7 +25,7 @@
         :value="clampedValue"
         :labeledValue="10"
         :subdivisions="2"
-        :readonly="readonly"
+        :interactive="interactive"
         @change.stop="change"
         @input.stop="change"
         @focus="() => focussed = true"
@@ -33,6 +34,7 @@
       >
         <div class="input-wrapper">
           <input
+            v-if="interactive"
             class="year-input"
             type="text"
             :value="value"
@@ -41,6 +43,7 @@
             @blur="insertClampedValue"
           />
           <Info
+            v-if="interactive"
             :alwaysShow="!valid"
             type="warning"
             class="info"
@@ -54,6 +57,7 @@
         </template>
       </timeline-slider>
       <button
+        v-if="interactive"
         type="button"
         @click.stop.prevent="up"
         @focus="focusTimeline"
@@ -82,7 +86,10 @@ export default {
     TimelineSlider,
   },
   props: {
-    readonly: Boolean,
+    interactive: {
+      type: Boolean,
+      default: true,
+    },
     map: Object,
     from: Number,
     to: Number,
@@ -191,6 +198,15 @@ export default {
   display: flex;
   flex-direction: column;
 
+
+
+  &.readonly {
+    background-color: $white;
+    border-radius: $border-radius;
+    padding: $padding;
+    box-sizing: border-box;
+  }
+
   >* {
     flex: 1;
   }
@@ -221,12 +237,12 @@ export default {
     border-radius: 0;
   }
 
-  button:first-child {
+  :first-child {
     border-top-left-radius: $border-radius;
     border-bottom-left-radius: $border-radius;
   }
 
-  button:last-child {
+  :last-child {
     border-top-right-radius: $border-radius;
     border-bottom-right-radius: $border-radius;
   }

@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.1
--- Dumped by pg_dump version 13.1
+-- Dumped from database version 12.16
+-- Dumped by pg_dump version 12.16
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -42,6 +42,31 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
+
+
+--
+-- Name: rename_if_column_exists(text, text, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.rename_if_column_exists(tname text, old_name text, new_name text) RETURNS void
+    LANGUAGE plpgsql
+    AS $$ BEGIN IF EXISTS(
+  SELECT
+    *
+  FROM
+    information_schema.columns
+  WHERE
+    table_name = tname
+    and column_name = old_name
+) THEN
+ALTER TABLE
+  tname RENAME COLUMN old_name TO new_name;
+
+END IF;
+
+END;
+
+$$;
 
 
 SET default_tablespace = '';
@@ -393,6 +418,40 @@ ALTER SEQUENCE public.mint_id_seq OWNED BY public.mint.id;
 
 
 --
+-- Name: mint_region; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mint_region (
+    id integer NOT NULL,
+    name text NOT NULL,
+    description text,
+    location public.geometry,
+    properties jsonb,
+    uncertain boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: mint_region_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mint_region_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mint_region_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mint_region_id_seq OWNED BY public.mint_region.id;
+
+
+--
 -- Name: nominal; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -661,6 +720,38 @@ ALTER SEQUENCE public.province_id_seq OWNED BY public.province.id;
 
 
 --
+-- Name: settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.settings (
+    id integer NOT NULL,
+    name text NOT NULL,
+    value text,
+    parent integer
+);
+
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.settings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.settings_id_seq OWNED BY public.settings.id;
+
+
+--
 -- Name: title; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -688,6 +779,83 @@ CREATE SEQUENCE public.title_id_seq
 --
 
 ALTER SEQUENCE public.title_id_seq OWNED BY public.title.id;
+
+
+--
+-- Name: treasure; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.treasure (
+    id integer NOT NULL,
+    name text NOT NULL,
+    description text,
+    earliest_year integer,
+    latest_year integer,
+    location public.geometry,
+    properties jsonb,
+    uncertain boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: treasure_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.treasure_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: treasure_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.treasure_id_seq OWNED BY public.treasure.id;
+
+
+--
+-- Name: treasure_item; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.treasure_item (
+    id integer NOT NULL,
+    cointype integer,
+    count integer,
+    dynasty integer,
+    fragment boolean,
+    material integer,
+    uncertain_mint text,
+    nominal integer,
+    treasure integer NOT NULL,
+    weight double precision,
+    year integer,
+    uncertain_year text,
+    mint_region integer
+);
+
+
+--
+-- Name: treasure_item_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.treasure_item_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: treasure_item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.treasure_item_id_seq OWNED BY public.treasure_item.id;
 
 
 --
@@ -996,6 +1164,13 @@ ALTER TABLE ONLY public.mint ALTER COLUMN id SET DEFAULT nextval('public.mint_id
 
 
 --
+-- Name: mint_region id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mint_region ALTER COLUMN id SET DEFAULT nextval('public.mint_region_id_seq'::regclass);
+
+
+--
 -- Name: nominal id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1038,10 +1213,31 @@ ALTER TABLE ONLY public.province ALTER COLUMN id SET DEFAULT nextval('public.pro
 
 
 --
+-- Name: settings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings ALTER COLUMN id SET DEFAULT nextval('public.settings_id_seq'::regclass);
+
+
+--
 -- Name: title id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.title ALTER COLUMN id SET DEFAULT nextval('public.title_id_seq'::regclass);
+
+
+--
+-- Name: treasure id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure ALTER COLUMN id SET DEFAULT nextval('public.treasure_id_seq'::regclass);
+
+
+--
+-- Name: treasure_item id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item ALTER COLUMN id SET DEFAULT nextval('public.treasure_item_id_seq'::regclass);
 
 
 --
@@ -1080,10 +1276,16 @@ ALTER TABLE ONLY public.web_page_image ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- Data for Name: app_user_privilege; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: app_user; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public.app_user VALUES (1, NULL, 'admin@sikka-buya.de', '$2b$10$67jHE8fkL/h4qXC7tVldTeNVB3XwnrCi1srM/OV88JQzjp9w2QPYG', true);
+
+
+--
+-- Data for Name: app_user_privilege; Type: TABLE DATA; Schema: public; Owner: -
+--
+
 
 
 --
@@ -1185,8 +1387,16 @@ INSERT INTO public.material_color VALUES (2, '#C0C0C0');
 -- Data for Name: mint; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.mint VALUES (2, 'Fārs', NULL, '0101000020E61000003DA5E1CE97B93A4018F503BEEBF14A40', true, '0103000020E610000001000000060000002618CCAC492C3B4056A241FD8F914A4073B1F122F3B03B404265E8E14C394B402618CCAC492C3B4042B327E31BCD4B4063F47559B6C13A40A6CE92AC69D54B40C0F92F4709703A405697207F466F4B40A9671CCD01A73A407873C2C232C94A40', 1);
+INSERT INTO public.mint VALUES (2, 'Fārs', NULL, '0101000020E6100000C3F5285C8FC24140AE47E17A148E4140', true, '0103000020E61000000100000006000000EC51B81E852B3B40713D0AD7A3904A40713D0AD7A3B03B40B81E85EB51384B40EC51B81E852B3B40CDCCCCCCCCCC4B400000000000C03A4014AE47E17AD44B40AE47E17A146E3A40AE47E17A146E4B406666666666A63A40295C8FC2F5C84A40', 1);
 INSERT INTO public.mint VALUES (1, 'Šīrāz', NULL, '0101000020E6100000E9BACF750A963D40809730D2FF4A4A40', false, '0103000020E610000000000000', 1);
+
+
+--
+-- Data for Name: mint_region; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.mint_region VALUES (1, 'Maharlu', '', '0101000020E61000007B895494D0793D401D9A6E2974654A40', '{"radius": 18000, "isFeature": true}', false);
+INSERT INTO public.mint_region VALUES (2, 'Kavir', '', '0101000020E6100000AE7C06123A47414085ECDFF1A9344A40', '{"radius": 34000, "isFeature": true}', true);
 
 
 --
@@ -1286,6 +1496,12 @@ INSERT INTO public.province VALUES (10, 'Ḫūzistān');
 
 
 --
+-- Data for Name: settings; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
 -- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -1297,6 +1513,22 @@ INSERT INTO public.province VALUES (10, 'Ḫūzistān');
 
 INSERT INTO public.title VALUES (1, 'malik');
 INSERT INTO public.title VALUES (2, 'šāhānšāh');
+
+
+--
+-- Data for Name: treasure; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.treasure VALUES (1, 'Südufer Kasp. Meer', '<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>', 330, 390, '0101000020E6100000A1445848D11B42403B4A9F02929C4A40', '{"radius": 217000, "isFeature": true}', false);
+INSERT INTO public.treasure VALUES (2, 'Test', null, null, null, null, null, false);
+
+
+--
+-- Data for Name: treasure_item; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.treasure_item VALUES (3, 4, 2, 1, true, 2, NULL, 1, 1, 9, 389, NULL, 1);
+INSERT INTO public.treasure_item VALUES (4, NULL, 10, NULL, false, 1, 'Shama', NULL, 1, 60, NULL, '3[3-9]x', 2);
 
 
 --
@@ -1440,6 +1672,13 @@ SELECT pg_catalog.setval('public.mint_id_seq', 2, true);
 
 
 --
+-- Name: mint_region_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.mint_region_id_seq', 2, true);
+
+
+--
 -- Name: nominal_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -1489,10 +1728,31 @@ SELECT pg_catalog.setval('public.province_id_seq', 10, true);
 
 
 --
+-- Name: settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.settings_id_seq', 1, false);
+
+
+--
 -- Name: title_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.title_id_seq', 2, true);
+
+
+--
+-- Name: treasure_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.treasure_id_seq', 2, true);
+
+
+--
+-- Name: treasure_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.treasure_item_id_seq', 4, true);
 
 
 --
@@ -1651,6 +1911,14 @@ ALTER TABLE ONLY public.mint
 
 
 --
+-- Name: mint_region mint_region_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mint_region
+    ADD CONSTRAINT mint_region_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: nominal nominal_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1755,11 +2023,35 @@ ALTER TABLE ONLY public.province
 
 
 --
+-- Name: settings settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings
+    ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: title title_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.title
     ADD CONSTRAINT title_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: treasure_item treasure_item_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: treasure treasure_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure
+    ADD CONSTRAINT treasure_pkey PRIMARY KEY (id);
 
 
 --
@@ -2031,6 +2323,62 @@ ALTER TABLE ONLY public.person
 
 ALTER TABLE ONLY public.piece
     ADD CONSTRAINT piece_type_fk FOREIGN KEY (type) REFERENCES public.type(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: settings settings_parent_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings
+    ADD CONSTRAINT settings_parent_fkey FOREIGN KEY (parent) REFERENCES public.settings(id);
+
+
+--
+-- Name: treasure_item treasure_item_dynasty_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_dynasty_fkey FOREIGN KEY (dynasty) REFERENCES public.dynasty(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: treasure_item treasure_item_material_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_material_fkey FOREIGN KEY (material) REFERENCES public.material(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: treasure_item treasure_item_mint_region_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_mint_region_fkey FOREIGN KEY (mint_region) REFERENCES public.mint_region(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: treasure_item treasure_item_mint_region_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_mint_region_fkey1 FOREIGN KEY (mint_region) REFERENCES public.mint_region(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: treasure_item treasure_item_nominal_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_nominal_fkey FOREIGN KEY (nominal) REFERENCES public.nominal(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: treasure_item treasure_item_treasure_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_treasure_fkey FOREIGN KEY (treasure) REFERENCES public.treasure(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

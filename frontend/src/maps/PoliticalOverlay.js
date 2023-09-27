@@ -13,17 +13,46 @@ import PersonMint from '../models/person-mint';
 
 export default class PoliticalOverlay extends Overlay {
 
-  constructor(parent, settings, {
-    onDataTransformed = null,
-    onGeoJSONTransform = null,
-  } = {}) {
-    super(parent, settings, {
-      onDataTransformed,
-      onGeoJSONTransform,
-    })
+  constructor(parent, settings, callbacks) {
+    super(parent, settings, callbacks)
     this.heirStripes = {}
+
+    this._onFeatureGroupAdded = (featureGroup) => {
+      const children = featureGroup.getLayers()
+      if (children.length > 0) {
+        children.forEach(child => this._addToFrontEventlistener(child))
+      }
+    }
+
+    this._onFeatureGroupRemoved = (featureGroup) => {
+      const children = featureGroup.getLayers()
+      if (children.length > 0) {
+        children.forEach(child => {
+          this._removeToFrontEventlistener(child)
+        })
+      }
+    }
+
   }
 
+  _addToFrontEventlistener(layer) {
+    layer.on("mouseover", this._bringToFront)
+    layer.on("click", this._bringToFront)
+  }
+
+  _removeToFrontEventlistener(layer) {
+    layer.off("mouseover", this._bringToFront)
+    layer.off("click", this._bringToFront)
+  }
+
+  _bringToFront(e) {
+    const layer = e.target
+    if (layer.isSpecial) {
+      setTimeout(() => { layer.bringToFront() }, layer.animationTime || 1000)
+    } else {
+      layer.bringToFront()
+    }
+  }
 
 
 
@@ -407,6 +436,7 @@ export default class PoliticalOverlay extends Overlay {
       objects.forEach(obj => window.mylayer[i++] = obj)
 
       layer = L.featureGroup(objects);
+      layer.animationTime = animationTime
     } else {
       layer = this.createMintLocationMarker(latlng, feature, { added: mintAdded, removed: mintRemoved, animationTime })
 
@@ -484,13 +514,6 @@ export default class PoliticalOverlay extends Overlay {
     } else {
       throw new Error(`Marker mode is not implemented: ${this.mode}`)
     }
-
-    if (layer.isSpecial) {
-      setTimeout(() => { MintLocationMarker.addBringToFrontBehaviour(layer) }, animationTime)
-    } else {
-      MintLocationMarker.addBringToFrontBehaviour(layer)
-    }
-
 
     return layer
   }

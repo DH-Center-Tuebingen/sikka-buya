@@ -144,9 +144,9 @@ import Query from '../../database/query';
 
 //Mixins
 import map from './mixins/map';
-import { mintLocationsMixin } from './mixins/MintLocationsMixin';
-import settingsMixin from '../map/mixins/settings';
-import timeline from './mixins/timeline';
+import { MintLocationsMixin } from './mixins/MintLocationsMixin';
+import SettingsMixin from '../map/mixins/settings';
+import TimelineMixin from './mixins/timeline';
 import slideshow from '../mixins/slideshow';
 
 // Components
@@ -176,7 +176,7 @@ import Color from '../../utils/Color.js';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 import MapToolbar from './MapToolbar.vue';
-import { RangeGraph, HorizontalLinesGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
+import { RangeGraph, LineGraph, StackedRanges } from '../../models/timeline/TimelineChart';
 
 let settings = new Settings(window, 'PoliticalOverlay');
 const overlaySettings = settings.load();
@@ -248,10 +248,10 @@ export default {
   },
   mixins: [
     map,
-    timeline,
+    TimelineMixin(),
     slideshow,
-    settingsMixin(overlaySettings),
-    mintLocationsMixin({
+    SettingsMixin(overlaySettings),
+    MintLocationsMixin({
       onMintSelectionChanged: async function () {
         await this.drawTimeline();
       },
@@ -408,7 +408,7 @@ export default {
   },
   methods: {
     toggleTimeline() {
-      timeline.methods.toggleTimeline.call(this);
+      this.timeline_mixin_toggleTimeline();
       this.drawTimeline()
       this.$nextTick(() => {
         this.update();

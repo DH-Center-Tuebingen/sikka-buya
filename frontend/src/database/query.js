@@ -2,6 +2,7 @@ import AxiosHelper from "../utils/AxiosHelper.js";
 import Auth from "../utils/Auth";
 import { graphqlEndpoint } from './host';
 import { print } from 'graphql/language/printer';
+import StringUtils from "../utils/StringUtils.js";
 
 export default class Query {
 
@@ -17,7 +18,7 @@ export default class Query {
     }
 
     get capitalizedName() {
-        return this.name[0].toUpperCase() + this.name.substr(1)
+        return StringUtils.capitalize(this.name)
     }
 
     async search(text, properties = this.defaultProperties) {
@@ -31,7 +32,9 @@ export default class Query {
         return this.raw(query)
     }
 
-    async get(id, properties = []) {
+    async get(id, properties = this.defaultProperties) {
+
+        const getName = `get${this.capitalizedName}`
 
         function recursivelyBuildBody(p) {
             for (let [index, object] of p.entries()) {
@@ -49,13 +52,14 @@ export default class Query {
 
         const query = `
               {
-                get${this.capitalizedName} (id:${id})  
+                 ${getName}(id:${id})  
                     ${recursivelyBuildBody(properties)}
                 
               }
             `
 
-        return Query.raw(query)
+        const result = await Query.raw(query)
+        return result.data.data[getName]
     }
 
     async raw(query, variables) {
@@ -146,7 +150,7 @@ export default class Query {
 
     static async raw(query, variables = {}, debug = false) {
         if (debug)
-            console.log(query, JSON.stringify(variables))
+            console.trace(query, JSON.stringify(variables))
         return AxiosHelper.request({
             url: graphqlEndpoint,
             method: "post",

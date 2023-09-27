@@ -10,6 +10,7 @@
 //
 //
 import "cypress-localstorage-commands";
+import treasureCommandsFactory from "./commands/treasure.commands";
 
 // -- This is a parent command --
 Cypress.Commands.add('login', (email, password) => {
@@ -111,7 +112,6 @@ Cypress.Commands.add("checkDataSelect", (selector, name = "", id = "", relativeE
     if (relativeElement) {
         cy.wrap(relativeElement).find(`${selector} .name-field`).should("have.value", name)
         cy.wrap(relativeElement).find(`${selector} .data-select-id`).should("have.value", id)
-
     } else {
         cy.get(selector).find(`.name-field`).should("have.value", name)
         cy.get(selector).find(`.data-select-id`).should("have.value", id)
@@ -225,7 +225,7 @@ Cypress.Commands.add("inputArrayCloseTo", (selector, target, offset = 0.05) => {
         let arr = []
         try {
             arr = JSON.parse($el[0].value)
-        } catch (e) { console.log(e) }
+        } catch (e) { console.error(e) }
         target.forEach((val, idx) => {
             expect(val).to.be.closeTo(arr[idx], offset)
         })
@@ -243,6 +243,7 @@ Cypress.Commands.add("multiInputArrayCloseTo", (selector, target, offset = 0.05)
         } catch (e) {
             console.error(e)
         }
+
         expect(array).to.not.be.undefined
         expect(array).to.have.same.length(target.length)
         target.forEach((arr, pos) => {
@@ -252,6 +253,27 @@ Cypress.Commands.add("multiInputArrayCloseTo", (selector, target, offset = 0.05)
         })
     })
 })
+
+
+/**
+ * Checks a DOM List with the structure: .list > .list-item
+ * It checks that all items are present. Order is not checked.
+ * 
+ * 
+ * @param {string} selector
+ * @param {string[]} items
+ */
+Cypress.Commands.add("checkListItems", (selector, items) => {
+    cy.get(selector).find(".list-item").should("have.length", items.length)
+
+    items.forEach((text, index) => {
+        cy.get(selector + " .list-item").contains(text)
+    })
+})
+
+
+treasureCommandsFactory()
+
 
 
 //

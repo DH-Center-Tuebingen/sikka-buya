@@ -1,7 +1,33 @@
 <template>
     <div class="material-map ui">
         <Sidebar>
+            <template #title>
+                <Locale
+                    path="property.mint"
+                    :count="2"
+                />
+            </template>
 
+
+            <table>
+                <tbody>
+                    <tr
+                        v-for="mint of mints"
+                        :key="`mint-list-item-${mint.id}`"
+                    >
+                        <td>
+                            {{ mint.name }}
+                        </td>
+                        <td
+                            v-for="treasure of selectedTreasures"
+                            :key="`mint-count-${treasure.id}`"
+                            :style="`color: ${treasure.color}`"
+                        >
+                            {{ mint.counts[treasure.id] || 0 }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </Sidebar>
 
         <div class="center-ui center-ui-top">
@@ -13,15 +39,15 @@
         <div class="center-ui center-ui-center"></div>
         <div class="center-ui center-ui-bottom">
 
-
             <TimelineSlideshowArea
-                ref="timeline"
+                ref="timelineSlideshowArea"
                 :map="map"
-                :timelineReadonly="true"
                 :timelineFrom="timeline.from"
                 :timelineTo="timeline.to"
                 :timelineValue="raw_timeline.value"
+                :timelineInteractive="false"
                 :timelineActive="timelineActive"
+                @toggle="toggleTimeline"
                 timelineName="additional-map"
             >
                 <template #background>
@@ -35,9 +61,42 @@
         </div>
 
         <Sidebar
+            style="grid-column: 3;"
             side="right"
             ref="catalogSidebar"
         >
+            <template #title>
+                <Locale
+                    path="property.treasure"
+                    :count="2"
+                />
+            </template>
+
+            <MultiSelectList>
+                <template v-for="treasure in treasures">
+                    <MultiSelectListItem
+                        :key="`list-item-${treasure.id}`"
+                        :no-checkbox="true"
+                        :selected="isTreasureSelected(treasure.id)"
+                        @click.native="toggleTreasure(treasure.id)"
+                        @checkbox-selected="(val) => setTreasure(treasure.id, val)"
+                    >
+                        <template #before>
+                            <ListColorIndicator
+                                :color="treasure.color"
+                                default-color="transparent"
+                            />
+                        </template>
+                        {{ treasure.name }}
+                    </MultiSelectListItem>
+                    <TreasureTable
+                        :key="`treasure-table-${treasure.id}`"
+                        v-if="isTreasureSelected(treasure.id)"
+                        :item="treasure"
+                    >
+                    </TreasureTable>
+                </template>
+            </MultiSelectList>
 
         </Sidebar>
     </div>
@@ -47,8 +106,8 @@
 // Mixins
 import map from './mixins/map';
 import settingsMixin from '../map/mixins/settings';
-import timeline from './mixins/timeline';
-
+import TimelineMixin from './mixins/timeline';
+import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
 
 //Components
 import Button from '../layout/buttons/Button.vue';
@@ -57,20 +116,31 @@ import LabeledInputContainer from '../LabeledInputContainer.vue';
 import MintList from '../MintList.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
+import TreasureTable from "./TreasureTable.vue";
 
 // Other
-
+import TreasureOverlay from '../../maps/TreasureOverlay';
 import Settings from '../../settings';
 import URLParams from '../../utils/URLParams';
 import ListSelectionTools from '../interactive/ListSelectionTools.vue';
 import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
+import MultiSelectList from '../MultiSelectList.vue';
+import MultiSelectListItem from '../MultiSelectListItem.vue';
+
+import cloneDeep from 'lodash/cloneDeep';
 
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
+
+
+import LocaleStorageMixin from "../mixins/local-storage-mixin"
+import Sort from '../../utils/Sorter';
+import { BarGraph } from '../../models/timeline/TimelineChart';
+import ListColorIndicator from '../list/ListColorIndicator.vue';
 
 export default {
     components: {
@@ -80,26 +150,77 @@ export default {
         MapToolbar,
         Sidebar,
         Timeline,
-        TimelineSlideshowArea
+        TimelineSlideshowArea,
+        TreasureTable,
+        MultiSelectList,
+        MultiSelectListItem,
+        ListColorIndicator,
     },
     data: function () {
         return {
             filters: {},
             painter: null,
             chart: null,
+            treasures: [],
+            selectedTreasureIds: [],
         };
     },
     mixins: [
         map,
-        timeline,
+        TimelineMixin(),
         settingsMixin(overlaySettings),
+        LocaleStorageMixin("treasure-map", [
+            "selectedTreasureIds"
+        ]),
+        MountedAndLoadedMixin(['storage', 'data'])
     ],
     computed: {
+        timelineChart() {
+            return this.$refs.timelineSlideshowArea.timelineChart
+        },
         filtersActive() {
             return Object.values(this.filters).length > 0
+        },
+        selectedTreasures() {
+            const t = this.treasures.filter(t => this.selectedTreasureIds.includes(t.id))
+            return t
+        },
+        mints() {
+            let mints = {}
+
+            this.selectedTreasures.forEach(t => {
+                t.items.forEach(item => {
+                    let mint = item.mintRegion
+                    if (!mint) {
+                        mint = { name: "unknown", id: -1, counts: {} }
+                    }
+
+                    if (!mints[item.mintRegion.id]) {
+                        mints[item.mintRegion.id] = cloneDeep(mint)
+                        mints[item.mintRegion.id].counts = {}
+                    }
+
+                    const count = parseInt(item.mintRegionCount) || 1
+                    const mintListItem = mints[item.mintRegion.id]
+                    mintListItem.counts[t.id] = mintListItem.counts[t.id] ? mintListItem.counts[t.id] + count : count
+
+                })
+            })
+            return Object.values(mints).sort(Sort.stringPropAlphabetically("name"))
         }
     },
     created() {
+        window.graphics = this.featureGroup
+        this.overlay = new TreasureOverlay(this.featureGroup, settings, {
+            onDataTransformed: (data) => {
+                this.treasures = data
+            },
+            onEnd: () => {
+                this.mounted_and_loaded_mixin_loaded("data")
+            }
+        })
+
+
         // settings.onSettingsChanged((changedSettings) => {
         //     let settings = this.overlaySettings;
         //     changedSettings.forEach(([key, value]) => {
@@ -125,37 +246,149 @@ export default {
     mounted: async function () {
 
 
-        this.$nextTick(() => {
-            for (let [key, val] of Object.entries(this.$route.query)) {
-                if (
-                    key.startsWith(queryPrefix) &&
-                    this.$refs?.catalogFilter?.activeFilters
-                ) {
-                    let value = val;
+        // this.$nextTick(() => {
+        //     for (let [key, val] of Object.entries(this.$route.query)) {
+        //         if (
+        //             key.startsWith(queryPrefix) &&
+        //             this.$refs?.catalogFilter?.activeFilters
+        //         ) {
+        //             let value = val;
 
-                    const filterKey = key.replace(queryPrefix, '');
-                    try {
-                        value = JSON.parse(val);
-                    } catch (e) {
-                        console.warn(e);
-                    }
+        //             const filterKey = key.replace(queryPrefix, '');
+        //             try {
+        //                 value = JSON.parse(val);
+        //             } catch (e) {
+        //                 console.warn(e);
+        //             }
 
-                    this.$refs.catalogFilter.setFilter(filterKey, value);
-                }
-            }
+        //             this.$refs.catalogFilter.setFilter(filterKey, value);
+        //         }
+        //     }
 
-            // We clear the URL params after we have set the filters
-            // This is to prevent the filters from being applied again on reload.
-            // The values are stored anyways in the localstorage.
-            URLParams.clear()
-        });
+        //     // We clear the URL params after we have set the filters
+        //     // This is to prevent the filters from being applied again on reload.
+        //     // The values are stored anyways in the localstorage.
+        //     URLParams.clear()
+        // });
 
         await this.initTimeline();
         // this.updateTimeline(true);
+
+
+        this.update()
     },
     methods: {
+        toggleTimeline() {
+            this.timeline_mixin_toggleTimeline()
+            if (this.timelineActive) {
+                this.$nextTick(() => {
+                    this.updateTimelineGraph()
+                })
+            }
+        },
+        local_storage_mixin_loaded() {
+            this.mounted_and_loaded_mixin_loaded("storage")
+        },
         resetFilters() {
             this.filters = {}
+        },
+        async update() {
+            await this.overlay.update({
+                selections: {
+                    treasures: this.selectedTreasureIds
+                }
+            })
+
+            this.updateTimelineGraph()
+        },
+        updateTimelineGraph() {
+            let treasureData = {}
+            const colors = []
+            let maxMap = {}
+            let yearSet = new Set()
+
+            this.selectedTreasures.forEach((treasure, treasureIndex) => {
+
+                colors.push(treasure.color)
+                let data = {}
+
+                treasure.items.forEach((item) => {
+                    const year = parseInt(item.year)
+                    const mint = item.mint
+
+                    if (!isNaN(year) && mint) {
+                        yearSet.add(year)
+
+                        if (!data[year]) {
+                            data[year] = 0
+                        }
+                        const count = item.mintCount || 1
+                        data[year] += count
+                    }
+                })
+
+                treasureData[treasureIndex] = data
+            })
+
+            let combied = {}
+            yearSet.forEach(year => {
+                combied[year] = { x: year, y: [] }
+                Object.entries(treasureData).forEach(([treasureIndex, data]) => {
+                    let y = (data[year] || 0)
+                    combied[year].y.push(y)
+                })
+            })
+
+            let data = Object.values(combied).sort((a, b) => a.x - b.x)
+
+            let yMax = Object.values(combied).reduce((max, current) => {
+                let currentMax = current.y.reduce((acc, a) => acc + a, 0)
+                return Math.max(max, currentMax)
+            }, -Infinity)
+
+            const yearOffset = 2
+            let from = 300
+            let to = 470
+            if (data.length > 0) {
+                from = parseInt(data[0].x) - yearOffset
+                to = parseInt(data[data.length - 1].x) + yearOffset
+            }
+
+            this.timeline_mixin_set({
+                from,
+                to
+            })
+
+            this.timelineChart.update({
+                graphs: new BarGraph(data, { colors, yMax, yOffset: 10 }),
+                timeline: this.timeline
+            })
+        },
+        selectionChanged() {
+            this.update()
+            this.local_storage_mixin_save()
+        },
+        isTreasureSelected(id) {
+            return this.selectedTreasureIds.includes(id)
+        },
+        toggleTreasure(id) {
+            if (this.isTreasureSelected(id)) {
+                this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
+                this.selectionChanged()
+            } else {
+                this.selectedTreasureIds.push(id)
+                this.selectionChanged()
+            }
+        },
+        setTreasure(id, value) {
+            const selected = this.isTreasureSelected(id)
+            if (value && !selected) {
+                this.selectedTreasureIds.push(id)
+                this.selectionChanged()
+            } else if (!value && selected) {
+                this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
+                this.selectionChanged()
+            }
         }
     }
 };

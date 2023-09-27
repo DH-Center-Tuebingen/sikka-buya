@@ -67,15 +67,15 @@ export default {
     grid-template-columns: auto 30px 1fr;
   }
 
-  .color-indicator {
-    $size: 1em;
-    width: math.div($size, 3);
-    height: $size;
-    border-radius: $border-radius;
-    border: 3px solid currentColor;
-    background-color: currentColor;
-    margin-right: 5px;
-  }
+  // .color-indicator {
+  //   $size: 1em;
+  //   width: math.div($size, 3);
+  //   height: $size;
+  //   border-radius: $border-radius;
+  //   border: 3px solid currentColor;
+  //   background-color: currentColor;
+  //   margin-right: 5px;
+  // }
 }
 </style>
 

@@ -11,13 +11,14 @@
     "test:api": "grunt test",
     "test:api:keepalive": "grunt test-keepalive --force",
     "test:backend:keepalive": "grunt backend:keepalive",
-    "test:backend:reload": "nodemon testing-backend.js",
+    "test:backend:watch": "nodemon testing-backend.js",
     "test:backend": "node testing-backend.js",
     "test:cypress": "concurrently --kill-others -n \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run test:backend \" \"cd .. && npm run frontend\" \"npm run test:cypress-app\"",
     "test:cypress:run": "concurrently --success first --kill-others  -n  \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run test:backend \"  \"cd .. && npm run frontend\" \"npm run test:cypress-run\"",
     "test:cypress:backend": "grunt backend",
     "test:cypress-run": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && npx cypress run --browser electron",
-    "test:cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open"
+    "test:cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open",
+    "utils:migrate": "node ../backend/scripts/migrate.js"
   },
   "devDependencies": {
     "axios": "^0.21.1",
@@ -26,7 +27,7 @@
     "chai-as-promised": "^7.1.1",
     "concurrently": "^6.2.0",
     "cors": "^2.8.5",
-    "cypress": "^12.12.0",
+    "cypress": "^13.2.0",
     "cypress-localstorage-commands": "^2.2.3",
     "cypress-terminal-report": "^5.2.0",
     "dotenv": "^16.0.3",

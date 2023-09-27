@@ -103,7 +103,10 @@ export default {
     },
     user_properties() {
       return {
-        super: [{ name: 'user', to: { name: 'UserManagement' } }],
+        super: [
+          { name: 'user', to: { name: 'UserManagement' } },
+          { name: 'settings', to: { name: 'Settings' } }
+        ],
         cms: this.properties,
       };
     },
@@ -115,25 +118,25 @@ export default {
     },
     properties() {
       let props = [
-        'honorific',
         'coin_mark',
         'coin_verse',
+        'dynasty',
+        'honorific',
         'material',
         'mint',
+        'mint_region',
         'nominal',
         'person',
-        'title',
-        'type',
-        'dynasty',
-        'role',
         'province',
-        'treasure'
+        'role',
+        'title',
+        'treasure',
+        'type',
       ];
 
       let propertyMap = {
         person: 'PersonOverview',
         material: 'MaterialOverview',
-        coin_mark: 'CoinMarkOverview',
         type: 'TypeOverview',
       };
 

@@ -15,6 +15,7 @@ class Mint {
             province: null,
         }, mint)
 
+
         const query = `
         INSERT INTO mint (name,
             location,
@@ -85,13 +86,24 @@ class Mint {
     }
 
 
-    static fixGeoJSON(obj) {
-        if (obj.uncertainArea != null && !GeoJSON.isEmpty(obj.uncertainArea) > 0) {
-            obj["uncertain_area"] = obj.uncertainArea
-        } else {
-            obj["uncertain_area"] = null
+    static fixGeoJSON(mint) {
+        let location = null
+        if (mint.location != null) {
+            if (mint.location && mint.location.type.toLowerCase() === "feature") throw new Error("A mint location cannot be a feature!")
+            location = mint.location
+            GeoJSON.validateObject(location)
         }
-        delete obj.uncertainArea
+
+        let uncertainArea = null
+        if (mint.uncertainArea != null) {
+            if (mint.uncertainArea && mint.uncertainArea.type.toLowerCase() === "feature") throw new Error("A mint uncertain area cannot be a feature!")
+            uncertainArea = mint.uncertainArea
+            GeoJSON.validateObject(uncertainArea)
+        }
+
+        mint["location"] = location
+        mint["uncertain_area"] = uncertainArea
+        delete mint.uncertainArea
     }
 
 

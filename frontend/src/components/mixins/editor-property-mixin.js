@@ -1,10 +1,10 @@
 import Mixin from '../../utils/Mixin';
-import mountedAndLoaded from './mounted-and-loaded'
+import MountedAndLoadedMixin from './mounted-and-loaded'
 
 const mixinName = "editor-property-mixin"
 
 const EditorPropertyMixin = {
-    mixins: [mountedAndLoaded],
+    mixins: [MountedAndLoadedMixin(["loaded"], { verbose: true })],
     data() {
         return {
             editor_property_id: null,
@@ -16,7 +16,7 @@ const EditorPropertyMixin = {
         this.editor_property_create()
     },
     methods: {
-        mountedAndLoaded() {
+        mounted_and_loaded_mixin_mountedAndLoaded() {
             this.editor_property_load = false
         },
         async editor_property_create() {
@@ -25,12 +25,12 @@ const EditorPropertyMixin = {
                 this.editor_property_id = id
                 try {
                     await this.loadProperty()
-                    this.isLoaded()
+                    this.mounted_and_loaded_mixin_loaded("loaded")
                 } catch (e) {
                     console.error(e)
                 }
             } else {
-                this.isLoaded()
+                this.mounted_and_loaded_mixin_loaded("loaded")
             }
         },
         editor_property_validId(id) {

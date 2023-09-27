@@ -2,9 +2,8 @@
   <div class="ruler-list">
     <multi-select-list v-if="!group">
       <ruler-list-section
-        v-if="
-          Array.isArray(selectedUnavailable) && selectedUnavailable.length > 0
-        "
+        v-if="Array.isArray(selectedUnavailable) && selectedUnavailable.length > 0
+          "
         :items="selectedUnavailable"
         :selectedIds="selectedIds"
         :styler="unavailableSelectedStyler"
@@ -31,7 +30,7 @@
         :collapsed="isCollapsed(group.key)"
       ><template v-slot:header>
           <selectable-list-header
-            @select-all="selectAllInGroup(group)" 
+            @select-all="selectAllInGroup(group)"
             @unselect-all="removeAllFromGroup(group)"
             :allSelected="allSelected(group)"
             :noneSelected="noneSelected(group)"
@@ -175,14 +174,14 @@ export default {
     color: $black;
   }
 
-  .color-indicator {
-    $size: 1em;
-    width: math.div($size, 3);
-    height: $size;
-    border-radius: $border-radius;
-    border: 3px solid currentColor;
-    background-color: currentColor;
-    margin-right: 5px;
-  }
+  // .color-indicator {
+  //   $size: 1em;
+  //   width: math.div($size, 3);
+  //   height: $size;
+  //   border-radius: $border-radius;
+  //   border: 3px solid currentColor;
+  //   background-color: currentColor;
+  //   margin-right: 5px;
+  // }
 }
 </style>

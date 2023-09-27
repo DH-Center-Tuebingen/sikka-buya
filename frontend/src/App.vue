@@ -435,6 +435,10 @@ button {
   color: $light-gray;
 }
 
+button:disabled {
+  background-color: $light-gray;
+}
+
 .button.small-button {
   font-size: $small-font;
 }

@@ -1,3 +1,4 @@
+import { isArray } from 'lodash'
 import Range from "./range.js"
 
 class Chart {
@@ -57,10 +58,62 @@ export class YGraph extends Graph {
         return { max: this.yMax, offset: this.yOffset }
     }
 
+    height(chart, value) {
+        return chart.height(value, this.yOptions)
+    }
+
     y(chart, value) {
         return chart.y(value, this.yOptions)
     }
+}
 
+
+
+const defaultColors = [
+    "#1f77b4",
+    "#ff7f0e",
+    "#2ca02c",
+    "#d62728",
+    "#9467bd",
+    "#8c564b",
+    "#e377c2",
+    "#7f7f7f",
+    "#bcbd22",
+    "#17becf",
+]
+
+
+
+export class BarGraph extends YGraph {
+    constructor(data, { colors = defaultColors, yMax = 0, yOffset = 0, contextStyles = {} } = {}) {
+        super(data, { yMax, yOffset, contextStyles })
+        if (colors.length === 0) colors = defaultColors
+        this.colors = colors
+    }
+
+    draw(context, chart) {
+        super.draw(context, chart)
+
+        const width = chart.unitWidth
+
+
+        this.data.forEach(({ x, y }) => {
+            let yOffset = 0
+            if (!isArray(y)) y = [y]
+            for (let i = 0; i < y.length; i++) {
+                const yVal = y[i]
+                const color = this.colors[i % this.colors.length]
+                context.beginPath();
+                context.lineWidth = .5
+                context.strokeStyle = "#111"
+                context.fillStyle = color
+                yOffset += this.height(chart, yVal)
+                context.rect(chart.x(x) - width / 2, this.y(chart, 0) - yOffset, width, this.height(chart, yVal))
+                context.fill()
+                context.stroke()
+            }
+        })
+    }
 }
 
 export class HorizontalLinesGraph extends YGraph {
@@ -188,14 +241,18 @@ export default class TimelineChart extends Chart {
         super(canvas)
         this.graphs = graphs
         this.timeline = timeline
+
         if (graphs.length > 0)
             this.draw()
     }
 
-
     update({ graphs = null, timeline = null }) {
-        if (graphs != null)
-            this.graphs = graphs
+        if (graphs) {
+            if (Array.isArray(graphs))
+                this.graphs = graphs
+            else
+                this.graphs = [graphs]
+        }
         if (timeline)
             this.timeline = timeline
         this.draw()
@@ -222,9 +279,24 @@ export default class TimelineChart extends Chart {
         this.timeline = timeline
     }
 
+    get unitWidth() {
+        const timelineSpan = this.timeline.to - this.timeline.from
+        const widthPerYear = (this.canvas.width / timelineSpan)
+        return widthPerYear
+    }
+
+    height(val, { max = null, offset = 0 } = {}) {
+        const height = this.canvas.height - offset
+
+        if (max) {
+            return (val / max) * height
+        } else {
+            return val
+        }
+    }
+
 
     y(val, { max = null, offset = 0 } = {}) {
-
         const height = this.canvas.height - offset
 
         if (max) {
@@ -234,8 +306,7 @@ export default class TimelineChart extends Chart {
     }
 
     x(val, pos = "center") {
-        const timelineSpan = this.timeline.to - this.timeline.from
-        const widthPerYear = (this.canvas.width / timelineSpan)
+        const widthPerYear = this.unitWidth
         let x = (val - this.timeline.from) * widthPerYear
 
         let halfWidth = widthPerYear / 2

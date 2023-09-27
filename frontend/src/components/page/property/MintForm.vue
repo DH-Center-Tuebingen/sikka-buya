@@ -1,15 +1,20 @@
 <template>
   <div class="mint-form">
     <PropertyFormWrapper
-      @submit="submit"
-      @cancel="cancel"
-      :loading="loading"
       property="mint"
-      :title="$tc('property.mint')"
-      :error="error"
-      :disabled="disabled"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
+      :loading="property_form_mixin_loading"
+      :title="property_form_mixin_title"
+      :error="property_form_mixin_error"
+      :disabled="property_form_mixin_disabled"
+      :dirty="property_form_mixin_dirty"
     >
-      <input id="mint-id" v-model="mint.id" type="hidden" />
+      <input
+        id="mint-id"
+        v-model="mint.id"
+        type="hidden"
+      />
       <label for="mint-name">Name</label>
       <input
         type="text"
@@ -32,9 +37,10 @@
       <label for="location">Location</label>
       <location-input
         id="mint-location"
-        type="point"
-        :coordinates="mint.location.coordinates"
-        @update="updateLocation"
+        :only="['point']"
+        v-model="mint.location"
+        ref="location"
+        @update="(location) => $set(mint, 'location', location)"
       />
 
       <div id="uncertain-row">
@@ -49,10 +55,11 @@
         <label for="location">Geschätzte Verortung</label>
         <location-input
           id="mint-uncertain-location-input"
-          type="polygon"
-          :coordinates="mint.uncertainArea.coordinates"
-          @update="updateUncertainArea"
+          :interactive="true"
+          :only="['polygon']"
+          v-model="mint.uncertainArea"
           ref="uncertainLocation"
+          @update="(location) => $set(mint, 'uncertainArea', location)"
         />
       </div>
 
@@ -78,6 +85,9 @@ import GraphQLUtils from '../../../utils/GraphQLUtils.js';
 import DataSelectField from '../../forms/DataSelectField.vue';
 import LabeledInputContainer from '../../LabeledInputContainer.vue';
 
+import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
+
+
 export default {
   components: {
     Checkbox,
@@ -87,10 +97,10 @@ export default {
     LabeledInputContainer,
   },
   name: 'MintForm',
-  created: function () {
-    let id = this.$route.params.id;
-    if (id != null) {
-      Query.raw(
+  mixins: [propertyFormMixinFunc({ property: 'mint' })],
+  methods: {
+    getProperty: async function (id) {
+      const result = await Query.raw(
         `    {
                 getMint (id:${id})  {
                     id,
@@ -103,207 +113,94 @@ export default {
                     uncertainArea
                 }
                 getNote (property: "mint", propertyId:${id})
-              }
-      `
-      )
-        .then((result) => {
-          this.disabled = false;
-          let data = result.data.data.getMint;
-          this.note = result.data.data.getNote;
+              }`, { id })
 
-          if (!data.location) {
-            data.location = {
-              type: 'Point',
-              coordinates: null,
-            };
-          }
-
-          if (!data.uncertainArea) {
-            data.uncertainArea = {
-              type: 'Polygon',
-              coordinates: [[]],
-            };
-          }
-
-          data.uncertainArea.coordinates = data.uncertainArea.coordinates[0];
-
-          this.mint = data;
-        })
-        .catch((err) => {
-          this.$data.error = this.$t('error.loading_element');
-          console.error(err);
-        })
-        .finally(() => {
-          this.$data.loading = false;
-        });
-    } else {
-      this.disabled = false;
-      this.$data.loading = false;
-    }
-  },
-  computed: {
-    isUpdate() {
-      return !!this.mint?.id && this.mint.id > 0;
+      this.note = result.data.data.getNote;
+      return result.data.data.getMint;
     },
-    error() {
-      return this.errors.join(' ');
+    updateProperty: async function () {
+      if (this.id)
+        await this.update()
+      else
+        await this.create()
     },
-  },
-  methods: {
-    submit: async function () {
-      this.errors = [];
-
-      // There is one array missing in the input field.
-      let { type, coordinates } = this.mint.uncertainArea;
-
-      const location =
-        !this.mint.location ||
-        this.mint.location?.type == 'empty' ||
-        this.mint.location.coordinates == null ||
-        this.mint.location.coordinates.length < 2
-          ? null
-          : this.mint.location;
-
-      const uncertainArea =
-        !this.mint.uncertainArea ||
-        this.mint.uncertainArea?.type == 'empty' ||
-        this.mint.uncertainArea?.coordinates == null
-          ? null
-          : {
-              type,
-              coordinates: [coordinates],
-            };
-      if (uncertainArea && uncertainArea.type === 'polygon') {
-        const lastIndex = uncertainArea.coordinates.length - 1;
-        if (uncertainArea.coordinates.length > 0) {
-          let polygon = uncertainArea.coordinates[0];
-
-          if (Array.isArray(polygon) && polygon.length > 0) {
-            // The GeoJSON specification requires the first and last value to be the same
-            // This will be enforced here.
-            if (
-              !polygon.every((val, idx) => {
-                return val === uncertainArea.coordinates[0][lastIndex][idx];
-              })
-            )
-              uncertainArea.coordinates[0].push(
-                uncertainArea.coordinates[0][0]
-              );
-
-            if (polygon.length < 4) {
-              // It is three points, as we add the last one if the first and last are not the same.
-              this.errors.push('A polygon needs at least 3 points!');
-            }
-          }
-        } else {
-          this.errors.push('Uncertain area needs coordinates!');
-        }
-      }
-
-      let data = {
-        uncertain: this.mint.uncertain,
-        name: this.mint.name,
-        location,
-        uncertainArea,
-        province: this.mint.province?.id,
-      };
-
-      let id;
-      if (this.mint.id == -1) {
-        try {
-          id = await this.query('addMint', data);
-        } catch (e) {
-          console.error(e);
-          this.error += e;
-        }
-      } else {
-        id = this.mint.id;
-        data.id = id;
-
-        await Query.raw(
-          `
+    update: async function () {
+      return Query.raw(
+        `
         mutation UpdateMint(
-            $id:ID!,
-            $name:String,
-            $location:GeoJSON,
-            $uncertain:Boolean,
-            $uncertainArea:GeoJSON,
-            $province:ID,
-          ){
-            updateMint(  
+          $id: ID!,
+          $name: String,
+          $location: GeoJSON,
+          $uncertain: Boolean,
+          $uncertainArea: GeoJSON,
+          $province: ID,
+          $note: String,
+        ){
+          updateMint(
             id: $id,
             data: {
-              name:$name,
-            location:$location,
-            uncertain:$uncertain,
-            uncertainArea:$uncertainArea,
-            province:$province,
+              name: $name,
+              location: $location,
+              uncertain: $uncertain,
+              uncertainArea: $uncertainArea,
+              province: $province,
             })
-          }
-  `,
-          data,
-          true
-        ).catch((err) => {
-          this.errors.push(err);
-        });
-      }
-
-      if (id) {
-        const query = `mutation UpdateNote($note:String, $id:ID!) {
-        updateNote(text: $note, property:"mint", propertyId: $id)
-        }`;
-
-        try {
-          await Query.raw(query, { note: this.note, id });
-        } catch (e) {
-          this.errors.push(e);
+            updateNote(text: $note, property: "mint", propertyId: $id)
         }
-      } else {
-        this.errors.push(`Id could not be determined! Notes cant be updated.`);
-      }
-      if (this.errors.length === 0) {
-        this.$router.push({
-          name: 'Property',
-          params: { property: 'mint' },
-        });
-      }
-    },
-    radiusChanged: function (radius) {
-      this.radius = parseInt(radius);
-    },
-    query: async function (name, data = {}) {
-      const body = GraphQLUtils.buildMutationParams(data);
-      const query = `mutation {
-        ${name}(data: ${body}) 
-        }`;
+        `, {
+        id: this.id,
+        name: this.mint.name,
+        location: this.$refs.location.getGeoJSON(),
+        uncertain: this.mint.uncertain,
+        uncertainArea: this.$refs.uncertainLocation.getGeoJSON(),
+        province: this.mint.province?.id,
+        note: this.note,
+      })
 
-      let result = {};
-      try {
-        let response = await Query.raw(query);
-        result = response?.data.data[name];
-      } catch (err) {
-        this.error = this.$t(err);
-        console.error(err);
-      }
+    },
+    create: async function () {
 
-      return result;
-    },
-    cancel: function () {
-      this.$router.push({ path: '/mint' });
-    },
-    updateLocation: function (geoJson) {
-      this.mint.location = geoJson;
-    },
-    updateUncertainArea: function (geoJson) {
-      this.mint.uncertainArea = geoJson;
+      console.log(this.$refs.location.getGeoJSON())
+      const result = await Query.raw(
+        `
+        mutation AddMint(
+          $name: String,
+          $location: GeoJSON,
+          $uncertain: Boolean,
+          $uncertainArea: GeoJSON,
+          $province: ID,
+        ){
+          addMint(
+            data: {
+              name: $name,
+              location: $location,
+              uncertain: $uncertain,
+              uncertainArea: $uncertainArea,
+              province: $province,
+            })
+        }
+        `, {
+        name: this.mint.name,
+        location: this.$refs.location.getGeoJSON(),
+        uncertain: this.mint.uncertain,
+        uncertainArea: this.$refs.uncertainLocation.getGeoJSON(),
+        province: this.mint.province?.id,
+        note: this.note,
+      })
+
+      const id = result.data.data.addMint;
+      await Query.raw(`mutation UpdateNote($note: String, $id: ID!) {
+        updateNote(text: $note, property: "mint", propertyId: $id)
+      }`, {
+        id,
+        note: this.note,
+      })
+
+      return id;
     },
   },
   data: function () {
     return {
-      errors: [],
-      loading: true,
-      radius: 1000,
-      disabled: true,
       note: '',
       mint: {
         id: -1,
@@ -314,17 +211,24 @@ export default {
           name: '',
         },
         location: {
-          type: 'empty',
-          coordinates: [],
+          type: 'point',
+          coordinates: null,
         },
         uncertainArea: {
-          type: 'empty',
-          coordinates: [],
+          type: 'feature',
+          properties: {},
+          geometry: {
+            type: 'polygon',
+            coordinates: [[]],
+          }
         },
       },
     };
   },
   watch: {
+    note: function (newValue) {
+      this.property_form_mixin_setDirty();
+    },
     'mint.uncertain'(newValue) {
       if (newValue) {
         this.$nextTick(() => {
@@ -335,7 +239,7 @@ export default {
           // v-if would work as expected out of the box, but would result in other
           // issues
           if (this.$refs.uncertainLocation)
-            this.$refs.uncertainLocation.sizeChanged();
+            this.$refs.uncertainLocation.updateSize();
         });
       }
     },

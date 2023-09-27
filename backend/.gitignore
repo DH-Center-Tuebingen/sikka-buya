@@ -4,3 +4,6 @@
 
 **/scripts/out
 **/scripts/logs
+
+**/data/**
+!./data/lang

@@ -1,4 +1,5 @@
 const axios = require("axios");
+const Settings = require("../backend/src/models/settings");
 
 module.exports = {
   // The rest of the Cypress config options go here...
@@ -14,7 +15,7 @@ module.exports = {
       // implement node event listeners here
       on("task", {
         async ResetDatabase() {
-          axios.post("http://localhost:4000/test-database", {
+          await axios.post("http://localhost:4000/test-database", {
             method: "ResetDatabase",
           });
 

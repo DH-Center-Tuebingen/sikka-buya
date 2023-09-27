@@ -24,6 +24,10 @@ LeafletSmoothZoom(L);
 export default {
   name: 'MapView',
   props: {
+    useBoundaries: {
+      type: Boolean,
+      default: true,
+    },
     height: String,
     location: {
       type: Array,
@@ -46,9 +50,12 @@ export default {
     },
   },
   mounted: function () {
-    const minBoundingPoint = L.latLng(10, 10);
-    const maxBoundingPoint = L.latLng(50, 90);
-    const mapBoundaries = L.latLngBounds(minBoundingPoint, maxBoundingPoint);
+    let mapBoundaries = null;
+    if (this.useBoundaries) {
+      const minBoundingPoint = L.latLng(10, 10);
+      const maxBoundingPoint = L.latLng(50, 90);
+      mapBoundaries = L.latLngBounds(minBoundingPoint, maxBoundingPoint);
+    }
 
     L.Map.include({
       _initControlPos: function () {
@@ -91,7 +98,7 @@ export default {
       center: this.location,
       zoom: this.zoom,
       minZoom: 3,
-      maxBounds: mapBoundaries, 
+      maxBounds: mapBoundaries,
       zoomControl: false,
       scrollWheelZoom: false, // disable original zoom function
       smoothWheelZoom: true, // enable smooth zoom
@@ -99,7 +106,7 @@ export default {
     });
 
     map.on('popupopen', this.popupOpened);
-    map.on('move', this.mapMoved); 
+    map.on('move', this.mapMoved);
 
     if (this.height) {
       this.$refs.map.style.height = this.height;

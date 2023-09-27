@@ -19,7 +19,7 @@ module.exports = function (grunt) {
                 timeout: 10000,
                 reporterOption: {
                     //Increase if your output gets truncated.
-                    maxDiffSize: 800
+                    maxDiffSize: 1000000
                 }
             },
             test: {

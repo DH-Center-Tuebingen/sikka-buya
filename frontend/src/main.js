@@ -2,12 +2,14 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router/router'
 import store from "./store"
-import capitalize from 'capitalize';
 import Settings from './settings'
 import { ConfigMixin } from './config'
 import I18n from './i18n/i18n';
 import VueI18n from 'vue-i18n';
-import { camelCase, snakeCase } from 'change-case';
+import { camelCase, pascalCase, snakeCase } from 'change-case';
+import Selection from './models/selection';
+import mconfig from './plugins/mconfig';
+import StringUtils from './utils/StringUtils'
 
 async function main() {
 
@@ -20,8 +22,31 @@ async function main() {
   Vue.config.productionTip = false
 
   Vue.prototype.$utils = {
-    capitalize
+    capitalize: StringUtils.capitalize,
+    snakeCase,
+    camelCase,
+    pascalCase,
+    objectCombine: function(...args){
+      if(!args.length || args.length < 2) throw new Error(`Function 'objectCombine' requires at least two arguments.`)
+      let obj = {}
+      do {
+        const nextObj = args.shift()
+
+        for(const [nextKey, nextVal] of Object.entries(nextObj)){
+          if(nextVal == null) continue
+          obj[nextKey] = nextVal
+        }
+      }while(args.length > 0)
+
+      return obj
+    }
   }
+
+  Vue.use(mconfig, {
+    path: "project_settings"
+  })
+
+  Vue.prototype.$selection = Selection
 
   Vue.mixin(ConfigMixin)
   Vue.mixin({
@@ -29,12 +54,6 @@ async function main() {
       log(...args) {
         console.log(...args)
       },
-      snakeCase(str) {
-        return snakeCase(str)
-      },
-      camelCase(str) {
-        return camelCase(str)
-      }
     }
   })
 

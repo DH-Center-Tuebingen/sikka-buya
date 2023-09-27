@@ -4,6 +4,7 @@ node_modules
 
 /public/data/cms/*
 /public/lang/*
+/public/**/*.managed.*
 !/public/lang/index.js
 
 

@@ -1,15 +1,20 @@
 <template>
   <div class="role-form">
     <PropertyFormWrapper
-      @submit="submit"
-      @cancel="cancel"
       property="role"
-      :title="$tc('property.role')"
-      :loading="loading"
-      :error="error"
-      :disabled="disabled"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
+      :loading="property_form_mixin_loading"
+      :title="property_form_mixin_title"
+      :error="property_form_mixin_error"
+      :disabled="property_form_mixin_disabled"
+      :dirty="property_form_mixin_dirty"
     >
-      <input id="role-id" v-model="role.id" type="hidden" />
+      <input
+        id="role-id"
+        v-model="role.id"
+        type="hidden"
+      />
       <input
         id="role-name"
         type="text"
@@ -24,58 +29,26 @@
 
 <script>
 import Query from '../../../database/query.js';
+import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 import PropertyFormWrapper from '../PropertyFormWrapper.vue';
 
+
 export default {
-  components: { PropertyFormWrapper },
   name: 'RoleForm',
-  created: function () {
-    let id = this.$route.params.id;
-    if (id != null) {
-      new Query('role')
-        .get(id, ['id', 'name'])
-        .then((result) => {
-          this.role = result.data.data.getRole;
-          this.disabled = false;
-        })
-        .catch((err) => {
-          this.$data.error = this.$t('error.loading_element');
-          console.log(err);
-        })
-        .finally(() => {
-          this.$data.loading = false;
-        });
-    } else {
-      this.$data.loading = false;
-      this.disabled = false;
-    }
-  },
-  methods: {
-    submit: function () {
-      new Query('role')
-        .update(this.role)
-        .then(() => {
-          this.$router.push({
-            name: 'Property',
-            params: { property: 'role' },
-          });
-        })
-        .catch((err) => {
-          this.error = this.$t('error.could_not_update_element');
-          console.error(err);
-        });
-    },
-    cancel: function () {
-      this.$router.push({ path: '/role' });
-    },
-  },
+  components: { PropertyFormWrapper },
+  mixins: [propertyFormMixinFunc({ property: "role" })],
   data: function () {
     return {
-      error: '',
-      loading: true,
       role: { id: -1, name: '' },
-      disabled: true,
     };
+  },
+  methods: {
+    getProperty: async function (id) {
+      return new Query("role").get(id)
+    },
+    updateProperty: async function () {
+      await new Query('role').update(this.role)
+    }
   },
 };
 </script>

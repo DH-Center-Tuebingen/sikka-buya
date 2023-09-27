@@ -1,4 +1,4 @@
-describe("Testing Province", function () {
+describe.only("Testing Province", function () {
 
     this.beforeAll(function () {
         cy.task("MountMinimalDatabase")
@@ -13,12 +13,12 @@ describe("Testing Province", function () {
 
     it("Item in editor list", function () {
         cy.visit('/editor')
-        cy.get(".list-item").contains("Region")
+        cy.get(".list-item").contains("Provinz")
     })
 
     it("Navigate to List", function () {
         cy.visit('/editor')
-        cy.get(".list-item").contains("Region").click()
+        cy.get(".list-item").contains("Provinz").click()
         cy.location("pathname").should((pathname) => {
             expect(pathname).to.eq("/editor/province")
         })
@@ -27,7 +27,7 @@ describe("Testing Province", function () {
         cy.get(".list-item").contains('Ḫūzistān')
     })
 
-    it("Coin mark list is showing", function () {
+    it("Province list is showing", function () {
         cy.visit('/editor/province')
         cy.get(".list").children().should("have.length", 3)
     })
@@ -44,7 +44,7 @@ describe("Testing Province", function () {
         cy.get(".list").children().should("have.length", 1)
     })
 
-    describe("Create Coin mark", function () {
+    describe("Create Province", function () {
 
         it("Can reach create page", function () {
             cy.visit("/editor/province")
@@ -85,7 +85,7 @@ describe("Testing Province", function () {
 
     })
 
-    describe("Edit Coin mark", function () {
+    describe("Edit Province", function () {
 
         it("Access edit page", function () {
             cy.visit('/editor/province')
@@ -150,7 +150,7 @@ describe("Testing Province", function () {
         })
     })
 
-    describe("Delete Coin mark", function () {
+    describe("Delete Province", function () {
 
         it("Delete", function () {
             cy.visit("/editor/province")

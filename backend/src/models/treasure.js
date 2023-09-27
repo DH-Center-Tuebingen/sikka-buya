@@ -1,8 +1,9 @@
 const { WriteableDatabase, pgp, Database } = require('../utils/database');
 const Type = require('../utils/type');
 const Dynasty = require('./dynasty');
+const { GeoJSON } = require('./geojson');
 const Material = require('./material');
-const Mint = require('./mint');
+const MintRegion = require('./mint_region');
 const Nominal = require('./nominal');
 const { Table } = require('./table.js')
 const graphqlFields = require('graphql-fields')
@@ -16,7 +17,7 @@ class Treasure extends Table {
                 dynasty = null,
                 fragment = false,
                 material = null,
-                mint = null,
+                mintRegion = null,
                 nominal = null,
                 uncertainMint = null,
                 uncertainYear = null,
@@ -29,7 +30,7 @@ class Treasure extends Table {
                     dynasty,
                     fragment,
                     material,
-                    mint,
+                    mint_region,
                     nominal,
                     treasure,
                     uncertain_mint,
@@ -42,7 +43,7 @@ class Treasure extends Table {
                     $[dynasty],
                     $[fragment],
                     $[material],
-                    $[mint],
+                    $[mintRegion],
                     $[nominal],
                     $[treasure],
                     $[uncertainMint],
@@ -55,7 +56,7 @@ class Treasure extends Table {
                 dynasty,
                 fragment,
                 material,
-                mint,
+                mintRegion,
                 nominal,
                 treasure: treasure,
                 uncertainMint,
@@ -66,16 +67,20 @@ class Treasure extends Table {
         }
     }
 
-    static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, literature = "" } = {}) {
+    static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, description = "" } = {}) {
+        let { geometry: _loc, properties } = GeoJSON.separate(location)
+        location = _loc
+
         return WriteableDatabase.tx(async t => {
-            const { id } = await t.one(`INSERT INTO treasure (name, location, earliestYear, latestYear, literature) 
+            const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description ) 
             VALUES (
                 $[name],
                 ${location ? "ST_GeomFromGeoJSON($[location])" : null},
+                $[properties],
                 $[earliestYear],
                 $[latestYear],
-                $[literature]) 
-            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, literature })
+                $[description]) 
+            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
 
             await this.insertItems(t, id, items)
         })
@@ -83,18 +88,22 @@ class Treasure extends Table {
         // 
     }
 
-    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, literature = "" } = {}) {
+    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, description = "" } = {}) {
         if (id == null) throw new Error("Treasure ID is required")
+
+        let { geometry, properties } = GeoJSON.separate(location)
+        location = geometry
 
         return WriteableDatabase.tx(async t => {
             await t.none(`DELETE FROM treasure_item WHERE treasure = $[id]`, { id })
             await t.none(`UPDATE treasure SET 
             name=$[name],
             location=${location ? "ST_GeomFromGeoJSON($[location])" : null},
-            earliestYear=$[earliestYear],
-            latestYear=$[latestYear],
-            literature=$[literature] 
-            WHERE id=$[id]`, { name, location, id, earliestYear: timespan.from, latestYear: timespan.to, literature })
+            properties=$[properties],
+            earliest_year=$[earliestYear],
+            latest_year=$[latestYear],
+            description=$[description] 
+            WHERE id=$[id]`, { name, location, id, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
             await this.insertItems(t, id, items)
         })
     }
@@ -132,7 +141,7 @@ class Treasure extends Table {
                 t.count,
                 t.dynasty,
                 t.coinType,
-                t.mint,
+                t.mint_region,
                 t.year,
                 t.nominal,
                 t.material,
@@ -170,9 +179,10 @@ class Treasure extends Table {
             SELECT 
             treasure.id,
                     treasure.name,
-                    treasure.earliestYear,
-                    treasure.latestYear,
-                    treasure.literature,
+                    treasure.earliest_year,
+                    treasure.latest_year,
+                    treasure.description,
+                    treasure.properties::jsonb AS properties,
                     ST_AsGeoJSON(treasure.location) AS location,
                     COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
             FROM 
@@ -189,7 +199,8 @@ class Treasure extends Table {
 
 
             treasures = treasures.map(treasure => {
-                treasure.timespan = { from: treasure.earliestyear, to: treasure.latestyear }
+                treasure.timespan = { from: treasure.earliest_year, to: treasure.latest_year }
+                treasure.location = GeoJSON.rebuild(JSON.parse(treasure.location), treasure.properties)
                 return treasure
             })
 
@@ -215,6 +226,7 @@ class TreasureItem {
     static get nameMap() {
         return {
             "coinType": "cointype",
+            "mintRegion": "mint_region",
             "uncertainYear": "uncertain_year",
             "uncertainMint": "uncertain_mint",
         }
@@ -249,17 +261,18 @@ class TreasureItem {
 
                 const dbField = TreasureItem.getDbName(field)
                 const dbValue = item[dbField]
+
+
                 if (dbValue) {
                     if (!cache[field])
                         cache[field] = {}
-
                     if (!cache[field][dbValue]) {
                         let value = await TreasureItem.get(transaction, field, dbValue, fields)
                         cache[field][dbValue] = TreasureItem.map(field, value)
                     }
-
-                    item[field] = cache[field][dbValue]
                 }
+
+                item[field] = cache?.[field]?.[dbValue] || null
             }
         }
         return items
@@ -278,7 +291,15 @@ class TreasureItem {
     }
 
     static get mappings() {
+        function toInt(value) {
+            const val = parseInt(value)
+            return (isNaN(val)) ? null : val
+        }
+
         return {
+            year: toInt,
+            earliestYear: toInt,
+            latestYear: toInt,
             material: (material) => {
                 return {
                     id: material.material_id,
@@ -296,7 +317,7 @@ class TreasureItem {
                 return (types?.length > 0) ? types[0] : null
             },
             dynasty: async (transaction, id) => Dynasty.get(id, transaction),
-            mint: async (transaction, id) => Mint.getById(id, transaction),
+            mintRegion: async (transaction, id) => MintRegion.get(id, transaction),
             nominal: async (transaction, id) => Nominal.get(id, transaction),
             material: async (transaction, id) => Material.get(id, { transaction }),
         }

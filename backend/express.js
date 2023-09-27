@@ -8,6 +8,7 @@ const CMS = require('./src/cms.js')
 const Frontend = require('./src/frontend.js')
 const Language = require('./src/language.js')
 const { createSchema } = require('graphql-yoga')
+const Settings = require('./src/models/settings.js')
 
 async function start({
     expressPort,
@@ -18,6 +19,8 @@ async function start({
     const { default: graphqlUploadExpress } = await import("graphql-upload/graphqlUploadExpress.mjs");
     Frontend.init()
     Language.init()
+
+
     /**
      * Express packages
      */
@@ -83,9 +86,6 @@ async function start({
         const resolvers = {
             Query, Mutation
         }
-
-
-
 
         /**
          * The schema file describes the requests a user can query 

@@ -1,15 +1,20 @@
 <template>
   <div class="title-form">
     <PropertyFormWrapper
-      @submit="submit"
-      @cancel="cancel"
       property="title"
-      :loading="loading"
-      :title="$tc('property.title')"
-      :error="error"
-      :disabled="disabled"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
+      :loading="property_form_mixin_loading"
+      :title="property_form_mixin_title"
+      :error="property_form_mixin_error"
+      :disabled="property_form_mixin_disabled"
+      :dirty="property_form_mixin_dirty"
     >
-      <input id="title-id" v-model="title.id" type="hidden" />
+      <input
+        id="title-id"
+        v-model="title.id"
+        type="hidden"
+      />
       <input
         type="text"
         id="title-name"
@@ -24,58 +29,25 @@
 
 <script>
 import Query from '../../../database/query.js';
+import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 import PropertyFormWrapper from '../PropertyFormWrapper.vue';
 
 export default {
-  components: { PropertyFormWrapper },
   name: 'TitleForm',
-  created: function () {
-    let id = this.$route.params.id;
-    if (id != null) {
-      new Query('title')
-        .get(id, ['id', 'name'])
-        .then((result) => {
-          this.title = result.data.data.getTitle;
-          this.disabled = false;
-        })
-        .catch((err) => {
-          this.$data.error = this.$t('error.loading_element');
-          console.error(err);
-        })
-        .finally(() => {
-          this.$data.loading = false;
-        });
-    } else {
-      this.disabled = false;
-      this.$data.loading = false;
-    }
-  },
-  methods: {
-    submit: function () {
-      new Query('title')
-        .update(this.title)
-        .then(() => {
-          this.$router.push({
-            name: 'Property',
-            params: { property: 'title' },
-          });
-        })
-        .catch((err) => {
-          this.error = this.$t('error.could_not_update_element');
-          console.error(err);
-        });
-    },
-    cancel: function () {
-      this.$router.push({ path: '/title' });
-    },
-  },
+  components: { PropertyFormWrapper },
+  mixins: [propertyFormMixinFunc({ property: "title" })],
   data: function () {
     return {
-      error: '',
-      loading: true,
       title: { id: -1, name: '' },
-      disabled: true,
     };
   },
+  methods: {
+    getProperty: async function (id) {
+      return new Query('title').get(id)
+    },
+    updateProperty: async function () {
+      await new Query('title').update(this.title)
+    }
+  }
 };
 </script>

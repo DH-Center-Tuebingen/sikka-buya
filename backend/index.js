@@ -1,4 +1,5 @@
 const run = require("./express")
+const Settings = require("./src/models/settings")
 
 if (!process.env.useCli) {
     require("dotenv").config()
@@ -24,4 +25,6 @@ for (let [target, source] of Object.entries(map)) {
 }
 
 
-run(process.env);
+run(process.env).then(() => {
+    Settings.writeManagedFile().catch(console.error)
+}).catch(console.error)

@@ -95,6 +95,8 @@ export default {
 
     background-color: transparent;
     cursor: not-allowed;
+    pointer-events: none;
+    user-select: none;
   }
 
   &.row-button {
@@ -120,7 +122,8 @@ export default {
     $text-shadow: 0 0 3px rgba($color: $black, $alpha: 0.8);
     text-shadow: $text-shadow;
 
-    &.disabled {
+    &.disabled,
+    &[disabled] {
       opacity: 0.5;
       $disabled-color: white;
       color: $disabled-color;

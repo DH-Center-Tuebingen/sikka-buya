@@ -57,8 +57,6 @@ export default class Sort {
 
             while (path.length > 0) {
                 let property = path.shift()
-
-
                 a = a?.[property] ? a[property] : null
                 b = b?.[property] ? b[property] : null
             }

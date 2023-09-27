@@ -1,12 +1,16 @@
 <template>
     <PropertyFormWrapper
-        class="treasure-form"
-        :class="{ dirty: prevent_navigation_mixin_isDirty }"
-        :loading="editor_property_load"
         property="treasure"
-        @submit="submit"
-        :error="error"
+        @submit="property_form_mixin_submit"
+        @cancel="property_form_mixin_cancel"
+        :loading="property_form_mixin_loading"
+        :title="property_form_mixin_title"
+        :error="property_form_mixin_error"
+        :disabled="property_form_mixin_disabled"
+        :dirty="property_form_mixin_dirty"
+        class="treasure-form"
     >
+
         <LabeledInputContainer>
             <template #label>
                 <Locale path="general.name" />
@@ -14,19 +18,22 @@
 
             <input
                 type="text"
-                v-model="name"
+                v-model="value.name"
+                id="treasure-name-input"
             >
         </LabeledInputContainer>
 
         <LabeledInputContainer>
             <template #label>
-                <Locale path="general.literature" />
+                <Locale path="general.description" />
             </template>
 
-            <textarea
-                type="text"
-                v-model="literature"
-            ></textarea>
+            <SimpleFormattedField
+                :allowLinks="true"
+                ref="descriptionField"
+                id="treasure-description-input"
+            >
+            </SimpleFormattedField>
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -35,7 +42,10 @@
             </template>
 
             <div class="coin-range">
-                <RangeInput v-model="timespan" />
+                <RangeInput
+                    v-model="value.timespan"
+                    id="treasure-timespan-input"
+                />
                 <Button @click="getCoinRangeFromItems">
                     <Locale path="form.range_from_items" />
                 </Button>
@@ -43,21 +53,17 @@
 
         </LabeledInputContainer>
 
-
-
         <LabeledInputContainer>
             <template #label>
                 <Locale path="general.treasure_spot" />
             </template>
             <LocationInput
                 :interactive="true"
-                :type="location.type"
-                :allowRadius="true"
-                :radius="locationRadius"
-                :coordinates="location.coordinates"
+                :allowCircle="true"
+                :value="value.location"
                 ref="locationInput"
-                @update="(geojson) => location = geojson"
-                @updateRadius="(radius) => locationRadius = radius"
+                id="treasure-location-input"
+                @update="updateLocation"
             />
         </LabeledInputContainer>
 
@@ -80,27 +86,28 @@
 
             <ErrorMessage :error="importErrors" />
 
-            <form-list
-                @add="addItem"
-                :overflowX="true"
-            >
+            <div class="list-shadow">
+                <form-list
+                    @add="addItem"
+                    id="treasure-item-list"
+                >
 
-                <TreasureItemForm
-                    v-for="(item, index) in items"
-                    :key="index"
-                    :value="item"
-                    @typeChanged="(data) => handleTypeChange(index, data)"
-                    @delete="() => items.splice(index, 1)"
-                />
-            </form-list>
+                    <TreasureItemForm
+                        v-for="(item, index) in value.items"
+                        :key="index"
+                        :index="index"
+                        :value="item"
+                        @typeChanged="(data) => handleTypeChange(index, data)"
+                        @delete="() => value.items.splice(index, 1)"
+                    />
+                </form-list>
+            </div>
         </LabeledInputContainer>
     </PropertyFormWrapper>
 </template>
 
 <script>
 import { Treasure, TreasureItem } from '../../../models/property/treasure';
-import CsvReader from "@/utils/CsvReader"
-import EditorPropertyMixin from "../../mixins/editor-property-mixin"
 import ErrorMessage from "@/components/ErrorMessage"
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
 import FormList from "@/components/forms/FormList"
@@ -109,17 +116,19 @@ import List from "@/components/layout/List"
 import LoadingSpinner from "@/components/misc/LoadingSpinner"
 import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
-import PreventNavigationMixin from "../../mixins/prevent-navigation-mixin"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"
+import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
 import { TreasureItemsImporter } from "@/models/importer"
+import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 
-let treasure = new Treasure();
+const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
+
 export default {
-    mixins: [EditorPropertyMixin, PreventNavigationMixin],
+    mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure" })],
     components: {
         ErrorMessage,
         FileUploadButton,
@@ -131,49 +140,74 @@ export default {
         LocationInput,
         PropertyFormWrapper,
         RangeInput,
+        SimpleFormattedField,
         Toggle,
         TreasureItemForm,
     },
     data() {
         return {
+            value: {
+                name: "",
+                description: "",
+                timespan: { from: null, to: null },
+                location: defaultLocation,
+                items: [],
+            },
             autoComplete: true,
             importing: false,
-            error: "",
-            name: "",
-            literature: "",
-            timespan: { from: null, to: null },
-            location: { coordinates: [0, 0], type: "circle" },
-            locationRadius: 10,
-            items: [],
             importErrors: []
         }
     },
-    watch: {
-        name: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-        },
-        literature: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-        },
-        timespan: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-            deep: true
-        },
-        items: {
-            handler: function () {
-                this.prevent_navigation_mixin_setDirty()
-            },
-            deep: true
-        },
-        location: {
-            handler: function () { this.prevent_navigation_mixin_setDirty() },
-            deep: true
-        },
+    mounted() {
+        this.property_form_mixin_mount()
     },
     methods: {
+        updateLocation(value){
+            this.value.location = value
+        },
+        onPropertyLoaded() {
+            // When the location input was hidden and
+            // is shown, the leaflet map does not have the 
+            // correct size which leads to a malfunctioning map.
+            // This fixes it.
+            this.$refs.locationInput.updateSize()
+        },
+        getProperty: async function (id) {
+            let treasure = await new Treasure().get(id)
+            let location = treasure.location || defaultLocation
+
+            if (location.type.toLowerCase() === "polygon")
+                location.coordinates = location.coordinates[0]
+            treasure.location = location
+            this.$refs.descriptionField.setContent(treasure.description)
+
+            if (!treasure.items) treasure.items = []
+            treasure.items = treasure.items.map(item => new TreasureItem(item).forInput())
+            return treasure
+        },
+        updateProperty: async function () {
+            const treasure = new Treasure({
+                name: this.value.name,
+                location: this.$refs.locationInput.getGeoJSON(),
+                description: this.$refs.descriptionField.getContent(),
+                timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
+                items: this.value.items.map(item => {
+                    let ti = TreasureItem.fromInputs(item)
+                    delete ti.id
+                    return ti
+                })
+            })
+
+            if (this.id) {
+                await treasure.update(this.id)
+            } else {
+                await treasure.add()
+            }
+
+        },
         getCoinRangeFromItems() {
             let timespan = { from: null, to: null }
-            this.items.forEach(item => {
+            this.value.items.forEach(item => {
                 let year = parseInt(item.year)
                 if (!isNaN(year)) {
                     if (timespan.from == null || year < timespan.from) timespan.from = year
@@ -187,16 +221,16 @@ export default {
             if (this.autoComplete && data.id != null) {
                 const namedInputs = ["mint", "material", "nominal"]
 
-                this.items[index].year = data["yearOfMint"]
+                this.value.items[index].year = data["yearOfMint"]
 
                 namedInputs.forEach(attribute => {
-                    this.items[index][attribute] = data[attribute]
+                    this.value.items[index][attribute] = data[attribute]
                 })
             }
         },
         addItem() {
             const item = new TreasureItem().forInput()
-            this.items.push(item)
+            this.value.items.push(item)
         },
         async importItems(event) {
             this.importing = true
@@ -208,105 +242,44 @@ export default {
             await importer.execFromFile(file)
             this.importErrors = importer.errors
             if (importer.errors.length === 0) {
-                this.items = importer.items
+                this.value.items = importer.items
                 this.getCoinRangeFromItems()
             }
 
             this.importing = false
 
         },
-        async loadProperty() {
-            this.editor_property_load = true
-            try {
-                treasure = await new Treasure().get(this.editor_property_id)
-                this.name = treasure.name
-                this.timespan = treasure.timespan
-                this.literature = treasure.literature
-
-                let location = treasure.location || { coordinates: [0, 0], type: "point" }
-                if (location.type.toLowerCase() === "polygon")
-                    location.coordinates = location.coordinates[0]
-
-                this.location = location
-                this.items = treasure.items.map(item => new TreasureItem(item).forInput())
-            } catch (e) {
-                let message = e
-                if (e instanceof Error) message = e.message
-                this.error = Array.isArray(message) ? message.join("\n") : message
-            }
-            this.editor_property_load = false
-        },
-        async submit() {
-            this.error = ""
-
-            let location = { type: this.location.type, coordinates: this.location.coordinates.slice() }
-
-            if (location.type.toLowerCase() === "polygon")
-                location.coordinates = [location.coordinates]
-            if (location.type.toLowerCase() === "circle")
-                location = this.$refs.locationInput.getGeoJsonFromCircle()
-
-            const treasure = new Treasure({
-                name: this.name,
-                location: location,
-                literature: this.literature,
-                timespan: { from: parseInt(this.timespan.from), to: parseInt(this.timespan.to) },
-                items: this.items.map(item => {
-                    let ti = TreasureItem.fromInputs(item)
-                    delete ti.id
-                    return ti
-                })
-            })
-
-            try {
-                if (this.editor_property_id) {
-                    await treasure.update(this.editor_property_id)
-                } else {
-                    await treasure.add()
-                }
-                this.prevent_navigation_mixin_setClean()
-                this.$router.push({ name: "Property", params: { property: "treasure" } })
-            } catch (e) {
-                this.error = Array.isArray(e) ? e.join("\n") : e
-            }
-        }
     }
 }
 </script>
 
 
 <style lang="scss" >
-$template-columns: 50px 80px repeat(5, 1fr) 50px 32px;
-
-
 .treasure-form {
-    // .treasure-item-form {
-    //     display: grid;
-    //     grid-template-columns: $template-columns;
-    // }
 
-    // .list-container>* {
-    //     &:not(header) {
-    //         margin-bottom: 0;
-    //     }
+    .list-shadow {
+        position: relative;
 
-    //     &:not(:last-child) {
-    //         border-bottom: none;
-    //     }
-    // }
+        &:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: $border-radius;
+            box-shadow: inset -20px -20px 40px rgba($black, .2);
+            pointer-events: none;
+        }
+    }
 
-
-
-    // header {
-    //     display: grid;
-    //     position: sticky;
-    //     top: 0;
-    //     grid-template-columns: $template-columns;
-    //     font-weight: bold;
-    //     padding: 2px .5em;
-    //     align-items: center;
-    //     gap: .5em;
-    // }
+    .list {
+        position: relative;
+        margin-top: 10px;
+        max-height: 50vh;
+        overflow: auto;
+        padding: $padding;
+    }
 
     .treasure-item-list {
         overflow-x: auto;
@@ -316,6 +289,11 @@ $template-columns: 50px 80px repeat(5, 1fr) 50px 32px;
     .tools {
         display: flex;
         justify-content: flex-end;
+        margin-bottom: $padding;
+
+        label {
+            margin-bottom: 0;
+        }
     }
 
     .coin-range {

@@ -27,7 +27,7 @@ export function loadSelectedMints() {
     return selectedMints
 }
 
-export function mintLocationsMixin({
+export function MintLocationsMixin({
     showMarkers = true,
     onMintSelectionChanged = null,
     mintMarkerOptions = {
