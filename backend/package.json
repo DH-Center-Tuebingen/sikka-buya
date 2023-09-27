@@ -1,6 +1,6 @@
 {
     "name": "backend",
-    "version": "0.3.50",
+    "version": "0.3.51",
     "description": "Backend for the coin collection.",
     "private": true,
     "main": "index.js",
@@ -13,7 +13,7 @@
         "dev": "nodemon index.js --ext js,graphql",
         "init": "yarn install && npm run setup",
         "setup": "node ./scripts/setup.js",
-        "migrate": "node ./scripts/migrate.js" ,
+        "migrate": "node ./scripts/migrate.js",
         "update-schema": "node ./scripts/database_backup.js --mode=backend-schema",
         "db:backup": "node ./scripts/database_backup.js",
         "db:export:data": "node ./scripts/database_backup.js --data",
