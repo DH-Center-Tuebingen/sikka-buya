@@ -69,7 +69,7 @@ class Settings {
 
     static async _list() {
         let obj = {}
-        await Database.tx(async t => {
+        await WriteableDatabase.tx(async t => {
             const settingGroups = await t.manyOrNone(`SELECT * from settings WHERE parent IS NULL`)
 
             if (!settingGroups) return obj

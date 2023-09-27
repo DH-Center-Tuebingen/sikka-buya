@@ -2,6 +2,7 @@ const { resetTestDatabase, recreateTestDatabase } = require('./tasks/setup.js')
 const { join: joinPath } = require("path");
 const start = require('../backend/express.js');
 const { error } = require('../backend/scripts/modules/logging.js');
+const Settings = require('../backend/src/models/settings.js');
 
 
 function overwriteWithGithubActionsEnv() {
@@ -118,6 +119,8 @@ async function main() {
             }
         ]
     }))
+
+    await Settings.writeManagedFile()
 
 }
 
