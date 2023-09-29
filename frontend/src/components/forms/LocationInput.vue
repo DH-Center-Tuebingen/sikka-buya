@@ -37,7 +37,7 @@
           @input="($event) => this.updateRadius(parseFloat($event.target.value))"
           min="1000"
           max="1000000"
-          step="1000"
+          step="10"
         />
         <input
           ref="input"

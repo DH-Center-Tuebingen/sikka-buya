@@ -28,7 +28,7 @@
             ref="locationInput"
             :interactive="true"
             :allowCircle="true"
-            :only="['circle', 'polygon']"
+            :only="['point', 'circle']"
             :value="mintRegion.location"
             @update="updateLocation"
         ></LocationInput>
@@ -91,6 +91,41 @@ export default {
             }
         },
         updateLocation(location) {
+
+            function isPoint(geojson) {
+                if (!geojson) return false
+                console.log("isPoint", geojson.type.toLowerCase() == "point")
+                return (geojson.type.toLowerCase() == "point")
+            }
+
+            function isCircle(geojson) {
+                if (!geojson) return false
+                console.log("isCircle", geojson.type.toLowerCase() == "feature",
+                    isPoint(geojson.geometry),
+                    geojson.properties.radius)
+                return (geojson.type.toLowerCase() == "feature" &&
+                    isPoint(geojson.geometry) &&
+                    geojson.properties.hasOwnProperty("radius"))
+            }
+
+            const oldLocation = this.mintRegion.location
+
+            if (
+                isPoint(oldLocation) && isCircle(location)
+            ) {
+                console.log("FROM POINT")
+                location.geometry = oldLocation
+            } else if (
+                isCircle(oldLocation) && isPoint(location)
+            ) {
+                console.log("FROM CORCLE")
+                location = oldLocation.geometry
+                console.log(oldLocation.geometry.coordinates)
+            }
+
+
+            console.log(location)
+
             this.mintRegion.location = location
         },
         getMintRegion() {
