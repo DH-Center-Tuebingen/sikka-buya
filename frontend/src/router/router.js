@@ -136,7 +136,7 @@ const routes = [
         component: MaterialMap
       },
       {
-        path: "treasure",
+        path: "hoards",
         name: "Treasure Map",
         component: TreasureMap
       },
@@ -256,8 +256,8 @@ const routes = [
               },
 
               {
-                title: "routes.Treasure Map",
-                to: { name: "Treasure Map" },
+                title: "routes.Hoards Map",
+                to: { name: "Hoards Map" },
                 identity: "map-landing-treasure-map-link",
                 disabled: true
               }

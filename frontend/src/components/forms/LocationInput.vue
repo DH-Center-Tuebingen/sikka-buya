@@ -35,9 +35,9 @@
           :value="getRadius()"
           class="circle-slider"
           @input="($event) => this.updateRadius(parseFloat($event.target.value))"
-          min="1000"
+          min="1"
           max="1000000"
-          step="10"
+          step="1"
         />
         <input
           ref="input"
