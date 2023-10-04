@@ -84,7 +84,7 @@ export default class TreasureOverlay extends Overlay {
                     }
                 }
             }
-        }`, {}, true)
+        }`, {})
 
             treasures = result.data.data.treasure
         } catch (e) {
@@ -178,16 +178,6 @@ export default class TreasureOverlay extends Overlay {
 
                 treasureGeometries.push(findLocation)
 
-                // treasureGeometriesShadows.push({
-                //     type: "Feature", geometry: treasure.location, properties: {
-                //         treasure: treasure.id,
-                //         style: {
-                //             color: shadowColor,
-                //             opacity: shadowOpacity,
-                //             weight: 8
-                //         }
-                //     }
-                // })
 
                 const maxWidth = 20
                 const minWidth = 1
@@ -285,8 +275,6 @@ export default class TreasureOverlay extends Overlay {
         const connectionVector = [to[0] - from[0], to[1] - from[1]]
         const connectionVectorLength = Math.sqrt(connectionVector[0] ** 2 + connectionVector[1] ** 2)
         const connectionVectorNormalized = [connectionVector[0] / connectionVectorLength, connectionVector[1] / connectionVectorLength]
-
-        console.log(fromRadius, toRadius)
         const start = this.getLatLngFromDistanceAndDirection({ lat: from[0], lng: from[1] }, fromRadius, connectionVectorNormalized)
         const end = this.getLatLngFromDistanceAndDirection({ lat: to[0], lng: to[1] }, toRadius, connectionVectorNormalized.map(x => -x))
 

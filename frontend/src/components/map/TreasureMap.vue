@@ -8,7 +8,6 @@
                 />
             </template>
 
-
             <table>
                 <tbody>
                     <tr
@@ -39,7 +38,26 @@
         <div class="center-ui center-ui-center"></div>
         <div class="center-ui center-ui-bottom">
 
-            <TimelineSlideshowArea
+            <Timeline
+                class="ui-element"
+                :value="raw_timeline.value"
+                :from="timeline.from"
+                :to="timeline.to"
+                :interactive="false"
+                ref="timeline"
+            >
+                <template #background>
+                    <canvas
+                        id="timeline-canvas"
+                        ref="timelineCanvas"
+                    > </canvas>
+                    <!-- <slot name="background" /> -->
+                </template>
+
+            </Timeline>
+
+
+            <!-- <TimelineSlideshowArea
                 ref="timelineSlideshowArea"
                 :map="map"
                 :timelineFrom="timeline.from"
@@ -57,7 +75,7 @@
                     > </canvas>
                 </template>
 
-            </TimelineSlideshowArea>
+            </TimelineSlideshowArea> -->
         </div>
 
         <Sidebar
@@ -125,7 +143,6 @@ import URLParams from '../../utils/URLParams';
 import ListSelectionTools from '../interactive/ListSelectionTools.vue';
 import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
-import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 
@@ -139,7 +156,7 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
-import { BarGraph } from '../../models/timeline/TimelineChart';
+import TimelineChart, { BarGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 
 export default {
@@ -150,7 +167,6 @@ export default {
         MapToolbar,
         Sidebar,
         Timeline,
-        TimelineSlideshowArea,
         TreasureTable,
         MultiSelectList,
         MultiSelectListItem,
@@ -163,6 +179,7 @@ export default {
             chart: null,
             treasures: [],
             selectedTreasureIds: [],
+            timelineChart: null,
         };
     },
     mixins: [
@@ -175,9 +192,6 @@ export default {
         MountedAndLoadedMixin(['storage', 'data'])
     ],
     computed: {
-        timelineChart() {
-            return this.$refs.timelineSlideshowArea.timelineChart
-        },
         filtersActive() {
             return Object.values(this.filters).length > 0
         },
@@ -245,6 +259,7 @@ export default {
     },
     mounted: async function () {
 
+        this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timeline.from, to: this.timeline.to });
 
         // this.$nextTick(() => {
         //     for (let [key, val] of Object.entries(this.$route.query)) {
@@ -314,7 +329,7 @@ export default {
 
                 treasure.items.forEach((item) => {
                     const year = parseInt(item.year)
-                    const mint = item.mint
+                    const mint = item.mintRegion
 
                     if (!isNaN(year) && mint) {
                         yearSet.add(year)
@@ -360,7 +375,11 @@ export default {
             })
 
             this.timelineChart.update({
-                graphs: new BarGraph(data, { colors, yMax, yOffset: 10 }),
+                graphs: new BarGraph(data, {
+                    hlines: true, colors, yMax, yOffset: 10, maxWidth: 10, contextStyles: {
+                        strokeStyle: "red",
+                    }
+                }),
                 timeline: this.timeline
             })
         },
@@ -394,5 +413,15 @@ export default {
 };
 </script>
   
-<style lang="scss"></style>
+<style lang="scss">
+
+.timeline {
+    margin:1em;
+    margin-bottom: 1.5em;
+    height: 120px;
+    max-height: 20vh;
+    min-height: 100px;
+}
+
+</style>
   

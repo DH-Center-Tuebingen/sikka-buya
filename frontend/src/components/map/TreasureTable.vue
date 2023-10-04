@@ -2,7 +2,7 @@
     <div class="treasure-table">
         <div
             v-if="item.description != ''"
-            v-html="item.description" 
+            v-html="item.description"
         />
         <table>
             <thead>
@@ -25,7 +25,7 @@
                     :key="idx"
                 >
                     <td>
-                        {{ value.mint?.name }}
+                        {{ value.mintRegion?.name }}
                     </td>
                     <td>
                         {{ value.count }}
@@ -34,7 +34,7 @@
                         {{ value.year }}
                     </td>
                     <td>
-                        {{ value.weight }}g
+                        {{ getWeight(value) }}
                     </td>
                     <td>
                         <span v-if="value.fragment">x</span>
@@ -65,6 +65,12 @@ export default {
         sortingChanged({ name, desc }) {
             this.sortBy = name;
             this.desc = desc;
+        },
+        getWeight(value) {
+            if (value.weight) {
+                return value.weight + "g";
+            }
+            return "-";
         }
     },
     computed: {
@@ -113,6 +119,10 @@ h3 {
     margin-top: 0;
 }
 
+th {
+    padding: 0;
+}
+
 td,
 td {
     padding: 0.1rem 0.25rem;
@@ -128,10 +138,11 @@ tr:nth-child(even) {
 
 
 .treasure-table {
-    padding: $padding;
+    padding: 2px;
     background-color: white;
-    // border-radius: $border-radius;
-    margin: $padding
+    border-radius: $border-radius;
+    margin: $padding;
+    padding-bottom: 1em;
 }
 
 table {
