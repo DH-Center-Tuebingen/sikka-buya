@@ -24,7 +24,7 @@
         :max="to"
         :value="clampedValue"
         :labeledValue="10"
-        :subdivisions="2"
+        :subdivisions="10"
         :interactive="interactive"
         @change.stop="change"
         @input.stop="change"

@@ -71,22 +71,23 @@ export class YGraph extends Graph {
         super.draw(context)
 
         if (this.hlines) {
-            const steps = [1, 5, 10, 20, 50, 100, 200, 500, 1000]
-            const step = steps.find(step => step > this.yMax / 10)
-            const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 3 }
-            context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+            this.drawHorizontalLines(context, chart)
+        }
+    }
 
-            for (let i = step; i < this.yMax; i += step) {
-                context.font = this.hlines?.font ? this.hlines.font : "9px sans-serif"
-                context.strokeText(i, padding.left, this.y(chart, i) - padding.bottom)
-                context.beginPath();
-                context.moveTo(0, this.y(chart, i))
-                context.lineTo(chart.canvas.width, this.y(chart, i))
-                context.stroke()
-            }
+    drawHorizontalLines(context, chart) {
+        const steps = [1, 5, 10, 20, 50, 100, 200, 500, 1000]
+        const step = steps.find(step => step > this.yMax / 10)
+        const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 3 }
+        context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
 
-
-
+        for (let i = step; i < this.yMax; i += step) {
+            context.font = this.hlines?.font ? this.hlines.font : "9px sans-serif"
+            context.strokeText(i, padding.left, this.y(chart, i) - padding.bottom)
+            context.beginPath();
+            context.moveTo(0, this.y(chart, i))
+            context.lineTo(chart.canvas.width, this.y(chart, i))
+            context.stroke()
         }
     }
 
@@ -110,7 +111,7 @@ const defaultColors = [
 
 
 export class BarGraph extends YGraph {
-    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth=null, contextStyles = {} } = {}) {
+    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, contextStyles = {} } = {}) {
         super(data, {
             yMax,
             yOffset,
@@ -125,9 +126,7 @@ export class BarGraph extends YGraph {
     draw(context, chart) {
         super.draw(context, chart)
 
-        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth 
-
-
+        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
         this.data.forEach(({ x, y }) => {
             let yOffset = 0
             if (!isArray(y)) y = [y]
@@ -221,7 +220,6 @@ export class RangeGraph extends Graph {
 
     draw(context, chart) {
         super.draw(context, chart)
-
         this.data.forEach(range => {
             let start = chart.x(range[0], "start")
             let end = chart.x(range[1], "end")
@@ -248,7 +246,6 @@ export class StackedRanges extends Graph {
             context.beginPath();
             const start = chart.x(range[0], "start")
             context.moveTo(start, chart.y(this.y))
-
             let end = chart.x(range[1], "end")
             if (end - start <= 1) end = start + 1
             context.lineTo(end, chart.y(this.y))

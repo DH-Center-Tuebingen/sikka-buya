@@ -95,7 +95,7 @@
                     <TreasureItemForm
                         v-for="(item, index) in value.items"
                         :key="index"
-                        :index="index"
+                        :index="index + 1"
                         :value="item"
                         @typeChanged="(data) => handleTypeChange(index, data)"
                         @delete="() => value.items.splice(index, 1)"

@@ -376,9 +376,7 @@ export default {
 
             this.timelineChart.update({
                 graphs: new BarGraph(data, {
-                    hlines: true, colors, yMax, yOffset: 10, maxWidth: 10, contextStyles: {
-                        strokeStyle: "red",
-                    }
+                    hlines: true, colors, yMax, yOffset: 10, maxWidth: 10
                 }),
                 timeline: this.timeline
             })
