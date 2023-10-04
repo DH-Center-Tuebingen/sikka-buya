@@ -1,9 +1,12 @@
 import L from "leaflet"
+const Earth = L.CRS.Earth
 
 import Query from '../database/query';
 import Overlay from './Overlay';
 
 import { cloneDeep } from 'lodash';
+
+
 
 
 function bringToFront(e) {
@@ -81,7 +84,7 @@ export default class TreasureOverlay extends Overlay {
                     }
                 }
             }
-        }`, {}, true)
+        }`, {})
 
             treasures = result.data.data.treasure
         } catch (e) {
@@ -139,7 +142,7 @@ export default class TreasureOverlay extends Overlay {
 
             const style = {
                 color,
-                weight: 4
+                weight: 3
             }
 
 
@@ -161,40 +164,35 @@ export default class TreasureOverlay extends Overlay {
                     geometry = treasure.location
                 }
 
-                const feature = {
+                const findLocation = {
                     type: "Feature", geometry, properties: Object.assign({
                         treasure: treasure.id,
                         style: Object.assign({}, style, {
-                            fill: true,
-                            fillColor: color,
-                            fillOpacity: .25,
+                            fill: false
                         })
                     }, properties)
                 }
 
+                const from = geometry.coordinates
+                const fromRadius = properties.radius || 0
 
-                treasureGeometries.push(feature)
+                treasureGeometries.push(findLocation)
 
-                // treasureGeometriesShadows.push({
-                //     type: "Feature", geometry: treasure.location, properties: {
-                //         treasure: treasure.id,
-                //         style: {
-                //             color: shadowColor,
-                //             opacity: shadowOpacity,
-                //             weight: 8
-                //         }
-                //     }
-                // })
 
                 const maxWidth = 20
                 const minWidth = 1
 
                 if (treasure.items) {
-                    let findLocation = treasure.location
                     const totalCount = treasure.items.reduce((acc, item) => acc + item.mintCount, 0)
 
-                    treasure.items.forEach((item, idx) => {
+                    const mintStyle = Object.assign({}, style, {
+                        fill: true,
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: .25
+                    })
 
+                    treasure.items.forEach((item, idx) => {
                         if (item?.mintRegion?.location) {
                             let geometry
                             let location = item.mintRegion.location
@@ -204,38 +202,32 @@ export default class TreasureOverlay extends Overlay {
                                     type: "Feature",
                                     geometry: location,
                                     properties: {
-                                        style
+                                        style: mintStyle,
                                     }
                                 }
                             } else {
                                 geometry = location.geometry
-                                location.properties.style = style
+                                location.properties.style = mintStyle
                             }
-                            itemGeometries.push(location)
-                            
 
-                            lineGeometries.push({
-                                type: "Feature",
-                                geometry: {
-                                    type: "LineString",
-                                    coordinates: [
-                                        feature.geometry.coordinates,
-                                        geometry.coordinates
-                                    ]
-                                },
-                                properties: {
-                                    style: Object.assign({}, style, {
-                                        fill: false,
-                                    })
-                                }
-                            })
+                            const to = geometry.coordinates
+                            const toRadius = location?.properties?.radius || 0
+
+                            itemGeometries.push(location)
+
+                            /**
+                             * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
+                             * so it should be good for the time beeing.
+                             */
+                            const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, toRadius)
+                            intersectionLineFeature.properties = Object.assign({}, { style })
+                            lineGeometries.push(intersectionLineFeature)
+                            // lineGeometries.push(this.getIntersectionLine(from, to, 0, toRadius))
+
                         }
                     })
                 }
             }
-
-
-
 
             geoJSON.push([
                 // Shadow layers
@@ -255,6 +247,48 @@ export default class TreasureOverlay extends Overlay {
         }
     }
 
+
+
+    /**
+     * This is the 'inverse' function for 
+     * the L.CRS.Earth distance function.
+     * 
+     */
+    getLatLngFromDistanceAndDirection(latlng1, distance, direction) {
+        const R = 6371e3; // Earth's radius in meters
+        const rad = Math.PI / 180;
+        const lat1 = latlng1.lat * rad;
+        const lng1 = latlng1.lng * rad;
+        const bearing = Math.atan2(direction[1], direction[0]);
+
+        const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) +
+            Math.cos(lat1) * Math.sin(distance / R) * Math.cos(bearing));
+        const lng2 = lng1 + Math.atan2(Math.sin(bearing) * Math.sin(distance / R) * Math.cos(lat1),
+            Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
+
+        const point = { lat: lat2 / rad, lng: lng2 / rad };
+
+        return [point.lat, point.lng];
+    }
+
+    getIntersectionLine(from, to, fromRadius, toRadius) {
+        const connectionVector = [to[0] - from[0], to[1] - from[1]]
+        const connectionVectorLength = Math.sqrt(connectionVector[0] ** 2 + connectionVector[1] ** 2)
+        const connectionVectorNormalized = [connectionVector[0] / connectionVectorLength, connectionVector[1] / connectionVectorLength]
+        const start = this.getLatLngFromDistanceAndDirection({ lat: from[0], lng: from[1] }, fromRadius, connectionVectorNormalized)
+        const end = this.getLatLngFromDistanceAndDirection({ lat: to[0], lng: to[1] }, toRadius, connectionVectorNormalized.map(x => -x))
+
+        return {
+            type: "Feature",
+            geometry: {
+                type: "LineString",
+                coordinates: [
+                    start,
+                    end
+                ]
+            }
+        }
+    }
 
     createMarker(latlng, feature) {
         // Use the area as value for the radius
@@ -286,13 +320,13 @@ export default class TreasureOverlay extends Overlay {
         return {
             style: function (feature) {
                 if (feature.geometry.type === "LineString") {
-                    return Object.assign({ lineCap: "butt" }, feature.properties.style)
+                    return Object.assign({ lineCap: "butt" }, feature?.properties?.style || {})
                 } else {
-                    return Object.assign({ fill: feature.properties.isMint }, feature.properties.style)
+                    return Object.assign({ fill: feature.properties.isMint }, feature?.properties?.style || {})
                 }
             },
             onEachFeature: function (feature, layer) {
-                if (feature.properties.text) {
+                if (feature?.properties?.text) {
                     layer.bindTooltip(feature.properties.text)
                 }
             }

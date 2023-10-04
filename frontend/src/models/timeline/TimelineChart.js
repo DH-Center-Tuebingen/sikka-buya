@@ -48,10 +48,11 @@ export class Graph {
 
 
 export class YGraph extends Graph {
-    constructor(data, { yMax = 0, yOffset = 0, contextStyles = {} } = {}) {
+    constructor(data, { yMax = 0, yOffset = 0, hlines = false, contextStyles = {} } = {}) {
         super(data, { contextStyles })
         this.yMax = yMax
         this.yOffset = yOffset
+        this.hlines = hlines
     }
 
     get yOptions() {
@@ -65,6 +66,30 @@ export class YGraph extends Graph {
     y(chart, value) {
         return chart.y(value, this.yOptions)
     }
+
+    draw(context, chart) {
+        super.draw(context)
+
+        if (this.hlines) {
+            const steps = [1, 5, 10, 20, 50, 100, 200, 500, 1000]
+            const step = steps.find(step => step > this.yMax / 10)
+            const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 3 }
+            context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+
+            for (let i = step; i < this.yMax; i += step) {
+                context.font = this.hlines?.font ? this.hlines.font : "9px sans-serif"
+                context.strokeText(i, padding.left, this.y(chart, i) - padding.bottom)
+                context.beginPath();
+                context.moveTo(0, this.y(chart, i))
+                context.lineTo(chart.canvas.width, this.y(chart, i))
+                context.stroke()
+            }
+
+
+
+        }
+    }
+
 }
 
 
@@ -85,16 +110,22 @@ const defaultColors = [
 
 
 export class BarGraph extends YGraph {
-    constructor(data, { colors = defaultColors, yMax = 0, yOffset = 0, contextStyles = {} } = {}) {
-        super(data, { yMax, yOffset, contextStyles })
+    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth=null, contextStyles = {} } = {}) {
+        super(data, {
+            yMax,
+            yOffset,
+            contextStyles,
+            hlines
+        })
         if (colors.length === 0) colors = defaultColors
         this.colors = colors
+        this.maxWidth = maxWidth
     }
 
     draw(context, chart) {
         super.draw(context, chart)
 
-        const width = chart.unitWidth
+        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth 
 
 
         this.data.forEach(({ x, y }) => {
@@ -105,7 +136,6 @@ export class BarGraph extends YGraph {
                 const color = this.colors[i % this.colors.length]
                 context.beginPath();
                 context.lineWidth = .5
-                context.strokeStyle = "#111"
                 context.fillStyle = color
                 yOffset += this.height(chart, yVal)
                 context.rect(chart.x(x) - width / 2, this.y(chart, 0) - yOffset, width, this.height(chart, yVal))
