@@ -66,15 +66,18 @@ INSERT INTO
     treasure,
     coinType,
     count,
-    dynasty,
     fragment,
     material,
     mint_region,
-    uncertain_mint,
     nominal,
     weight,
     year,
-    uncertain_year
+    uncertain_year,
+    epoch,
+    mint_region_uncertain,
+    mint_as_on_coin,
+    reconstructed
+
   )
 VALUES
   (
@@ -85,23 +88,24 @@ VALUES
     -- coinType
     100,
     -- count
-    1,
-    -- dynasty
     TRUE,
     -- fragment
     1,
     -- material
     2,
-    -- mint
-    null,
-    -- uncertain_mint
+    -- mint_region
     2,
     -- nominal
     0.54,
     -- weight
     20,
     -- year
-    null -- uncertain_year
+    null, -- uncertain_year,
+    2, -- epoch
+    false, -- mint_region_uncertain
+    'PAARIS', -- mint_as_on_coin
+    false -- reconstructed
+    
   ),
   (
     -- ALESIA_TREASURE_ITEM, id: 2
@@ -111,23 +115,23 @@ VALUES
     -- coinType
     5,
     -- count
-    2,
-    -- dynasty
     FALSE,
     -- fragment
     3,
     -- material
     null,
     -- mint
-    'Alesia',
-    -- uncertain_mint
     1,
     -- nominal
     3,
     -- weight
     null,
     -- year
-    '23x' -- uncertain_year
+    '23x', -- uncertain_year
+    3, -- epoch
+    true, -- mint_region_uncertain
+    'A', -- mint_as_on_coin
+    false -- reconstructed
   ),
   (
     -- GERMAN_TWO_TREASURE_ITEM, id: 3
@@ -137,21 +141,21 @@ VALUES
     -- coinType
     44,
     -- count
-    5,
-    -- dynasty
     FALSE,
     -- fragment
     4,
     -- material
     3,
     -- mint
-    'UNKNOWN',
-    -- uncertain_mint
     4,
     -- nominal
     200,
     -- weight
     1,
     -- year
-    '222[a]' -- uncertain_year
+    '222[a]', -- uncertain_year
+    1, -- epoch
+    true, -- mint_region_uncertain
+    'ATL', -- mint_as_on_coin
+    true -- reconstructed
   );

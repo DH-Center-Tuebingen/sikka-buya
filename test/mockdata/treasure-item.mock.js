@@ -1,4 +1,3 @@
-const { ATLANT, GERMAN, FRENCH, BRIT } = require('./dynasty.mock')
 const { GOLD, COPPER, PERLMUTT, SILVER } = require('./material.mock')
 const { GERMANY_REGION,
     PARIS_REGION,
@@ -6,78 +5,89 @@ const { GERMANY_REGION,
     CONSTANTINOPLE } = require("./mintregion.mock")
 const { COIN_TYPE_BODY, GERMAN_TYPE, FRENCH_TYPE } = require('./type.mock')
 const { MARK, ZLOTY, ADIE } = require("../mockdata/nominal.mock")
+const { STONE_AGE, BRONZE_AGE, IRON_AGE } = require('./epoch.mock')
 
 const GERMAN_TREASURE_ITEM = {
     id: "1",
     coinType: GERMAN_TYPE,
     count: 100,
-    dynasty: GERMAN,
     fragment: true,
     material: GOLD,
     mintRegion: PARIS_REGION,
-    uncertainMint: null,
     nominal: MARK,
     weight: 0.54,
     year: 20,
-    uncertainYear: null
+    epoch: BRONZE_AGE,
+    uncertainYear: null,
+    mintRegionUncertain: false,
+    mintAsOnCoin: "PAARIS",
+    reconstructed: false,
 }
 
 const GERMAN_TWO_TREASURE_ITEM = {
     id: "3",
     coinType: GERMAN_TYPE,
     count: 44,
-    dynasty: ATLANT,
     fragment: false,
     material: SILVER,
     mintRegion: ATLANTIS_REGION,
-    uncertainMint: "UNKNOWN",
     nominal: ZLOTY,
     weight: 200,
     year: 1,
-    uncertainYear: "222[a]"
+    epoch: STONE_AGE,
+    uncertainYear: "222[a]",
+    mintRegionUncertain: true,
+    mintAsOnCoin: "ATL",
+    reconstructed: true,
 }
 
 const NEU_BERLIN_TREASURE_ITEM = {
     id: "6",
     coinType: FRENCH_TYPE,
     count: 100,
-    dynasty: FRENCH,
     fragment: true,
     material: COPPER,
     mintRegion: GERMANY_REGION,
     nominal: ZLOTY,
+    epoch: IRON_AGE,
     weight: 3,
     year: -200,
     uncertainYear: "xyz",
-    uncertainMint: "Neu Berlin",
+    mintRegionUncertain: false,
+    mintAsOnCoin: null,
+    reconstructed: false,
 }
 
 const NEU_BERLIN_TREASURE_ITEM_INPUT = `{
     coinType: ${FRENCH_TYPE.id},
     count: 100,
-    dynasty: ${FRENCH.id},
     fragment: true,
     material: ${COPPER.id},
     mintRegion: ${GERMANY_REGION.id},
     nominal: ${ZLOTY.id},
+    epoch: ${IRON_AGE.id},
     weight: 3,
     year: -200,
     uncertainYear: "xyz",
-    uncertainMint: "Neu Berlin",
+    mintRegionUncertain: false,
+    mintAsOnCoin: null,
+    reconstructed: false,
 }`
 
 const ATLANTIS_TREASURE_ITEM_INPUT = ` {
     count: 10,
     fragment: false,
     uncertainYear: "xxx",
-    uncertainMint: "Atlantum",
     weight: 100,
     year: -2302,
-    dynasty: ${ATLANT.id},
     material: ${PERLMUTT.id},
     nominal: ${ADIE.id},
     mintRegion: ${ATLANTIS_REGION.id},
     coinType: ${FRENCH_TYPE.id},
+    epoch: ${IRON_AGE.id},
+    mintRegionUncertain: false,
+    mintAsOnCoin: "A",
+    reconstructed: true,
 }`
 
 
@@ -86,28 +96,32 @@ const ATLANTIS_TREASURE_ITEM = {
     count: 10,
     fragment: false,
     uncertainYear: "xxx",
-    uncertainMint: "Atlantum",
     weight: 100,
     year: -2302,
-    dynasty: ATLANT,
     material: PERLMUTT,
     nominal: ADIE,
     mintRegion: ATLANTIS_REGION,
     coinType: FRENCH_TYPE,
+    epoch: IRON_AGE,
+    mintRegionUncertain: false,
+    mintAsOnCoin: "A",
+    reconstructed: true,
 }
 
 const ATLANTIS_TWO_TREAURE_ITEM_INPUT = ` {
     count: 12,
     fragment: true,
     uncertainYear: "9[x5]",
-    uncertainMint: "Padianice",
     weight: 20.5,
     year: 2011,
-    dynasty: 3,
     material: 2,
     nominal: 4,
     mintRegion: 3,
     coinType: 2,
+    epoch: ${BRONZE_AGE.id},
+    mintRegionUncertain: false,
+    mintAsOnCoin: "ATLA",
+    reconstructed: true,
 }
 `
 
@@ -116,21 +130,22 @@ const ATLANTIS_TWO_TREAURE_ITEM = {
     count: 12,
     fragment: true,
     uncertainYear: "9[x5]",
-    uncertainMint: "Padianice",
     weight: 20.5,
     year: 2011,
-    dynasty: BRIT,
     material: COPPER,
     nominal: ZLOTY,
     mintRegion: ATLANTIS_REGION,
     coinType: FRENCH_TYPE,
+    epoch: BRONZE_AGE,
+    mintRegionUncertain: false,
+    mintAsOnCoin: "ATLA",
+    reconstructed: true,
 }
 
 const FRENCH_TREASURE_ITEM = {
     id: "6",
     coinType: FRENCH_TYPE,
     count: 100,
-    dynasty: FRENCH,
     fragment: true,
     material: COPPER,
     mintRegion: GERMANY_REGION,
@@ -138,14 +153,17 @@ const FRENCH_TREASURE_ITEM = {
     weight: 3,
     year: -200,
     uncertainYear: "xyz",
-    uncertainMint: "Neu Berlin",
+    epoch: IRON_AGE,
+    mintRegionUncertain: false,
+    mintAsOnCoin: null,
+    reconstructed: false,
+
 }
 
 const ALESIA_TREASURE_ITEM = {
     id: "2",
     coinType: FRENCH_TYPE,
     count: 5,
-    dynasty: FRENCH,
     fragment: false,
     material: PERLMUTT,
     mintRegion: null,
@@ -153,7 +171,11 @@ const ALESIA_TREASURE_ITEM = {
     weight: 3,
     year: null,
     uncertainYear: "23x",
-    uncertainMint: "Alesia",
+    epoch: IRON_AGE,
+    mintRegionUncertain: true,
+    mintAsOnCoin: "A",
+    reconstructed: false,
+
 }
 
 const TREASURE_ITEM_GQL_BODY = `{
@@ -161,10 +183,9 @@ const TREASURE_ITEM_GQL_BODY = `{
     count
     fragment
     uncertainYear
-    uncertainMint
     weight
     year
-    dynasty{
+    epoch{
         id
         name
     }
@@ -179,6 +200,11 @@ const TREASURE_ITEM_GQL_BODY = `{
     }
     mintRegion {id name location uncertain}
     coinType { ${COIN_TYPE_BODY} }
+    
+    mintRegionUncertain
+    mintAsOnCoin
+    reconstructed
+
 }`
 
 module.exports = {

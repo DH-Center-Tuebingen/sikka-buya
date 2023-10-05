@@ -30,7 +30,7 @@
     >
       <ListItem
         v-for="item of items"
-        v-bind:key="item.key"
+        v-bind:key="item.id"
         :disable="deleteButtonActive"
         :id="item.id"
       >

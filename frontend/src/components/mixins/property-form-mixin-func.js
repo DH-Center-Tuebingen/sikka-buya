@@ -81,7 +81,6 @@ export default function ({ variable = null, property = null } = {}) {
                 this.property_form_mixin_loading = false
             },
             property_form_mixin_cancel: function () {
-                console.trace("CANCEL")
                 this.$router.push({ path: `/editor/${property}` })
             },
             property_form_mixin_setDirty(value = true) {

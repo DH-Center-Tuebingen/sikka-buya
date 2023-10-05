@@ -22,27 +22,27 @@
 
             <LabeledInputContainer>
                 <template #label>
-                    <Locale path="property.uncertain_mint_region" />
+                    <Locale path="property.mintAsOnCoin" />
                 </template>
 
                 <input
-                    class="mint-region-uncertain-input"
+                    class="mint-as-on-coin-input"
                     type="text"
-                    v-model="value.uncertainMint"
+                    v-model="value.mintAsOnCoin"
                 >
             </LabeledInputContainer>
 
 
             <LabeledInputContainer>
                 <template #label>
-                    <Locale path="property.dynasty" />
+                    <Locale path="property.epoch" />
                 </template>
 
                 <DataSelect
-                    class="dynasty-data-select"
-                    table="dynasty"
+                    class="epoch-data-select"
+                    table="epoch"
                     :debug="debug"
-                    v-model="value.dynasty"
+                    v-model="value.epoch"
                 />
             </LabeledInputContainer>
 
@@ -53,6 +53,64 @@
                 <Toggle
                     v-model="value.fragment"
                     class="fragment-toggle"
+                >
+                    <template #active>
+                        <div>
+                            <Icon
+                                :path="icons.checked"
+                                :size="IconSize.Normal"
+                                type="mdi"
+                            />
+                        </div>
+                    </template>
+                    <template #inactive>
+                        <div>
+                            <Icon
+                                :path="icons.unchecked"
+                                :size="IconSize.Normal"
+                                type="mdi"
+                            />
+                        </div>
+                    </template>
+                </Toggle>
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.reconstructed" />
+                </template>
+                <Toggle
+                    v-model="value.reconstructed"
+                    class="reconstructed-toggle"
+                >
+                    <template #active>
+                        <div>
+                            <Icon
+                                :path="icons.checked"
+                                :size="IconSize.Normal"
+                                type="mdi"
+                            />
+                        </div>
+                    </template>
+                    <template #inactive>
+                        <div>
+                            <Icon
+                                :path="icons.unchecked"
+                                :size="IconSize.Normal"
+                                type="mdi"
+                            />
+                        </div>
+                    </template>
+                </Toggle>
+            </LabeledInputContainer>
+
+            <LabeledInputContainer>
+                <template #label>
+                    <Locale path="property.uncertain-mint" />
+                </template>
+                <Toggle
+                    v-model="value.mintRegionUncertain"
+                    class="uncertain-mint-toggle"
                 >
                     <template #active>
                         <div>
@@ -310,7 +368,7 @@ export default {
     display: grid;
     padding: 1px 5px;
     gap: 5px;
-    grid-template-columns: 100px 100px 100px 50px 60px min-content 50px;
+    grid-template-columns: 100px 100px 100px 50px 50px 50px 60px min-content 50px;
 
     >.labeled-input-container {
         padding-top: 2px;

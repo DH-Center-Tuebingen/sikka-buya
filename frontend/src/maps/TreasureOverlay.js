@@ -59,7 +59,7 @@ export default class TreasureOverlay extends Overlay {
                         projectId
                     }
                     count
-                    dynasty {
+                    epoch {
                         id
                         name
                     }
@@ -73,7 +73,7 @@ export default class TreasureOverlay extends Overlay {
                         uncertain
                         location 
                     }
-                    uncertainMint
+                    mintRegionUncertain
                     uncertainYear
                     year
                     weight
@@ -82,6 +82,8 @@ export default class TreasureOverlay extends Overlay {
                         id
                         name
                     }
+                    reconstructed
+                    mintAsOnCoin
                 }
             }
         }`, {})

@@ -1,9 +1,9 @@
 const { WriteableDatabase, pgp, Database } = require('../utils/database');
 const Type = require('../utils/type');
-const Dynasty = require('./dynasty');
 const { GeoJSON } = require('./geojson');
 const Material = require('./material');
 const MintRegion = require('./mint_region');
+const NamedModel = require('./named-model');
 const Nominal = require('./nominal');
 const { Table } = require('./table.js')
 const graphqlFields = require('graphql-fields')
@@ -14,55 +14,66 @@ class Treasure extends Table {
         for (let i = 0; i < items.length; i++) {
             const { coinType = null,
                 count = 1,
-                dynasty = null,
+                epoch = null,
+                reconstructed = false,
                 fragment = false,
                 material = null,
                 mintRegion = null,
                 nominal = null,
-                uncertainMint = null,
+                mintRegionUncertain = null,
+                mintAsOnCoin = null,
                 uncertainYear = null,
                 weight = null,
                 year = null } = items[i]
 
+            if (reconstructed == null) reconstructed = false
+            if (mintRegionUncertain == null) mintRegionUncertain = false
+
             await t.none(`INSERT INTO treasure_item (
                     coinType,
                     count,
-                    dynasty,
+                    epoch,
                     fragment,
                     material,
                     mint_region,
                     nominal,
                     treasure,
-                    uncertain_mint,
                     uncertain_year,
                     weight,
-                    year
+                    year,
+                    reconstructed,
+                    mint_region_uncertain,
+                    mint_as_on_coin
                 ) VALUES (
                     $[coinType],
                     $[count],
-                    $[dynasty],
+                    $[epoch],
                     $[fragment],
                     $[material],
                     $[mintRegion],
                     $[nominal],
                     $[treasure],
-                    $[uncertainMint],
                     $[uncertainYear],
                     $[weight],
-                    $[year]
+                    $[year],
+                    $[reconstructed],
+                    $[mintRegionUncertain],
+                    $[mintAsOnCoin]
                 )`, {
                 coinType,
                 count,
-                dynasty,
+                epoch,
                 fragment,
                 material,
                 mintRegion,
                 nominal,
                 treasure: treasure,
-                uncertainMint,
+                mintRegionUncertain,
                 uncertainYear,
                 weight,
                 year,
+                reconstructed,
+                mintAsOnCoin
             })
         }
     }
@@ -70,6 +81,7 @@ class Treasure extends Table {
     static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, description = "" } = {}) {
         let { geometry: _loc, properties } = GeoJSON.separate(location)
         location = _loc
+
 
         return WriteableDatabase.tx(async t => {
             const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description ) 
@@ -139,7 +151,7 @@ class Treasure extends Table {
                 t.id,
                 t.treasure,
                 t.count,
-                t.dynasty,
+                t.epoch,
                 t.coinType,
                 t.mint_region,
                 t.year,
@@ -147,8 +159,10 @@ class Treasure extends Table {
                 t.material,
                 t.fragment,
                 t.uncertain_year,
-                t.uncertain_mint,
                 t.weight,
+                t.reconstructed,
+                t.mint_region_uncertain,
+                t.mint_as_on_coin,
                 row_to_json(t) AS items_json
             FROM
                 treasure_item AS t`
@@ -228,7 +242,8 @@ class TreasureItem {
             "coinType": "cointype",
             "mintRegion": "mint_region",
             "uncertainYear": "uncertain_year",
-            "uncertainMint": "uncertain_mint",
+            "mintRegionUncertain": "mint_region_uncertain",
+            "mintAsOnCoin": "mint_as_on_coin"
         }
     }
 
@@ -258,12 +273,10 @@ class TreasureItem {
             for (let itemIdx = 0; itemIdx < items.length; itemIdx++) {
                 const item = items[itemIdx]
 
-
                 const dbField = TreasureItem.getDbName(field)
                 const dbValue = item[dbField]
 
-
-                if (dbValue) {
+                if (dbValue != null) {
                     if (!cache[field])
                         cache[field] = {}
                     if (!cache[field][dbValue]) {
@@ -272,7 +285,7 @@ class TreasureItem {
                     }
                 }
 
-                item[field] = cache?.[field]?.[dbValue] || null
+                item[field] = (cache?.[field]?.[dbValue] == null) ? null : cache[field][dbValue]
             }
         }
         return items
@@ -285,6 +298,7 @@ class TreasureItem {
     }
 
     static map(name, value) {
+
         if (TreasureItem.mappings[name])
             value = TreasureItem.mappings[name](value)
         return value
@@ -296,10 +310,17 @@ class TreasureItem {
             return (isNaN(val)) ? null : val
         }
 
+        function toBool(value) {
+            return (value) ? true : false
+        }
+
         return {
             year: toInt,
             earliestYear: toInt,
             latestYear: toInt,
+            mintRegionUncertain: toBool,
+            reconstructed: toBool,
+            fragment: toBool,
             material: (material) => {
                 return {
                     id: material.material_id,
@@ -316,7 +337,7 @@ class TreasureItem {
                 const { types } = await Type.getTypes(null, { filters: { id }, postProcessFields: fields.coinType, transaction })
                 return (types?.length > 0) ? types[0] : null
             },
-            dynasty: async (transaction, id) => Dynasty.get(id, transaction),
+            epoch: async (transaction, id) => (new NamedModel("epoch")).get(id, transaction),
             mintRegion: async (transaction, id) => MintRegion.get(id, transaction),
             nominal: async (transaction, id) => Nominal.get(id, transaction),
             material: async (transaction, id) => Material.get(id, { transaction }),

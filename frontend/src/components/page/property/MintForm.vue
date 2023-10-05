@@ -159,8 +159,6 @@ export default {
 
     },
     create: async function () {
-
-      console.log(this.$refs.location.getGeoJSON())
       const result = await Query.raw(
         `
         mutation AddMint(

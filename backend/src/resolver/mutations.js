@@ -16,6 +16,7 @@ const TreasureGQL = require('./klasses/TreasureGQL')
 const Frontend = require('../frontend')
 const SettingsGQL = require('./klasses/SettingsGQL')
 const MintRegionGQL = require('./klasses/MintRegionGQL')
+const NamedGQL = require('./klasses/NamedGQL')
 
 /**
  * Most mutations require the user to be logged in to
@@ -268,7 +269,7 @@ const EditorMutations = {
     },
 }
 
-
+const EpochGQL = new NamedGQL("epoch")
 const Mutations = Object.assign({},
     UnguardedMutations,
     guard(
@@ -278,6 +279,7 @@ const Mutations = Object.assign({},
             BlockGQL.Mutations,
             TreasureGQL.Mutations,
             MintRegionGQL.Mutations,
+            EpochGQL.Mutations,
         ), (_, __, context) => {
             return Auth.verifyContext(context)
         }),

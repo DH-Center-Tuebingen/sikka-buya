@@ -70,6 +70,7 @@ import TypeOverview from "@/components/page/TypeOverview.vue"
 
 import CoinMarkForm from "@/components/page/property/CoinMarkForm"
 import CoinVerseForm from "@/components/page/property/CoinVerseForm"
+import EpochForm from "@/components/page/property/EpochForm"
 import HonorificForm from "@/components/page/property/HonorificForm"
 import DynastyForm from "@/components/page/property/DynastyForm"
 import LocaleForm from "@/components/page/property/LocaleForm"
@@ -353,6 +354,7 @@ const routes = [
           },
           ...PropertyRoute.from('coin_mark', CoinMarkForm).routes,
           ...PropertyRoute.from('coin_verse', CoinVerseForm).routes,
+          ...PropertyRoute.from('epoch', EpochForm).routes,
           ...PropertyRoute.from('material', MaterialForm).routes,
           ...PropertyRoute.from("person", PersonForm).routes,
           ...PropertyRoute.from("title", TitleForm).routes,
@@ -501,7 +503,6 @@ router.beforeEach(async (to, from, next) => {
     console.trace("Redirecting to", route)
     next(route)
   } else {
-    console.log(to)
     next()
   }
 })
