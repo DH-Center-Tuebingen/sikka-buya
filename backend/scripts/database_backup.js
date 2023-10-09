@@ -21,7 +21,7 @@ const exec = util.promisify(require("child_process").exec);
 const path = require('path');
 const { error, notice } = require('./modules/logging');
 const { readFileSync, writeFileSync, mkdirSync } = require('fs');
-const { join} = require("path");
+const { join } = require("path");
 
 
 function execute(command) {
@@ -87,14 +87,22 @@ if (options.mode == "backend-schema") {
         // 
         // A definite reason, why this happens remains unknown.
         txt = txt.replace("SELECT pg_catalog.set_config('search_path', '', false);", "-- SELECT pg_catalog.set_config('search_path', '', false);")
-        writeFileSync(fileName, txt, "utf-8")
+        writeFileSync(fileName, txt, { encoding: "utf-8", flag: "w"})
         notice("Schema updated correctly!")
     }).catch((err) => {
         error("Failed to update schema", err)
     })
 } else {
     let name = (options.mode === "data") ? "data" : (options.mode === "schema") ? "schema" : "both"
-    let ext = (options.format === "custom") ? "dump" : "sql"
+
+    let ext 
+    if (options.format === "custom") {
+        ext = "dump"
+        additionalOptions.push("--format=custom")
+    } else if (options.format === "text"){
+        ext = "sql"
+        options.inserts = true
+    }else throw new Error(`Unknown format: ${options.format}`)
 
     if (!options.owner) {
         additionalOptions.push("--no-owner")
@@ -104,10 +112,6 @@ if (options.mode == "backend-schema") {
         additionalOptions.push("--schema-only")
     else if (options.mode === "data")
         additionalOptions.push("--data-only")
-
-    if (options.format === "custom") {
-        additionalOptions.push("--format=custom")
-    }
 
     if (options.inserts) {
         additionalOptions.push("--inserts")

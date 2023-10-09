@@ -14,8 +14,7 @@ const treasureCommandsFactory = function () {
 
     Cypress.Commands.add("setTreasureItemForm", (selector, {
         mintRegion = null,
-        mintRegionUncertain = null,
-        dynasty = null,
+        epoch = null,
         nominal = null,
         material = null,
         year = null,
@@ -23,12 +22,15 @@ const treasureCommandsFactory = function () {
         fragment = null,
         weight = null,
         coinType = null,
-        count = null
+        count = null,
+        mintAsOnCoin = null,
+        reconstructed = null,
+        mintRegionUncertain = null,
     } = {}) => {
 
         const dataSelectFieldsExcludingType = [
             ["mint-region", mintRegion],
-            ["dynasty", dynasty],
+            ["epoch", epoch],
             ["nominal", nominal],
             ["material", material],
         ]
@@ -36,7 +38,7 @@ const treasureCommandsFactory = function () {
         for (let [className, value] of dataSelectFieldsExcludingType) {
             if (value != null && value.type != "") {
                 cy.selectFromDataSelect(`${selector} .${className}-data-select`, value.targetText, value.type)
-            }else{
+            } else {
                 cy.clearDataSelect(`${selector} .${className}-data-select`)
             }
         }
@@ -44,7 +46,7 @@ const treasureCommandsFactory = function () {
         const inputFields = [
             ["year", year],
             ["year-uncertain", yearUncertain],
-            ["mint-region-uncertain", mintRegionUncertain],
+            ["mint-as-on-coin", mintAsOnCoin],
             ["weight", weight],
             ["count", count],
         ]
@@ -55,16 +57,26 @@ const treasureCommandsFactory = function () {
                 cy.get(`${selector} .${className}-input`).type(value)
             }
         }
-            
-        if(Cypress.$(`${selector} .fragment-toggle`).hasClass("active") != fragment)
-            cy.get(`${selector} .fragment-toggle`).click()
+
+        const toggles = [
+            ["fragment", fragment],
+            ["reconstructed", reconstructed],
+            ["mint-region-uncertain", mintRegionUncertain],
+        ]
+
+        toggles.forEach(([className, value]) => {
+            if (value != null) {
+                if (Cypress.$(`${selector} .${className}-toggle`).hasClass("active") != value)
+                    cy.get(`${selector} .${className}-toggle`).click()
+            }
+        })
 
         /**
          * We set the coin type last because it will automatically fill other fields.
          */
         if (coinType != null) {
             cy.selectFromDataSelect(`${selector} .coin-type-data-select`, coinType.targetText, coinType.type)
-        }else{
+        } else {
             cy.clearDataSelect(`${selector} .coin-type-data-select`)
         }
 
@@ -72,8 +84,7 @@ const treasureCommandsFactory = function () {
 
     Cypress.Commands.add("checkTreasureItem", (selector, {
         mintRegion = null,
-        mintRegionUncertain = null,
-        dynasty = null,
+        epoch = null,
         nominal = null,
         material = null,
         year = null,
@@ -81,13 +92,16 @@ const treasureCommandsFactory = function () {
         fragment = null,
         weight = null,
         coinType = null,
-        count = null
+        count = null,
+        mintAsOnCoin = null,
+        reconstructed = null,
+        mintRegionUncertain = null,
     } = {}) => {
 
         const allRequiredArguments = {
             mintRegion,
             mintRegionUncertain,
-            dynasty,
+            epoch,
             nominal,
             material,
             year,
@@ -95,7 +109,10 @@ const treasureCommandsFactory = function () {
             fragment,
             weight,
             coinType,
-            count
+            count,
+            mintAsOnCoin,
+            reconstructed,
+            mintRegionUncertain,
         }
 
         const err = []
@@ -113,7 +130,7 @@ const treasureCommandsFactory = function () {
         const dataSelectFieldsExcludingType = [
             ["coin-type", coinType],
             ["mint-region", mintRegion],
-            ["dynasty", dynasty],
+            ["epoch", epoch],
             ["nominal", nominal],
             ["material", material],
         ]
@@ -128,22 +145,27 @@ const treasureCommandsFactory = function () {
         const inputFields = [
             ["year", year],
             ["year-uncertain", yearUncertain],
-            ["mint-region-uncertain", mintRegionUncertain],
             ["weight", weight],
             ["count", count],
+            ["mint-as-on-coin", mintAsOnCoin],
         ]
 
         for (let [className, value] of inputFields) {
             cy.get(`${selector} .${className}-input`).should("have.have.value", value)
         }
 
-        if (fragment) {
-            if (fragment == true)
-                cy.get(`${selector} .fragment-toggle`).should("have.class", "active")
-            else
-                cy.get(`${selector} .fragment-toggle`).should("not.have.class", "active")
-        }
+        const toggles = [
+            ["fragment", fragment],
+            ["reconstructed", reconstructed],
+            ["mint-region-uncertain", mintRegionUncertain],
+        ]
 
+        for (let [className, value] of toggles) {
+            if (value == true)
+                cy.get(`${selector} .${className}-toggle`).should("have.class", "active")
+            else
+                cy.get(`${selector} .${className}-toggle`).should("not.have.class", "active")
+        }
     })
 
 
@@ -178,7 +200,7 @@ const treasureCommandsFactory = function () {
                 delete item.add
                 cy.addTreasureItem("#treasure-item-list")
             }
-            cy.setTreasureItemForm(`#treasure-item-list .treasure-item-form:nth-child(${index+1})`, item)
+            cy.setTreasureItemForm(`#treasure-item-list .treasure-item-form:nth-child(${index + 1})`, item)
         }
 
     })

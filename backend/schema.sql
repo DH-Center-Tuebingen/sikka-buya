@@ -44,33 +44,6 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
 
 
---
--- Name: rename_if_column_exists(text, text, text); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.rename_if_column_exists(tname text, old_name text, new_name text) RETURNS void
-    LANGUAGE plpgsql
-    AS $$ BEGIN IF EXISTS(
-  SELECT
-    *
-  FROM
-    information_schema.columns
-  WHERE
-    table_name = tname
-    and column_name = old_name
-) THEN -- Use EXECUTE to construct and execute the ALTER TABLE statement dynamically
-EXECUTE 'ALTER TABLE ' || tname || ' RENAME COLUMN ' || old_name || ' TO ' || new_name;
-
-END IF;
-
-END;
-
-$$;
-
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
 
 --
 -- Name: app_user; Type: TABLE; Schema: public; Owner: -

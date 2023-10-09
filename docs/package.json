@@ -7,10 +7,11 @@
   "scripts": {
     "dev": "vuepress dev src",
     "build": "vuepress build src",
-    "start": "nodemon --ext md,vue --watch .vuepress --watch . --exec vuepress dev"
+    "start": "npx nodemon --ext md,vue --watch .vuepress --watch . --exec vuepress dev"
   },
   "license": "MIT",
   "devDependencies": {
+    "nodemon": "^3.0.1",
     "vuepress": "^1.9.7"
   },
   "resolutions": {

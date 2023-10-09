@@ -106,11 +106,11 @@
 
             <LabeledInputContainer>
                 <template #label>
-                    <Locale path="property.uncertain-mint" />
+                    <Locale path="property.mint-region-uncertain" />
                 </template>
                 <Toggle
                     v-model="value.mintRegionUncertain"
-                    class="uncertain-mint-toggle"
+                    class="mint-region-uncertain-toggle"
                 >
                     <template #active>
                         <div>

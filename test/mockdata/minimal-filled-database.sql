@@ -48,27 +48,6 @@ COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
 -- Name: rename_if_column_exists(text, text, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.rename_if_column_exists(tname text, old_name text, new_name text) RETURNS void
-    LANGUAGE plpgsql
-    AS $$ BEGIN IF EXISTS(
-  SELECT
-    *
-  FROM
-    information_schema.columns
-  WHERE
-    table_name = tname
-    and column_name = old_name
-) THEN
-ALTER TABLE
-  tname RENAME COLUMN old_name TO new_name;
-
-END IF;
-
-END;
-
-$$;
-
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -221,6 +200,38 @@ ALTER SEQUENCE public.dynasty_id_seq OWNED BY public.dynasty.id;
 
 
 --
+-- Name: epoch; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.epoch (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: epoch_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.epoch_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: epoch_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.epoch_id_seq OWNED BY public.epoch.id;
+
+
+--
 -- Name: honorific; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -248,6 +259,38 @@ CREATE SEQUENCE public.honorific_id_seq
 --
 
 ALTER SEQUENCE public.honorific_id_seq OWNED BY public.honorific.id;
+
+
+--
+-- Name: i18n; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.i18n (
+    id integer NOT NULL,
+    name text NOT NULL,
+    value text,
+    parent integer
+);
+
+
+--
+-- Name: i18n_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.i18n_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: i18n_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.i18n_id_seq OWNED BY public.i18n.id;
 
 
 --
@@ -825,7 +868,6 @@ CREATE TABLE public.treasure_item (
     id integer NOT NULL,
     cointype integer,
     count integer,
-    dynasty integer,
     fragment boolean,
     material integer,
     uncertain_mint text,
@@ -834,7 +876,11 @@ CREATE TABLE public.treasure_item (
     weight double precision,
     year integer,
     uncertain_year text,
-    mint_region integer
+    mint_region integer,
+    epoch integer,
+    reconstructed boolean DEFAULT false NOT NULL,
+    mint_region_uncertain boolean DEFAULT false NOT NULL,
+    mint_as_on_coin text
 );
 
 
@@ -1129,10 +1175,24 @@ ALTER TABLE ONLY public.dynasty ALTER COLUMN id SET DEFAULT nextval('public.dyna
 
 
 --
+-- Name: epoch id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.epoch ALTER COLUMN id SET DEFAULT nextval('public.epoch_id_seq'::regclass);
+
+
+--
 -- Name: honorific id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.honorific ALTER COLUMN id SET DEFAULT nextval('public.honorific_id_seq'::regclass);
+
+
+--
+-- Name: i18n id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.i18n ALTER COLUMN id SET DEFAULT nextval('public.i18n_id_seq'::regclass);
 
 
 --
@@ -1320,11 +1380,26 @@ INSERT INTO public.dynasty VALUES (2, 'ʿAbbāside');
 
 
 --
+-- Data for Name: epoch; Type: TABLE DATA; Schema: public; Owner: -
+--
+INSERT INTO public.epoch VALUES (1, 'Stone Age');
+INSERT INTO public.epoch VALUES (2, 'Bronze Age');
+INSERT INTO public.epoch VALUES (3, 'Iron Age');
+
+
+
+--
 -- Data for Name: honorific; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public.honorific VALUES (1, '… ad-Daula');
 INSERT INTO public.honorific VALUES (3, '… al-Mulūk');
+
+
+--
+-- Data for Name: i18n; Type: TABLE DATA; Schema: public; Owner: -
+--
+
 
 
 --
@@ -1520,15 +1595,15 @@ INSERT INTO public.title VALUES (2, 'šāhānšāh');
 --
 
 INSERT INTO public.treasure VALUES (1, 'Südufer Kasp. Meer', '<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>', 330, 390, '0101000020E6100000A1445848D11B42403B4A9F02929C4A40', '{"radius": 217000, "isFeature": true}', false);
-INSERT INTO public.treasure VALUES (2, 'Test', null, null, null, null, null, false);
+INSERT INTO public.treasure VALUES (2, 'Test', NULL, NULL, NULL, NULL, NULL, false);
 
 
 --
 -- Data for Name: treasure_item; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.treasure_item VALUES (3, 4, 2, 1, true, 2, NULL, 1, 1, 9, 389, NULL, 1);
-INSERT INTO public.treasure_item VALUES (4, NULL, 10, NULL, false, 1, 'Shama', NULL, 1, 60, NULL, '3[3-9]x', 2);
+INSERT INTO public.treasure_item VALUES (3, 4, 2, true, 2, NULL, 1, 1, 9, 389, NULL, 1, NULL, false, false, NULL);
+INSERT INTO public.treasure_item VALUES (4, NULL, 10, false, 1, 'Shama', NULL, 1, 60, NULL, '3[3-9]x', 2, NULL, false, false, 'Shama');
 
 
 --
@@ -1637,10 +1712,24 @@ SELECT pg_catalog.setval('public.dynasty_id_seq', 2, true);
 
 
 --
+-- Name: epoch_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.epoch_id_seq', 4, false);
+
+
+--
 -- Name: honorific_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
 SELECT pg_catalog.setval('public.honorific_id_seq', 3, true);
+
+
+--
+-- Name: i18n_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.i18n_id_seq', 1, false);
 
 
 --
@@ -1855,11 +1944,27 @@ ALTER TABLE ONLY public.dynasty
 
 
 --
+-- Name: epoch epoch_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.epoch
+    ADD CONSTRAINT epoch_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: honorific honorific_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.honorific
     ADD CONSTRAINT honorific_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: i18n i18n_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.i18n
+    ADD CONSTRAINT i18n_pkey PRIMARY KEY (id);
 
 
 --
@@ -2158,6 +2263,14 @@ ALTER TABLE ONLY public.mint
 
 
 --
+-- Name: i18n i18n_parent_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.i18n
+    ADD CONSTRAINT i18n_parent_fkey FOREIGN KEY (parent) REFERENCES public.settings(id);
+
+
+--
 -- Name: issuer_honorifics ih_honorific_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2334,11 +2447,11 @@ ALTER TABLE ONLY public.settings
 
 
 --
--- Name: treasure_item treasure_item_dynasty_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: treasure_item treasure_item_epoch_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.treasure_item
-    ADD CONSTRAINT treasure_item_dynasty_fkey FOREIGN KEY (dynasty) REFERENCES public.dynasty(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+    ADD CONSTRAINT treasure_item_epoch_fkey FOREIGN KEY (epoch) REFERENCES public.epoch(id);
 
 
 --

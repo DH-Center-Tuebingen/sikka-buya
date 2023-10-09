@@ -16,8 +16,6 @@ async function main() {
     console.log("Applying migrations to database " + process.env.DB_NAME)
     let errors = []
     const migrationsPath = join(__dirname, "..", "migrations")
-    const functionsPath = join(migrationsPath, "functions")
-    await applyDirectory(functionsPath, errors)
     await applyDirectory(migrationsPath, errors)
 
     if (errors.length === 0) return "Applied all migrations successfully!"
