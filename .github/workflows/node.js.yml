@@ -73,7 +73,7 @@ jobs:
           DB_PORT: 5432 # get randomly assigned published port
       # Cypress
       - name: Cypress Run 
-        run: npm run test:cypress:run
+        run: npm run cypress:run
         working-directory: ./test
         env:
           # use postgres for the host here because we have specified a container for the job.
