@@ -1,5 +1,4 @@
 const { warn } = require("../../backend/scripts/modules/logging.js")
-const { SuperUser } = require('../mockdata/users.js')
 const { graphql } = require('./graphql.js')
 
 class TestUser {
@@ -35,7 +34,7 @@ class TestUser {
           }`, {
             email: this.email,
             password: this.password
-        }, null, true)
+        })
     }
 
     async login() {
@@ -54,13 +53,13 @@ class TestUser {
         if (!this.superUser) throw new Error(`Only super users can invite other users!`)
         return await graphql(`mutation Invite($email:String!){
             inviteUser(email:$email)
-          }`, { email }, this.token, true)
+          }`, { email }, this.token)
     }
 
     async acceptInvite() {
         return await graphql(`mutation AcceptInvite($email:String!, $password:String!){
             acceptInvite(email:$email, password:$password)
-          }`, { email: this.email, password: this.password }, null, true)
+          }`, { email: this.email, password: this.password })
     }
 
 

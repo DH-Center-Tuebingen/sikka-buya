@@ -1,4 +1,4 @@
-describe.only("Testing Province", function () {
+describe("Testing Province", function () {
 
     this.beforeAll(function () {
         cy.task("MountMinimalDatabase")

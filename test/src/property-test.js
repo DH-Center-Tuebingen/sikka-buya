@@ -1,9 +1,7 @@
 const { expect } = require('chai')
 const { graphql } = require('../helpers/graphql')
-const { User1 } = require('../mockdata/users')
-const { search } = require('../../backend/src/models/mint')
+const { User1, SuperUser } = require('../mockdata/users')
 const { arrayRequired, required, messageFromValidator } = require('./requirements')
-
 
 class PropertyTest {
 
@@ -19,9 +17,12 @@ class PropertyTest {
         updateId = null,
         updateInput = null,
         updateData = null,
+    } = {}, {
+        only = false,
     } = {}) {
         this.name = name
         this.additionalTests = {}
+        this.only = only
 
         const missingConfigOptions = []
 
@@ -248,10 +249,33 @@ class PropertyTest {
         // We need the klass but need to keep the mocha context.
         // so we just pass the class as variable but keep the context.
         let klass = this
-        describe(`${this.capitalizedName} Queries`, function () {
+
+        const fun = this.only ? describe.only : describe
+        fun(`${this.capitalizedName} Queries`, function () {
+
+            this.beforeAll(async function () {
+                try {
+                    await SuperUser.setup()
+                    await SuperUser.login()
+                    await SuperUser.invite(User1.email)
+                    await User1.acceptInvite()
+                } catch (e) {
+
+                    const errors = e?.response?.data?.errors
+                    if (errors)
+                        console.log("Failed with errors:\n\n" + errors.map(e => JSON.stringify(e)).join("\n"))
+                    else console.log(e)
+                }
+            })
+
 
             this.beforeEach(async function () {
-                User1.login()
+                try {
+                    await User1.login()
+                } catch (e) {
+                    console.log(e)
+                }
+
             })
 
             klass.tests.forEach(fun => fun(klass))

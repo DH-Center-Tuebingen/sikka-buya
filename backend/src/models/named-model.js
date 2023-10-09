@@ -15,7 +15,7 @@ class NamedModel extends Model {
     }
 
     async list(transaction = Database) {
-        return transaction.manyOrNone(`SELECT id, name FROM ${this.tableName}`)
+        return transaction.manyOrNone(`SELECT id, name FROM ${this.tableName} ORDER BY name ASC`)
     }
 
     async get(id, transaction = Database) {
