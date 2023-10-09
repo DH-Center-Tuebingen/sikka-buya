@@ -19,6 +19,7 @@ const TreasureGQL = require('./klasses/TreasureGQL.js')
 const SettingsGQL = require('./klasses/SettingsGQL.js')
 const MintRegionGQL = require('./klasses/MintRegionGQL.js')
 const { GeoJSON } = require('../models/geojson.js')
+const NamedGQL = require('./klasses/NamedGQL.js')
 
 
 
@@ -245,27 +246,6 @@ ORDER BY person.id;
             }
         })
 
-    },
-    /**
-    * Same as getCoinTypes, but also allow to filter for evaluation filters.
-    */
-    modGetTypes: async function (_, args, context) {
-        Auth.verifyContext(context)
-
-        args.additionalRows = [`CASE WHEN tc.type is null
-        then False
-        else True 
-        END AS completed`, `CASE WHEN tr.type is null
-        then False
-        else True 
-        END AS reviewed`]
-        args.additionalJoin = `LEFT JOIN type_completed tc ON t.id = tc.type
-LEFT JOIN type_reviewed tr ON t.id = tr.type`
-
-
-        const modTypes = await Type.getTypes(...arguments)
-        modTypes.modReview = modTypes.types
-        return modTypes
     },
     getAnalytics: async function (_, { id = null } = {}) {
         const count = await Database.one("SELECT COUNT(*) as types, COUNT(DISTINCT mint) AS mints, COUNT(DISTINCT year_of_mint) AS years  FROM type", id);
@@ -614,7 +594,7 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
     propertyByName: async function (_, { property = null, name = null } = {}) {
         if (!property || !name)
             throw new Error("Property and name must be provided!")
-        const supportedProperties = ['material', 'mint', 'mint_region', 'nominal', 'dynasty']
+        const supportedProperties = ['material', 'mint', 'mint_region', 'nominal', 'dynasty', 'epoch']
 
         if (supportedProperties.includes(property) === false)
             throw new Error("Unsupported property: " + property)
@@ -623,9 +603,37 @@ LEFT JOIN type_reviewed tr ON t.id = tr.type`
     }
 }
 
+const UserQueries = {
+    /**
+* Same as getCoinTypes, but also allow to filter for evaluation filters.
+*/
+    modGetTypes: async function (_, args, context) {
+
+        args.additionalRows = [`CASE WHEN tc.type is null
+            then False
+            else True 
+            END AS completed`, `CASE WHEN tr.type is null
+            then False
+            else True 
+            END AS reviewed`]
+        args.additionalJoin = `LEFT JOIN type_completed tc ON t.id = tc.type
+    LEFT JOIN type_reviewed tr ON t.id = tr.type`
+
+
+        const modTypes = await Type.getTypes(...arguments)
+        modTypes.modReview = modTypes.types
+        return modTypes
+    },
+}
+
+
+const EpochGQL = new NamedGQL("epoch")
+
 module.exports = Object.assign(Queries,
     guard(SuperUserQueries, (_, __, context) => Auth.requirePermission(context, "super")),
+    guard(UserQueries, (_, __, context) => Auth.verifyContext(context)),
     PageGQL.Queries,
+    EpochGQL.Queries,
     SettingsGQL.Queries,
     TreasureGQL.Queries,
     MintRegionGQL.Queries,

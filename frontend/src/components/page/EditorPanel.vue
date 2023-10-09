@@ -120,6 +120,7 @@ export default {
       let props = [
         'coin_mark',
         'coin_verse',
+        'epoch',
         'dynasty',
         'honorific',
         'material',

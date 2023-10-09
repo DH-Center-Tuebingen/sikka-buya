@@ -56,12 +56,15 @@ export class Treasure {
                         "weight",
                         { coinType: ["id", "projectId"] },
                         { "mintRegion": ["id", "name"] },
-                        { dynasty: ["id", "name"] },
+                        { epoch: ["id", "name"] },
                         { nominal: ["id", "name"] },
                         { material: ["id", "name"] },
                         "uncertainYear",
-                        "uncertainMint",
-                        "fragment"]
+                        "mintRegionUncertain",
+                        "fragment",
+                        "reconstructed",
+                        "mintAsOnCoin"
+                    ]
                 }
             ])
     }
@@ -127,7 +130,7 @@ export class TreasureItem {
      * @param {Object} [options] - The options to initialize the TreasureItem instance with.
      * @param {string} [options.coinType=null] - The type of coin.
      * @param {number} [options.count=1] - The number of items.
-     * @param {string} [options.dynasty=null] - The dynasty of the coin.
+     * @param {string} [options.epoch=null] - The epoch of the coin.
      * @param {boolean} [options.fragment=false] - Whether the item is a fragment.
      * @param {number} [options.id=null] - The ID of the item.
      * @param {string} [options.material=null] - The material of the coin.
@@ -137,34 +140,40 @@ export class TreasureItem {
      * @param {boolean} [options.uncertainYear=null] - The year of the coin if it is not certain
      * @param {number} [options.weight=null] - The weight of the coin.
      * @param {number} [options.year=null] - The year of the coin.
+     * @param {string} [options.mintAsOnCoin=null] - The mint as it is written on the coin.
+     * @param {boolean} [options.reconstructed=false] - Whether the item is reconstructed.
      */
     constructor({
         coinType = null,
         count = 1,
-        dynasty = null,
+        epoch = null,
         fragment = false,
         id = null,
         material = null,
         mintRegion = null,
         nominal = null,
-        uncertainMint = null,
+        mintRegionUncertain = false,
         uncertainYear = null,
         weight = null,
         year = null,
+        mintAsOnCoin = null,
+        reconstructed = false,
     } = {}
     ) {
         this.coinType = coinType
         this.count = count
-        this.dynasty = dynasty
+        this.epoch = epoch
         this.fragment = fragment
         this.id = id
         this.material = material
         this.mintRegion = mintRegion
         this.nominal = nominal
-        this.uncertainMint = uncertainMint
+        this.mintRegionUncertain = mintRegionUncertain
         this.uncertainYear = uncertainYear
         this.weight = weight
         this.year = year
+        this.mintAsOnCoin = mintAsOnCoin
+        this.reconstructed = reconstructed
     }
 
 
@@ -172,7 +181,7 @@ export class TreasureItem {
         return Object.assign({}, this, {
             coinType: { id: this.coinType?.id || null, projectId: this.coinType?.projectId || "" },
             mintRegion: { id: this.mintRegion?.id || null, name: this.mintRegion?.name || "" },
-            dynasty: { id: this.dynasty?.id || null, name: this.dynasty?.name || "" },
+            epoch: { id: this.epoch?.id || null, name: this.epoch?.name || "" },
             nominal: { id: this.nominal?.id || null, name: this.nominal?.name || "" },
             material: { id: this.material?.id || null, name: this.material?.name || "" },
         })
@@ -185,7 +194,7 @@ export class TreasureItem {
             year: parseInt(obj.year),
             coinType: obj.coinType.hasOwnProperty("id") ? obj.coinType.id : obj.coinType,
             mintRegion: obj.mintRegion.hasOwnProperty("id") ? obj.mintRegion.id : obj.mintRegion,
-            dynasty: obj.dynasty.hasOwnProperty("id") ? obj.dynasty.id : obj.dynasty,
+            epoch: obj.epoch.hasOwnProperty("id") ? obj.epoch.id : obj.epoch,
             nominal: obj.nominal.hasOwnProperty("id") ? obj.nominal.id : obj.nominal,
             material: obj.material.hasOwnProperty("id") ? obj.material.id : obj.material,
         })

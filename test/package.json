@@ -7,17 +7,17 @@
     "node": "16.x"
   },
   "scripts": {
-    "test": "npm run test:api && npm run test:cypress:run",
+    "test": "npm run test:api && npm run cypress:run",
     "test:api": "grunt test",
     "test:api:keepalive": "grunt test-keepalive --force",
-    "test:backend:keepalive": "grunt backend:keepalive",
-    "test:backend:watch": "nodemon testing-backend.js",
-    "test:backend": "node testing-backend.js",
-    "test:cypress": "concurrently --kill-others -n \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run test:backend \" \"cd .. && npm run frontend\" \"npm run test:cypress-app\"",
-    "test:cypress:run": "concurrently --success first --kill-others  -n  \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run test:backend \"  \"cd .. && npm run frontend\" \"npm run test:cypress-run\"",
-    "test:cypress:backend": "grunt backend",
-    "test:cypress-run": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && npx cypress run --browser electron",
-    "test:cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open",
+    "backend:keepalive": "grunt backend:keepalive",
+    "backend:watch": "nodemon testing-backend.js",
+    "backend": "node testing-backend.js",
+    "cypress": "concurrently --kill-others -n \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run backend \" \"cd .. && npm run frontend\" \"npm run cypress-app\"",
+    "cypress:run": "concurrently --success first --kill-others  -n  \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run backend \"  \"cd .. && npm run frontend\" \"npm run cypress-run\"",
+    "cypress:backend": "grunt backend",
+    "cypress-run": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && npx cypress run --browser electron",
+    "cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open",
     "utils:migrate": "node ../backend/scripts/migrate.js"
   },
   "devDependencies": {

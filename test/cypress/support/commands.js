@@ -12,7 +12,22 @@
 import "cypress-localstorage-commands";
 import treasureCommandsFactory from "./commands/treasure.commands";
 
-// -- This is a parent command --
+Cypress.Commands.add("setupAndLogin", (email, password) => {
+    cy.setup(email, password)
+    cy.login(email, password)
+})
+
+
+Cypress.Commands.add("setup", (email, password) => {
+    cy.request({
+        method: "POST",
+        url: "http://localhost:4000/graphql",
+        body: {
+            query: `mutation {setup(email: "${email}", password: "${password}"){success}}`
+        }
+    })
+})
+
 Cypress.Commands.add('login', (email, password) => {
     cy.request({
         method: "GET",

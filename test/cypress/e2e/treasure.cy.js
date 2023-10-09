@@ -1,4 +1,3 @@
-import { TreasureItemsImporter } from "../../../frontend/src/models/importer"
 
 describe(`Treasures`, function () {
 
@@ -6,7 +5,7 @@ describe(`Treasures`, function () {
     this.beforeAll(function () {
         cy.task("MountMinimalDatabase").then(() => {
             cy.fixture("users/admin").then(user => {
-                cy.login(user.email, user.password)
+                cy.setupAndLogin(user.email, user.password)
             })
         })
     })
@@ -90,14 +89,14 @@ describe(`Treasures`, function () {
                 radius: 500000,
                 items: [
                     {
-    add: true,
+                        add: true,
                         mintRegion: {
                             targetText: "Maharlu",
                             type: "maha"
                         },
-                        dynasty: {
-                            targetText: "Būyide",
-                            type: "buy"
+                        epoch: {
+                            targetText: "Stone Age",
+                            type: "ston"
                         },
                         fragment: true,
                         weight: 9,
@@ -105,19 +104,21 @@ describe(`Treasures`, function () {
                             targetText: "Šīr389",
                             type: "sir"
                         },
-                        count: 10
+                        count: 10,
+                        mintRegionUncertain: true,
+                        reconstructed: false,
+                        mintAsOnCoin: "Maha"
                     },
                     {
-    add: true,
+                        add: true,
 
                         mintRegion: {
                             targetText: "Kavir",
                             type: "vir"
                         },
-                        mintRegionUncertain: "Kavir und Kerman",
-                        dynasty: {
-                            targetText: "ʿAbbāside",
-                            type: "ʿAbbā"
+                        epoch: {
+                            targetText: "Iron Age",
+                            type: "Iron"
                         },
                         nominal: {
                             targetText: "Ruknī-Dinar",
@@ -130,7 +131,10 @@ describe(`Treasures`, function () {
                         yearUncertain: "3x5",
                         fragment: false,
                         weight: 5,
-                        count: 3
+                        count: 3,
+                        mintRegionUncertain: false,
+                        reconstructed: true,
+                        mintAsOnCoin: "Kavir"
                     }
                 ]
             })
@@ -171,8 +175,8 @@ describe(`Treasures`, function () {
                             name: "Maharlu",
                             id: 1
                         },
-                        dynasty: {
-                            name: "Būyide",
+                        epoch: {
+                            name: "Stone Age",
                             id: 1
                         },
                         coinType: {
@@ -192,7 +196,10 @@ describe(`Treasures`, function () {
                         mintRegionUncertain: "",
                         fragment: true,
                         weight: 9,
-                        count: 10
+                        count: 10,
+                        mintRegionUncertain: true,
+                        reconstructed: false,
+                        mintAsOnCoin: "Maha"
                     },
                     {
                         coinType: {
@@ -203,9 +210,9 @@ describe(`Treasures`, function () {
                             name: "Kavir",
                             id: 2
                         },
-                        dynasty: {
-                            name: "ʿAbbāside",
-                            id: 2
+                        epoch: {
+                            name: "Iron Age",
+                            id: 3
                         },
                         nominal: {
                             name: "Ruknī-Dinar",
@@ -220,7 +227,10 @@ describe(`Treasures`, function () {
                         mintRegionUncertain: "Kavir und Kerman",
                         fragment: false,
                         weight: 5,
-                        count: 3
+                        count: 3,
+                        mintRegionUncertain: false,
+                        reconstructed: true,
+                        mintAsOnCoin: "Kavir"
                     }
                 ]
             })
@@ -255,277 +265,304 @@ describe(`Treasures`, function () {
         })
 
 
-        it("Can cancel update", function () {
-            cy.visit('/editor/treasure/1')
+        describe("Cancel Update", function () {
 
-            cy.setTreasureForm({
-                name: "Cypress",
-                description: "Eine Insel.",
-                timespan: ["333", "338"],
-                location: { x: 200, y: 200 },
-                radius: 500000,
-                items: [
-                    {
-                        mintRegion: {
-                            targetText: "Maharlu",
-                            type: "maha"
+            it("Can cancel update", function () {
+                cy.visit('/editor/treasure/1')
+
+                cy.setTreasureForm({
+                    name: "Cypress",
+                    description: "Eine Insel.",
+                    timespan: ["333", "338"],
+                    location: { x: 200, y: 200 },
+                    radius: 500000,
+                    items: [
+                        {
+                            mintRegion: {
+                                targetText: "Maharlu",
+                                type: "maha"
+                            },
+                            epoch: {
+                                targetText: "Stone Age",
+                                type: "ston"
+                            },
+                            fragment: true,
+                            weight: 9,
+                            coinType: {
+                                targetText: "Šīr389",
+                                type: "sir"
+                            },
+                            count: 10,
+                            mintRegionUncertain: "",
+                            reconstructed: true,
+                            mintAsOnCoin: "Ma"
                         },
-                        dynasty: {
-                            targetText: "Būyide",
-                            type: "buy"
-                        },
-                        fragment: true,
-                        weight: 9,
-                        coinType: {
-                            targetText: "Šīr389",
-                            type: "sir"
-                        },
-                        count: 10
-                    },
-                    {
-                        mintRegion: {
-                            targetText: "Kavir",
-                            type: "vir"
-                        },
-                        mintRegionUncertain: "Kavir und Kerman",
-                        dynasty: {
-                            targetText: "ʿAbbāside",
-                            type: "ʿAbbā"
-                        },
-                        nominal: {
-                            targetText: "Ruknī-Dinar",
-                            type: "ruk"
-                        },
-                        material: {
-                            targetText: "Gold",
-                            type: "go"
-                        },
-                        yearUncertain: "3x5",
-                        fragment: false,
-                        weight: 5,
-                        count: 3
-                    }
-                ]
+                        {
+                            mintRegion: {
+                                targetText: "Kavir",
+                                type: "vir"
+                            },
+                            mintRegionUncertain: "Kavir und Kerman",
+                            epoch: {
+                                targetText: "Iron Age",
+                                type: "Iron"
+                            },
+                            nominal: {
+                                targetText: "Ruknī-Dinar",
+                                type: "ruk"
+                            },
+                            material: {
+                                targetText: "Gold",
+                                type: "go"
+                            },
+                            yearUncertain: "3x5",
+                            fragment: false,
+                            weight: 5,
+                            count: 3,
+                            mintRegionUncertain: true,
+                            reconstructed: false,
+                            mintAsOnCoin: "Maa"
+                        }
+                    ]
+                })
+
+                cy.get("#cancel-button").click()
+                cy.location("pathname").should((pathname) => {
+                    expect(pathname).to.eq("/editor/treasure")
+                })
+
+
+                cy.checkListItems(".list", [
+                    "Südufer Kasp. Meer",
+                    "Test"
+                ])
             })
 
-            cy.get("#cancel-button").click()
-            cy.location("pathname").should((pathname) => {
-                expect(pathname).to.eq("/editor/treasure")
-            })
+            it("Cancelled treasure is still correct", function () {
+                cy.visit('/editor/treasure/1')
 
+                cy.checkTreasureForm({
+                    name: "Südufer Kasp. Meer",
+                    description: `<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>`,
+                    timespan: ["330", "390"],
+                    location: [36.22, 53.22],
+                    radius: 217000,
+                    items: [
+                        {
+                            id: 3,
+                            coinType: {
+                                name: "Šīr389",
+                                id: 4
+                            },
+                            count: 2,
+                            fragment: true,
+                            material: {
+                                name: "Silber",
+                                id: 2
+                            },
+                            //uncertain_mint,
+                            nominal: {
+                                name: "Dinar",
+                                id: 1
+                            },
+                            //treasure_fk,
+                            weight: 9,
+                            year: 389,
+                            yearUncertain: "",
+                            mintRegion: {
+                                name: "Maharlu",
+                                id: 1
+                            },
+                            epoch: "",
+                            reconstructed: false,
+                            mintRegionUncertain: false,
+                            mintAsOnCoin: "",
+                        },
+                        {
+                            id: 4,
+                            coinType: {
+                                name: "",
+                                id: ""
+                            },
+                            count: 10,
+                            fragment: false,
+                            material: {
+                                name: "Gold",
+                                id: 1
+                            },
+                            // uncertain_mint,
+                            nominal: {
+                                name: "",
+                                id: ""
+                            },
+                            // treasure_fk,
+                            weight: 60,
+                            year: "",
+                            yearUncertain: "3[3-9]x",
+                            mintRegion: {
+                                name: "Kavir",
+                                id: 2
+                            },
+                            epoch: "",
+                            reconstructed: false,
+                            mintRegionUncertain: false,
+                            mintAsOnCoin: "Shama",
+                        }
+                    ]
+                })
 
-            cy.checkListItems(".list", [
-                "Südufer Kasp. Meer",
-                "Test"
-            ])
-        })
-
-        it("Cancelled treasure is still correct", function () {
-            cy.visit('/editor/treasure/1')
-
-            cy.checkTreasureForm({
-                name: "Südufer Kasp. Meer",
-                description: `<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>`,
-                timespan: ["330", "390"],
-                location: [36.22, 53.22],
-                radius: 217000,
-                items: [
-                    {
-                        mintRegion: {
-                            name: "Maharlu",
-                            id: 1
-                        },
-                        mintRegionUncertain: "",
-                        dynasty: {
-                            name: "Būyide",
-                            id: 1
-                        },
-                        fragment: true,
-                        weight: 9,
-                        coinType: {
-                            name: "Šīr389",
-                            id: 4
-                        },
-                        year: 389,
-                        yearUncertain: "",
-                        nominal: {
-                            name: "Dinar",
-                            id: 1
-                        },
-                        material: {
-                            name: "Silber",
-                            id: 2
-                        },
-                        count: 2
-                    },
-                    {
-                        mintRegion: {
-                            name: "Kavir",
-                            id: 2
-                        },
-                        mintRegionUncertain: "Shama",
-                        dynasty: {
-                            name: "",
-                            id: ""
-                        },
-                        fragment: false,
-                        weight: 60,
-                        coinType: {
-                            name: "",
-                            id: ""
-                        },
-                        year: "",
-                        yearUncertain: "3[3-9]x",
-                        nominal: {
-                            name: "",
-                            id: ""
-                        },
-                        material: {
-                            name: "Gold",
-                            id: 1
-                        },
-                        count: 10
-                    }
-                ]
-            })
-
-        })
-
-        it("Can update", function () {
-            cy.visit('/editor/treasure/1')
-
-            cy.setTreasureForm({
-                name: "Cypress",
-                description: "Eine Insel.",
-                timespan: ["333", "338"],
-                location: { x: 200, y: 200 },
-                radius: 500000,
-                items: [
-                    {
-                        mintRegion: {
-                            targetText: "Kavir",
-                            type: "vir"
-                        },
-                        mintRegionUncertain: "Kavir und Kerman",
-                        dynasty: null,
-                        fragment: false,
-                        coinType: null,
-                        year: "",
-                        yearUncertain: "3x5",
-                        nominal: null,
-                        material: {
-                            targetText: "Gold",
-                            type: "go"
-                        },
-                        weight: 50,
-                        count: 20
-                    },
-                    {
-                        mintRegion: {
-                            targetText: "Maharlu",
-                            type: "maha"
-                        },
-                        yearUncertain: "",
-                        mintRegionUncertain: "",
-                        dynasty: {
-                            targetText: "Būyide",
-                            type: "buy"
-                        },
-                        fragment: true,
-                        weight: 18,
-                        coinType: {
-                            targetText: "Šīr389",
-                            type: "sir"
-                        },
-                        count: 10
-                    },
-                ]
-            })
-
-
-
-            cy.get("#submit-button").click()
-            cy.location("pathname").should((pathname) => {
-                expect(pathname).to.eq("/editor/treasure")
-            })
-
-            cy.checkListItems(".list", [
-                "Test",
-                "Cypress"
-            ])
-        })
-
-        it("Updated treasure is correct", function () {
-            cy.visit('/editor/treasure/1')
-
-            cy.checkTreasureForm({
-                name: "Cypress",
-                description: `<div style="text-align: center;"><b>Eine Insel.</b></div>`,
-                timespan: ["333", "338"],
-                location: [31.85, 39.60],
-                radius: 500000,
-                items: [
-                    {
-                        mintRegion: {
-                            name: "Kavir",
-                            id: 2
-                        },
-                        mintRegionUncertain: "Kavir und Kerman",
-                        dynasty: {
-                            name: "",
-                            id: ""
-                        },
-                        fragment: false,
-                        coinType: {
-                            name: "",
-                            id: ""
-                        },
-                        year: "",
-                        yearUncertain: "3x5",
-                        nominal: {
-                            name: "",
-                            id: ""
-                        },
-                        material: {
-                            name: "Gold",
-                            id: 1
-                        },
-                        weight: 50,
-                        count: 20
-                    },
-                    {
-                        mintRegion: {
-                            name: "Maharlu",
-                            id: 1
-                        },
-                        mintRegionUncertain: "",
-                        dynasty: {
-                            name: "Būyide",
-                            id: 1
-                        },
-                        fragment: true,
-                        weight: 18,
-                        coinType: {
-                            name: "Šīr389",
-                            id: 4
-                        },
-                        year: 389,
-                        yearUncertain: "",
-                        nominal: {
-                            name: "Dinar",
-                            id: 1
-                        },
-                        material: {
-                            name: "Silber",
-                            id: 2
-                        },
-                        count: 10
-                    }
-
-                ]
             })
         })
+        describe("Update Treasure", function () {
 
+            it("Can update", function () {
+                cy.visit('/editor/treasure/1')
+
+                cy.setTreasureForm({
+                    name: "Cypress",
+                    description: "Eine Insel.",
+                    timespan: ["333", "338"],
+                    location: { x: 200, y: 200 },
+                    radius: 500000,
+                    items: [
+                        {
+                            mintRegion: {
+                                targetText: "Kavir",
+                                type: "vir"
+                            },
+                            mintAsOnCoin: "Kavir und Kerman",
+                            epoch: {
+                                targetText: "Iron Age",
+                                type: "Iron"
+                            },
+
+                            fragment: false,
+                            coinType: null,
+                            year: "",
+                            yearUncertain: "3x5",
+                            nominal: null,
+                            material: {
+                                targetText: "Gold",
+                                type: "go"
+                            },
+                            weight: 50,
+                            count: 20,
+                            reconstructed: false,
+                            mintRegionUncertain: true
+                        },
+                        {
+                            mintRegion: {
+                                targetText: "Maharlu",
+                                type: "maha"
+                            },
+                            epoch: {
+                                targetText: "Stone Age",
+                                type: "ston"
+                            },
+                            yearUncertain: "",
+                            mintAsOnCoin: "",
+                            fragment: true,
+                            weight: 18,
+                            coinType: {
+                                targetText: "Šīr389",
+                                type: "sir"
+                            },
+                            count: 10,
+                            reconstructed: true,
+                            mintRegionUncertain: false
+                        },
+                    ]
+                })
+
+
+
+                cy.get("#submit-button").click()
+                cy.location("pathname").should((pathname) => {
+                    expect(pathname).to.eq("/editor/treasure")
+                })
+
+                cy.checkListItems(".list", [
+                    "Test",
+                    "Cypress"
+                ])
+            })
+
+            it("Updated treasure is correct", function () {
+                cy.visit('/editor/treasure/1')
+
+                cy.checkTreasureForm({
+                    name: "Cypress",
+                    description: `<div style="text-align: center;"><b>Eine Insel.</b></div>`,
+                    timespan: ["333", "338"],
+                    location: [31.85, 39.60],
+                    radius: 500000,
+                    items: [
+                        {
+                            mintRegion: {
+                                name: "Kavir",
+                                id: 2
+                            },
+                            mintAsOnCoin: "Kavir und Kerman",
+                            epoch: {
+                                name: "Iron Age",
+                                id: 3
+                            },
+                            fragment: false,
+                            coinType: {
+                                name: "",
+                                id: ""
+                            },
+                            year: "",
+                            yearUncertain: "3x5",
+                            nominal: {
+                                name: "",
+                                id: ""
+                            },
+                            material: {
+                                name: "Gold",
+                                id: 1
+                            },
+                            weight: 50,
+                            count: 20,
+                            mintRegionUncertain: true,
+                            reconstructed: false
+                        },
+                        {
+                            mintRegion: {
+                                name: "Maharlu",
+                                id: 1
+                            },
+                            mintAsOnCoin: "",
+                            epoch: {
+                                name: "Stone Age",
+                                id: 1
+                            },
+                            fragment: true,
+                            weight: 18,
+                            coinType: {
+                                name: "Šīr389",
+                                id: 4
+                            },
+                            year: 389,
+                            yearUncertain: "",
+                            nominal: {
+                                name: "Dinar",
+                                id: 1
+                            },
+                            material: {
+                                name: "Silber",
+                                id: 2
+                            },
+                            count: 10,
+                            reconstructed: true,
+                            mintRegionUncertain: false,
+                        }
+
+                    ]
+                })
+            })
+
+        })
     })
 
 
@@ -550,21 +587,21 @@ describe(`Treasures`, function () {
         })
     })
 
-        describe("Delete Treasure", function () {
+    describe("Delete Treasure", function () {
 
-            it("Delete", function () {
-                cy.visit("/editor/treasure")
-                cy.triggerDeleteButton(".list-item:nth-child(2) .dynamic-delete-button")
-                cy.get(".list-item").contains("Südufer Kasp. Meer")
-                cy.get(".list-item").contains("Test").should("not.exist")
+        it("Delete", function () {
+            cy.visit("/editor/treasure")
+            cy.triggerDeleteButton(".list-item:nth-child(2) .dynamic-delete-button")
+            cy.get(".list-item").contains("Südufer Kasp. Meer")
+            cy.get(".list-item").contains("Test").should("not.exist")
 
-            })
-
-            it("Still Deleted On Reload", function () {
-                cy.visit("/editor/treasure")
-                cy.get(".list-item").contains("Südufer Kasp. Meer")
-                cy.get(".list-item").contains("Test").should("not.exist")
-            })
         })
+
+        it("Still Deleted On Reload", function () {
+            cy.visit("/editor/treasure")
+            cy.get(".list-item").contains("Südufer Kasp. Meer")
+            cy.get(".list-item").contains("Test").should("not.exist")
+        })
+    })
 
 })

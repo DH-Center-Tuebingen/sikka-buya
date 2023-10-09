@@ -55,7 +55,7 @@ async function createTestDatabase() {
     console.log(`Created test database`)
 }
 
-async function resetSchema() {
+async function recreateSchemaOnDatabase() {
     await WriteableDatabase.tx(async t => {
         await t.none("DROP SCHEMA IF EXISTS public CASCADE")
         await t.none("CREATE SCHEMA IF NOT EXISTS public")
@@ -65,7 +65,7 @@ async function resetSchema() {
     console.log(`Reset schema`)
 }
 
-async function resetTestDatabase(schemaFile) {
+async function resetTestDatabase(dataFile) {
 
     const { default: Async } = await import('../../frontend/src/utils/Async.mjs')
 
@@ -85,19 +85,32 @@ async function resetTestDatabase(schemaFile) {
                 console.log(e)
             }
             try {
-                await resetSchema()
+                await recreateSchemaOnDatabase()
             } catch (e) {
                 console.log("Could not reset schema", e)
             }
 
             const migrationPath = joinPath(__dirname, "..", "..", "backend")
-            let schemaFilePath = schemaFile || joinPath(migrationPath, "schema.sql")
-            console.log("Apply schema file: " + schemaFilePath)
-            try {
-                await applySchemaFile(WriteableDatabase, schemaFilePath)
-                console.log(`Successfully applied schema file!`)
-            } catch (e) {
-                console.log(`Could not apply schema file: `, e)
+            const schemaFile = joinPath(migrationPath, "schema.sql")
+
+
+
+            if (dataFile) {
+                console.log("Apply data file: " + dataFile)
+                try {
+                    await applySchemaFile(WriteableDatabase, dataFile)
+                    console.log(`Successfully applied data file!`)
+                } catch (e) {
+                    console.log(`Could not apply data file: `, e)
+                }
+            } else {
+                console.log("Apply schema file: " + schemaFile)
+                try {
+                    await applySchemaFile(WriteableDatabase, schemaFile)
+                    console.log(`Successfully applied schema file!`)
+                } catch (e) {
+                    console.log(`Could not apply schema file: `, e)
+                }
             }
 
             try {

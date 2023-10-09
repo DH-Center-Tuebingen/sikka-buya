@@ -65,30 +65,34 @@ type ModCoinTypePagination {
 type TreasureItem {
   coinType: CoinType
   count: Int
-  dynasty:Name
+  epoch:Name
   fragment: Boolean
   id: ID
   material: Material
   mintRegion: MintRegion
-  uncertainMint: String
+  mintRegionUncertain: Boolean
   nominal: Name
   weight: Float
   year: Int
   uncertainYear: String
+  mintAsOnCoin: String
+  reconstructed: Boolean
 }
 
 input TreasureItemInput {
   coinType: ID
   count: Int
-  dynasty: ID
+  epoch: ID
   fragment: Boolean 
   material: ID
   mintRegion: ID
-  uncertainMint: String
+  mintRegionUncertain: Boolean
   nominal: ID
   weight: Float
   year: Int
   uncertainYear: String
+  mintAsOnCoin: String
+  reconstructed: Boolean
 }
 
 type Treasure {
@@ -340,12 +344,24 @@ type Query {
   coinType(pagination: Pagination, filters: TypeFilter): CoinTypePagination
   getCoinType(id: ID!): CoinType
 
-  # TODO: missing Tests ---------------------------------------------
 
   # Tested in 004_coin_mark
   coinVerse: [Name]
   searchCoinVerse(text: String): [Name]!
   getCoinVerse(id: ID!): Name
+
+  # Tested in 013_mint_region 
+  mintRegion: [MintRegion]
+  getMintRegion(id:ID!): MintRegion
+  searchMintRegion(text:String): [MintRegion]
+
+  treasure:[Treasure]
+  searchTreasure(text:String): [Treasure] 
+  getTreasure(id:ID!): Treasure
+  treasureItem(treasure:ID): [TreasureItem]
+
+  
+  # TODO: missing Tests ---------------------------------------------
 
   propertyByName(property: String!, name:String!): Name
 
@@ -362,13 +378,12 @@ type Query {
   searchOverlord(text: String): [Person]
   searchIssuer(text: String): [Person]
 
-  # TODO remove this and join it with the normal getCoinType method.
+    # TODO remove this and join it with the normal getCoinType method.
   modGetTypes(
     pagination: Pagination
     filters: ModTypeFilter
     evalFilters: EvalFilter
   ): ModCoinTypePagination
-
   timelineRuledBy(rulers:[ID]!, mints:[ID]): RulerIntArray
   ruledMintCount(rulers: [ID]!,mints: [ID]): [RulerPointArray]
   typeCountOfMints(ids: [ID]): [MintPointArray]
@@ -420,17 +435,15 @@ type Query {
 
   files(group:String!, orderBy:String):[NamedURL]
 
-  treasure:[Treasure]
-  searchTreasure(text:String): [Treasure] 
-  getTreasure(id:ID!): Treasure
-  treasureItem(treasure:ID): [TreasureItem]
+
 
   getSetting(path:String!):String 
   settings: String
 
-  mintRegion: [MintRegion]
-  getMintRegion(id:ID!): MintRegion
-  searchMintRegion(text:String): [MintRegion]
+  epoch: [Name]
+  getEpoch(id:ID!):Name
+  searchEpoch(text:String):[Name]
+
 }
 
 
@@ -509,6 +522,11 @@ type Mutation {
   updateMint(id: ID!, data: MintInput): Void
   deleteMint(id: ID): Void
 
+  # Tested in 007a_province
+  addProvince(name: String!): Void
+  updateProvince(id: ID!, name: String!): Void
+  deleteProvince(id: ID): Void
+
   # Tested in 008_role
   addRole(name: String!): Void
   updateRole(id: ID!, name: String!): Void
@@ -558,11 +576,12 @@ type Mutation {
   
   # TODO: missing Tests ---------------------------------------------
 
+  addEpoch(name: String!): Void
+  updateEpoch(id: ID!, name: String!): Void
+  deleteEpoch(id: ID): Void
+
   deleteUser(id: ID): Void
 
-  addProvince(name: String!): Void
-  updateProvince(id: ID!, name: String!): Void
-  deleteProvince(id: ID): Void
 
   updateNote(text: String, property: String, propertyId: ID): Void
   updateLang(

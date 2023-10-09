@@ -16,8 +16,8 @@
         "migrate": "node ./scripts/migrate.js",
         "update-schema": "node ./scripts/database_backup.js --mode=backend-schema",
         "db:backup": "node ./scripts/database_backup.js",
-        "db:export:data": "node ./scripts/database_backup.js --data",
-        "db:export:schema": "node ./scripts/database_backup.js --schema"
+        "db:export:data": "node ./scripts/database_backup.js --mode=data",
+        "db:export:schema": "node ./scripts/database_backup.js --mode=schema"
     },
     "author": "Severin Opel",
     "license": "MIT",

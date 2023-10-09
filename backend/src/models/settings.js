@@ -134,6 +134,8 @@ class Settings {
                 const refs = await t.oneOrNone(`SELECT count(*) FROM settings WHERE parent=$[id]`, { id: part.id })
                 if (parseInt(refs.count) === 0) {
                     await t.none(`DELETE FROM settings WHERE id=$[id]`, { id: part.id })
+                }else {
+                    await t.none(`UPDATE settings SET value=NULL WHERE id=$[id]`, { id: part.id })
                 }
             } while (parts.length > 0)
         })

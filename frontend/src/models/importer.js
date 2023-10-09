@@ -110,9 +110,11 @@ export class TreasureItemsImporter extends Importer {
         super({
             headers: [
                 'Id',
-                'Dynastie',
+                'Epoche',
                 'Prägeort',
-                'Unsicherer Prägeort',
+                'Prägeort Unsicher',
+                'Rekonstruiert',
+                'Prägeort wie auf Münze',
                 'Prägejahr',
                 'Unsicheres Prägejahr',
                 'Dinar',
@@ -134,10 +136,12 @@ export class TreasureItemsImporter extends Importer {
             "Prägejahr": "year",
             "Prägeort": "mintRegion",
             "Material": "material",
-            "Dynastie": "dynasty",
+            "Epoche": "epoch",
             "Fragment": "fragment",
             "Anzahl": "count",
-            "Unsicherer Prägeort": "uncertainMint",
+            "Prägeort wie auf Münze": "mintAsOnCoin",
+            "Rekonstruiert": "reconstructed",
+            "Prägeort Unsicher": "mintRegionUncertain",
             "Unsicheres Prägejahr": "uncertainYear",
         }
 
@@ -207,7 +211,7 @@ export class TreasureItemsImporter extends Importer {
                             if (coin.mint) {
                                 item["mint"] = coin.mint
                             } else if (coin.mintAsOnCoin) {
-                                item["uncertainMint"] = coin.mintAsOnCoin
+                                item["mintAsOnCoin"] = coin.mintAsOnCoin
                             }
 
                         }
@@ -229,6 +233,8 @@ export class TreasureItemsImporter extends Importer {
                     break
                 }
                 case "fragment":
+                case "mintRegionUncertain":
+                case "reconstructed":
                     item[key] = value === "x" ? true : false
                     break
                 case "weight": {
@@ -243,7 +249,7 @@ export class TreasureItemsImporter extends Importer {
                     }
                     break
                 }
-                case "uncertainMint":
+                case "mintAsOnCoin":
                 case "uncertainYear":
                     {
                         item[key] = value || ""
@@ -259,12 +265,12 @@ export class TreasureItemsImporter extends Importer {
                             item[key] = parseInt(value)
                         } else {
                             if (!this.errorObject[key]) this.errorObject[key] = {}
-                            this.errorObject.year[index] = `Item "${header}"(${index}) ist kein Integer "${value}", sofern dies gewollt ist, verschiebe den Wert in die "Unsicheres Prägejahr" Spalte.`
+                            this.errorObject.year[index] = `Item (${index}) "${header}"(${value}) ist kein Integer, sofern dies gewollt ist, verschiebe den Wert in die "Unsicheres Prägejahr" Spalte.`
                         }
                     }
                     break;
                 }
-                case "dynasty":
+                case "epoch":
                 case "material":
                 case "mintRegion": {
                     if (!item[key] && value)
@@ -273,7 +279,7 @@ export class TreasureItemsImporter extends Importer {
                         } catch (e) {
                             console.error(e)
                             if (!this.errorObject[key]) this.errorObject[key] = {}
-                            this.errorObject[key][index] = `Item "${header}"(${index}) konnte nicht gefunden werden.`
+                            this.errorObject[key][index] = `Item (${index}) "${header}"(${value}) konnte nicht gefunden werden.`
                         }
                     break
                 }
