@@ -22,7 +22,7 @@
                             :key="`mint-count-${treasure.id}`"
                             :style="`color: ${treasure.color}`"
                         >
-                            {{ mint.counts[treasure.id] || 0 }}
+                            {{ getMintCount(mint, treasure) }}
                         </td>
                     </tr>
                 </tbody>
@@ -293,6 +293,15 @@ export default {
         this.update()
     },
     methods: {
+        getMintCount(mint, treasure) {
+            let count = 0;
+            treasure.items.forEach(item => {
+                if (item.mintRegion.id === mint.id) {
+                    count += parseInt(item.count) || 0
+                }
+            })
+            return count
+        },
         toggleTimeline() {
             this.timeline_mixin_toggleTimeline()
             if (this.timelineActive) {
@@ -322,24 +331,29 @@ export default {
             let maxMap = {}
             let yearSet = new Set()
 
-            this.selectedTreasures.forEach((treasure, treasureIndex) => {
-
-                colors.push(treasure.color)
+            this.selectedTreasures.forEach((mintObj, treasureIndex) => {
+                colors.push(mintObj.color)
                 let data = {}
 
-                treasure.items.forEach((item) => {
-                    const year = parseInt(item.year)
-                    const mint = item.mintRegion
+                mintObj.items.forEach((mintItem) => {
 
-                    if (!isNaN(year) && mint) {
-                        yearSet.add(year)
+                    mintItem.items.forEach(treasureItem => {
+                        const year = parseInt(treasureItem.year)
+                        const mint = treasureItem.mintRegion
 
-                        if (!data[year]) {
-                            data[year] = 0
-                        }
-                        const count = item.mintCount || 1
-                        data[year] += count
-                    }
+                        if (!isNaN(year) && mint) {
+                            yearSet.add(year)
+
+                            if (!data[year]) {
+                                data[year] = 0
+                            }
+
+                            const count = treasureItem.count || 1
+                            data[year] += count
+                        } 
+                    })
+
+
                 })
 
                 treasureData[treasureIndex] = data
@@ -373,6 +387,8 @@ export default {
                 from,
                 to
             })
+
+            console.log(data, yMax)
 
             this.timelineChart.update({
                 graphs: new BarGraph(data, {

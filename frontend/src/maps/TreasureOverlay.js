@@ -109,14 +109,17 @@ export default class TreasureOverlay extends Overlay {
                 if (item.mintRegion == null) continue
 
                 if (!items[item.mintRegion.id]) {
-                    items[item.mintRegion.id] = item
-                    items[item.mintRegion.id].mintCount = 0
+                    items[item.mintRegion.id] = {}
+                    items[item.mintRegion.id].mintRegion = item.mintRegion
+                    items[item.mintRegion.id].count = 0
                     items[item.mintRegion.id].items = []
                 }
 
-                items[item.mintRegion.id].mintCount += item.count
+                items[item.mintRegion.id].count += item.count
                 items[item.mintRegion.id].items.push(item)
             }
+
+
             const clone = cloneDeep(treasure)
 
             if (selectedTreasures.length > 0 && selectedTreasures.indexOf(treasure.id) !== -1) {
@@ -125,6 +128,7 @@ export default class TreasureOverlay extends Overlay {
                 colorIndex++
             }
             clone.items = Object.values(items)
+            console.log(clone)
             transformedData.push(clone)
         })
 
@@ -185,7 +189,7 @@ export default class TreasureOverlay extends Overlay {
                 const minWidth = 1
 
                 if (treasure.items) {
-                    const totalCount = treasure.items.reduce((acc, item) => acc + item.mintCount, 0)
+                    const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
 
                     const mintStyle = Object.assign({}, style, {
                         fill: true,
