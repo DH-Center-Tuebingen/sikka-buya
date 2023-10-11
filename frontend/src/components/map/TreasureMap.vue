@@ -214,7 +214,7 @@ export default {
                         mints[item.mintRegion.id].counts = {}
                     }
 
-                    const count = parseInt(item.mintRegionCount) || 1
+                    const count = parseInt(item.count) || 1
                     const mintListItem = mints[item.mintRegion.id]
                     mintListItem.counts[t.id] = mintListItem.counts[t.id] ? mintListItem.counts[t.id] + count : count
 
@@ -411,15 +411,17 @@ export default {
 };
 </script>
   
-<style lang="scss">
+<style lang="scss" scoped>
+table {
+    width: 100%;
+}
 
 .timeline {
-    margin:1em;
+    margin: 1em;
     margin-bottom: 1.5em;
     height: 120px;
     max-height: 20vh;
     min-height: 100px;
 }
-
 </style>
   

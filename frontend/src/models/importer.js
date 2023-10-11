@@ -121,7 +121,8 @@ export class TreasureItemsImporter extends Importer {
                 'Dirham',
                 'Fragment',
                 'Gewicht',
-                'Anzahl'],
+                'Anzahl'
+            ],
         })
     }
 
