@@ -193,7 +193,7 @@
           :key="`property-${val}-${idx}`"
         >
           <template #label>
-            <locale :path="`property.${sideObj.name}.${val}`" />
+            <locale :path="getCoinSideItemLabel(sideObj, val)" />
           </template>
           <div v-html="type[sideObj.name][val]"></div>
         </catalog-property>
@@ -409,7 +409,28 @@ export default {
       }
       return result;
     },
+    getCoinSideItemLabel(sideObj, name) {
+      const side = sideObj.name
+      const base = `property.${side}`
+      if (name != "innerInscript") return base + "." + name
+      else {
+        let inscriptsCount = 0
+        let innerKey = null
+        const typeCoinSide = this.type[side]
+        Object.keys(typeCoinSide).forEach((key) => {
+          if (this.htmlHasContent(typeCoinSide[key]) != "" && key.endsWith("Inscript")) {
+            inscriptsCount++
+            if (key.startsWith("inner"))
+              innerKey = key
+          }
+        })
 
+        if(inscriptsCount == 1 && innerKey != null)
+          return base + ".inscript"
+        else
+          return base + "." + name 
+      }
+    },
     htmlHasContent(val) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(val, 'text/html');
@@ -661,5 +682,6 @@ header {
 
 .catalog-property {
   flex: 1;
-}</style>
+}
+</style>
 
