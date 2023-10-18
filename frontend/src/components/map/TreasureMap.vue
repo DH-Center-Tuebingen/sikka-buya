@@ -37,7 +37,6 @@
         </div>
         <div class="center-ui center-ui-center"></div>
         <div class="center-ui center-ui-bottom">
-
             <Timeline
                 class="ui-element"
                 :value="raw_timeline.value"
@@ -61,6 +60,30 @@
                     <!-- <slot name="background" /> -->
                 </template>
 
+
+                <template
+                    #footer
+                    v-if="hasUncertainYears"
+                >
+                    <Locale path="label.timeline.uncertain_years" />
+
+                    <template v-if="yearCountData.undefined != undefined">
+                        <span style="margin-left: 1em;">{{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) }}</span>
+
+                        (
+                        <template
+                            v-for="(treasure, index) of selectedTreasures"
+                            style=""
+                        >
+                            <span
+                                v-if="yearCountData.undefined.y[index] > 0"
+                                :key="index"
+                                :style="{ color: treasure.color }"
+                            >{{ yearCountData.undefined.y[index] }}</span>
+                        </template>
+                        )
+                    </template>
+                </template>
             </Timeline>
 
 
@@ -185,6 +208,7 @@ export default {
             treasures: [],
             selectedTreasureIds: [],
             timelineChart: null,
+            yearCountData: {},
         };
     },
     mixins: [
@@ -216,6 +240,11 @@ export default {
         MountedAndLoadedMixin(['storage', 'data'])
     ],
     computed: {
+        hasUncertainYears() {
+            // if(!this.yearCountData["undefined"]) return false
+            // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
+            return true
+        },
         filtersActive() {
             return Object.values(this.filters).length > 0
         },
@@ -337,7 +366,9 @@ export default {
             console.warn("NOTHING TO DO", arguments)
         },
         updateTimelineGraph() {
-            let data = Object.values(this.yearCountData).sort((a, b) => a.x - b.x)
+
+            const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
+
             let yMax = Object.values(this.yearCountData).reduce((max, current) => {
                 let currentMax = current.y.reduce((acc, a) => acc + a, 0)
                 return Math.max(max, currentMax)
@@ -375,19 +406,21 @@ export default {
                 mintObj.items.forEach((mintItem) => {
 
                     mintItem.items.forEach(treasureItem => {
-                        const year = parseInt(treasureItem.year)
                         const mint = treasureItem.mintRegion
 
-                        if (!isNaN(year) && mint) {
-                            yearSet.add(year)
-
-                            if (!data[year]) {
-                                data[year] = 0
-                            }
-
-                            const count = treasureItem.count || 1
-                            data[year] += count
+                        let year = parseInt(treasureItem.year)
+                        if (isNaN(year)) {
+                            year = "undefined"
                         }
+
+                        yearSet.add(year)
+
+                        if (!data[year]) {
+                            data[year] = 0
+                        }
+
+                        const count = treasureItem.count || 1
+                        data[year] += count
                     })
 
 

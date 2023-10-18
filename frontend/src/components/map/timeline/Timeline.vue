@@ -68,6 +68,11 @@
         <MenuRight />
       </button>
     </div>
+
+    <footer v-if="$slots.footer">
+      <slot name="footer">
+      </slot>
+    </footer>
   </div>
 </template>
 
@@ -110,7 +115,7 @@ export default {
     clampedValue() {
       return clamp(this.value, this.from, this.to);
     },
-    container(){
+    container() {
       return this.$refs.container
     }
   },
@@ -212,8 +217,12 @@ export default {
     box-sizing: border-box;
   }
 
-  >* {
+  >.timeline-container {
     flex: 1;
+  }
+
+  footer {
+    padding-top: .2em;
   }
 
   &.focussed::after {
