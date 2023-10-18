@@ -221,7 +221,6 @@ export default {
 
                 if (data) {
                     data.y.forEach((count, index) => {
-                        console.log(count)
                         const treasure = this.selectedTreasures[index]
                         if (count > 0) {
                             htmlText += `<br><span style="color: ${treasure.color}">${treasure.name}: ${count}</span>`
