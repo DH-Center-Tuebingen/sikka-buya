@@ -97,6 +97,7 @@ export default class TreasureOverlay extends Overlay {
 
     transform(treasures, selections = { treasures: [] }) {
 
+        let totalCount = 0
         let transformedData = []
         let colorIndex = 0
         treasures.forEach(treasure => {
@@ -115,10 +116,11 @@ export default class TreasureOverlay extends Overlay {
                     items[item.mintRegion.id].items = []
                 }
 
+                totalCount += item.count
                 items[item.mintRegion.id].count += item.count
                 items[item.mintRegion.id].items.push(item)
             }
-
+            treasure.totalCount = totalCount
 
             const clone = cloneDeep(treasure)
 
@@ -128,7 +130,6 @@ export default class TreasureOverlay extends Overlay {
                 colorIndex++
             }
             clone.items = Object.values(items)
-            console.log(clone)
             transformedData.push(clone)
         })
 
@@ -136,9 +137,6 @@ export default class TreasureOverlay extends Overlay {
     }
 
     toMapObject(treasures, selections = { treasures: [] }) {
-        const shadowColor = "#000"
-        const shadowOpacity = 1
-
         let geoJSON = []
 
 
@@ -153,11 +151,8 @@ export default class TreasureOverlay extends Overlay {
 
 
             let treasureGeometries = []
-            let treasureGeometriesShadows = []
             let itemGeometries = []
-            let mintGeometriesShadows = []
             let lineGeometries = []
-            let lineGeometriesShadows = []
 
             if (treasure.location) {
 
@@ -175,7 +170,7 @@ export default class TreasureOverlay extends Overlay {
                         treasure: treasure.id,
                         style: Object.assign({}, style, {
                             fill: false
-                        })
+                        }),
                     }, properties)
                 }
 
@@ -198,6 +193,7 @@ export default class TreasureOverlay extends Overlay {
                         fillOpacity: .25
                     })
 
+
                     treasure.items.forEach((item, idx) => {
                         if (item?.mintRegion?.location) {
                             let geometry
@@ -209,6 +205,10 @@ export default class TreasureOverlay extends Overlay {
                                     geometry: location,
                                     properties: {
                                         style: mintStyle,
+                                        totalCount: treasure.totalCount,
+                                        count: item.count,
+                                        hoard: treasure.name,
+                                        mint: item.mintRegion.name,
                                     }
                                 }
                             } else {
@@ -303,10 +303,16 @@ export default class TreasureOverlay extends Overlay {
         const multiplier = 4
 
 
-        if (feature.properties.count)
-            r = Math.sqrt(feature.properties.count / Math.PI) * multiplier
+        const { count = 1, totalCount = 1 } = feature.properties
 
-        const marker = L.circleMarker(latlng, { radius: Math.max(r, minRadius) })
+
+        console.log(feature.properties.count)
+        const marker = L.shapeMarker(latlng, { shape: "square", radius: 100 * (count / totalCount) })
+
+        marker.bindTooltip(`
+        ${feature.properties.mint} (${feature.properties.hoard})<br>
+        ${feature.properties.count} / ${feature.properties.totalCount}
+        ` , { sticky: true })
         return marker
     }
 
