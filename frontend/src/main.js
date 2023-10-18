@@ -10,6 +10,7 @@ import { camelCase, pascalCase, snakeCase } from 'change-case';
 import Selection from './models/selection';
 import mconfig from './plugins/mconfig';
 import StringUtils from './utils/StringUtils'
+import 'leaflet-svg-shape-markers'
 
 async function main() {
 
@@ -32,7 +33,7 @@ async function main() {
 
       do {
         const nextObj = args.shift()
-        
+
         if (nextObj == null) continue
         for (const [nextKey, nextVal] of Object.entries(nextObj)) {
           if (nextVal == null) continue
