@@ -273,7 +273,7 @@ export default class TimelineChart extends Chart {
             this.draw()
     }
 
-    update({ graphs = null, timeline = null }) {
+    update({ graphs = null, timeline = null } = {}) {
         if (graphs) {
             if (Array.isArray(graphs))
                 this.graphs = graphs
@@ -347,4 +347,55 @@ export default class TimelineChart extends Chart {
         return x
     }
 
+    getCell({ x, y }) {
+        const offset = this.unitWidth / 2
+        const xCell = Math.floor((x - offset) / this.unitWidth)
+        let year = this.timeline.from + xCell + 1
+
+        return {
+            x: xCell * this.unitWidth + offset,
+            y: 0,
+            height: this.canvas.height,
+            width: this.unitWidth,
+            year,
+        }
+    }
+
 }
+
+
+export class HighlightGraph extends Graph {
+    constructor(position) {
+        super(position)
+    }
+
+    update(position) {
+        this.data = position
+    }
+
+    draw(context, chart) {
+        if (!this.data) return
+        const rect = chart.getCell(this.data)
+
+        context.beginPath()
+        context.rect(rect.x, rect.y, rect.width, rect.height)
+        context.fillStyle = "rgba(0,0,0,0.05)"
+        context.fill()
+
+        // context.textAlign = "center"
+        // context.fillStyle = "#111"
+        // context.font = "bold 10pt Arial, sans-serif"
+
+        // let x = rect.x + rect.width / 2
+        // if (x < 50) {
+        //     x = 10
+        //     context.textAlign = "left"
+        // } else if (x > chart.canvas.width - 50) {
+        //     x = chart.canvas.width - 10
+        //     context.textAlign = "right"
+        // }
+
+        // context.fillText(rect.year, x, 20)
+    }
+}
+

@@ -60,7 +60,6 @@ export default function ({ from = 0, to = 100, value = 50 } = {}) {
                     this.timelineUpdated();
                     this.timeline_mixin_save()
                 })
-
             },
             timeline_mixin_set({ from = null, to = null, value = null } = {}) {
                 if (from !== null) this.raw_timeline.from = from

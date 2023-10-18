@@ -128,7 +128,6 @@ export default class TreasureOverlay extends Overlay {
                 colorIndex++
             }
             clone.items = Object.values(items)
-            console.log(clone)
             transformedData.push(clone)
         })
 

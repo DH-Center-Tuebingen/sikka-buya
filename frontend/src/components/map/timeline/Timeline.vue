@@ -9,7 +9,10 @@
       <PauseIcon v-else />
     </button> -->
 
-    <div class="timeline-container">
+    <div
+      class="timeline-container"
+      ref="container"
+    >
       <button
         v-if="interactive"
         type="button"
@@ -65,6 +68,11 @@
         <MenuRight />
       </button>
     </div>
+
+    <footer v-if="$slots.footer">
+      <slot name="footer">
+      </slot>
+    </footer>
   </div>
 </template>
 
@@ -107,7 +115,9 @@ export default {
     clampedValue() {
       return clamp(this.value, this.from, this.to);
     },
-
+    container() {
+      return this.$refs.container
+    }
   },
   methods: {
     setMapTo(options) {
@@ -207,8 +217,12 @@ export default {
     box-sizing: border-box;
   }
 
-  >* {
+  >.timeline-container {
     flex: 1;
+  }
+
+  footer {
+    padding-top: .2em;
   }
 
   &.focussed::after {

@@ -231,13 +231,11 @@ export default {
     }
   }
 
-  #timeline-canvas {
+  .timeline-canvas {
     position: absolute;
     width: 100%;
     height: 100%;
   }
-
-
 
   .ui {
     position: absolute;
