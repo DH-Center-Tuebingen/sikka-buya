@@ -47,10 +47,17 @@
                 ref="timeline"
             >
                 <template #background>
+
                     <canvas
-                        id="timeline-canvas"
+                        class="timeline-canvas"
                         ref="timelineCanvas"
                     > </canvas>
+                    <canvas
+                        id="highlight-canvas"
+                        class="timeline-canvas"
+                        ref="highlightCanvas"
+                    >
+                    </canvas>
                     <!-- <slot name="background" /> -->
                 </template>
 
@@ -125,13 +132,12 @@
 import map from './mixins/map';
 import settingsMixin from '../map/mixins/settings';
 import TimelineMixin from './mixins/timeline';
+import TimelineHighlightMixin from '../mixins/timeline-highlight-mixin';
 import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
 
 //Components
 import Button from '../layout/buttons/Button.vue';
-import CatalogFilter from '../page/catalog/CatalogFilter.vue';
 import LabeledInputContainer from '../LabeledInputContainer.vue';
-import MintList from '../MintList.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
 import TreasureTable from "./TreasureTable.vue";
@@ -139,8 +145,6 @@ import TreasureTable from "./TreasureTable.vue";
 // Other
 import TreasureOverlay from '../../maps/TreasureOverlay';
 import Settings from '../../settings';
-import URLParams from '../../utils/URLParams';
-import ListSelectionTools from '../interactive/ListSelectionTools.vue';
 import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
@@ -158,6 +162,7 @@ import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
 import TimelineChart, { BarGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
+
 
 export default {
     components: {
@@ -184,6 +189,25 @@ export default {
     },
     mixins: [
         map,
+        TimelineHighlightMixin({
+            canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, year) {
+
+                let htmlText = `<b>${year}</b>`
+                const data = this.yearCountData[year]
+
+                if (data) {
+                    data.y.forEach((count, index) => {
+                        console.log(count)
+                        const treasure = this.selectedTreasures[index]
+                        if (count > 0) {
+                            htmlText += `<br><span style="color: ${treasure.color}">${treasure.name}: ${count}</span>`
+                        }
+                    })
+                }
+
+                tooltip.innerHTML = htmlText
+            }
+        }),
         TimelineMixin(),
         settingsMixin(overlaySettings),
         LocaleStorageMixin("treasure-map", [
@@ -261,38 +285,21 @@ export default {
 
         this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timeline.from, to: this.timeline.to });
 
-        // this.$nextTick(() => {
-        //     for (let [key, val] of Object.entries(this.$route.query)) {
-        //         if (
-        //             key.startsWith(queryPrefix) &&
-        //             this.$refs?.catalogFilter?.activeFilters
-        //         ) {
-        //             let value = val;
-
-        //             const filterKey = key.replace(queryPrefix, '');
-        //             try {
-        //                 value = JSON.parse(val);
-        //             } catch (e) {
-        //                 console.warn(e);
-        //             }
-
-        //             this.$refs.catalogFilter.setFilter(filterKey, value);
-        //         }
-        //     }
-
-        //     // We clear the URL params after we have set the filters
-        //     // This is to prevent the filters from being applied again on reload.
-        //     // The values are stored anyways in the localstorage.
-        //     URLParams.clear()
-        // });
-
         await this.initTimeline();
-        // this.updateTimeline(true);
+        this.updateTimeline(true);
 
+        window.addEventListener('resize', this.resizeCanvas);
 
         this.update()
     },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.resizeCanvas);
+    },
     methods: {
+
+        resizeCanvas() {
+            this.timelineChart.updateSize()
+        },
         getMintCount(mint, treasure) {
             let count = 0;
             treasure.items.forEach(item => {
@@ -323,12 +330,42 @@ export default {
                 }
             })
 
+            this.updateYearCount()
             this.updateTimelineGraph()
         },
+        updateTimeline() {
+            console.warn("NOTHING TO DO", arguments)
+        },
         updateTimelineGraph() {
+            let data = Object.values(this.yearCountData).sort((a, b) => a.x - b.x)
+            let yMax = Object.values(this.yearCountData).reduce((max, current) => {
+                let currentMax = current.y.reduce((acc, a) => acc + a, 0)
+                return Math.max(max, currentMax)
+            }, -Infinity)
+
+            const yearOffset = 2
+            let from = 300
+            let to = 470
+            if (data.length > 0) {
+                from = parseInt(data[0].x) - yearOffset
+                to = parseInt(data[data.length - 1].x) + yearOffset
+            }
+
+            this.timeline_mixin_set({
+                from,
+                to
+            })
+
+            this.timelineChart.update({
+                graphs: new BarGraph(data, {
+                    hlines: true, colors: this.yearCountColors, yMax, yOffset: 10, maxWidth: 10
+                }),
+                timeline: this.timeline
+            })
+        },
+        updateYearCount() {
             let treasureData = {}
             const colors = []
-            let maxMap = {}
             let yearSet = new Set()
 
             this.selectedTreasures.forEach((mintObj, treasureIndex) => {
@@ -350,7 +387,7 @@ export default {
 
                             const count = treasureItem.count || 1
                             data[year] += count
-                        } 
+                        }
                     })
 
 
@@ -359,43 +396,17 @@ export default {
                 treasureData[treasureIndex] = data
             })
 
-            let combied = {}
+            let yearCountData = {}
             yearSet.forEach(year => {
-                combied[year] = { x: year, y: [] }
+                yearCountData[year] = { x: year, y: [] }
                 Object.entries(treasureData).forEach(([treasureIndex, data]) => {
                     let y = (data[year] || 0)
-                    combied[year].y.push(y)
+                    yearCountData[year].y.push(y)
                 })
             })
 
-            let data = Object.values(combied).sort((a, b) => a.x - b.x)
-
-            let yMax = Object.values(combied).reduce((max, current) => {
-                let currentMax = current.y.reduce((acc, a) => acc + a, 0)
-                return Math.max(max, currentMax)
-            }, -Infinity)
-
-            const yearOffset = 2
-            let from = 300
-            let to = 470
-            if (data.length > 0) {
-                from = parseInt(data[0].x) - yearOffset
-                to = parseInt(data[data.length - 1].x) + yearOffset
-            }
-
-            this.timeline_mixin_set({
-                from,
-                to
-            })
-
-            console.log(data, yMax)
-
-            this.timelineChart.update({
-                graphs: new BarGraph(data, {
-                    hlines: true, colors, yMax, yOffset: 10, maxWidth: 10
-                }),
-                timeline: this.timeline
-            })
+            this.yearCountColors = colors
+            this.yearCountData = yearCountData
         },
         selectionChanged() {
             this.update()

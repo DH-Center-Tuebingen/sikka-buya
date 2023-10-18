@@ -9,7 +9,10 @@
       <PauseIcon v-else />
     </button> -->
 
-    <div class="timeline-container">
+    <div
+      class="timeline-container"
+      ref="container"
+    >
       <button
         v-if="interactive"
         type="button"
@@ -107,7 +110,9 @@ export default {
     clampedValue() {
       return clamp(this.value, this.from, this.to);
     },
-
+    container(){
+      return this.$refs.container
+    }
   },
   methods: {
     setMapTo(options) {
