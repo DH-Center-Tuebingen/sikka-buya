@@ -62,8 +62,7 @@ export default {
 <style lang='scss'>
 .user-hub {
   .toggle-button>.active {
-    background-color: white;
-    color: $primary-color;
+    background-color: $primary-color;
   }
 }
 </style>
@@ -91,6 +90,11 @@ export default {
   .button {
     // background-color: red;
     border-left: 1px solid $light-gray;
+
+    &.active {
+
+      color: $primary-color;
+    }
   }
 
   position: fixed;

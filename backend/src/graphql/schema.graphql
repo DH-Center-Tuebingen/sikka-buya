@@ -425,7 +425,7 @@ type Query {
     pagination: Pagination
   ): PaginationTypeTextSearch
 
-  getPage(group:String, id:Int): Page
+  getPage(id:Int!): Page
   getPageList(group:String!): [Page]
   getImage(identity:String!):String
   getPageGroup(name:String):ID

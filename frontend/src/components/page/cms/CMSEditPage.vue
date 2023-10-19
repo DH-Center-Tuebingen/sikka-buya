@@ -5,7 +5,10 @@
       <h2>
         <Locale :path="`cms.group.${this.group}`" />
       </h2>
-      <div class="tools" v-if="editmode">
+      <div
+        class="tools"
+        v-if="editmode"
+      >
 
 
         <CMSSaveButton
@@ -260,8 +263,9 @@ export default {
         let page
         if (this.single)
           page = await CMSPage.getSingle(this.group)
-        else
+        else {
           page = await CMSPage.get(this.id)
+        }
 
         const loadedPublishedTimestamp = parseInt(page.publishedTimestamp);
         this.lastPublishedTimestamp = loadedPublishedTimestamp;

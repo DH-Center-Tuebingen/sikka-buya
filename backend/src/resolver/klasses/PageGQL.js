@@ -111,24 +111,33 @@ class PageGQL extends GQL {
 
                 let page = {}
 
-                await Database.tx(async t => {
+                try {
+                    await Database.tx(async t => {
 
-                    let results = await t.manyOrNone(`
-                    SELECT *   FROM web_page 
+                        let res = []
+                        let results = await t.oneOrNone(`
+                    SELECT web_page.*, page_group FROM web_page 
                     LEFT JOIN web_page_group ON web_page_group.id = web_page.page_group
                     WHERE web_page.id = $[id]
                     LIMIT 1
                     `, { id });
 
-                    let childBlocks = await t.manyOrNone(`
+                        let childBlocks = await t.manyOrNone(`
                     SELECT * FROM web_page_block WHERE page=$[id] ORDER BY position
                     `, { id })
 
 
+                        if (results != null) {
+                            res.push(results)
+                            page = resultsToGraphQLPage(res)[0]
+                        }
+                        page.blocks = childBlocks
+                    })
+                } catch (e) {
+                    throw new Error(`Could not get page with id ${id}: ${e}`)
+                }
 
-                    page = resultsToGraphQLPage(results)[0]
-                    page.blocks = childBlocks
-                })
+                console.log(page, id)
 
                 return page
             },

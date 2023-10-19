@@ -54,7 +54,6 @@ export default class CMSPage {
     }
 
     static async upsert(group, id, page) {
-        console.log("ASDASDASD", id)
         if (id) {
             await this.update(id, page)
         } else {
