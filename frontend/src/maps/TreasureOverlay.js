@@ -171,6 +171,7 @@ export default class TreasureOverlay extends Overlay {
                         style: Object.assign({}, style, {
                             fill: false
                         }),
+                        text: treasure.name
                     }, properties)
                 }
 
@@ -187,49 +188,56 @@ export default class TreasureOverlay extends Overlay {
                     const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
 
                     const mintStyle = Object.assign({}, style, {
-                        fill: true,
                         color: color,
-                        fillColor: color,
-                        fillOpacity: .25
                     })
 
 
                     treasure.items.forEach((item, idx) => {
-                        if (item?.mintRegion?.location) {
-                            let geometry
-                            let location = item.mintRegion.location
-                            if (location.type.toLowerCase() != "feature") {
-                                geometry = location
-                                location = {
-                                    type: "Feature",
-                                    geometry: location,
-                                    properties: {
-                                        style: mintStyle,
-                                        totalCount: treasure.totalCount,
-                                        count: item.count,
-                                        hoard: treasure.name,
-                                        mint: item.mintRegion.name,
-                                    }
+
+                        if (item.mintRegion) {
+
+                            const mintRegion = item.mintRegion
+                            if (mintRegion.location) {
+                                let geometry
+                                let location = mintRegion.location
+                                const properties =
+                                {
+                                    style: mintStyle,
+                                    totalCount: treasure.totalCount,
+                                    count: item.count,
+                                    hoard: treasure.name,
+                                    mint: mintRegion.name,
+                                    text: `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
                                 }
-                            } else {
-                                geometry = location.geometry
-                                location.properties.style = mintStyle
+
+                                if (location.type.toLowerCase() != "feature") {
+                                    geometry = location
+                                    location = {
+                                        type: "Feature",
+                                        geometry: location,
+                                        properties
+                                    }
+                                } else {
+                                    geometry = location.geometry
+                                    location.properties = Object.assign({}, location.properties, properties)
+                                }
+
+                                const to = geometry.coordinates
+                                const toRadius = location?.properties?.radius || 0
+
+                                itemGeometries.push(location)
+
+                                /**
+                                 * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
+                                 * so it should be good for the time beeing.
+                                 */
+                                const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, toRadius)
+                                style.weight = 1
+                                intersectionLineFeature.properties = Object.assign({}, properties, { style })
+                                lineGeometries.push(intersectionLineFeature)
+                                // lineGeometries.push(this.getIntersectionLine(from, to, 0, toRadius))
+
                             }
-
-                            const to = geometry.coordinates
-                            const toRadius = location?.properties?.radius || 0
-
-                            itemGeometries.push(location)
-
-                            /**
-                             * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
-                             * so it should be good for the time beeing.
-                             */
-                            const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, toRadius)
-                            intersectionLineFeature.properties = Object.assign({}, { style })
-                            lineGeometries.push(intersectionLineFeature)
-                            // lineGeometries.push(this.getIntersectionLine(from, to, 0, toRadius))
-
                         }
                     })
                 }
@@ -296,24 +304,63 @@ export default class TreasureOverlay extends Overlay {
         }
     }
 
+    onEachFeature(feature, layer) {
+        if (feature?.properties?.text) {
+            layer.bindTooltip(feature.properties.text, { sticky: true })
+        }
+    }
+
+
+
+    createRectMarker(latlng, feature) {
+        let marker = null
+        const { count = null, totalCount = null } = feature.properties
+
+
+        const percent = 100 * (count / totalCount)
+
+
+        const minSize = 5
+        const stepsize = 10
+        let size = minSize
+
+        const stepSizeGroupsInPercent = [1, 5, 10, 25, 40, 60]
+
+        let targetSizeGroup = stepSizeGroupsInPercent.shift()
+        while (stepSizeGroupsInPercent.length > 0 && percent > stepSizeGroupsInPercent[0]) {
+            targetSizeGroup = stepSizeGroupsInPercent.shift()
+            size += stepsize
+        }
+
+
+        if (count != null && totalCount != null) {
+            marker = L.shapeMarker(latlng, { shape: "square", radius: size, fill: false })
+
+            marker.bindTooltip(`
+        ${feature.properties.mint} (${feature.properties.hoard})<br>
+        ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
+        ` , { sticky: true })
+        }
+
+        return marker
+    }
+
+    createCircle(latlng, feature, { selections, markerOptions }) {
+
+        let marker = null
+        if (feature?.properties?.count > 0) {
+            marker = this.createRectMarker(latlng, feature)
+
+        } else {
+            marker = super.createCircle(latlng, feature, { selections, markerOptions })
+        }
+
+        return marker
+    }
+
     createMarker(latlng, feature) {
         // Use the area as value for the radius
-        const minRadius = 1
-        let r = minRadius
-        const multiplier = 4
-
-
-        const { count = 1, totalCount = 1 } = feature.properties
-
-
-        console.log(feature.properties.count)
-        const marker = L.shapeMarker(latlng, { shape: "square", radius: 100 * (count / totalCount) })
-
-        marker.bindTooltip(`
-        ${feature.properties.mint} (${feature.properties.hoard})<br>
-        ${feature.properties.count} / ${feature.properties.totalCount}
-        ` , { sticky: true })
-        return marker
+        return this.createRectMarker(latlng, feature)
     }
 
     repaint() {
@@ -338,6 +385,7 @@ export default class TreasureOverlay extends Overlay {
                 }
             },
             onEachFeature: function (feature, layer) {
+                console.log(feature)
                 if (feature?.properties?.text) {
                     layer.bindTooltip(feature.properties.text)
                 }

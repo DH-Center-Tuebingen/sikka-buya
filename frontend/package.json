@@ -29,6 +29,7 @@
         "latinize": "^0.5.0",
         "leaflet": "^1.7.1",
         "leaflet-semirings": "^2.0.6",
+        "leaflet-svg-shape-markers": "^1.4.0",
         "leaflet.pattern": "^0.1.0",
         "lodash": "^4.17.21",
         "lodash.deburr": "^4.1.0",

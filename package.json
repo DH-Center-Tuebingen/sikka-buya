@@ -29,8 +29,5 @@
         "concurrently": "^7.1.0",
         "run-script-os": "^1.1.6",
         "wait-on": "^6.0.1"
-    },
-    "dependencies": {
-        "leaflet-svg-shape-markers": "^1.4.0"
     }
 }
