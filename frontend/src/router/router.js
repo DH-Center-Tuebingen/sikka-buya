@@ -203,6 +203,11 @@ const routes = [
         props: true,
         name: "CMSList",
         component: CMSListPage
+      }, {
+        path: "cms/list/:group",
+        props: true,
+        name: "CMSList",
+        component: CMSListPage
       },
       {
         path: '/catalog/',
