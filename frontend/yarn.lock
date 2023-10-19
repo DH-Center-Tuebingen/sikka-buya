@@ -7910,6 +7910,11 @@ leaflet-semirings@^2.0.6:
   resolved "https://registry.yarnpkg.com/leaflet-semirings/-/leaflet-semirings-2.0.6.tgz#3d9d8e512763d82e1e137831cfbe3c0442448a9f"
   integrity sha512-/gS5lum/bQSvshLWX7Sv8MBv0ORGaSh7CDhwr8m4GiDx2QJCfLaPX/kuhNFcjfZnTaecxQYqEztuoHHAbea1/w==
 
+leaflet-svg-shape-markers@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/leaflet-svg-shape-markers/-/leaflet-svg-shape-markers-1.4.0.tgz#46376bc833a68dcd1c296d83ade21cd2b31a8723"
+  integrity sha512-vUBwso51+4ZVGcLZbhdBGxz+xrbul5jDYxool2yTKbIjAC6rvOMLjr8YBTQbLaa1LBRBQIaWUbmCafdXm17pxw==
+
 leaflet.pattern@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/leaflet.pattern/-/leaflet.pattern-0.1.0.tgz#c127ac80915b7aa3f450f97fe08c06e7215eb8a7"
