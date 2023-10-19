@@ -68,7 +68,8 @@
                     <Locale path="label.timeline.uncertain_years" />
 
                     <template v-if="yearCountData.undefined != undefined">
-                        <span style="margin-left: 1em;">{{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) }}</span>
+                        <span style="margin-left: 1em;">{{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0)
+                        }}</span>
 
                         (
                         <template
@@ -137,12 +138,14 @@
                         </template>
                         {{ treasure.name }}
                     </MultiSelectListItem>
-                    <TreasureTable
-                        :key="`treasure-table-${treasure.id}`"
+                    <div
+                        class="treasure-description"
                         v-if="isTreasureSelected(treasure.id)"
-                        :item="treasure"
+                        v-html="treasure.description"
+                        :key="`list-item-description-${treasure.id}`"
                     >
-                    </TreasureTable>
+
+                    </div>
                 </template>
             </MultiSelectList>
 
@@ -326,11 +329,11 @@ export default {
                 pointToLayer(point) {
                     let position = point.geometry ? point.geometry : point
                     const mlm = new MintLocationMarker(region)
-                    return mlm.create({lat: position.coordinates[0], lng: position.coordinates[1]})
+                    return mlm.create({ lat: position.coordinates[0], lng: position.coordinates[1] })
                 }
             })
             geoJSON.bindTooltip(region.name)
-            geoJSON.on("click", ()=> console.log(region.name + " clicked"))
+            geoJSON.on("click", () => console.log(region.name + " clicked"))
             geoJSON.addTo(mlms)
         })
         mlms.addTo(this.map)
@@ -529,6 +532,17 @@ table {
     height: 120px;
     max-height: 20vh;
     min-height: 100px;
+}
+
+.treasure-description {
+    margin: 0 1em;
+    padding: .5rem;
+    background-color: $white;
+    border: $border;
+    border-radius: $border-radius;
+
+    max-height: 300px;
+    overflow-y: auto;
 }
 </style>
   

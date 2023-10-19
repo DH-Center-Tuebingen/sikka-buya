@@ -54,6 +54,7 @@ export default class TreasureOverlay extends Overlay {
                 name
                 location 
                 timespan {from to}
+                description
                 items {
                     coinType {
                         projectId
