@@ -131,7 +131,6 @@ export default class CMSPage {
         }`
             , {})
 
-        console.log(result)
         const page = new CMSPage(result.data.data.getSinglePage)
         return this.postprocessPage(page)
     }

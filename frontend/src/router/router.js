@@ -182,8 +182,12 @@ const routes = [
       },
       {
         path: "/cms/single/:group",
-        props: {
-          single: true
+        props: route => {
+          return {
+
+            single: true,
+            group: route.params.group
+          }
         },
         name: "CMSSingle",
         component: CMSEditPage
