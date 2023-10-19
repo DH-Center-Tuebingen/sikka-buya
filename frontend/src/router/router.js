@@ -28,6 +28,7 @@ import AcceptInvitePage from "@/components/page/auth/AcceptInvitePage"
 
 import CMSEditPage from '@/components/page/cms/CMSEditPage'
 import CMSListPage from '@/components/page/cms/CMSListPage'
+import CMSView from '@/components/cms/CMSView'
 
 
 /**
@@ -156,6 +157,7 @@ const routes = [
     name: "Home",
     component: LandingPage
   },
+
   {
     path: "",
     component: CommonMain,
@@ -166,8 +168,23 @@ const routes = [
         component: ContactPage
       },
       {
+        path: "/bibliography",
+        component: RouterContainer,
+        children: [
+          {
+            path: "", name: "Bibliography", component: CMSView, props: {
+              group: "bibliography",
+              single: true,
+              headingTag: "h1"
+            }
+          },
+        ]
+      },
+      {
         path: "/cms/single/:group",
-        props: true,
+        props: {
+          single: true
+        },
         name: "CMSSingle",
         component: CMSEditPage
       },

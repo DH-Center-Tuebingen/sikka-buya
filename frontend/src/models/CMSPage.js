@@ -2,16 +2,26 @@ import Query from "../database/query"
 
 export default class CMSPage {
 
-    constructor() {
-        this.id = null
-        this.title = null
-        this.subtitle = null
-        this.summary = null
-        this.body = null
-        this.image = null
-        this.createdTimestamp = null
-        this.publishedTimestamp = null
-        this.modifiedTimestamp = null
+    constructor({
+        id = null,
+        title = null,
+        subtitle = null,
+        summary = null,
+        body = null,
+        image = null,
+        createdTimestamp = null,
+        publishedTimestamp = null,
+        modifiedTimestamp = null,
+    } = {}) {
+        this.id = id
+        this.title = title
+        this.subtitle = subtitle
+        this.summary = summary
+        this.body = body
+        this.image = image
+        this.createdTimestamp = createdTimestamp
+        this.publishedTimestamp = publishedTimestamp
+        this.modifiedTimestamp = modifiedTimestamp
     }
 
     assign(page) {
@@ -41,6 +51,17 @@ export default class CMSPage {
         }`, { pageGroup })
 
         return result.data.data.createPage
+    }
+
+    static async upsert(group, id, page) {
+        console.log("ASDASDASD", id)
+        if (id) {
+            await this.update(id, page)
+        } else {
+            id = await this.create(group)
+            await this.update(id, page)
+        }
+        return id
     }
 
     static async update(id, page) {
@@ -109,7 +130,9 @@ export default class CMSPage {
           }
         }`
             , {})
-        const page = result.data.data.getSinglePage
+
+        console.log(result)
+        const page = new CMSPage(result.data.data.getSinglePage)
         return this.postprocessPage(page)
     }
 

@@ -141,7 +141,7 @@ export default {
     PageFooter,
     Row,
     FintBox
-},
+  },
 };
 </script>
 

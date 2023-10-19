@@ -5,7 +5,7 @@
       <h2>
         <Locale :path="`cms.group.${this.group}`" />
       </h2>
-      <div class="tools">
+      <div class="tools" v-if="editmode">
 
 
         <CMSSaveButton
@@ -55,9 +55,6 @@
         />
 
       </div>
-
-
-
 
       <!-- <CMSEditToolbar
         v-if="editmode"
@@ -180,6 +177,7 @@ import CMSConfig from '../../../../cms.config';
 import Query from '../../../database/query';
 import { InputDelayer } from "../../../models/request-buffer"
 import { mdiPublish, mdiClock, mdiContentSaveOutline, mdiSync } from '@mdi/js';
+import InfoVue from '../../forms/Info.vue';
 
 export default {
   components: {
@@ -191,6 +189,7 @@ export default {
     Locale, CMSPublicationInput,
     SimpleFormattedField,
     Spacer,
+    InfoVue,
   },
   mixins: [
     CopyAndPasteMixin,
@@ -216,6 +215,7 @@ export default {
   },
   props: {
     useBlocks: Boolean,
+    single: Boolean,
     group: String,
     include: {
       type: Array,
@@ -225,7 +225,6 @@ export default {
       type: Array,
       default: () => [],
     },
-
   },
   data() {
     return {
@@ -257,7 +256,13 @@ export default {
     },
     async load() {
       try {
-        const page = await CMSPage.get(this.id)
+
+        let page
+        if (this.single)
+          page = await CMSPage.getSingle(this.group)
+        else
+          page = await CMSPage.get(this.id)
+
         const loadedPublishedTimestamp = parseInt(page.publishedTimestamp);
         this.lastPublishedTimestamp = loadedPublishedTimestamp;
 
@@ -439,10 +444,12 @@ export default {
         modifiedTimestamp: this.page.modifiedTimestamp,
       }, overrides);
 
+
       this.page = Object.assign({}, this.page, page, {
         publishedTimestamp: lastPublishedTimestamp
       })
-      await CMSPage.update(this.id, page);
+
+      await CMSPage.upsert(this.group, this.page.id, page);
       await (async function (ts) {
         return new Promise(resolve => setTimeout(resolve, ts))
       })(3000)

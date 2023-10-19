@@ -185,6 +185,8 @@ import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
 import TimelineChart, { BarGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
+import Query from '../../database/query';
+import { MintLocationMarker } from "../../models/mintlocation"
 
 
 export default {
@@ -280,6 +282,7 @@ export default {
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data
+                console.log(data)
             },
             onEnd: () => {
                 this.mounted_and_loaded_mixin_loaded("data")
@@ -312,6 +315,51 @@ export default {
     mounted: async function () {
 
         this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timeline.from, to: this.timeline.to });
+
+        const result = await Query.raw(`{mintRegion { id name location }}`)
+        this.mintRegions = result.data.data.mintRegion
+        console.log(this.mintRegions)
+
+        const mlms = this.L.featureGroup()
+        this.mintRegions.forEach(region => {
+            const geoJSON = new this.L.geoJSON(region.location, {
+                pointToLayer(point) {
+                    let position = point.geometry ? point.geometry : point
+                    const mlm = new MintLocationMarker(region)
+                    return mlm.create({lat: position.coordinates[0], lng: position.coordinates[1]})
+                }
+            })
+            geoJSON.bindTooltip(region.name)
+            geoJSON.on("click", ()=> console.log(region.name + " clicked"))
+            geoJSON.addTo(mlms)
+        })
+        mlms.addTo(this.map)
+
+
+        // this.$nextTick(() => {
+        //     for (let [key, val] of Object.entries(this.$route.query)) {
+        //         if (
+        //             key.startsWith(queryPrefix) &&
+        //             this.$refs?.catalogFilter?.activeFilters
+        //         ) {
+        //             let value = val;
+
+        //             const filterKey = key.replace(queryPrefix, '');
+        //             try {
+        //                 value = JSON.parse(val);
+        //             } catch (e) {
+        //                 console.warn(e);
+        //             }
+
+        //             this.$refs.catalogFilter.setFilter(filterKey, value);
+        //         }
+        //     }
+
+        //     // We clear the URL params after we have set the filters
+        //     // This is to prevent the filters from being applied again on reload.
+        //     // The values are stored anyways in the localstorage.
+        //     URLParams.clear()
+        // });
 
         await this.initTimeline();
         this.updateTimeline(true);

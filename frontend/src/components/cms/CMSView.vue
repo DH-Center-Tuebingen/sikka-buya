@@ -1,16 +1,6 @@
 <template>
     <div class="cms-view">
 
-
-        <h2
-            class="cms-title"
-            v-if="isPresent('title')"
-        >{{ page.title }}</h2>
-        <p
-            class="cms-subtitle"
-            v-if="isPresent('subtitle')"
-        >{{ page.subtitle }}</p>
-
         <header v-if="$store.getters.canEdit">
             <button
                 v-if="pageMissing"
@@ -28,6 +18,16 @@
                 <locale :path="editText ? editText : 'cms.edit_page'" />
             </button>
         </header>
+
+        <component
+            :is="headingTag"
+            class="cms-title"
+            v-if="isPresent('title')"
+        >{{ page.title }}</component>
+        <p
+            class="cms-subtitle"
+            v-if="isPresent('subtitle')"
+        >{{ page.subtitle }}</p>
 
         <p
             v-if="isPresent('body')"
@@ -56,6 +56,11 @@ export default {
         };
     },
     props: {
+        headingTag: {
+            type: String,
+            default: 'h2',
+            validator: (value) => ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(value)
+        },
         id: {
             type: Number
         },
@@ -99,12 +104,17 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-.cms-view>*:first-child {
-    margin-top: 0;
-}
-
 header {
     display: flex;
     justify-content: flex-end;
+}
+
+h1 {
+    margin-top: 3rem;
+    margin-bottom: 5rem;
+}
+
+.cms-view>*:first-child:not(h1) {
+    margin-top: 0;
 }
 </style>
