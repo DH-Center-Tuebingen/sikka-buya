@@ -125,13 +125,10 @@ export default class TreasureOverlay extends Overlay {
                 }
 
                 totalCount += item.count
-                console.log(item.count)
                 items[item.mintRegion.id].count += item.count
                 items[item.mintRegion.id].items.push(item)
             }
             treasure.totalCount = totalCount
-
-            console.log(treasure.name, totalCount)
 
             const clone = cloneDeep(treasure)
 

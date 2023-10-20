@@ -523,10 +523,19 @@ export default {
 
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
 
-            let yMax = Object.values(this.yearCountData).reduce((max, current) => {
-                let currentMax = current.y.reduce((acc, a) => acc + a, 0)
-                return Math.max(max, currentMax)
-            }, -Infinity)
+            let yMax = Object.entries(this.yearCountData)
+                .filter(([key]) => key !== "undefined")
+                .map(([_, val]) => {
+                    return val
+                })
+                .reduce((max, current) => {
+                    console.log(current, max)
+                    let currentMax = current.y.reduce((acc, a) => acc + a, 0)
+                    return Math.max(max, currentMax)
+                }, -Infinity)
+
+           console.log(yMax)
+
 
             const yearOffset = 2
             let from = 300
