@@ -68,19 +68,25 @@
                     <Locale path="label.timeline.uncertain_years" />
 
                     <template v-if="yearCountData.undefined != undefined">
-                        <span style="margin-left: 1em;">{{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0)
-                        }}</span>
+                        <span style="margin-left: 1em;">
+                            {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0)
+                            }}</span>
 
                         (
-                        <template
-                            v-for="(treasure, index) of selectedTreasures"
-                            style=""
-                        >
-                            <span
-                                v-if="yearCountData.undefined.y[index] > 0"
-                                :key="index"
-                                :style="{ color: treasure.color }"
-                            >{{ yearCountData.undefined.y[index] }}</span>
+                        <template v-if="selectedTreasures.length > 1">
+                            <template
+                                v-for="(treasure, index) of selectedTreasures"
+                                style=""
+                            >
+                                <span
+                                    v-if="index > 0"
+                                    :key="`spacer-${index}`"
+                                >, </span>
+                                <span
+                                    :key="index"
+                                    :style="{ color: treasure.color }"
+                                >{{ yearCountData.undefined.y[index] }}</span>
+                            </template>
                         </template>
                         )
                     </template>
@@ -259,16 +265,25 @@ export default {
         TimelineHighlightMixin({
             canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, year) {
 
-                let htmlText = `<b>${year}</b>`
                 const data = this.yearCountData[year]
 
+
+                let htmlText = `<b>${year}`
+                let countsHtml = []
                 if (data) {
                     data.y.forEach((count, index) => {
                         const treasure = this.selectedTreasures[index]
                         if (count > 0) {
-                            htmlText += `<br><span style="color: ${treasure.color}">${treasure.name}: ${count}</span>`
+                            countsHtml.push(`<span style="color: ${treasure.color}">${count}</span>`)
                         }
                     })
+                }
+
+                if (countsHtml.length > 0) {
+                    htmlText += `</b>: ${countsHtml.join(", ")}`
+                } else {
+                    htmlText += `</b>`
+
                 }
 
                 tooltip.innerHTML = htmlText
@@ -384,7 +399,7 @@ export default {
                     }
                 }
             })
-            geoJSON.bindTooltip(region.name, {sticky: true})
+            geoJSON.bindTooltip(region.name, { sticky: true })
             geoJSON.on("click", () => console.log(region.name + " clicked"))
             geoJSON.addTo(mlms)
         })
