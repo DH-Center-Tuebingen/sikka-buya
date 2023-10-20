@@ -282,11 +282,10 @@ export default class TreasureOverlay extends Overlay {
                 if (!treasureLocation.properties) treasureLocation.properties = {}
                 treasureLocation.properties.treasureId = treasure.id
                 treasureLocation.properties.text = treasure.name
+                treasureLocation.properties.extendBoarder = 20
                 treasureLocation.properties.onClick = "selectTreasure"
                 treasureLocation.properties.force = true
                 treasureLocation.properties.style = {
-                    fill: true,
-                    fillOpacity: 0.0,
                     color: "#ffffff",
                 }
 
@@ -392,6 +391,17 @@ export default class TreasureOverlay extends Overlay {
             if (!markerOptions) markerOptions = {}
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
 
+            if (feature.properties.extendBoarder) {
+                marker.setStyle(feature.properties.style)
+                console.log(marker)
+                marker = L.featureGroup([marker])
+                const border = super.createCircle(latlng, feature, { selections, markerOptions })
+                feature.properties.style = {}
+                border.setStyle({ color: "red", opacity:0, weight: feature.properties.extendBoarder })
+                border.addTo(marker)
+                border.bringToFront()
+            }
+
             if (feature.properties.text) {
                 marker.bindTooltip(feature.properties.text, { sticky: true })
             }
@@ -401,7 +411,6 @@ export default class TreasureOverlay extends Overlay {
                 marker.on('click', () => this.select(treasureId))
                 marker.on('remove', () => marker.off())
             }
-
         }
 
         return marker
@@ -434,6 +443,9 @@ export default class TreasureOverlay extends Overlay {
                 if (feature.geometry.type === "LineString") {
                     return Object.assign({ lineCap: "butt" }, feature?.properties?.style || {})
                 } else {
+
+                    console.log(feature.properties.style)
+
                     return Object.assign({ fill: feature.properties.isMint }, feature?.properties?.style || {})
                 }
             },
