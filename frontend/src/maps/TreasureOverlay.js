@@ -146,6 +146,7 @@ export default class TreasureOverlay extends Overlay {
 
     toMapObject(treasures, selections = { treasures: [] }) {
         let geoJSON = []
+        const extendBorder = 20
 
         if (selections.treasures.length == 0) {
             const geom = this.showClickableTreasureArea(treasures)
@@ -184,7 +185,8 @@ export default class TreasureOverlay extends Overlay {
                         style: Object.assign({}, style, {
                             fill: false
                         }),
-                        text: treasure.name
+                        text: treasure.name,
+                        extendBorder,
                     }, properties)
                 }
 
@@ -192,7 +194,6 @@ export default class TreasureOverlay extends Overlay {
                 const fromRadius = properties.radius || 0
 
                 treasureGeometries.push(findLocation)
-
 
                 const maxWidth = 20
                 const minWidth = 1
@@ -220,6 +221,7 @@ export default class TreasureOverlay extends Overlay {
                                     count: item.count,
                                     hoard: treasure.name,
                                     mint: mintRegion.name,
+                                    extendBorder,
                                     text: `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
                                 }
 
@@ -282,7 +284,7 @@ export default class TreasureOverlay extends Overlay {
                 if (!treasureLocation.properties) treasureLocation.properties = {}
                 treasureLocation.properties.treasureId = treasure.id
                 treasureLocation.properties.text = treasure.name
-                treasureLocation.properties.extendBoarder = 20
+                treasureLocation.properties.extendBorder = 20
                 treasureLocation.properties.onClick = "selectTreasure"
                 treasureLocation.properties.force = true
                 treasureLocation.properties.style = {
@@ -339,19 +341,10 @@ export default class TreasureOverlay extends Overlay {
         }
     }
 
-    onEachFeature(feature, layer) {
-        if (feature?.properties?.text) {
-            layer.bindTooltip(feature.properties.text, { sticky: true })
-        }
-    }
-
-
 
     createRectMarker(latlng, feature) {
         let marker = null
         const { count = null, totalCount = null } = feature.properties
-
-
         const percent = 100 * (count / totalCount)
 
 
@@ -371,40 +364,45 @@ export default class TreasureOverlay extends Overlay {
         if (count != null && totalCount != null) {
             marker = L.shapeMarker(latlng, { shape: "square", radius: size, fill: false })
 
-            marker.bindTooltip(`
-        ${feature.properties.mint} (${feature.properties.hoard})<br>
-        ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
-        ` , { sticky: true })
+        //     marker.bindTooltip(`
+        // ${feature.properties.mint} (${feature.properties.hoard})<br>
+        // ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
+        // ` , { sticky: true })
         }
 
         return marker
     }
+
+
+    extendBorder(marker, feature, func) {
+        if (feature.properties.extendBorder) {
+            marker.setStyle(feature.properties.style)
+            marker = L.featureGroup([marker])
+            const border = func()
+            feature.properties.style = {}
+            border.setStyle({ color: "red", opacity: 0, weight: feature.properties.extendBorder })
+            border.addTo(marker)
+            border.bringToFront()
+        }
+        return marker
+    }
+
 
     createCircle(latlng, feature, { selections, markerOptions }) {
 
         let marker = null
         if (feature?.properties?.count > 0) {
             marker = this.createRectMarker(latlng, feature)
-
+            marker = this.extendBorder(marker, feature, this.createRectMarker.bind(this, latlng, feature))
         } else {
 
             if (!markerOptions) markerOptions = {}
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
+            marker = this.extendBorder(marker, feature, super.createCircle.bind(this, latlng, feature, { selections, markerOptions }))
 
-            if (feature.properties.extendBoarder) {
-                marker.setStyle(feature.properties.style)
-                console.log(marker)
-                marker = L.featureGroup([marker])
-                const border = super.createCircle(latlng, feature, { selections, markerOptions })
-                feature.properties.style = {}
-                border.setStyle({ color: "red", opacity:0, weight: feature.properties.extendBoarder })
-                border.addTo(marker)
-                border.bringToFront()
-            }
-
-            if (feature.properties.text) {
-                marker.bindTooltip(feature.properties.text, { sticky: true })
-            }
+            // if (feature.properties.text) {
+            //     marker.bindTooltip(feature.properties.text, { sticky: true })
+            // }
 
             const treasureId = feature.properties.treasureId
             if (feature.properties.onClick && treasureId != null) {
@@ -422,7 +420,9 @@ export default class TreasureOverlay extends Overlay {
 
     createMarker(latlng, feature) {
         // Use the area as value for the radius
-        return this.createRectMarker(latlng, feature)
+        const marker = this.createRectMarker(latlng, feature)
+        return this.extendBorder(marker, feature, this.createRectMarker.bind(this, latlng, feature))
+        
     }
 
     repaint() {
@@ -443,15 +443,12 @@ export default class TreasureOverlay extends Overlay {
                 if (feature.geometry.type === "LineString") {
                     return Object.assign({ lineCap: "butt" }, feature?.properties?.style || {})
                 } else {
-
-                    console.log(feature.properties.style)
-
                     return Object.assign({ fill: feature.properties.isMint }, feature?.properties?.style || {})
                 }
             },
             onEachFeature: function (feature, layer) {
                 if (feature?.properties?.text) {
-                    layer.bindTooltip(feature.properties.text)
+                    layer.bindTooltip(feature.properties.text, {sticky: true})
                 }
             }
         }
