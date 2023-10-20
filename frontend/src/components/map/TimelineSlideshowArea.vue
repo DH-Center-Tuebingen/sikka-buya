@@ -322,7 +322,10 @@ export default {
     }
 }
 
-
+#timeline-canvas {
+    width: 100%;
+    height: 100%;
+} 
 
 .timeline {
     height: 100px;
