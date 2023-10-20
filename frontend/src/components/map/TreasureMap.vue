@@ -289,6 +289,10 @@ export default {
             },
             onEnd: () => {
                 this.mounted_and_loaded_mixin_loaded("data")
+            },
+            onSelectTreasure: (id) => {
+                this.selectedTreasureIds = [id]
+                this.update()
             }
         })
 

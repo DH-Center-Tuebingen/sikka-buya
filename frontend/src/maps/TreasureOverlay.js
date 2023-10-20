@@ -24,8 +24,15 @@ export default class TreasureOverlay extends Overlay {
             group.off('mouseover', bringToFront)
         }
 
+        let onSelectTreasure = () => { }
+        if (callbacks.onSelectTreasure) {
+            onSelectTreasure = callbacks.onSelectTreasure
+            delete callbacks.onSelectTreasure
+        }
+
         super(parent, settings, callbacks)
 
+        this.onSelectTreasure = onSelectTreasure
         this.bringTreasureToFront = this.bringTreasureToFront.bind(this)
     }
 
@@ -140,6 +147,12 @@ export default class TreasureOverlay extends Overlay {
     toMapObject(treasures, selections = { treasures: [] }) {
         let geoJSON = []
 
+        if (selections.treasures.length == 0) {
+            const geom = this.showClickableTreasureArea(treasures)
+            console.log(geom)
+            geoJSON.push(...geom)
+        }
+
 
         for (let [index, treasure] of treasures.entries()) {
             if (!treasure.selected) continue
@@ -224,7 +237,6 @@ export default class TreasureOverlay extends Overlay {
                                 }
 
                                 const to = geometry.coordinates
-                                const toRadius = location?.properties?.radius || 0
 
                                 itemGeometries.push(location)
 
@@ -232,7 +244,7 @@ export default class TreasureOverlay extends Overlay {
                                  * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
                                  * so it should be good for the time beeing.
                                  */
-                                const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, toRadius)
+                                const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, 0)
                                 style.weight = 1
                                 intersectionLineFeature.properties = Object.assign({}, properties, { style })
                                 lineGeometries.push(intersectionLineFeature)
@@ -260,6 +272,30 @@ export default class TreasureOverlay extends Overlay {
         return {
             geoJSON
         }
+    }
+
+
+    showClickableTreasureArea(treasures) {
+        let features = []
+        treasures.forEach(treasure => {
+            if (treasure.location) {
+                const treasureLocation = cloneDeep(treasure.location)
+                if (!treasureLocation.properties) treasureLocation.properties = {}
+                treasureLocation.properties.treasureId = treasure.id
+                treasureLocation.properties.text = treasure.name
+                treasureLocation.properties.onClick = "selectTreasure"
+                treasureLocation.properties.force = true
+                treasureLocation.properties.style = {
+                    fill: true,
+                    fillOpacity: 0.0,
+                    color: "#ffffff",
+                }
+
+                features.push(treasureLocation)
+            }
+        })
+
+        return features
     }
 
 
@@ -353,10 +389,27 @@ export default class TreasureOverlay extends Overlay {
             marker = this.createRectMarker(latlng, feature)
 
         } else {
+
+            if (!markerOptions) markerOptions = {}
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
+
+            if (feature.properties.text) {
+                marker.bindTooltip(feature.properties.text, { sticky: true })
+            }
+
+            const treasureId = feature.properties.treasureId
+            if (feature.properties.onClick && treasureId != null) {
+                marker.on('click', () => this.select(treasureId))
+                marker.on('remove', () => marker.off())
+            }
+
         }
 
         return marker
+    }
+
+    select(treasureId) {
+        this.onSelectTreasure(treasureId)
     }
 
     createMarker(latlng, feature) {
