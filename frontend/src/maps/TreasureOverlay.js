@@ -149,7 +149,6 @@ export default class TreasureOverlay extends Overlay {
 
         if (selections.treasures.length == 0) {
             const geom = this.showClickableTreasureArea(treasures)
-            console.log(geom)
             geoJSON.push(...geom)
         }
 
@@ -439,7 +438,6 @@ export default class TreasureOverlay extends Overlay {
                 }
             },
             onEachFeature: function (feature, layer) {
-                console.log(feature)
                 if (feature?.properties?.text) {
                     layer.bindTooltip(feature.properties.text)
                 }

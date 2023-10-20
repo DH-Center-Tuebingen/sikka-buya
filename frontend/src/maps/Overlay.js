@@ -131,12 +131,8 @@ export default class Overlay {
                 pointToLayer: function (feature, latlng) {
                     const radius = parseInt(feature?.properties?.radius)
                     if (!isNaN(radius)) {
-                        console.log("Create feature", feature)
-
                         return that.createCircle.call(that, latlng, feature, { selections, markerOptions })
                     } else {
-                        console.log("Create marker", feature)
-
                         return that.createMarker.call(that, latlng, feature, { selections, markerOptions })
                     }
                 },

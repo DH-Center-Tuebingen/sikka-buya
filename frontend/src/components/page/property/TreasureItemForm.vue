@@ -368,7 +368,7 @@ export default {
     display: grid;
     padding: 1px 5px;
     gap: 5px;
-    grid-template-columns: 100px 100px 100px 50px 50px 50px 60px min-content 50px;
+    grid-template-columns: 100px 100px 100px 70px 70px 70px 70px min-content 50px;
 
     >.labeled-input-container {
         padding-top: 2px;

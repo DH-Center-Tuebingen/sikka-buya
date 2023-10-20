@@ -63,7 +63,7 @@
 
                 <template
                     #footer
-                    v-if="hasUncertainYears"
+                    v-show="hasUncertainYears"
                 >
                     <Locale path="label.timeline.uncertain_years" />
 
@@ -121,7 +121,7 @@
                 />
             </template>
 
-            <MultiSelectList>
+            <MultiSelectList style="flex: 1;">
                 <template v-for="treasure in treasures">
                     <MultiSelectListItem
                         :key="`list-item-${treasure.id}`"
@@ -148,7 +148,41 @@
                     </div>
                 </template>
             </MultiSelectList>
+            <template
+                #footer
+                v-if="this.selectedTreasures.length > 0"
+            >
+                <div style="margin: 1em;margin-top: auto;">
+                    <h3>
+                        <Locale path="label.diagram" />
+                    </h3>
+                    <select
+                        ref="diagramSelect"
+                        @input="updateDiagram"
+                    >
+                        <option
+                            value="material"
+                            selected
+                        >
+                            <Locale path="property.material" />
+                        </option>
+                        <option value="epoch">
+                            <Locale path="property.epoch" />
+                        </option>
+                        <option value="fragment">
+                            <Locale path="property.fragment" />
+                        </option>
+                    </select>
 
+                    <canvas
+                        style="background-color: white;"
+                        height="300px"
+                        ref="diagramCanvas"
+                    >
+
+                    </canvas>
+                </div>
+            </template>
         </Sidebar>
     </div>
 </template>
@@ -190,6 +224,7 @@ import TimelineChart, { BarGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
+
 
 
 export default {
@@ -292,7 +327,7 @@ export default {
             },
             onSelectTreasure: (id) => {
                 this.selectedTreasureIds = [id]
-                this.update()
+                this.selectionChanged()
             }
         })
 
@@ -374,11 +409,48 @@ export default {
         window.addEventListener('resize', this.resizeCanvas);
 
         this.update()
+
+        //this is a hack to make sure the diagram is updated after the map is loaded
+        setTimeout(() => {
+            this.updateDiagram()
+        }, 100)
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
+        updateDiagram() {
+            if (!this.$refs.diagramSelect) return
+            const value = this.$refs.diagramSelect.value
+            if (value) { 
+
+
+                const map = {}
+
+                this.selectedTreasures.forEach((treasure, index) => {
+
+                    treasure.items.forEach(itemArr => {
+                        itemArr.items.forEach(item => {
+                            if (item[value]) {
+                                const name = item[value].name || "No name"
+                                if (!map[name]) {
+                                    map[name] = 0
+                                }
+                                map[name] += parseInt(item.count) || 1
+                            }
+                        })
+                    })
+                })
+
+                // const canvas = this.$refs.diagramCanvas
+                // const ctx = canvas.getContext('2d')
+                // const chart = new Chart(ctx, {
+                //     type: 'pie',
+                //     data: map
+                // })
+
+            }
+        },
 
         resizeCanvas() {
             this.timelineChart.updateSize()
@@ -497,6 +569,7 @@ export default {
         },
         selectionChanged() {
             this.update()
+            this.updateDiagram()
             this.local_storage_mixin_save()
         },
         isTreasureSelected(id) {
