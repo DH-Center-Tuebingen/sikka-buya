@@ -224,6 +224,9 @@ import TimelineChart, { BarGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
+import { latLng } from 'leaflet';
+
+import L from 'leaflet'
 
 
 
@@ -367,11 +370,21 @@ export default {
             const geoJSON = new this.L.geoJSON(region.location, {
                 pointToLayer(point) {
                     let position = point.geometry ? point.geometry : point
-                    const mlm = new MintLocationMarker(region)
-                    return mlm.create({ lat: position.coordinates[0], lng: position.coordinates[1] })
+                    const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
+                    if (!point?.properties?.radius) {
+                        const mlm = new MintLocationMarker(region)
+                        return mlm.create(latlng)
+                    } else {
+                        return L.circle(latlng, point.properties.radius, {
+                            color: "#333",
+                            weight: 1,
+                            fillColor: "#fff",
+                            fillOpacity: 0.5
+                        })
+                    }
                 }
             })
-            geoJSON.bindTooltip(region.name)
+            geoJSON.bindTooltip(region.name, {sticky: true})
             geoJSON.on("click", () => console.log(region.name + " clicked"))
             geoJSON.addTo(mlms)
         })
@@ -422,7 +435,7 @@ export default {
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
-            if (value) { 
+            if (value) {
 
 
                 const map = {}
