@@ -105,13 +105,13 @@ export default class TreasureOverlay extends Overlay {
 
     transform(treasures, selections = { treasures: [] }) {
 
-        let totalCount = 0
         let transformedData = []
         let colorIndex = 0
         treasures.forEach(treasure => {
 
             const selectedTreasures = (Array.isArray(selections.treasures)) ? selections.treasures : []
 
+            let totalCount = 0
             let items = {}
             for (let original of treasure.items) {
                 let item = cloneDeep(original)
@@ -125,10 +125,13 @@ export default class TreasureOverlay extends Overlay {
                 }
 
                 totalCount += item.count
+                console.log(item.count)
                 items[item.mintRegion.id].count += item.count
                 items[item.mintRegion.id].items.push(item)
             }
             treasure.totalCount = totalCount
+
+            console.log(treasure.name, totalCount)
 
             const clone = cloneDeep(treasure)
 
@@ -199,7 +202,6 @@ export default class TreasureOverlay extends Overlay {
                 const minWidth = 1
 
                 if (treasure.items) {
-                    const totalCount = treasure.items.reduce((acc, item) => acc + item.count, 0)
 
                     const mintStyle = Object.assign({}, style, {
                         color: color,
