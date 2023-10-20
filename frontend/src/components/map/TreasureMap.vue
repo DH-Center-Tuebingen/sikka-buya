@@ -72,8 +72,8 @@
                             {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0)
                             }}</span>
 
-                        (
                         <template v-if="selectedTreasures.length > 1">
+                            (
                             <template
                                 v-for="(treasure, index) of selectedTreasures"
                                 style=""
@@ -87,8 +87,8 @@
                                     :style="{ color: treasure.color }"
                                 >{{ yearCountData.undefined.y[index] }}</span>
                             </template>
+                            )
                         </template>
-                        )
                     </template>
                 </template>
             </Timeline>
@@ -534,7 +534,7 @@ export default {
                     return Math.max(max, currentMax)
                 }, -Infinity)
 
-           console.log(yMax)
+            console.log(yMax)
 
 
             const yearOffset = 2
