@@ -69,18 +69,14 @@
         <section class="alternate-buttons">
           <card-link
             class="subtle-card-link alternative-card-link"
-            :disabled="true"
+            :disabled="false"
             :noImage="true"
             :to="{
-              name: 'CMSList',
-              params: {
-                group: 'bibliography',
-              }
+              name: 'Bibliography',
             }"
           >
             <div class="subtitled">
               <locale path="cms.group.bibliography" />
-              <span class="subtitle">Demnächst verfügbar!</span>
             </div>
 
           </card-link>
