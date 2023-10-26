@@ -156,7 +156,7 @@
             </MultiSelectList>
             <template
                 #footer
-                v-if="this.selectedTreasures.length > 0"
+                v-show="this.selectedTreasures.length > 0"
             >
                 <div style="margin: 1em;margin-top: auto;">
                     <h3>
@@ -191,7 +191,7 @@
             </template>
         </Sidebar>
     </div>
-</template>
+</template> 
   
 <script>
 // Mixins
@@ -215,6 +215,7 @@ import Locale from '../cms/Locale.vue';
 import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
+import Chart from "chart.js/auto"
 
 import cloneDeep from 'lodash/cloneDeep';
 
@@ -240,23 +241,23 @@ export default {
     components: {
         Button,
         LabeledInputContainer,
+        ListColorIndicator,
         Locale,
         MapToolbar,
+        MultiSelectList,
+        MultiSelectListItem,
         Sidebar,
         Timeline,
         TreasureTable,
-        MultiSelectList,
-        MultiSelectListItem,
-        ListColorIndicator,
     },
     data: function () {
         return {
+            chart: null,
             filters: {},
             painter: null,
-            chart: null,
-            treasures: [],
             selectedTreasureIds: [],
             timelineChart: null,
+            treasures: [],
             yearCountData: {},
         };
     },
@@ -378,7 +379,45 @@ export default {
 
         const result = await Query.raw(`{mintRegion { id name location }}`)
         this.mintRegions = result.data.data.mintRegion
-        console.log(this.mintRegions)
+
+
+        const diagramCanvas = this.$refs.diagramCanvas
+        const diagramContext = diagramCanvas.getContext('2d')
+        this.chart = new Chart(diagramContext, {
+            type: 'pie',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [12, 19, 3, 5, 2, 3],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        })
+
 
         const mlms = this.L.featureGroup()
         this.mintRegions.forEach(region => {
@@ -453,29 +492,49 @@ export default {
             if (value) {
 
 
-                const map = {}
+                let map = {}
+                let labels = []
 
-                this.selectedTreasures.forEach((treasure, index) => {
+                if (value === "fragment") {
 
-                    treasure.items.forEach(itemArr => {
-                        itemArr.items.forEach(item => {
-                            if (item[value]) {
-                                const name = item[value].name || "No name"
-                                if (!map[name]) {
-                                    map[name] = 0
-                                }
-                                map[name] += parseInt(item.count) || 1
-                            }
+                    map = {
+                        "fragment": 0,
+                        "no_fragment": 0
+                    }
+
+                    labels = Object.keys(map).map(key => {
+                        return this.$t(`property.label.fragment.${key}`)
+                    })
+
+                    this.selectedTreasures.forEach((treasure, index) => {
+                        treasure.items.forEach(itemArr => {
+                            itemArr.items.forEach(item => {
+                                let target = (item.fragment) ? "fragment" : "no_fragment"
+                                map[target] += parseInt(item.count) || 1
+                            })
                         })
                     })
-                })
+                } else {
+                    this.selectedTreasures.forEach((treasure, index) => {
+                        treasure.items.forEach(itemArr => {
+                            itemArr.items.forEach(item => {
+                                if (item[value]) {
+                                    const name = item[value].name || "No name"
+                                    if (!map[name]) {
+                                        map[name] = 0
+                                    }
+                                    map[name] += parseInt(item.count) || 1
+                                }
+                            })
+                        })
+                    })
 
-                // const canvas = this.$refs.diagramCanvas
-                // const ctx = canvas.getContext('2d')
-                // const chart = new Chart(ctx, {
-                //     type: 'pie',
-                //     data: map
-                // })
+                    labels = Object.keys(map)
+                }
+
+                this.chart.data.labels = labels
+                this.chart.data.datasets[0].data = Object.values(map)
+                this.chart.update()
 
             }
         },
