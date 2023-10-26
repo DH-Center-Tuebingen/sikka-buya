@@ -10,6 +10,11 @@
 
             <table>
                 <tbody>
+                    <tr v-if="selectedTreasures.length == 0">
+                        <Info :always-show="true">
+                            <Locale path="map.hoards.message.no_mints_in_list" />
+                        </Info>
+                    </tr>
                     <tr
                         v-for="mint of mints"
                         :key="`mint-list-item-${mint.id}`"
@@ -234,6 +239,7 @@ import { MintLocationMarker } from "../../models/mintlocation"
 import { latLng } from 'leaflet';
 
 import L from 'leaflet'
+import Info from '../forms/Info.vue';
 
 
 
@@ -249,6 +255,7 @@ export default {
         Sidebar,
         Timeline,
         TreasureTable,
+        Info
     },
     data: function () {
         return {
@@ -408,7 +415,7 @@ export default {
                     const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
                     if (!point?.properties?.radius) {
                         const mlm = new MintLocationMarker(region)
-                        return mlm.create(latlng)
+                        return mlm.create(latlng, { size: 4 })
                     } else {
                         return L.circle(latlng, point.properties.radius, {
                             color: "#333",
@@ -426,42 +433,18 @@ export default {
         mlms.addTo(this.map)
 
 
-        // this.$nextTick(() => {
-        //     for (let [key, val] of Object.entries(this.$route.query)) {
-        //         if (
-        //             key.startsWith(queryPrefix) &&
-        //             this.$refs?.catalogFilter?.activeFilters
-        //         ) {
-        //             let value = val;
-
-        //             const filterKey = key.replace(queryPrefix, '');
-        //             try {
-        //                 value = JSON.parse(val);
-        //             } catch (e) {
-        //                 console.warn(e);
-        //             }
-
-        //             this.$refs.catalogFilter.setFilter(filterKey, value);
-        //         }
-        //     }
-
-        //     // We clear the URL params after we have set the filters
-        //     // This is to prevent the filters from being applied again on reload.
-        //     // The values are stored anyways in the localstorage.
-        //     URLParams.clear()
-        // });
-
         await this.initTimeline();
         this.updateTimeline(true);
-
         window.addEventListener('resize', this.resizeCanvas);
-
         this.update()
 
         //this is a hack to make sure the diagram is updated after the map is loaded
         setTimeout(() => {
             this.updateDiagram()
         }, 100)
+
+
+        this.map.setMaxBounds(null)
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeCanvas);
@@ -504,7 +487,7 @@ export default {
                     }
 
                     Object.keys(map).forEach(key => {
-                        map[key].label = this.$t(`property.label.fragment.${key}`)
+                        map[key].label = this.$tc(`property.label.fragment.${key}`)
                     })
 
                     this.selectedTreasures.forEach((treasure, index) => {
