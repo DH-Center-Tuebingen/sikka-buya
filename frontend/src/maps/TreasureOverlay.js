@@ -36,22 +36,6 @@ export default class TreasureOverlay extends Overlay {
         this.bringTreasureToFront = this.bringTreasureToFront.bind(this)
     }
 
-
-    get colors() {
-        return [
-            "#ff0080",
-            "#9d3cff",
-            "#54c8b8",
-            "#ffff00",
-            "#ffb09d",
-            "#802b40",
-            "#00ffff",
-            "#ffffff",
-            "#00ff00",
-        ]
-    }
-
-
     async fetch() {
         let treasures = null
         try {
@@ -133,7 +117,7 @@ export default class TreasureOverlay extends Overlay {
 
             const clone = cloneDeep(treasure)
 
-            if (selectedTreasures.length > 0 && selectedTreasures.indexOf(treasure.id) !== -1) {
+            if (selectedTreasures.indexOf(treasure.id) !== -1) {
                 clone.selected = true
             }
 
@@ -154,7 +138,7 @@ export default class TreasureOverlay extends Overlay {
         }
 
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
-        for (let [index, treasure] of selectedTreasures.entries()) {
+        for (let treasure of selectedTreasures.values()) {
             const color = treasure.color
 
             const style = {
@@ -193,9 +177,6 @@ export default class TreasureOverlay extends Overlay {
                 const fromRadius = properties.radius || 0
 
                 treasureGeometries.push(findLocation)
-
-                const maxWidth = 20
-                const minWidth = 1
 
                 if (treasure.items) {
 
@@ -276,6 +257,7 @@ export default class TreasureOverlay extends Overlay {
 
     showClickableTreasureArea(treasures) {
         let features = []
+        console.log("showClickableTreasureArea", treasures)
         treasures.forEach(treasure => {
             if (treasure.location) {
                 const treasureLocation = cloneDeep(treasure.location)
@@ -287,6 +269,7 @@ export default class TreasureOverlay extends Overlay {
                 treasureLocation.properties.force = true
                 treasureLocation.properties.style = {
                     color: "#ffffff",
+                    weight: 3,
                 }
 
                 features.push(treasureLocation)

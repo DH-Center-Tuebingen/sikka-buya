@@ -456,6 +456,12 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
+        mounted_and_loaded_mixin_mountedAndLoaded(){
+            this.removeInvalidIds()
+        },
+        removeInvalidIds(){
+            this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
+        },
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
@@ -561,6 +567,7 @@ export default {
             this.filters = {}
         },
         async update() {
+            console.log(this.selectedTreasureIds)
             await this.overlay.update({
                 selections: {
                     treasures: this.selectedTreasureIds
