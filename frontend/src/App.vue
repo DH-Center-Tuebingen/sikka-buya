@@ -704,4 +704,14 @@ a {
 .black {
   color: $black;
 }
+
+
+.hideable-transform {
+  transform: translateY(0);
+  transition: transform 0.3s;
+}
+
+.hide-transform-bottom {
+  transform: translateY(100%) !important;
+}
 </style>

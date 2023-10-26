@@ -62,6 +62,7 @@ export default class TreasureOverlay extends Overlay {
                 location 
                 timespan {from to}
                 description
+                color
                 items {
                     coinType {
                         projectId
@@ -107,7 +108,6 @@ export default class TreasureOverlay extends Overlay {
     transform(treasures, selections = { treasures: [] }) {
 
         let transformedData = []
-        let colorIndex = 0
         treasures.forEach(treasure => {
 
             const selectedTreasures = (Array.isArray(selections.treasures)) ? selections.treasures : []
@@ -134,10 +134,9 @@ export default class TreasureOverlay extends Overlay {
             const clone = cloneDeep(treasure)
 
             if (selectedTreasures.length > 0 && selectedTreasures.indexOf(treasure.id) !== -1) {
-                clone.color = this.colors[colorIndex % this.colors.length]
                 clone.selected = true
-                colorIndex++
             }
+
             clone.items = Object.values(items)
             transformedData.push(clone)
         })
@@ -154,9 +153,8 @@ export default class TreasureOverlay extends Overlay {
             geoJSON.push(...geom)
         }
 
-
-        for (let [index, treasure] of treasures.entries()) {
-            if (!treasure.selected) continue
+        const selectedTreasures = treasures.filter((treasure) => treasure.selected)
+        for (let [index, treasure] of selectedTreasures.entries()) {
             const color = treasure.color
 
             const style = {

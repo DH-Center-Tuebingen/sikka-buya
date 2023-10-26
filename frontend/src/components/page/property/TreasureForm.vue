@@ -25,6 +25,16 @@
 
         <LabeledInputContainer>
             <template #label>
+                <Locale path="general.color" />
+            </template>
+            <ColorInput
+                v-model="value.color"
+                id="treasure-color-input"
+            />
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+            <template #label>
                 <Locale path="general.description" />
             </template>
 
@@ -124,26 +134,28 @@ import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
 import { TreasureItemsImporter } from "@/models/importer"
 import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
+import ColorInput from '../../forms/ColorInput.vue';
 
 const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
 
 export default {
     mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure" })],
     components: {
-        ErrorMessage,
-        FileUploadButton,
-        FormList,
-        LabeledInputContainer,
-        List,
-        LoadingSpinner,
-        Locale,
-        LocationInput,
-        PropertyFormWrapper,
-        RangeInput,
-        SimpleFormattedField,
-        Toggle,
-        TreasureItemForm,
-    },
+    ErrorMessage,
+    FileUploadButton,
+    FormList,
+    LabeledInputContainer,
+    List,
+    LoadingSpinner,
+    Locale,
+    LocationInput,
+    PropertyFormWrapper,
+    RangeInput,
+    SimpleFormattedField,
+    Toggle,
+    TreasureItemForm,
+    ColorInput
+},
     data() {
         return {
             value: {
@@ -162,7 +174,7 @@ export default {
         this.property_form_mixin_mount()
     },
     methods: {
-        updateLocation(value){
+        updateLocation(value) {
             this.value.location = value
         },
         onPropertyLoaded() {
@@ -175,7 +187,7 @@ export default {
         getProperty: async function (id) {
             let treasure = await new Treasure().get(id)
             let location = treasure.location || defaultLocation
-            
+
             treasure.location = location
             this.$refs.descriptionField.setContent(treasure.description)
 
@@ -186,6 +198,7 @@ export default {
         updateProperty: async function () {
             const treasure = new Treasure({
                 name: this.value.name,
+                color: this.value.color,
                 location: this.$refs.locationInput.getGeoJSON(),
                 description: this.$refs.descriptionField.getContent(),
                 timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },

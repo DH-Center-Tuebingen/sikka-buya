@@ -41,7 +41,13 @@
             />
         </div>
         <div class="center-ui center-ui-center"></div>
-        <div class="center-ui center-ui-bottom">
+        <div
+            class="center-ui center-ui-bottom"
+            :class="{
+                'hideable-transform': true,
+                'hide-transform-bottom': (selectedTreasures.length === 0)
+            }"
+        >
             <Timeline
                 class="ui-element"
                 :value="raw_timeline.value"
@@ -143,7 +149,7 @@
                     >
                         <template #before>
                             <ListColorIndicator
-                                :color="treasure.color"
+                                :color="(isTreasureSelected(treasure.id))? treasure.color : 'whitesmoke'"
                                 default-color="transparent"
                             />
                         </template>
@@ -524,11 +530,7 @@ export default {
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
                 this.chart.data.labels = mapValues.map(obj => obj.label)
                 this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
-
-                console.log(this.chart.data)
-
                 this.chart.update()
-
             }
         },
 

@@ -78,21 +78,30 @@ class Treasure extends Table {
         }
     }
 
-    static async add({ name = "", items = [], location = null, timespan = { from: null, to: null }, description = "" } = {}) {
+    static async add({ name = "",
+        items = [],
+        location = null,
+        timespan = {
+            from: null,
+            to: null
+        },
+        description = "",
+        color = null } = {}) {
+
         let { geometry: _loc, properties } = GeoJSON.separate(location)
         location = _loc
 
-
         return WriteableDatabase.tx(async t => {
-            const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description ) 
+            const { id } = await t.one(`INSERT INTO treasure (name, location, properties, earliest_year, latest_year, description, color ) 
             VALUES (
                 $[name],
                 ${location ? "ST_GeomFromGeoJSON($[location])" : null},
                 $[properties],
                 $[earliestYear],
                 $[latestYear],
-                $[description]) 
-            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
+                $[description],
+                $[color]) 
+            RETURNING treasure.id`, { name, location, earliestYear: timespan.from, latestYear: timespan.to, description, properties, color })
 
             await this.insertItems(t, id, items)
         })
@@ -100,7 +109,7 @@ class Treasure extends Table {
         // 
     }
 
-    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, description = "" } = {}) {
+    static async update(id, { name = "", location = null, items = [], timespan = { from: null, to: null }, description = "", color = null } = {}) {
         if (id == null) throw new Error("Treasure ID is required")
 
         let { geometry, properties } = GeoJSON.separate(location)
@@ -114,8 +123,20 @@ class Treasure extends Table {
             properties=$[properties],
             earliest_year=$[earliestYear],
             latest_year=$[latestYear],
-            description=$[description] 
-            WHERE id=$[id]`, { name, location, id, earliestYear: timespan.from, latestYear: timespan.to, description, properties })
+            description=$[description],
+            color=$[color]
+            WHERE id=$[id]`,
+                {
+                    name,
+                    location,
+                    id,
+                    earliestYear: timespan.from,
+                    latestYear: timespan.to,
+                    description,
+                    properties,
+                    color
+                }
+            )
             await this.insertItems(t, id, items)
         })
     }
@@ -191,7 +212,8 @@ class Treasure extends Table {
 
             treasures = await t.manyOrNone(`
             SELECT 
-            treasure.id,
+                    treasure.id,
+                    treasure.color,
                     treasure.name,
                     treasure.earliest_year,
                     treasure.latest_year,

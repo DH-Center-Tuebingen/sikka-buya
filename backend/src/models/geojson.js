@@ -18,11 +18,13 @@ class GeoJSON {
     }
 
     static separate(obj) {
-        if (!obj.type) throw new Error(`GeoJSON object needs a type!`)
-
         let feature = {
             geometry: null,
             properties: null
+        }
+
+        if (!obj?.type) {
+            return feature
         }
 
         switch (obj.type.toLowerCase()) {

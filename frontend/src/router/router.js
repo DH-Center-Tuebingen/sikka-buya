@@ -361,6 +361,13 @@ const routes = [
               property: "material"
             },
             component: ColorOverview
+          }, {
+            path: "treasure",
+            name: "TreasureOverview",
+            props: {
+              property: "treasure"
+            },
+            component: ColorOverview
           },
           {
             path: ":property",

@@ -21,7 +21,8 @@ export class Treasure {
         description = null,
         location = null,
         timespan = { from: null, to: null },
-        items = []
+        items = [],
+        color = null,
     } = {}) {
         this.id = id
         this.name = name
@@ -29,6 +30,7 @@ export class Treasure {
         this.location = location
         this.timespan = timespan
         this.items = items
+        this.color = color
     }
 
     async upsert() {
@@ -47,6 +49,7 @@ export class Treasure {
                 "name",
                 "location",
                 "description",
+                "color",
                 { timespan: ["from", "to"] },
                 {
                     items: [
@@ -73,9 +76,9 @@ export class Treasure {
 
         let coordinates = location?.coordinates || location?.geometry?.coordinates || []
 
-        if(!Array.isArray(coordinates)) return null
+        if (!Array.isArray(coordinates)) return null
         let flat = coordinates.flat(Infinity)
-        if(flat.length === 0) return null
+        if (flat.length === 0) return null
 
         return location
     }
@@ -90,6 +93,7 @@ export class Treasure {
                 name: this.name,
                 location: this.fixLocation(this.location),
                 description: this.description,
+                color: this.color,
                 timespan: this.timespan,
                 items: this.items
             }
@@ -97,7 +101,6 @@ export class Treasure {
     }
 
     async update(id) {
-
         let location = this.fixLocation(this.location)
         await Query.raw(`
         mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
@@ -109,6 +112,7 @@ export class Treasure {
                 name: this.name,
                 location,
                 description: this.description,
+                color: this.color,
                 timespan: this.timespan,
                 items: this.items
             }
