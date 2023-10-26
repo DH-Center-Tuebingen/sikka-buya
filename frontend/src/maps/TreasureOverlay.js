@@ -74,6 +74,7 @@ export default class TreasureOverlay extends Overlay {
                     material {
                         id
                         name
+                        color
                     }
                     mintRegion {
                         id
@@ -363,10 +364,10 @@ export default class TreasureOverlay extends Overlay {
         if (count != null && totalCount != null) {
             marker = L.shapeMarker(latlng, { shape: "square", radius: size, fill: false })
 
-        //     marker.bindTooltip(`
-        // ${feature.properties.mint} (${feature.properties.hoard})<br>
-        // ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
-        // ` , { sticky: true })
+            //     marker.bindTooltip(`
+            // ${feature.properties.mint} (${feature.properties.hoard})<br>
+            // ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
+            // ` , { sticky: true })
         }
 
         return marker
@@ -421,7 +422,7 @@ export default class TreasureOverlay extends Overlay {
         // Use the area as value for the radius
         const marker = this.createRectMarker(latlng, feature)
         return this.extendBorder(marker, feature, this.createRectMarker.bind(this, latlng, feature))
-        
+
     }
 
     repaint() {
@@ -447,7 +448,7 @@ export default class TreasureOverlay extends Overlay {
             },
             onEachFeature: function (feature, layer) {
                 if (feature?.properties?.text) {
-                    layer.bindTooltip(feature.properties.text, {sticky: true})
+                    layer.bindTooltip(feature.properties.text, { sticky: true })
                 }
             }
         }

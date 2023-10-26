@@ -1,5 +1,5 @@
 <template>
-    <div class="material-map ui">
+    <div class="treasure-map ui">
         <Sidebar>
             <template #title>
                 <Locale
@@ -154,11 +154,12 @@
                     </div>
                 </template>
             </MultiSelectList>
-            <template
-                #footer
-                v-show="this.selectedTreasures.length > 0"
-            >
-                <div style="margin: 1em;margin-top: auto;">
+            <template #footer>
+                <div
+                    class="diagram-view"
+                    :class="{ hide: !(selectedTreasures.length > 0) }"
+                    style="margin: 1em;margin-top: auto;"
+                >
                     <h3>
                         <Locale path="label.diagram" />
                     </h3>
@@ -181,7 +182,6 @@
                     </select>
 
                     <canvas
-                        style="background-color: white;"
                         height="300px"
                         ref="diagramCanvas"
                     >
@@ -386,33 +386,14 @@ export default {
         this.chart = new Chart(diagramContext, {
             type: 'pie',
             data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                labels: [],
                 datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
                 }]
             },
             options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+                plugins: {
+                    legend: {
+                        position: 'bottom'
                     }
                 }
             }
@@ -489,28 +470,48 @@ export default {
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
+
+            const colors = [
+                [255, 99, 132],
+                [54, 162, 235],
+                [255, 206, 86],
+                [75, 192, 192],
+                [153, 102, 255],
+                [255, 159, 64],
+            ]
+
+            function getColor(obj) {
+                console.log(obj)
+                return obj?.color ? obj.color : `rgb(${colors.pop().join(",")})`
+            }
+
             if (value) {
-
-
                 let map = {}
-                let labels = []
 
                 if (value === "fragment") {
 
                     map = {
-                        "fragment": 0,
-                        "no_fragment": 0
+                        "fragment": {
+                            label: null,
+                            count: 0,
+                            color: getColor(),
+                        },
+                        "no_fragment": {
+                            label: null,
+                            count: 0,
+                            color: getColor(),
+                        },
                     }
 
-                    labels = Object.keys(map).map(key => {
-                        return this.$t(`property.label.fragment.${key}`)
+                    Object.keys(map).forEach(key => {
+                        map[key].label = this.$t(`property.label.fragment.${key}`)
                     })
 
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
                                 let target = (item.fragment) ? "fragment" : "no_fragment"
-                                map[target] += parseInt(item.count) || 1
+                                map[target].count += parseInt(item.count) || 1
                             })
                         })
                     })
@@ -518,22 +519,31 @@ export default {
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
-                                if (item[value]) {
-                                    const name = item[value].name || "No name"
-                                    if (!map[name]) {
-                                        map[name] = 0
+                                const count = parseInt(item.count) || 1
+                                const color = getColor(item[value])
+                                console.log(item[value])
+                                const name = item[value]?.name || this.$t(`property.label.${value}.no_name`)
+                                if (!map[name]) {
+                                    map[name] = {
+                                        count: 0,
+                                        color: color,
+                                        label: name
                                     }
-                                    map[name] += parseInt(item.count) || 1
                                 }
+                                map[name].count += count
                             })
                         })
                     })
-
-                    labels = Object.keys(map)
                 }
 
-                this.chart.data.labels = labels
-                this.chart.data.datasets[0].data = Object.values(map)
+                const mapValues = Object.values(map)
+                console.log(mapValues)
+                this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
+                this.chart.data.labels = mapValues.map(obj => obj.label)
+                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
+
+                console.log(this.chart.data)
+
                 this.chart.update()
 
             }
@@ -693,10 +703,27 @@ export default {
     }
 };
 </script>
+
   
 <style lang="scss" scoped>
 table {
     width: 100%;
+}
+
+.diagram-view {
+    display: flex;
+    flex-direction: column;
+    gap: $padding;
+    height: 420px;
+    transition: all 0.3s ease-in;
+
+    select {
+        height: 40px;
+    }
+
+    &.hide {
+        height: 0;
+    }
 }
 
 .timeline {
