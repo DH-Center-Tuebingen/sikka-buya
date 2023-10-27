@@ -47,6 +47,79 @@ export class Graph {
 }
 
 
+
+
+
+export class SplitYGraph extends Graph {
+
+    constructor(data, { topMax = 0, bottomMax = 0, offset = 0, hlines = false, contextStyles = {}, colors = [] } = {}) {
+        super(data, { contextStyles })
+        this.topMax = topMax
+        this.bottomMax = bottomMax
+        this.offset = offset
+        this.hlines = hlines
+        this.yMax = topMax + bottomMax
+        this.colors = colors
+    }
+
+    get yOptions() {
+        return { max: this.yMax, offset: this.offset, bottomOffset: this.offset }
+    }
+
+    center(chart) {
+        return chart.y(this.bottomMax, this.yOptions)
+    }
+
+
+    height(chart, value) {
+        return chart.height(value, this.yOptions)
+    }
+
+    y(chart, value, isTop = false) {
+        return chart.y(value, this.yOptions)
+    }
+
+    draw(context, chart) {
+        super.draw(context)
+
+        if (this.hlines) {
+            this.drawHorizontalLines(context, chart)
+        }
+    }
+
+    drawHorizontalLines(context, chart) {
+        const steps = [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000]
+        const step = steps.find(step => step > this.yMax / 10)
+        const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 5 }
+        context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+
+
+
+        for (let n = 0; n < 2; n++) {
+            for (let i = step; i < this.yMax; i += step) {
+                let y
+                if (n === 1)
+                    y = this.center(chart) + this.height(chart, i)
+                else
+                    y = this.center(chart) - this.height(chart, i)
+
+
+                context.font = this.hlines?.font ? this.hlines.font : "12px sans-serif"
+                context.strokeText(i, padding.left, y - padding.bottom)
+                context.beginPath();
+
+                context.moveTo(0, y)
+                context.lineTo(chart.canvas.width, y)
+                context.stroke()
+            }
+        }
+
+
+    }
+
+}
+
+
 export class YGraph extends Graph {
     constructor(data, { yMax = 0, yOffset = 0, hlines = false, contextStyles = {} } = {}) {
         super(data, { contextStyles })
@@ -108,7 +181,51 @@ const defaultColors = [
     "#17becf",
 ]
 
+export class MirrorGraph extends SplitYGraph {
 
+    draw(context, chart) {
+        super.draw(context, chart)
+        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+
+
+        const center = this.center(chart)
+        context.beginPath();
+        context.lineWidth = 1
+        context.strokeStyle = "#111"
+        context.moveTo(0, center)
+        context.lineTo(chart.canvas.width, center)
+        context.stroke()
+
+
+        this.data.forEach(({ x: xVal, y }) => {
+            if (!isArray(y)) y = [y]
+            for (let i = 0; i < y.length && i < 2; i++) {
+
+
+
+                const yVal = y[i]
+                const color = this.colors[i % this.colors.length]
+
+                context.beginPath();
+                context.lineWidth = .5
+                context.fillStyle = color
+
+                const x = chart.x(xVal) - width / 2
+                const height = this.height(chart, yVal)
+                if (i === 0) {
+                    context.rect(x, center - height, width, height)
+                } else {
+                    context.rect(x, center, width, height)
+                }
+
+
+
+                context.fill()
+                context.stroke()
+            }
+        })
+    }
+}
 
 export class BarGraph extends YGraph {
     constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, contextStyles = {} } = {}) {
@@ -312,8 +429,8 @@ export default class TimelineChart extends Chart {
         return widthPerYear
     }
 
-    height(val, { max = null, offset = 0 } = {}) {
-        const height = this.canvas.height - offset
+    height(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
+        const height = this.canvas.height - offset - bottomOffset
 
         if (max) {
             return (val / max) * height
@@ -323,13 +440,13 @@ export default class TimelineChart extends Chart {
     }
 
 
-    y(val, { max = null, offset = 0 } = {}) {
+    y(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
         const height = this.canvas.height - offset
 
         if (max) {
-            return (height - (val / max) * height) + offset
+            return (height - (val / max) * height) + offset - bottomOffset
         } else
-            return height - val + offset;
+            return height - val + offset - bottomOffset;
     }
 
     x(val, pos = "center") {

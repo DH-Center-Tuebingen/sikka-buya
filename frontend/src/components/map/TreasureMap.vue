@@ -238,7 +238,7 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
-import TimelineChart, { BarGraph } from '../../models/timeline/TimelineChart';
+import TimelineChart, { BarGraph, MirrorGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
@@ -353,7 +353,6 @@ export default {
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data
-                console.log(data)
             },
             onEnd: () => {
                 this.mounted_and_loaded_mixin_loaded("data")
@@ -513,7 +512,6 @@ export default {
                         })
                     })
                 } else {
-                    console.log("treasure", this.selectedTreasures)
 
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
@@ -532,7 +530,6 @@ export default {
                         })
                     })
                 }
-                console.log(map)
 
                 const mapValues = Object.values(map)
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
@@ -569,7 +566,6 @@ export default {
             this.filters = {}
         },
         async update() {
-            console.log(this.selectedTreasureIds)
             await this.overlay.update({
                 selections: {
                     treasures: this.selectedTreasureIds
@@ -586,15 +582,12 @@ export default {
 
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
 
-            let yMax = Object.entries(this.yearCountData)
-                .filter(([key]) => key !== "undefined")
-                .map(([_, val]) => {
-                    return val
-                })
-                .reduce((max, current) => {
-                    let currentMax = current.y.reduce((acc, a) => acc + a, 0)
-                    return Math.max(max, currentMax)
-                }, -Infinity)
+            let graph = null
+            if (this.selectedTreasureIds.length === 2) {
+                graph = this.updateMirrorGraph(data)
+            } else {
+                graph = this.updateBarGraph(data)
+            }
 
             const yearOffset = 2
             let from = 300
@@ -610,10 +603,43 @@ export default {
             })
 
             this.timelineChart.update({
-                graphs: new BarGraph(data, {
-                    hlines: true, colors: this.yearCountColors, yMax, yOffset: 10, maxWidth: 10
-                }),
+                graphs: graph,
                 timeline: this.timeline
+            })
+        },
+        updateBarGraph(data) {
+
+            let yMax = Object.entries(this.yearCountData)
+                .filter(([key]) => key !== "undefined")
+                .map(([_, val]) => {
+                    return val
+                })
+                .reduce((max, current) => {
+                    let currentMax = current.y.reduce((acc, a) => acc + a, 0)
+                    return Math.max(max, currentMax)
+                }, -Infinity)
+
+            return new BarGraph(data, {
+                hlines: true, colors: this.yearCountColors, yMax, yOffset: 10, maxWidth: 10
+            })
+        },
+        updateMirrorGraph(data) {
+
+            let topMax = 0
+            let bottomMax = 0
+
+            data.forEach((obj) => {
+                topMax = Math.max(topMax, obj.y[0])
+                bottomMax = Math.max(bottomMax, obj.y[1])
+            })
+
+            return new MirrorGraph(data, {
+                topMax,
+                bottomMax,
+                offset: 10,
+                bottomOffset: 10,
+                colors: this.yearCountColors,
+                hlines: true
             })
         },
         updateYearCount() {
