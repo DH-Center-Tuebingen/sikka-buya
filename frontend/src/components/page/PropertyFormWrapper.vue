@@ -83,6 +83,7 @@ export default {
     submit: function () {
       this.$emit('submit');
     },
+    // TODO: This should just emit the cancel event, it can be customly handled in the form-mixin.
     cancel: function () {
       if (this.overwriteRoute) {
         this.$router.push(this.overwriteRoute);

@@ -8,10 +8,10 @@
       class="checkbox"
       v-if="!noCheckbox"
     >
-      <label @click.stop="() => $emit('checkbox-selected')">
+      <label @click.stop="checkboxClicked">
         <div
           class="box"
-          :class="{ active: selected }"
+          :class="{ active: selected, disabled: checkboxDisabled }"
         ></div>
       </label>
     </div>
@@ -24,7 +24,15 @@ export default {
   props: {
     selected: Boolean,
     noCheckbox: Boolean,
+    checkboxDisabled: Boolean,
   },
+  methods: {
+    checkboxClicked(){
+      if (!this.checkboxDisabled) {
+        this.$emit('checkbox-selected');
+      }
+    }
+  }
 };
 </script>
 
@@ -40,6 +48,10 @@ export default {
 
   .box {
     position: relative;
+
+    &.disabled {
+      opacity: 0.5;
+    }
 
     &::after,
     &::before {

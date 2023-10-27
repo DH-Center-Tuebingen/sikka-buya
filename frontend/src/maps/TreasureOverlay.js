@@ -268,7 +268,7 @@ export default class TreasureOverlay extends Overlay {
                 treasureLocation.properties.onClick = "selectTreasure"
                 treasureLocation.properties.force = true
                 treasureLocation.properties.style = {
-                    color: "#ffffff",
+                    color: treasure.color || "#ffffff",
                     weight: 3,
                 }
 

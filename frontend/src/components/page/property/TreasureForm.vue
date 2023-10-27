@@ -3,6 +3,7 @@
         property="treasure"
         @submit="property_form_mixin_submit"
         @cancel="property_form_mixin_cancel"
+        :overwriteRoute="{ name: 'TreasureOverview' }"
         :loading="property_form_mixin_loading"
         :title="property_form_mixin_title"
         :error="property_form_mixin_error"
@@ -139,23 +140,23 @@ import ColorInput from '../../forms/ColorInput.vue';
 const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
 
 export default {
-    mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure" })],
+    mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure", overwriteCancelRoute: { name: "TreasureOverview" }})],
     components: {
-    ErrorMessage,
-    FileUploadButton,
-    FormList,
-    LabeledInputContainer,
-    List,
-    LoadingSpinner,
-    Locale,
-    LocationInput,
-    PropertyFormWrapper,
-    RangeInput,
-    SimpleFormattedField,
-    Toggle,
-    TreasureItemForm,
-    ColorInput
-},
+        ErrorMessage,
+        FileUploadButton,
+        FormList,
+        LabeledInputContainer,
+        List,
+        LoadingSpinner,
+        Locale,
+        LocationInput,
+        PropertyFormWrapper,
+        RangeInput,
+        SimpleFormattedField,
+        Toggle,
+        TreasureItemForm,
+        ColorInput
+    },
     data() {
         return {
             value: {

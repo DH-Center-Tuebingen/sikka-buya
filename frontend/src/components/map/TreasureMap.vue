@@ -142,14 +142,14 @@
                 <template v-for="treasure in treasures">
                     <MultiSelectListItem
                         :key="`list-item-${treasure.id}`"
-                        :no-checkbox="true"
                         :selected="isTreasureSelected(treasure.id)"
-                        @click.native="toggleTreasure(treasure.id)"
-                        @checkbox-selected="(val) => setTreasure(treasure.id, val)"
+                        :checkbox-disabled="selectedTreasures.length > 1 && !isTreasureSelected(treasure.id)"
+                        @click.native="setTreasure(treasure.id)"
+                        @checkbox-selected="() => toggleTreasure(treasure.id)"
                     >
                         <template #before>
                             <ListColorIndicator
-                                :color="(isTreasureSelected(treasure.id))? treasure.color : 'whitesmoke'"
+                                :color="treasure.color"
                                 default-color="transparent"
                             />
                         </template>
@@ -246,6 +246,7 @@ import { latLng } from 'leaflet';
 
 import L from 'leaflet'
 import Info from '../forms/Info.vue';
+import CoinSideGroup from '../display/CoinSideGroup.vue';
 
 
 
@@ -447,7 +448,7 @@ export default {
         //this is a hack to make sure the diagram is updated after the map is loaded
         setTimeout(() => {
             this.updateDiagram()
-        }, 100)
+        }, 1000)
 
 
         this.map.setMaxBounds(null)
@@ -456,32 +457,33 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
-        mounted_and_loaded_mixin_mountedAndLoaded(){
+        mounted_and_loaded_mixin_mountedAndLoaded() {
             this.removeInvalidIds()
         },
-        removeInvalidIds(){
+        removeInvalidIds() {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
         },
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
 
-            const colors = [
-                [255, 99, 132],
-                [54, 162, 235],
-                [255, 206, 86],
-                [75, 192, 192],
-                [153, 102, 255],
-                [255, 159, 64],
-            ]
-
-            function getColor(obj) {
-                console.log(obj)
-                return obj?.color ? obj.color : `rgb(${colors.pop().join(",")})`
-            }
-
             if (value) {
                 let map = {}
+
+                const colors = [
+                    [255, 99, 132],
+                    [54, 162, 235],
+                    [255, 206, 86],
+                    [75, 192, 192],
+                    [153, 102, 255],
+                    [255, 159, 64],
+                ]
+                let colorIdx = -1
+
+                function getColor(obj) {
+                    colorIdx = (++colorIdx % colors.length)
+                    return obj?.color ? obj.color : `rgb(${colors[(colorIdx)].join(",")})`
+                }
 
                 if (value === "fragment") {
 
@@ -511,18 +513,18 @@ export default {
                         })
                     })
                 } else {
+                    console.log("treasure", this.selectedTreasures)
+
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
                                 const count = parseInt(item.count) || 1
-                                const color = getColor(item[value])
-                                console.log(item[value])
-                                const name = item[value]?.name || this.$t(`property.label.${value}.no_name`)
+                                const name = item[value]?.name || "no_name"
                                 if (!map[name]) {
                                     map[name] = {
                                         count: 0,
-                                        color: color,
-                                        label: name
+                                        color: getColor(item[value]),
+                                        label: item[value]?.name || this.$t(`property.label.${value}.no_name`)
                                     }
                                 }
                                 map[name].count += count
@@ -530,9 +532,9 @@ export default {
                         })
                     })
                 }
+                console.log(map)
 
                 const mapValues = Object.values(map)
-                console.log(mapValues)
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
                 this.chart.data.labels = mapValues.map(obj => obj.label)
                 this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
@@ -590,13 +592,9 @@ export default {
                     return val
                 })
                 .reduce((max, current) => {
-                    console.log(current, max)
                     let currentMax = current.y.reduce((acc, a) => acc + a, 0)
                     return Math.max(max, currentMax)
                 }, -Infinity)
-
-            console.log(yMax)
-
 
             const yearOffset = 2
             let from = 300
@@ -676,21 +674,14 @@ export default {
         toggleTreasure(id) {
             if (this.isTreasureSelected(id)) {
                 this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
-                this.selectionChanged()
             } else {
                 this.selectedTreasureIds.push(id)
-                this.selectionChanged()
             }
+            this.selectionChanged()
         },
-        setTreasure(id, value) {
-            const selected = this.isTreasureSelected(id)
-            if (value && !selected) {
-                this.selectedTreasureIds.push(id)
-                this.selectionChanged()
-            } else if (!value && selected) {
-                this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
-                this.selectionChanged()
-            }
+        setTreasure(id) {
+            this.selectedTreasureIds = [id]
+            this.selectionChanged()
         }
     }
 };
@@ -700,6 +691,7 @@ export default {
 <style lang="scss" scoped>
 table {
     width: 100%;
+    padding-right: 10px;
 }
 
 .diagram-view {
@@ -721,7 +713,7 @@ table {
 .timeline {
     margin: 1em;
     margin-bottom: 1.5em;
-    height: 120px;
+    height: 180px;
     max-height: 20vh;
     min-height: 100px;
 }

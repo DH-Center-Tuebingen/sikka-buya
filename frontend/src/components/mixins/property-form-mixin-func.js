@@ -1,4 +1,5 @@
-export default function ({ variable = null, property = null } = {}) {
+export default function ({ variable = null, property = null, overwriteCancelRoute = null } = {}) {
+
 
     if (!property) {
         throw new Error("property must be defined")
@@ -6,6 +7,8 @@ export default function ({ variable = null, property = null } = {}) {
 
     if (!variable)
         variable = property
+
+    const cancelRoute = (overwriteCancelRoute) ? overwriteCancelRoute : { path: `/editor/${property}` }
 
     return {
         mounted() {
@@ -30,7 +33,7 @@ export default function ({ variable = null, property = null } = {}) {
             }
         },
         methods: {
-            property_form_mixin_mount(){
+            property_form_mixin_mount() {
                 this.property_form_mixin_initialize()
             },
             // Methods that must be implemented
@@ -41,7 +44,7 @@ export default function ({ variable = null, property = null } = {}) {
             updateProperty: async function (data) {
                 throw new Error("updateProperty not implemented", data);
             },
-            onPropertyLoaded: async function(){
+            onPropertyLoaded: async function () {
                 // optional callback when the component is ready.
             },
             //=================================
@@ -81,7 +84,7 @@ export default function ({ variable = null, property = null } = {}) {
                 this.property_form_mixin_loading = false
             },
             property_form_mixin_cancel: function () {
-                this.$router.push({ path: `/editor/${property}` })
+                this.$router.push(cancelRoute)
             },
             property_form_mixin_setDirty(value = true) {
                 this.property_form_mixin_dirty = value

@@ -139,6 +139,7 @@ export default {
         person: 'PersonOverview',
         material: 'MaterialOverview',
         type: 'TypeOverview',
+        treasure: 'TreasureOverview',
       };
 
       props = props.sort((a, b) =>
