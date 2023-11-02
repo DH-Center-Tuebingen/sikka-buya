@@ -114,6 +114,17 @@ input TreasureInput {
   items: [TreasureItemInput]
 }
 
+type TreasureCount {
+  treasure: Treasure
+  count: Int
+}
+
+type TreasuresByMint {
+  mint: Mint
+  totalCount: Int
+  treasures: [TreasureCount]
+}
+
 type CoinType {
   avers: CoinSideInformation
   caliph: Person
@@ -361,6 +372,7 @@ type Query {
   searchTreasure(text:String): [Treasure] 
   getTreasure(id:ID!): Treasure
   treasureItem(treasure:ID): [TreasureItem]
+  getTreasuresByMintSelection(mintIds:[ID]): [TreasuresByMint]
 
   
   # TODO: missing Tests ---------------------------------------------

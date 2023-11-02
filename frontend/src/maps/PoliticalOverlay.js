@@ -56,7 +56,7 @@ export default class PoliticalOverlay extends Overlay {
 
 
 
-  async fetch(filters) {
+  async fetch({ filters } = {}) {
     if (isNaN(filters.yearOfMint)) throw new Error('Invalid yearOfMint filter!');
 
     filters.excludeFromMapApp = false

@@ -82,6 +82,21 @@ export class MintLocationMarker {
         return 6
     }
 
+
+    static get normalStyle() {
+        return {
+            fillColor: Color.White,
+            color: Color.DarkGray,
+        }
+    }
+
+    static get activeStyle() {
+        return {
+            fillColor: Color.DarkGray,
+            color: Color.White,
+        }
+    }
+
     create(latlng, { size = MintLocationMarker.defaultSize, active = false, added = false, removed = false, animationTime = 1000 } = {}) {
         const MintLocationMarkerSettings = new Settings(window, "MintLocationMarker")
 
@@ -94,13 +109,13 @@ export class MintLocationMarker {
             else if (removed) classList.push("removed")
         }
 
+        const style = (active) ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle
+
         const circleMarker = L.circleMarker(latlng, Object.assign(MintLocationMarkerSettings.load(), {
             radius: size,
-            fillColor: (active) ? Color.DarkGray : Color.White,
-            color: (active) ? Color.White : Color.DarkGray,
             weight: 1,
             className: classList.join(" ")
-        }))
+        }, style))
 
 
         if (isSpecial) {

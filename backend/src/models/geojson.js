@@ -6,6 +6,17 @@ class GeoJSON {
     static fields = ['type', 'coordinates']
 
 
+    static addProperties(geoJson, properties = {}) {
+        const { properties: existingProperties = {}, geometry } = GeoJSON.separate(geoJson)
+        Object.assign(existingProperties, properties)
+        return {
+            type: "Feature",
+            geometry,
+            properties: existingProperties
+        }
+    }
+
+
     static rebuild(location, properties) {
         if (properties?.isFeature) {
             delete properties.isFeature

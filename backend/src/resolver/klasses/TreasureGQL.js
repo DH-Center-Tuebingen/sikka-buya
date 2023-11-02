@@ -16,6 +16,7 @@ class TreasureGQL extends GQL {
             searchTreasure: (_, args, context, info) => Treasure.list(_, { filter: { name: args.text } }, context, info),
             getTreasure: (_, { id } = {}, context, info) => Treasure.get(id, context, info),
             treasure: (...args) => Treasure.list(...args),
+            getTreasuresByMintSelection: (_, { mintIds } = {}, context, info) => Treasure.treasuresByMints(_, { mintIds }, context, info),
         }
     }
 }

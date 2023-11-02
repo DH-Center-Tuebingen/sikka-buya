@@ -13,6 +13,9 @@ function bringToFront(e) {
     e.target.bringToFront()
 }
 
+// ON REFACTOR: I think trying to push all states in a single overlay is a bad idea.
+// It would be better to have a single overlay for each state.
+
 export default class TreasureOverlay extends Overlay {
 
     constructor(parent, settings, callbacks = {}) {
@@ -36,10 +39,50 @@ export default class TreasureOverlay extends Overlay {
         this.bringTreasureToFront = this.bringTreasureToFront.bind(this)
     }
 
-    async fetch() {
-        let treasures = null
+    async fetch({ selections = {} } = {}) {
+        let data = {
+            treasures: [],
+            treasuresByMint: []
+        }
+        const { mints = [] } = selections
         try {
-            const result = await Query.raw(`{
+            if (mints.length > 0)
+                data.treasuresByMint = await this.fetchTreasuresByMints(mints)
+
+            data.treasures = await this.fetchTreasures()
+
+        } catch (e) {
+            console.error(e)
+        }
+        return data
+    }
+
+    async fetchTreasuresByMints(mints) {
+        const result = await Query.raw(`
+        query GetTreasuresByMintSelection($mintIds: [ID]){
+            getTreasuresByMintSelection(mintIds: $mintIds){
+                totalCount
+                mint {
+                    id 
+                    name 
+                    location 
+                }
+                treasures {
+                    count
+                    treasure {
+                        id 
+                        name 
+                        location 
+                        color
+                    }
+                }
+            }}` , { mintIds: mints })
+
+        return result.data.data.getTreasuresByMintSelection
+    }
+
+    async fetchTreasures() {
+        const result = await Query.raw(`{
             treasure {
                 id
                 name
@@ -82,15 +125,13 @@ export default class TreasureOverlay extends Overlay {
             }
         }`, {})
 
-            treasures = result.data.data.treasure
-        } catch (e) {
-            console.error(e)
-        }
-        return treasures
+        return result.data.data.treasure
     }
 
-    transform(treasures, selections = { treasures: [] }) {
 
+    transform(data, selections = { treasures: [] }) {
+
+        const treasures = data.treasures
         let transformedData = []
         treasures.forEach(treasure => {
 
@@ -124,19 +165,153 @@ export default class TreasureOverlay extends Overlay {
             clone.items = Object.values(items)
             transformedData.push(clone)
         })
+        data.treasures = transformedData
 
-        return transformedData
+        return data
     }
 
-    toMapObject(treasures, selections = { treasures: [] }) {
+    toFeature(geoJson, properties = {}) {
+        if (geoJson.type.toLowerCase() !== "feature") {
+            geoJson = {
+                type: "Feature",
+                geometry: geoJson,
+                properties
+            }
+        }
+
+        Object.assign(geoJson.properties, properties)
+
+        return geoJson
+    }
+
+    toMapObject(data, selections = {}) {
         let geoJSON = []
         const extendBorder = 20
 
-        if (selections.treasures.length == 0) {
-            const geom = this.showClickableTreasureArea(treasures)
+        const {
+            treasures: selectedTreasureIds = [],
+            mints: selectedMintIds = []
+        } = selections
+
+        if (selectedTreasureIds.length == 0 && selectedMintIds.length == 0) {
+            const geom = this.showClickableTreasureArea(data.treasures, { extendBorder })
             geoJSON.push(...geom)
+        } else if (selectedMintIds.length > 0) {
+            geoJSON = this.createMintSelectionMapObjects(data.treasuresByMint, selectedMintIds, { extendBorder })
+        } else if (selectedTreasureIds.length > 0) {
+            geoJSON = this.createTreasureMapObjects(data.treasures, selectedTreasureIds, { extendBorder })
         }
 
+        return {
+            geoJSON
+        }
+    }
+
+
+    showClickableTreasureArea(treasures, { extendBorder = 20 } = {}) {
+        let features = []
+        treasures.forEach(treasure => {
+            if (treasure.location) {
+                const treasureLocation = cloneDeep(treasure.location)
+                if (!treasureLocation.properties) treasureLocation.properties = {}
+                treasureLocation.properties.treasureId = treasure.id
+                treasureLocation.properties.text = treasure.name
+                treasureLocation.properties.extendBorder = extendBorder
+                treasureLocation.properties.onClick = "selectTreasure"
+                treasureLocation.properties.force = true
+                treasureLocation.properties.style = {
+                    color: treasure.color || "#ffffff",
+                    weight: 3,
+                }
+
+                features.push(treasureLocation)
+            }
+        })
+
+        return features
+    }
+
+    createMintSelectionMapObjects(data, selectedMintIds, { extendBorder = 20 } = {}) {
+        let geoJSON = []
+        data.forEach(treasuresByMint => {
+            if (treasuresByMint?.mint?.location) {
+                let mintLocation = treasuresByMint.mint.location
+
+                mintLocation = this.toFeature(mintLocation, {
+                    isMint: false,
+                    isFocus: true,
+                })
+
+
+                if (treasuresByMint && Array.isArray(treasuresByMint.treasures)) {
+                    treasuresByMint.treasures.forEach(treasureCount => {
+                        let location = treasureCount.treasure.location
+                        const treasure = treasureCount.treasure
+
+                        if (location) {
+
+                            const color = treasure.color
+
+                            const text = `${treasure.name}: ${treasureCount.count} / ${treasuresByMint.totalCount} (${(100 * treasureCount.count / treasuresByMint.totalCount).toFixed(2)}%)`
+
+                            let mintArea = this.toFeature(location, {
+                                totalCount: treasuresByMint.totalCount,
+                                // count: treasureCount.count,
+                                isMint: true,
+                                text,
+                                style: {
+                                    color,
+                                    weight: 3,
+                                },
+                            })
+
+                            const locationCopy = cloneDeep(location)
+
+                            let rectangle = this.toFeature(locationCopy, {
+                                totalCount: treasuresByMint.totalCount,
+                                count: treasureCount.count,
+                                isMint: false,
+                                text,
+                                extendBorder,
+                                style: {
+                                    color,
+                                    weight: 3,
+                                },
+                            })
+
+                            const line = {
+                                type: "Feature",
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: [
+                                        mintLocation.geometry.coordinates,
+                                        location.geometry.coordinates
+                                    ]
+                                },
+                                properties: {
+                                    style: {
+                                        color,
+                                        weight: 1,
+                                    }
+                                }
+                            }
+
+                            geoJSON.push(line)
+                            geoJSON.push(mintArea)
+                            geoJSON.push(rectangle)
+                        } else {
+                            console.warn("No location for treasure", treasureCount.treasure)
+                        }
+                    })
+                }
+            }
+        })
+        return geoJSON
+    }
+
+
+    createTreasureMapObjects(treasures, selectedTreasureIds, { extendBorder = 20 } = {}) {
+        let geoJSON = []
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color
@@ -248,35 +423,7 @@ export default class TreasureOverlay extends Overlay {
             ])
         }
 
-
-        return {
-            geoJSON
-        }
-    }
-
-
-    showClickableTreasureArea(treasures) {
-        let features = []
-        console.log("showClickableTreasureArea", treasures)
-        treasures.forEach(treasure => {
-            if (treasure.location) {
-                const treasureLocation = cloneDeep(treasure.location)
-                if (!treasureLocation.properties) treasureLocation.properties = {}
-                treasureLocation.properties.treasureId = treasure.id
-                treasureLocation.properties.text = treasure.name
-                treasureLocation.properties.extendBorder = 20
-                treasureLocation.properties.onClick = "selectTreasure"
-                treasureLocation.properties.force = true
-                treasureLocation.properties.style = {
-                    color: treasure.color || "#ffffff",
-                    weight: 3,
-                }
-
-                features.push(treasureLocation)
-            }
-        })
-
-        return features
+        return geoJSON
     }
 
 
@@ -325,6 +472,7 @@ export default class TreasureOverlay extends Overlay {
 
     createRectMarker(latlng, feature) {
         let marker = null
+
         const { count = null, totalCount = null } = feature.properties
         const percent = 100 * (count / totalCount)
 
@@ -381,10 +529,6 @@ export default class TreasureOverlay extends Overlay {
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
             marker = this.extendBorder(marker, feature, super.createCircle.bind(this, latlng, feature, { selections, markerOptions }))
 
-            // if (feature.properties.text) {
-            //     marker.bindTooltip(feature.properties.text, { sticky: true })
-            // }
-
             const treasureId = feature.properties.treasureId
             if (feature.properties.onClick && treasureId != null) {
                 marker.on('click', () => this.select(treasureId))
@@ -400,9 +544,15 @@ export default class TreasureOverlay extends Overlay {
     }
 
     createMarker(latlng, feature) {
-        // Use the area as value for the radius
-        const marker = this.createRectMarker(latlng, feature)
-        return this.extendBorder(marker, feature, this.createRectMarker.bind(this, latlng, feature))
+        let marker
+        if (feature?.properties?.isFocus) {
+            marker = L.circleMarker(latlng, { radius: 15, fill: false, color: "red", weight: 3 })
+        } else {
+            // Use the area as value for the radius
+            marker = this.createRectMarker(latlng, feature)
+            marker = this.extendBorder(marker, feature, this.createRectMarker.bind(this, latlng, feature))
+        }
+        return marker
 
     }
 

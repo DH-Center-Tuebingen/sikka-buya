@@ -255,6 +255,52 @@ class Treasure extends Table {
 
         return treasures
     }
+
+
+    static async treasuresByMints(_, { mintIds = [] } = {}, context, info) {
+        if (!mintIds || mintIds.length == 0) return []
+
+        return Database.tx(async t => {
+            const result = []
+
+            const treasures = await (`Select id, name, location`)
+
+            for (let id of mintIds) {
+                const mint = await MintRegion.get(id, t)
+
+                const treasures = []
+                const amountForFind = await t.manyOrNone(`SELECT treasure as treasure_id, SUM(count) AS count from treasure_item WHERE mint_region = $[id] GROUP BY treasure`, { id })
+
+                let totalCount = 0
+                for (let { treasure_id, count } of amountForFind) {
+                    const treasure = await t.oneOrNone(`SELECT id, name, color, ST_AsGeoJSON(location)::jsonb as location, properties::jsonb as properties  FROM treasure WHERE id = $[treasure_id]`, { treasure_id })
+
+                    treasure.location = GeoJSON.rebuild(treasure.location, treasure.properties)
+
+                    console.log(treasure.location)
+
+                    if (treasure) {
+                        treasures.push({
+                            treasure,
+                            count
+                        })
+
+                        totalCount += parseInt(count) || 0
+                    }
+                }
+
+                result.push({
+                    mint,
+                    totalCount,
+                    treasures
+                })
+            }
+            console.log({ result })
+
+            return result
+        })
+
+    }
 }
 
 class TreasureItem {
@@ -365,6 +411,7 @@ class TreasureItem {
             material: async (transaction, id) => Material.get(id, { transaction }),
         }
     }
+
 }
 
 module.exports = Treasure

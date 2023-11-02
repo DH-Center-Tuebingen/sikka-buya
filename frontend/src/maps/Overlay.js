@@ -25,8 +25,8 @@ export default class Overlay {
         this._onFeatureGroupRemoved = onFeatureGroupRemoved
     }
 
-    async guardedFetch(filters) {
-        return this.fetchGuard.exec(filters)
+    async guardedFetch(data) {
+        return this.fetchGuard.exec(data)
     }
 
     /** Fetches the data from the server. */
@@ -150,12 +150,13 @@ export default class Overlay {
     }
 
 
+    // ON REFACTOR: Params should be a single object. 
     async update({
         filters = {},
         selections = {},
         markerOptions = {},
     } = {}) {
-        const data = await this.guardedFetch(filters)
+        const data = await this.guardedFetch({ filters, selections })
         if (this._onFetch) this._onFetch(data)
         if (!data) return null
 

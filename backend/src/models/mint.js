@@ -145,8 +145,9 @@ class Mint {
         ${this.JOIN}
         WHERE mi.id = $1; `
 
-        let mint = await transaction.one(query, [id])
-        this.postProcessGet(mint)
+        let mint = await transaction.oneOrNone(query, [id])
+        if (mint != null)
+            this.postProcessGet(mint)
         return mint
     }
 

@@ -10,14 +10,13 @@
 
             <table>
                 <tbody>
-                    <tr v-if="selectedTreasures.length == 0">
-                        <Info :always-show="true">
-                            <Locale path="map.hoards.message.no_mints_in_list" />
-                        </Info>
-                    </tr>
                     <tr
                         v-for="mint of mints"
                         :key="`mint-list-item-${mint.id}`"
+                        :class="{
+                            'selected': selectedMintIds.includes(mint.id)
+                        }"
+                        @click="selectMints([mint.id])"
                     >
                         <td>
                             {{ mint.name }}
@@ -242,7 +241,6 @@ import TimelineChart, { BarGraph, MirrorGraph } from '../../models/timeline/Time
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
-import { latLng } from 'leaflet';
 
 import L from 'leaflet'
 import Info from '../forms/Info.vue';
@@ -251,6 +249,7 @@ import CoinSideGroup from '../display/CoinSideGroup.vue';
 
 
 export default {
+    name: 'TreasureMap',
     components: {
         Button,
         LabeledInputContainer,
@@ -270,9 +269,12 @@ export default {
             filters: {},
             painter: null,
             selectedTreasureIds: [],
+            selectedMintIds: [],
             timelineChart: null,
             treasures: [],
             yearCountData: {},
+            mintRegions: [],
+            mintLocationMarkerGroup: null,
         };
     },
     mixins: [
@@ -307,7 +309,8 @@ export default {
         TimelineMixin(),
         settingsMixin(overlaySettings),
         LocaleStorageMixin("treasure-map", [
-            "selectedTreasureIds"
+            "selectedTreasureIds",
+            "selectedMintIds",
         ]),
         MountedAndLoadedMixin(['storage', 'data'])
     ],
@@ -325,39 +328,21 @@ export default {
             return t
         },
         mints() {
-            let mints = {}
-
-            this.selectedTreasures.forEach(t => {
-                t.items.forEach(item => {
-                    let mint = item.mintRegion
-                    if (!mint) {
-                        mint = { name: "unknown", id: -1, counts: {} }
-                    }
-
-                    if (!mints[item.mintRegion.id]) {
-                        mints[item.mintRegion.id] = cloneDeep(mint)
-                        mints[item.mintRegion.id].counts = {}
-                    }
-
-                    const count = parseInt(item.count) || 1
-                    const mintListItem = mints[item.mintRegion.id]
-                    mintListItem.counts[t.id] = mintListItem.counts[t.id] ? mintListItem.counts[t.id] + count : count
-
-                })
-            })
-            return Object.values(mints).sort(Sort.stringPropAlphabetically("name"))
+            let mints = this.mintRegions?.slice() || []
+            return mints.sort(Sort.stringPropAlphabetically("name"))
         }
     },
     created() {
         window.graphics = this.featureGroup
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
-                this.treasures = data
+                this.treasures = data.treasures
             },
             onEnd: () => {
                 this.mounted_and_loaded_mixin_loaded("data")
             },
             onSelectTreasure: (id) => {
+                this.selectedMintIds = []
                 this.selectedTreasureIds = [id]
                 this.selectionChanged()
             }
@@ -412,32 +397,8 @@ export default {
             }
         })
 
-
-        const mlms = this.L.featureGroup()
-        this.mintRegions.forEach(region => {
-            const geoJSON = new this.L.geoJSON(region.location, {
-                pointToLayer(point) {
-                    let position = point.geometry ? point.geometry : point
-                    const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
-                    if (!point?.properties?.radius) {
-                        const mlm = new MintLocationMarker(region)
-                        return mlm.create(latlng, { size: 4 })
-                    } else {
-                        return L.circle(latlng, point.properties.radius, {
-                            color: "#333",
-                            weight: 1,
-                            fillColor: "#fff",
-                            fillOpacity: 0.5
-                        })
-                    }
-                }
-            })
-            geoJSON.bindTooltip(region.name, { sticky: true })
-            geoJSON.on("click", () => console.log(region.name + " clicked"))
-            geoJSON.addTo(mlms)
-        })
-        mlms.addTo(this.map)
-
+        this.mintLocationMarkerGroup = this.L.featureGroup()
+        this.mintLocationMarkerGroup.addTo(this.map)
 
         await this.initTimeline();
         this.updateTimeline(true);
@@ -461,6 +422,42 @@ export default {
         },
         removeInvalidIds() {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
+        },
+
+        updateMintLocationMarker() {
+            this.mintLocationMarkerGroup.clearLayers()
+
+            const vueContext = this
+            this.mintRegions.forEach(region => {
+                const geoJSON = new this.L.geoJSON(region.location, {
+                    pointToLayer(point) {
+                        let position = point.geometry ? point.geometry : point
+                        const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
+                        let geoObj
+
+                        const active = vueContext.selectedMintIds.includes(region.id)
+                        if (!point?.properties?.radius) {
+                            const mlm = new MintLocationMarker(region)
+                            geoObj = mlm.create(latlng, { size: (active) ? 10 : 4, active })
+                        } else {
+                            const mlmStyle = active ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle 
+                            geoObj = L.circle(latlng, point.properties.radius, Object.assign({
+                                weight: 1,
+                                fillOpacity: 0.5
+                            }, mlmStyle))
+                        }
+                        return geoObj
+                    }
+                })
+                geoJSON.bindTooltip(region.name, { sticky: true })
+                geoJSON.on("click", () => {
+                    if (vueContext.selectedTreasureIds.length === 0) {
+                        vueContext.selectedMintIds = [region.id]
+                        vueContext.update()
+                    }
+                })
+                geoJSON.addTo(this.mintLocationMarkerGroup)
+            })
         },
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
@@ -566,9 +563,11 @@ export default {
             this.filters = {}
         },
         async update() {
+            this.updateMintLocationMarker()
             await this.overlay.update({
                 selections: {
-                    treasures: this.selectedTreasureIds
+                    treasures: this.selectedTreasureIds,
+                    mints: this.selectedMintIds
                 }
             })
 
@@ -689,6 +688,20 @@ export default {
             this.yearCountColors = colors
             this.yearCountData = yearCountData
         },
+        selectMints(mintIds = []) {
+
+            if(mintIds.every(id => this.selectedMintIds.includes(id))) {
+                mintIds = []
+            }
+
+            this.selectedMintIds = mintIds
+
+            if (this.selectedMintIds.length > 0) {
+                this.selectedTreasureIds = []
+            }
+
+            this.selectionChanged()
+        },
         selectionChanged() {
             this.update()
             this.updateDiagram()
@@ -703,10 +716,12 @@ export default {
             } else {
                 this.selectedTreasureIds.push(id)
             }
+            this.selectedMintIds = []
             this.selectionChanged()
         },
         setTreasure(id) {
             this.selectedTreasureIds = [id]
+            this.selectedMintIds = []
             this.selectionChanged()
         }
     }
@@ -753,6 +768,17 @@ table {
 
     max-height: 300px;
     overflow-y: auto;
+}
+
+
+
+tr {
+    cursor: pointer;
+    user-select: none;
+}
+
+tr.selected {
+    background-color: $primary-color;
 }
 </style>
   
