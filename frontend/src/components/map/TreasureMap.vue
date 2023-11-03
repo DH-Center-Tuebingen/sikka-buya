@@ -226,6 +226,7 @@ import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 import Chart from "chart.js/auto"
+import { WhiteMarkerIcon, BlackMarkerIcon } from "../../utils/MapIcons"
 
 import cloneDeep from 'lodash/cloneDeep';
 
@@ -437,31 +438,35 @@ export default {
                         let position = point.geometry ? point.geometry : point
                         const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
 
+                        let marker
                         const active = vueContext.selectedMintIds.includes(region.id)
-
-                        const group = vueContext.L.featureGroup()
-
-                        const mintRegionMarker = new MintLocationMarker(region)
-                        let mintRegionMarkerGeometry = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
-
-                        group.addLayer(mintRegionMarkerGeometry)
-                        group.getElement = () => {
-                            return mintRegionMarkerGeometry.getElement()
-                        }
-
-                        // mintRegionMarkerGeometry.addTo(group)
-
                         if (point?.properties?.radius) {
                             // const mlmStyle = active ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle
+
+                            const group = vueContext.L.featureGroup()
+                            let mintRegionMarkerGeometry = vueContext.L.marker(latlng, {
+                                icon: (active) ? BlackMarkerIcon : WhiteMarkerIcon,
+                            })
+
                             const circle = L.circle(latlng, point.properties.radius, Object.assign({
-                                weight: 1,
+                                weight: 3,
                                 fill: false,
                                 fillOpacity: 0.5,
-                                dashArray: [3, 3]
+                                dashArray: [5, 10]
                             }, MintLocationMarker.normalStyle))
+                            mintRegionMarkerGeometry.addTo(group)
                             circle.addTo(group)
+
+                            group.addLayer(mintRegionMarkerGeometry)
+                            group.getElement = () => {
+                                return mintRegionMarkerGeometry.getElement()
+                            }
+                            marker = group
+                        } else {
+                            const mintRegionMarker = new MintLocationMarker(region)
+                            marker = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
                         }
-                        return group
+                        return marker
                     }
                 })
                 geoJSON.bindTooltip(region.name, { sticky: true })
