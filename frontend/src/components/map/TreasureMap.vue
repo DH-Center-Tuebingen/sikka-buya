@@ -644,7 +644,7 @@ export default {
                 }
             })
 
-            console.log(Range.fromPointArray(data))
+            console.log(Range.fromPointArray(data), data)
 
             const yearOffset = 2
             let from = 300

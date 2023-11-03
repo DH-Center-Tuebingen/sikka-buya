@@ -91,7 +91,18 @@ export default class Range {
     }
 
     static fromPointArray(arr) {
-        return this.fromNumberSequence(arr.filter(point => point.y > 0).map(point => point.x))
+        const nonEmptyPoints = arr.filter(point => {
+            if (Array.isArray(point.y)) {
+                return point.y.reduce((a, b) => a + b, 0) > 0
+            } else {
+                return point.y > 0
+            }
+        })
+
+        const yearArray = nonEmptyPoints.map(point => point.x)
+        console.table({yearArray, nonEmptyPoints})
+
+        return this.fromNumberSequence(yearArray)
     }
 
     static fromNumberSequence(arr) {
