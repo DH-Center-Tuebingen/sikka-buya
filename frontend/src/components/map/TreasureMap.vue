@@ -90,16 +90,14 @@
                 </template>
 
 
-                <template
-                    #footer
-                    v-show="hasUncertainYears"
-                >
-                    <Locale path="label.timeline.uncertain_years" />
-
+                <template #footer>
+                    <span>
+                        <Locale path="label.timeline.uncertain_years" />:
+                    </span>
                     <template v-if="yearCountData.undefined != undefined">
                         <span style="margin-left: 1em;">
-                            {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0)
-                            }}</span>
+                            {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) || 0 }}
+                        </span>
 
                         <template v-if="selectedTreasures.length > 1">
                             (
@@ -119,6 +117,7 @@
                             )
                         </template>
                     </template>
+                    <span v-else>0</span>
                 </template>
             </Timeline>
 
