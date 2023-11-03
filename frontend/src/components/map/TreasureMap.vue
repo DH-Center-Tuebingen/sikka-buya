@@ -345,6 +345,9 @@ export default {
                 this.selectedMintIds = []
                 this.selectedTreasureIds = [id]
                 this.selectionChanged()
+            },
+            onBringToFront: () => {
+                this.bringMintsToFront()
             }
         })
 
@@ -433,20 +436,32 @@ export default {
                     pointToLayer(point) {
                         let position = point.geometry ? point.geometry : point
                         const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
-                        let geoObj
 
                         const active = vueContext.selectedMintIds.includes(region.id)
-                        if (!point?.properties?.radius) {
-                            const mlm = new MintLocationMarker(region)
-                            geoObj = mlm.create(latlng, { size: (active) ? 10 : 4, active })
-                        } else {
-                            const mlmStyle = active ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle 
-                            geoObj = L.circle(latlng, point.properties.radius, Object.assign({
-                                weight: 1,
-                                fillOpacity: 0.5
-                            }, mlmStyle))
+
+                        const group = vueContext.L.featureGroup()
+
+                        const mintRegionMarker = new MintLocationMarker(region)
+                        let mintRegionMarkerGeometry = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
+
+                        group.addLayer(mintRegionMarkerGeometry)
+                        group.getElement = () => {
+                            return mintRegionMarkerGeometry.getElement()
                         }
-                        return geoObj
+
+                        // mintRegionMarkerGeometry.addTo(group)
+
+                        if (point?.properties?.radius) {
+                            // const mlmStyle = active ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle
+                            const circle = L.circle(latlng, point.properties.radius, Object.assign({
+                                weight: 1,
+                                fill: false,
+                                fillOpacity: 0.5,
+                                dashArray: [3, 3]
+                            }, MintLocationMarker.normalStyle))
+                            circle.addTo(group)
+                        }
+                        return group
                     }
                 })
                 geoJSON.bindTooltip(region.name, { sticky: true })
@@ -573,6 +588,12 @@ export default {
 
             this.updateYearCount()
             this.updateTimelineGraph()
+            this.bringMintsToFront()
+        },
+
+        bringMintsToFront() {
+            this.mintLocationMarkerGroup.bringToFront()
+
         },
         updateTimeline() {
             console.warn("NOTHING TO DO", arguments)
@@ -690,7 +711,7 @@ export default {
         },
         selectMints(mintIds = []) {
 
-            if(mintIds.every(id => this.selectedMintIds.includes(id))) {
+            if (mintIds.every(id => this.selectedMintIds.includes(id))) {
                 mintIds = []
             }
 

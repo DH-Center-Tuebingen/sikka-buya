@@ -9,9 +9,7 @@ import { cloneDeep } from 'lodash';
 
 
 
-function bringToFront(e) {
-    e.target.bringToFront()
-}
+
 
 // ON REFACTOR: I think trying to push all states in a single overlay is a bad idea.
 // It would be better to have a single overlay for each state.
@@ -19,6 +17,12 @@ function bringToFront(e) {
 export default class TreasureOverlay extends Overlay {
 
     constructor(parent, settings, callbacks = {}) {
+
+        function bringToFront(e) {
+            e.target.bringToFront()
+            if (callbacks.onBringToFront) callbacks.onBringToFront(e)
+        }
+
         callbacks.onFeatureGroupAdded = function (group) {
             group.on('mouseover', bringToFront)
         }
