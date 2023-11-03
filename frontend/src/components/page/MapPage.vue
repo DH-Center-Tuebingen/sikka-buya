@@ -180,13 +180,13 @@ export default {
     ul:not(.search-box) {
       margin: 0;
       padding: 0;
-      lis-style-type: none;
+      list-style-type: none;
       overflow: hidden;
 
       li {
-        margin: $padding;
+        padding: $padding;
         cursor: pointer;
-        box-sizing: border-box;
+        // box-sizing: border-box;
         // border: 1px solid transparent;
         user-select: none;
 
@@ -210,7 +210,7 @@ export default {
     .select-list-item,
     .selected-but-unavailable {
       transition: background-color 0.3s;
-      background-color: initial;
+      // background-color: initial;
 
       // > * {
       //   color: black;

@@ -3,19 +3,26 @@
     class="select-list-item"
     :class="{ selected }"
   >
-    <slot name="before" />
-    <div
-      class="checkbox"
-      v-if="!noCheckbox"
-    >
-      <label @click.stop="checkboxClicked">
-        <div
-          class="box"
-          :class="{ active: selected, disabled: checkboxDisabled }"
-        ></div>
-      </label>
+    <div class="row">
+
+      <slot name="before" />
+      <div
+        class="checkbox"
+        v-if="!noCheckbox"
+      >
+        <label @click.stop="checkboxClicked">
+          <div
+            class="box"
+            :class="{ active: selected, disabled: checkboxDisabled }"
+          ></div>
+        </label>
+      </div>
+      <slot />
+
     </div>
-    <slot />
+    <div>
+      <slot name="beneath" />
+    </div>
   </li>
 </template>
 
@@ -27,7 +34,7 @@ export default {
     checkboxDisabled: Boolean,
   },
   methods: {
-    checkboxClicked(){
+    checkboxClicked() {
       if (!this.checkboxDisabled) {
         this.$emit('checkbox-selected');
       }
@@ -38,9 +45,27 @@ export default {
 
 <style lang="scss" scoped>
 .select-list-item {
-  display: flex;
-  align-items: center;
-  gap: $padding;
+
+
+
+  transition: background-color 0.3s, border 0.3s;
+  border-color: transparent;
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: $padding;
+  }
+
+  &.selected {
+    background-color: rgba($color: #000000, $alpha: .1);
+    border-bottom: 1px solid rgba($color: #000000, $alpha: .05);
+    border-top: 1px solid rgba($color: #000000, $alpha: .05);
+
+    &+ .select-list-item {
+      border-top: 0 solid transparent;
+  }
+  }
 }
 
 .checkbox {
@@ -100,4 +125,5 @@ export default {
       border-radius: 3px;
     }
   }
-}</style>
+}
+</style>

@@ -8,14 +8,14 @@
 
 <style lang="scss">
 .multi-select-list {
-  .select-list-item {
-    display: grid;
-    grid-template-columns: 30px 1fr;
+  // .select-list-item {
+  //   display: grid;
+  //   grid-template-columns: 30px 1fr;
 
-    & > *:not(.checkbox) {
-      align-self: center;
-    }
-  }
+  //   & > *:not(.checkbox) {
+  //     align-self: center;
+  //   }
+  // }
 
   .hidden {
     visibility: hidden;

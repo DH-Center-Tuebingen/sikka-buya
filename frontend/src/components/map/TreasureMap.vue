@@ -171,15 +171,19 @@
                             />
                         </template>
                         {{ treasure.name }}
-                    </MultiSelectListItem>
-                    <div
-                        class="treasure-description"
-                        v-if="isTreasureSelected(treasure.id)"
-                        v-html="treasure.description"
-                        :key="`list-item-description-${treasure.id}`"
-                    >
 
-                    </div>
+                        <template #beneath>
+                            <div
+                                class="treasure-description"
+                                v-if="isTreasureSelected(treasure.id)"
+                                v-html="treasure.description"
+                                :key="`list-item-description-${treasure.id}`"
+                            >
+
+                            </div>
+                        </template>
+                    </MultiSelectListItem>
+
                 </template>
             </MultiSelectList>
             <template #footer>
@@ -256,7 +260,7 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
-import TimelineChart, { BarGraph, MirrorGraph } from '../../models/timeline/TimelineChart';
+import TimelineChart, { BarGraph, MirrorGraph, RangeGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
@@ -264,6 +268,8 @@ import { MintLocationMarker } from "../../models/mintlocation"
 import L from 'leaflet'
 import Info from '../forms/Info.vue';
 import CoinSideGroup from '../display/CoinSideGroup.vue';
+import Range from '../../models/timeline/range';
+import Color from '../../utils/Color';
 
 
 
@@ -632,6 +638,14 @@ export default {
                 graph = this.updateBarGraph(data)
             }
 
+            const nonZeroGraph = new RangeGraph(Range.fromPointArray(data), {
+                contextStyles: {
+                    fillStyle: Color.Gray
+                }
+            })
+
+            console.log(Range.fromPointArray(data))
+
             const yearOffset = 2
             let from = 300
             let to = 470
@@ -646,7 +660,7 @@ export default {
             })
 
             this.timelineChart.update({
-                graphs: graph,
+                graphs: [nonZeroGraph, graph],
                 timeline: this.timeline
             })
         },
