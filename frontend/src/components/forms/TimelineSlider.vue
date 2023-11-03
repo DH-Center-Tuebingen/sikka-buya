@@ -31,7 +31,12 @@
       v-for="sub in subs"
       :key="'sub-' + sub"
       :style="offsetLeftCss(sub)"
-    ></div>
+    >
+      <div class="sub" v-if="showSubs">
+        {{ sub }}
+      </div>
+
+    </div>
 
     <div class="overlay">
       <slot />
@@ -112,6 +117,12 @@ export default {
         this.labeledValue
       );
     },
+    showSubs() {
+      return this.range < 30;
+    },
+    range(){
+      return this.max - this.min;
+    }
   },
 };
 </script>
@@ -150,6 +161,17 @@ export default {
   bottom: 0;
   height: 10%;
   border-left: 1px solid currentColor;
+
+  .sub {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    display: block;
+    font-weight: bold;
+    font-size: 0.6rem;
+    transform: rotate(90deg)  translate(-120%, 52%);
+    transform-origin: left bottom;
+  }
 }
 
 .long-dash {
