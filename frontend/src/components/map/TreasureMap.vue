@@ -528,21 +528,21 @@ export default {
                 if (value === "fragment") {
 
                     map = {
-                        "fragment": {
+                        fragment: {
                             label: null,
                             count: 0,
                             color: getColor(),
                         },
-                        "no_fragment": {
+                        no_fragment: {
                             label: null,
                             count: 0,
                             color: getColor(),
                         },
                     }
 
-                    Object.keys(map).forEach(key => {
-                        map[key].label = this.$tc(`property.label.fragment.${key}`)
-                    })
+
+
+
 
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
@@ -552,6 +552,15 @@ export default {
                             })
                         })
                     })
+
+                    Object.keys(map).forEach(key => {
+                        map[key].label = this.$tc(`property.label.fragment.${key}`)
+
+                        if(map[key].count === 0) {
+                            delete map[key]
+                        }
+                    })
+
                 } else {
 
                     this.selectedTreasures.forEach((treasure, index) => {
