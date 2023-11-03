@@ -8,7 +8,26 @@
                 />
             </template>
 
-            <table>
+
+
+            <MultiSelectList>
+                <MultiSelectListItem
+                    v-for="mint of mints"
+                    :key="`mint-list-item-${mint.id}`"
+                    :class="{
+                        'selected': selectedMintIds.includes(mint.id)
+                    }"
+                    :selected="selectedMintIds.includes(mint.id)"
+                    @checkbox-selected="() => addMintSelection([mint.id])"
+                    @click.native="selectMints([mint.id])"
+                >
+                    {{ mint.name }}
+                </MultiSelectListItem>
+            </MultiSelectList>
+
+
+
+            <!-- <table>
                 <tbody>
                     <tr
                         v-for="mint of mints"
@@ -30,7 +49,7 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </Sidebar>
 
         <div class="center-ui center-ui-top">
@@ -714,8 +733,20 @@ export default {
             this.yearCountColors = colors
             this.yearCountData = yearCountData
         },
-        selectMints(mintIds = []) {
+        addMintSelection(mintIds = []) {
+            let selectedMintIds = this.selectedMintIds.slice()
 
+            mintIds.forEach(id => {
+                if (selectedMintIds.includes(id)) {
+                    selectedMintIds.splice(selectedMintIds.indexOf(id), 1)
+                } else {
+                    selectedMintIds.push(id)
+                }
+            })
+
+            this.selectMints(selectedMintIds)
+        },
+        selectMints(mintIds = []) {
             if (mintIds.every(id => this.selectedMintIds.includes(id))) {
                 mintIds = []
             }
