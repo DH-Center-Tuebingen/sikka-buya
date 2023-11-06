@@ -66,6 +66,10 @@ export default class Color {
         return "#eeeeee"
     }
 
+    static get LightGray(){
+        return "#e6e6e6"
+    }
+
     static get Gray() {
         return "#dddddd"
     }

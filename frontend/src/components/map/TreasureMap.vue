@@ -417,6 +417,7 @@ export default {
                 }]
             },
             options: {
+                borderWidth: 0,
                 plugins: {
                     legend: {
                         position: 'bottom'
@@ -510,14 +511,36 @@ export default {
             if (value) {
                 let map = {}
 
-                const colors = [
-                    [255, 99, 132],
-                    [54, 162, 235],
-                    [255, 206, 86],
-                    [75, 192, 192],
-                    [153, 102, 255],
-                    [255, 159, 64],
-                ]
+                const colors = [[213, 168, 57],
+                [177, 75, 225],
+                [138, 229, 65],
+                [88, 55, 179],
+                [216, 220, 52],
+                [207, 79, 185],
+                [106, 205, 88],
+                [121, 117, 212],
+                [197, 211, 95],
+                [57, 35, 96],
+                [99, 222, 159],
+                [215, 69, 117],
+                [69, 147, 76],
+                [221, 69, 51],
+                [115, 219, 215],
+                [138, 56, 40],
+                [124, 170, 216],
+                [207, 117, 52],
+                [76, 93, 137],
+                [117, 139, 51],
+                [144, 63, 120],
+                [190, 220, 156],
+                [91, 38, 54],
+                [212, 181, 130],
+                [211, 153, 201],
+                [48, 88, 52],
+                [204, 126, 123],
+                [84, 153, 136],
+                [80, 67, 28],
+                [143, 118, 64]]
                 let colorIdx = -1
 
                 function getColor(obj) {
@@ -556,7 +579,7 @@ export default {
                     Object.keys(map).forEach(key => {
                         map[key].label = this.$tc(`property.label.fragment.${key}`)
 
-                        if(map[key].count === 0) {
+                        if (map[key].count === 0) {
                             delete map[key]
                         }
                     })
@@ -585,6 +608,9 @@ export default {
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
                 this.chart.data.labels = mapValues.map(obj => obj.label)
                 this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
+
+                const types = Object.keys(map).length
+                this.chart.options.plugins.legend.display = types <= 8
                 this.chart.update()
             }
         },
@@ -649,11 +675,9 @@ export default {
 
             const nonZeroGraph = new RangeGraph(Range.fromPointArray(data), {
                 contextStyles: {
-                    fillStyle: Color.Gray
+                    fillStyle: Color.LightGray
                 }
             })
-
-            console.log(Range.fromPointArray(data), data)
 
             const yearOffset = 2
             let from = 300
