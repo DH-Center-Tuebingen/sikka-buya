@@ -487,7 +487,7 @@ export default {
                         } else {
                             vueContext.selectedMintIds = [region.id]
                         }
-                        
+
                         vueContext.update()
                     }
                 })
@@ -848,10 +848,11 @@ table {
     gap: $padding;
     max-height: 50vh;
     transition: all 0.3s ease-in;
-
+    transform: translateY(0);
 
     &.hide {
         height: 0;
+        transform: translateY(100px);
     }
 
     canvas {
