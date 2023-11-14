@@ -164,6 +164,14 @@ export default {
     border: none;
     border-radius: 0;
     padding-left: 5px;
+
+
+  }
+
+  .select-list-item .row {
+    display: grid;
+    grid-template-columns: 14px 30px 1fr;
+    gap: .1rem
   }
 
   .multi-select-list .select-list-item {
@@ -174,14 +182,14 @@ export default {
     color: $black;
   }
 
-  .color-indicator {
-    $size: 1em;
-    width: math.div($size, 3);
-    height: $size;
-    border-radius: $border-radius;
-    border: 3px solid currentColor;
-    background-color: currentColor;
-    margin-right: 5px;
-  }
+  // .color-indicator {
+  //   $size: 1em;
+  //   width: math.div($size, 3);
+  //   height: $size;
+  //   border-radius: $border-radius;
+  //   border: 3px solid currentColor;
+  //   background-color: currentColor;
+  //   margin-right: 5px;
+  // }
 }
 </style>

@@ -72,7 +72,7 @@ export default {
 }
 
 .collapsible-content {
-  min-height: 40px;
+  min-height: 1rem;
 }
 
 .icon {

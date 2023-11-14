@@ -19,7 +19,7 @@
                     }"
                     :selected="selectedMintIds.includes(mint.id)"
                     @checkbox-selected="() => addMintSelection([mint.id])"
-                    @click.native="selectMints([mint.id])"
+                    @click.native="selectMint(mint.id)"
                 >
                     {{ mint.name }}
                 </MultiSelectListItem>
@@ -189,20 +189,20 @@
             <template #footer>
                 <div
                     class="diagram-view"
-                    :class="{ hide: !(selectedTreasures.length > 0) }"
+                    :class="{ hide: !(selectedTreasures.length > 0), collapsed: diagramMode === null }"
                     style="margin: 1em;margin-top: auto;"
                 >
-                    <h3>
-                        <Locale path="label.diagram" />
-                    </h3>
                     <select
                         ref="diagramSelect"
                         @input="updateDiagram"
                     >
                         <option
-                            value="material"
+                            :value="null"
                             selected
                         >
+                            <Locale path="label.diagram" />
+                        </option>
+                        <option value="material">
                             <Locale path="property.material" />
                         </option>
                         <option value="epoch">
@@ -214,7 +214,7 @@
                     </select>
 
                     <canvas
-                        height="300px"
+                        height="500px"
                         ref="diagramCanvas"
                     >
 
@@ -291,6 +291,7 @@ export default {
     data: function () {
         return {
             chart: null,
+            diagramMode: null,
             filters: {},
             painter: null,
             selectedTreasureIds: [],
@@ -507,6 +508,7 @@ export default {
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
+            this.diagramMode = value === "" ? null : value
 
             if (value) {
                 let map = {}
@@ -790,14 +792,27 @@ export default {
                 }
             })
 
-            this.selectMints(selectedMintIds)
+            this.mintSelectionChanged(selectedMintIds)
         },
-        selectMints(mintIds = []) {
-            if (mintIds.every(id => this.selectedMintIds.includes(id))) {
-                mintIds = []
+        selectMint(mintId) {
+            let selection = []
+
+            if (this.selectedMintIds.length > 1) {
+                selection = [mintId]
+            } else {
+                if (this.selectedMintIds.includes(mintId)) {
+                    selection = []
+                } else {
+                    selection = [mintId]
+                }
             }
 
-            this.selectedMintIds = mintIds
+
+
+            this.mintSelectionChanged(selection)
+        },
+        mintSelectionChanged(selectedMints) {
+            this.selectedMintIds = selectedMints
 
             if (this.selectedMintIds.length > 0) {
                 this.selectedTreasureIds = []
@@ -842,15 +857,22 @@ table {
     display: flex;
     flex-direction: column;
     gap: $padding;
-    height: 420px;
+    max-height: 50vh;
     transition: all 0.3s ease-in;
 
-    select {
-        height: 40px;
-    }
 
     &.hide {
         height: 0;
+    }
+
+    canvas {
+        transition: height 0.3s ease-in-out;
+    }
+
+    &.collapsed {
+        canvas {
+            height: 0 !important;
+        }
     }
 }
 

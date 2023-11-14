@@ -7,10 +7,10 @@
         :class="{ ['ruler-unavailable']: unavailable }"
     >
         <template v-slot:before>
-            <div
-                class="color-indicator"
-                :class="{ 'color-indicator-selected': selected }"
-            ></div>
+            <ListColorIndicator
+                :color="item.color"
+                default-color="white"
+            />
         </template>
         <span>
             {{ getRulerName(item) }}
@@ -30,10 +30,12 @@
 <script>
 import Person from '../utils/Person';
 import MultiSelectListItem from './MultiSelectListItem.vue';
+import ListColorIndicator from './list/ListColorIndicator.vue';
 
 export default {
     components: {
-        MultiSelectListItem
+        MultiSelectListItem,
+        ListColorIndicator
     },
     props: {
         item: {
@@ -65,8 +67,7 @@ export default {
 }
 
 .dynasty {
-  font-size: 0.75rem;
-  color: $light-gray;
-  font-weight: bold;
-}
-</style>
+    font-size: 0.75rem;
+    color: $light-gray;
+    font-weight: bold;
+}</style>

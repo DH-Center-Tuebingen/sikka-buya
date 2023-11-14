@@ -184,7 +184,7 @@ export default {
       overflow: hidden;
 
       li {
-        padding: $padding;
+        padding: 0.1rem .5rem;
         cursor: pointer;
         // box-sizing: border-box;
         // border: 1px solid transparent;
