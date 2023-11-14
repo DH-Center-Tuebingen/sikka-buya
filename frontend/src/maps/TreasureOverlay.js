@@ -258,7 +258,7 @@ export default class TreasureOverlay extends Overlay {
 
                             const text = `${treasure.name}: ${treasureCount.count} / ${treasuresByMint.totalCount} (${(100 * treasureCount.count / treasuresByMint.totalCount).toFixed(2)}%)`
 
-                            let mintArea = this.toFeature(location, {
+                            let treasureArea = this.toFeature(location, {
                                 totalCount: treasuresByMint.totalCount,
                                 // count: treasureCount.count,
                                 isMint: true,
@@ -266,6 +266,7 @@ export default class TreasureOverlay extends Overlay {
                                 style: {
                                     color,
                                     weight: 3,
+                                    fill: false,
                                 },
                             })
 
@@ -287,7 +288,7 @@ export default class TreasureOverlay extends Overlay {
                             }
 
                             geoJSON.push(line)
-                            geoJSON.push(mintArea)
+                            geoJSON.push(treasureArea)
                         } else {
                             console.warn("No location for treasure", treasureCount.treasure)
                         }
