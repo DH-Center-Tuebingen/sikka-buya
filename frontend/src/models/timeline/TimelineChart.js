@@ -46,6 +46,73 @@ export class Graph {
     }
 }
 
+export class TickGraph extends Graph {
+
+    constructor(from, to, { options = {
+        longDash: 50,
+        shortDash: 10,
+        textOffset: 5,
+        showShortTextWhenCountBelow: 20,
+    }, contextStyles = {} } = {}) {
+        super([from, to], { contextStyles })
+
+        this.longDash = options.longDash
+        this.shortDash = options.shortDash
+        this.textOffset = options.textOffset
+        this.showShortTextWhenCountBelow = options.showShortTextWhenCountBelow
+    }
+
+    createLabel(context, chart, x, dash) {
+        context.textAlign = "center"
+        context.fillStyle = context.strokeStyle
+        context.fillText(x, chart.x(x), chart.y(0) - dash - this.textOffset)
+    }
+
+    draw(context, chart) {
+        super.draw(context)
+        
+
+        const steps = [1, 5, 10, 50, 100, 200, 500, 1000]
+
+        const from = this.data[0]
+        const to = this.data[1]
+        const range = to - from
+
+        let i = 0
+        while (range / steps[i+1] > 15 && i < steps.length - 2) i++
+
+        let smallStep = steps[i]
+        let bigStep = steps[i + 1]
+
+
+
+        const bigStart = Math.ceil(this.data[0] / bigStep) * bigStep
+        for (let x = bigStart; x <= this.data[1]; x += bigStep) {
+            if(x === from || x === to) continue
+            context.beginPath()
+            context.moveTo(chart.x(x), chart.y(0))
+            this.createLabel(context, chart, x, this.longDash)
+            context.lineTo(chart.x(x), chart.y(0) - this.longDash)
+
+            context.stroke()
+        }
+
+        const smallStart = Math.ceil(this.data[0] / smallStep) * smallStep
+        for (let x = smallStart; x <= this.data[1]; x += smallStep) {
+            if(x === from || x === to) continue
+            if (x % bigStep === 0) continue
+            context.beginPath()
+            context.moveTo(chart.x(x), chart.y(0))
+            context.lineTo(chart.x(x), chart.y(0) - this.shortDash)
+            if (range / smallStep < this.showShortTextWhenCountBelow) {
+                this.createLabel(context, chart, x, this.shortDash)
+            }
+            context.stroke()
+        }
+    }
+
+}
+
 
 
 

@@ -100,8 +100,6 @@ export default class Range {
         })
 
         const yearArray = nonEmptyPoints.map(point => point.x)
-        console.table({yearArray, nonEmptyPoints})
-
         return this.fromNumberSequence(yearArray)
     }
 

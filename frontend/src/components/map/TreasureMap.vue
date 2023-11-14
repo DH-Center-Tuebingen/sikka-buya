@@ -160,7 +160,7 @@
                                 v-if="isTreasureSelected(treasure.id)"
                                 v-html="treasure.description"
                                 :key="`list-item-description-${treasure.id}`"
-                                >
+                            >
 
                             </ScrollView>
                         </template>
@@ -238,7 +238,7 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
-import TimelineChart, { BarGraph, MirrorGraph, RangeGraph } from '../../models/timeline/TimelineChart';
+import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
@@ -698,7 +698,7 @@ export default {
             })
 
             this.timelineChart.update({
-                graphs: [nonZeroGraph, graph],
+                graphs: [nonZeroGraph, graph, new TickGraph(from, to, { contextStyles: { strokeStyle: Color.Black } })],
                 timeline: this.timeline
             })
         },
