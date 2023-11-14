@@ -15,29 +15,33 @@
       <slot name="background" />
     </template>
 
-    <div
-      class="long-dash"
-      v-for="lable of lables"
-      :key="'timeline-key-' + lable"
-      :style="offsetLeftCss(lable)"
-    >
-      <div class="lable">
-        {{ lable }}
-      </div>
-    </div>
-
-    <div
-      class="short-dash"
-      v-for="sub in subs"
-      :key="'sub-' + sub"
-      :style="offsetLeftCss(sub)"
-    >
-      <div class="sub" v-if="showSubs">
-        {{ sub }}
+    <template v-if="createMarks">
+      <div
+        class="long-dash"
+        v-for="lable of lables"
+        :key="'timeline-key-' + lable"
+        :style="offsetLeftCss(lable)"
+      >
+        <div class="lable">
+          {{ lable }}
+        </div>
       </div>
 
-    </div>
+      <div
+        class="short-dash"
+        v-for="sub in subs"
+        :key="'sub-' + sub"
+        :style="offsetLeftCss(sub)"
+      >
+        <div
+          class="sub"
+          v-if="showSubs"
+        >
+          {{ sub }}
+        </div>
 
+      </div>
+    </template>
     <div class="overlay">
       <slot />
     </div>
@@ -76,6 +80,10 @@ export default {
     subdivisions: {
       type: Number,
       default: 0,
+    },
+    createMarks: {
+      type: Boolean,
+      default: true,
     },
   },
   methods: {
@@ -120,7 +128,7 @@ export default {
     showSubs() {
       return this.range < 30;
     },
-    range(){
+    range() {
       return this.max - this.min;
     }
   },
@@ -169,7 +177,7 @@ export default {
     display: block;
     font-weight: bold;
     font-size: 0.6rem;
-    transform: rotate(90deg)  translate(-120%, 52%);
+    transform: rotate(90deg) translate(-120%, 52%);
     transform-origin: left bottom;
   }
 }

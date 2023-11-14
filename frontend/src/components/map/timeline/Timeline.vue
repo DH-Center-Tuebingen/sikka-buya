@@ -29,6 +29,7 @@
         :labeledValue="10"
         :subdivisions="10"
         :interactive="interactive"
+        :create-marks="createMarks"
         @change.stop="change"
         @input.stop="change"
         @focus="() => focussed = true"
@@ -105,6 +106,10 @@ export default {
       validator: (value) => {
         return !isNaN(value) || value === "";
       },
+    },
+    createMarks: {
+      type: Boolean,
+      default: true,
     },
   },
   data() { return { focussed: false } },

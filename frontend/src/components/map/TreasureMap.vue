@@ -72,6 +72,7 @@
                 :from="timeline.from"
                 :to="timeline.to"
                 :interactive="false"
+                :create-marks="false"
                 ref="timeline"
             >
                 <template #background>
@@ -122,25 +123,6 @@
             </Timeline>
 
 
-            <!-- <TimelineSlideshowArea
-                ref="timelineSlideshowArea"
-                :map="map"
-                :timelineFrom="timeline.from"
-                :timelineTo="timeline.to"
-                :timelineValue="raw_timeline.value"
-                :timelineInteractive="false"
-                :timelineActive="timelineActive"
-                @toggle="toggleTimeline"
-                timelineName="additional-map"
-            >
-                <template #background>
-                    <canvas
-                        id="timeline-canvas"
-                        ref="timelineCanvas"
-                    > </canvas>
-                </template>
-
-            </TimelineSlideshowArea> -->
         </div>
 
         <Sidebar
