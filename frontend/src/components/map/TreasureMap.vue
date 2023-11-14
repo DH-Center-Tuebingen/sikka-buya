@@ -230,12 +230,7 @@ import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 import Chart from "chart.js/auto"
-import { WhiteMarkerIcon, BlackMarkerIcon } from "../../utils/MapIcons"
 
-import cloneDeep from 'lodash/cloneDeep';
-
-
-const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
 
@@ -249,10 +244,8 @@ import { MintLocationMarker } from "../../models/mintlocation"
 
 import L from 'leaflet'
 import Info from '../forms/Info.vue';
-import CoinSideGroup from '../display/CoinSideGroup.vue';
 import Range from '../../models/timeline/range';
 import Color from '../../utils/Color';
-
 
 
 export default {
@@ -452,22 +445,43 @@ export default {
                             // const mlmStyle = active ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle
 
                             const group = vueContext.L.featureGroup()
-                            let mintRegionMarkerGeometry = vueContext.L.marker(latlng, {
-                                icon: (active) ? BlackMarkerIcon : WhiteMarkerIcon,
-                            })
+
+                            const mintRegionMarker = new MintLocationMarker(region)
+                            let mlm = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
+
+
+                            let activeStyle = {}
+                            if(active) {
+                                activeStyle= {
+                                    color: "white",
+                                    fillColor: "#000"
+                                }
+                            }
 
                             const circle = L.circle(latlng, point.properties.radius, Object.assign({
-                                weight: 3,
-                                fill: false,
-                                fillOpacity: 0.5,
-                                dashArray: [5, 10]
-                            }, MintLocationMarker.normalStyle))
-                            mintRegionMarkerGeometry.addTo(group)
+                                weight: 1,
+                                fillOpacity: 0.75,
+
+                            }, MintLocationMarker.normalStyle, activeStyle))
+                            mlm.addTo(group)
                             circle.addTo(group)
 
-                            group.addLayer(mintRegionMarkerGeometry)
+
+                            /**
+                             * Hides the markers at a specific zoom level
+                             */
+                            vueContext.map.on("zoomend", () => {
+                                const zoom = vueContext.map.getZoom()
+                                if (zoom > vueContext.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)) {
+                                    group.removeLayer(mlm)
+                                } else {
+                                    group.addLayer(mlm)
+                                }
+                            })
+
+                            group.addLayer(mlm)
                             group.getElement = () => {
-                                return mintRegionMarkerGeometry.getElement()
+                                return mlm.getElement()
                             }
                             marker = group
                         } else {
@@ -480,8 +494,6 @@ export default {
                 geoJSON.bindTooltip(region.name, { sticky: true })
                 geoJSON.on("click", () => {
                     if (vueContext.selectedTreasureIds.length === 0) {
-                    console.log("CLICK", region.id, vueContext.selectedMintIds)
-
                         if(vueContext.selectedMintIds.includes(region.id)) {
                             vueContext.selectedMintIds = vueContext.selectedMintIds.filter(id => id !== region.id)
                         } else {
