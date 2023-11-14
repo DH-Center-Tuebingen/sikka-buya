@@ -155,14 +155,14 @@
                         {{ treasure.name }}
 
                         <template #beneath>
-                            <div
+                            <ScrollView
                                 class="treasure-description"
                                 v-if="isTreasureSelected(treasure.id)"
                                 v-html="treasure.description"
                                 :key="`list-item-description-${treasure.id}`"
-                            >
+                                >
 
-                            </div>
+                            </ScrollView>
                         </template>
                     </MultiSelectListItem>
 
@@ -221,6 +221,7 @@ import LabeledInputContainer from '../LabeledInputContainer.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
 import TreasureTable from "./TreasureTable.vue";
+import ScrollView from '../layout/ScrollView.vue';
 
 // Other
 import TreasureOverlay from '../../maps/TreasureOverlay';
@@ -261,7 +262,8 @@ export default {
         Sidebar,
         Timeline,
         TreasureTable,
-        Info
+        Info,
+        ScrollView,
     },
     data: function () {
         return {
@@ -451,8 +453,8 @@ export default {
 
 
                             let activeStyle = {}
-                            if(active) {
-                                activeStyle= {
+                            if (active) {
+                                activeStyle = {
                                     color: "white",
                                     fillColor: "#000"
                                 }
@@ -494,7 +496,7 @@ export default {
                 geoJSON.bindTooltip(region.name, { sticky: true })
                 geoJSON.on("click", () => {
                     if (vueContext.selectedTreasureIds.length === 0) {
-                        if(vueContext.selectedMintIds.includes(region.id)) {
+                        if (vueContext.selectedMintIds.includes(region.id)) {
                             vueContext.selectedMintIds = vueContext.selectedMintIds.filter(id => id !== region.id)
                         } else {
                             vueContext.selectedMintIds = [region.id]
