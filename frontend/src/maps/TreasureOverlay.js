@@ -269,20 +269,6 @@ export default class TreasureOverlay extends Overlay {
                                 },
                             })
 
-                            const locationCopy = cloneDeep(location)
-
-                            let rectangle = this.toFeature(locationCopy, {
-                                totalCount: treasuresByMint.totalCount,
-                                count: treasureCount.count,
-                                isMint: false,
-                                text,
-                                extendBorder,
-                                style: {
-                                    color,
-                                    weight: 3,
-                                },
-                            })
-
                             const line = {
                                 type: "Feature",
                                 geometry: {
@@ -302,7 +288,6 @@ export default class TreasureOverlay extends Overlay {
 
                             geoJSON.push(line)
                             geoJSON.push(mintArea)
-                            geoJSON.push(rectangle)
                         } else {
                             console.warn("No location for treasure", treasureCount.treasure)
                         }
