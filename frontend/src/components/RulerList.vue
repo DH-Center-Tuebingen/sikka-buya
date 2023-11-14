@@ -107,7 +107,7 @@ export default {
       return Person.getName(ruler);
     },
     availableStyler(item) {
-      return { color: item.color, borderColor: item.color };
+      return { color: item.color };
     },
     unavailableSelectedStyler(item) {
       const baseStyle = this.availableStyler(item);
