@@ -66,6 +66,7 @@
                 'hide-transform-bottom': (selectedTreasures.length === 0)
             }"
         >
+
             <Timeline
                 class="ui-element"
                 :value="raw_timeline.value"
@@ -92,33 +93,51 @@
 
 
                 <template #footer>
-                    <span>
-                        <Locale path="label.timeline.uncertain_years" />:
-                    </span>
-                    <template v-if="yearCountData.undefined != undefined">
-                        <span style="margin-left: 1em;">
-                            {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) || 0 }}
-                        </span>
+                    <Row>
+                        <div>
+                            <span>
+                                <Locale path="label.timeline.uncertain_years" />:
+                            </span>
+                            <template v-if="yearCountData.undefined != undefined">
+                                <span style="margin-left: 1em;">
+                                    {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) || 0 }}
+                                </span>
 
-                        <template v-if="selectedTreasures.length > 1">
-                            (
-                            <template
-                                v-for="(treasure, index) of selectedTreasures"
-                                style=""
-                            >
-                                <span
-                                    v-if="index > 0"
-                                    :key="`spacer-${index}`"
-                                >, </span>
-                                <span
-                                    :key="index"
-                                    :style="{ color: treasure.color }"
-                                >{{ yearCountData.undefined.y[index] }}</span>
+                                <template v-if="selectedTreasures.length > 1">
+                                    (
+                                    <template
+                                        v-for="(treasure, index) of selectedTreasures"
+                                        style=""
+                                    >
+                                        <span
+                                            v-if="index > 0"
+                                            :key="`spacer-${index}`"
+                                        >, </span>
+                                        <span
+                                            :key="index"
+                                            :style="{ color: treasure.color }"
+                                        >{{ yearCountData.undefined.y[index] }}</span>
+                                    </template>
+                                    )
+                                </template>
                             </template>
-                            )
-                        </template>
-                    </template>
-                    <span v-else>0</span>
+                            <span v-else>0</span>
+                        </div>
+                        <div
+                            class="button-group"
+                            style="justify-content: flex-end; display: flex;"
+                        >
+                            <radio-button-group
+                                id="chart-type"
+                                :tlabels="['property.time', 'property.weight']"
+                                :options="['time', 'weight']"
+                                v-model="chartType"
+                                @input="updateTimelineGraph"
+                            >
+
+                            </radio-button-group>
+                        </div>
+                    </Row>
                 </template>
             </Timeline>
 
@@ -214,9 +233,9 @@ import settingsMixin from '../map/mixins/settings';
 import TimelineMixin from './mixins/timeline';
 import TimelineHighlightMixin from '../mixins/timeline-highlight-mixin';
 import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
+import RadioButtonGroup from '../forms/RadioButtonGroup.vue';
 
 //Components
-import Button from '../layout/buttons/Button.vue';
 import LabeledInputContainer from '../LabeledInputContainer.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
@@ -247,12 +266,13 @@ import L from 'leaflet'
 import Info from '../forms/Info.vue';
 import Range from '../../models/timeline/range';
 import Color from '../../utils/Color';
+import Row from '../layout/Row.vue';
+import { mdiAxisXRotateCounterclockwise } from '@mdi/js';
 
 
 export default {
     name: 'TreasureMap',
     components: {
-        Button,
         LabeledInputContainer,
         ListColorIndicator,
         Locale,
@@ -264,11 +284,14 @@ export default {
         TreasureTable,
         Info,
         ScrollView,
+        Row,
+        RadioButtonGroup,
     },
     data: function () {
         return {
             chart: null,
             diagramMode: null,
+            chartType: null,
             filters: {},
             painter: null,
             selectedTreasureIds: [],
@@ -314,6 +337,7 @@ export default {
         LocaleStorageMixin("treasure-map", [
             "selectedTreasureIds",
             "selectedMintIds",
+            "chartType"
         ]),
         MountedAndLoadedMixin(['storage', 'data'])
     ],
@@ -669,6 +693,91 @@ export default {
         },
         updateTimelineGraph() {
 
+            if (this.chartType === "weight") {
+                this.updateTimelineWeightGraph()
+
+            } else {
+                this.updateTimelineTimeGraph()
+            }
+
+        },
+        updateTimelineWeightGraph() {
+
+            const data = this.selectedTreasures.map(treasure => {
+                let data = []
+                treasure.items.forEach(itemArr => {
+                    itemArr.items.forEach(item => {
+                        if (item.weight) {
+                            data.push({ x: item.weight, y: 1 })
+                        }
+                    })
+                })
+                return data
+            }).reduce((acc, arr) => acc.concat(arr), []).sort((a, b) => a.x - b.x)
+
+
+            let maxDist = .3
+            let mergeDist = 0.05
+
+            let max = 0
+
+            for (let i = data.length - 1; i >= 1; i--) {
+                let overlapped = false
+                for (let j = i - 1; j >= 0; j--) {
+                    const a = data[i]
+                    const b = data[j]
+
+
+                    const dist = Math.abs(a.x - b.x)
+
+                    if (dist <= mergeDist) {
+                        overlapped = true
+                        a.y += b.y
+                        data.splice(j, 1)
+                    } else if (dist <= maxDist) {
+                        overlapped = true
+                        // We use a inversed quadratic function with y offset to 
+                        // calculate a weighted count to have a better visualization
+                        // of the weights
+                        //
+                        // Therefore we use the function: f(x) = (-x^2 / maxDist^2) +1
+                        // This creates a parabola that has value of 1 at the origin
+                        // and falls off to 0 at the maxDist
+
+                        const weight = Math.max(0, (-Math.pow(dist, 2) / Math.pow(maxDist, 2)) + 1)
+                        a.y += weight / 2
+                        b.y += weight / 2
+                    }
+
+                    if (a.y > max) {
+                        max = a.y
+                        // console.log(max)
+                    }
+                    if (b.y > max) {
+                        max = b.y
+                    }
+
+                    // else {
+                    //     // As the data is sorted we can break here
+                    //     if (overlapped) break
+                    // }
+                }
+            }
+
+
+            console.log(data)
+
+
+            this.timelineChart.update({
+                graphs: [new BarGraph(data, {
+                    yMax: max,
+                    yOffset: 10,
+                    maxWidth: 1
+                })],
+                timeline: {from: data[0].x, to: data[data.length - 1].x}
+            })
+        },
+        updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
 
             let graph = null

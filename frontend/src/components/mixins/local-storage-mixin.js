@@ -4,6 +4,7 @@ export default function (name, variables = []) {
     const watch = variables.reduce((acc, key) => {
         acc[key] = function (newVal, oldVal) {
             this.local_storage_mixin_save()
+
         }
         return acc
     }, {})
@@ -32,8 +33,6 @@ export default function (name, variables = []) {
                     let requiresReload = false
                     this.local_storage_mixin_variables.forEach(key => {
                         if (Object.prototype.hasOwnProperty.call(this.$data, key) && data[key] != undefined) {
-                            console.log("REQUIRED RELOAD!")
-
                             this.$data[key] = data[key]
                             requiresReload = true
                         }

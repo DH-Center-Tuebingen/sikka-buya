@@ -70,7 +70,7 @@ export class TickGraph extends Graph {
 
     draw(context, chart) {
         super.draw(context)
-        
+
 
         const steps = [1, 5, 10, 50, 100, 200, 500, 1000]
 
@@ -79,7 +79,7 @@ export class TickGraph extends Graph {
         const range = to - from
 
         let i = 0
-        while (range / steps[i+1] > 15 && i < steps.length - 2) i++
+        while (range / steps[i + 1] > 15 && i < steps.length - 2) i++
 
         let smallStep = steps[i]
         let bigStep = steps[i + 1]
@@ -88,7 +88,7 @@ export class TickGraph extends Graph {
 
         const bigStart = Math.ceil(this.data[0] / bigStep) * bigStep
         for (let x = bigStart; x <= this.data[1]; x += bigStep) {
-            if(x === from || x === to) continue
+            if (x === from || x === to) continue
             context.beginPath()
             context.moveTo(chart.x(x), chart.y(0))
             this.createLabel(context, chart, x, this.longDash)
@@ -99,7 +99,7 @@ export class TickGraph extends Graph {
 
         const smallStart = Math.ceil(this.data[0] / smallStep) * smallStep
         for (let x = smallStart; x <= this.data[1]; x += smallStep) {
-            if(x === from || x === to) continue
+            if (x === from || x === to) continue
             if (x % bigStep === 0) continue
             context.beginPath()
             context.moveTo(chart.x(x), chart.y(0))
@@ -296,6 +296,7 @@ export class MirrorGraph extends SplitYGraph {
 
 export class BarGraph extends YGraph {
     constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, contextStyles = {} } = {}) {
+        console.log(maxWidth)
         super(data, {
             yMax,
             yOffset,
@@ -310,7 +311,12 @@ export class BarGraph extends YGraph {
     draw(context, chart) {
         super.draw(context, chart)
 
-        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+        let width = chart.unitWidth
+        if (this.maxWidth)
+            width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+
+
+        console.log(width, this.maxWidth)
         this.data.forEach(({ x, y }) => {
             let yOffset = 0
             if (!isArray(y)) y = [y]
@@ -493,6 +499,8 @@ export default class TimelineChart extends Chart {
     get unitWidth() {
         const timelineSpan = this.timeline.to - this.timeline.from
         const widthPerYear = (this.canvas.width / timelineSpan)
+
+        console.log(timelineSpan, widthPerYear)
         return widthPerYear
     }
 

@@ -4,10 +4,10 @@
     :class="{ focussed, readonly: !interactive }"
     ref="element"
   >
-    <!-- <button class="play-btn" @click="play">
-      <PlayIcon v-if="!playing" />
-      <PauseIcon v-else />
-    </button> -->
+
+    <slot name="header">
+    </slot>
+
 
     <div
       class="timeline-container"
