@@ -480,7 +480,14 @@ export default {
                 geoJSON.bindTooltip(region.name, { sticky: true })
                 geoJSON.on("click", () => {
                     if (vueContext.selectedTreasureIds.length === 0) {
-                        vueContext.selectedMintIds = [region.id]
+                    console.log("CLICK", region.id, vueContext.selectedMintIds)
+
+                        if(vueContext.selectedMintIds.includes(region.id)) {
+                            vueContext.selectedMintIds = vueContext.selectedMintIds.filter(id => id !== region.id)
+                        } else {
+                            vueContext.selectedMintIds = [region.id]
+                        }
+                        
                         vueContext.update()
                     }
                 })
