@@ -48,18 +48,20 @@ export class Graph {
 
 export class TickGraph extends Graph {
 
-    constructor(from, to, { options = {
-        longDash: 50,
-        shortDash: 10,
-        textOffset: 5,
-        showShortTextWhenCountBelow: 20,
-    }, contextStyles = {} } = {}) {
+    constructor(from, to, { options: {
+        longDash = 50,
+        shortDash = 10,
+        textOffset = 5,
+        showShortTextWhenCountBelow = 20,
+        steps = [1, 5, 10, 50, 100, 200, 500, 1000],
+    } = {}, contextStyles = {} } = {}) {
         super([from, to], { contextStyles })
 
-        this.longDash = options.longDash
-        this.shortDash = options.shortDash
-        this.textOffset = options.textOffset
-        this.showShortTextWhenCountBelow = options.showShortTextWhenCountBelow
+        this.longDash = longDash
+        this.shortDash = shortDash
+        this.textOffset = textOffset
+        this.showShortTextWhenCountBelow = showShortTextWhenCountBelow
+        this.steps = steps
     }
 
     createLabel(context, chart, x, dash) {
@@ -71,18 +73,15 @@ export class TickGraph extends Graph {
     draw(context, chart) {
         super.draw(context)
 
-
-        const steps = [1, 5, 10, 50, 100, 200, 500, 1000]
-
         const from = this.data[0]
         const to = this.data[1]
         const range = to - from
 
         let i = 0
-        while (range / steps[i + 1] > 15 && i < steps.length - 2) i++
+        while (range / this.steps[i + 1] > 15 && i < this.steps.length - 2) i++
 
-        let smallStep = steps[i]
-        let bigStep = steps[i + 1]
+        let smallStep = this.steps[i]
+        let bigStep = this.steps[i + 1]
 
 
 
@@ -93,7 +92,7 @@ export class TickGraph extends Graph {
             context.moveTo(chart.x(x), chart.y(0))
             this.createLabel(context, chart, x, this.longDash)
             context.lineTo(chart.x(x), chart.y(0) - this.longDash)
-
+            console.log(chart.x(x), chart.y(0), this.longDash)
             context.stroke()
         }
 
@@ -458,6 +457,7 @@ export default class TimelineChart extends Chart {
         super(canvas)
         this.graphs = graphs
         this.timeline = timeline
+            = 1
 
         if (graphs.length > 0)
             this.draw()
@@ -499,8 +499,6 @@ export default class TimelineChart extends Chart {
     get unitWidth() {
         const timelineSpan = this.timeline.to - this.timeline.from
         const widthPerYear = (this.canvas.width / timelineSpan)
-
-        console.log(timelineSpan, widthPerYear)
         return widthPerYear
     }
 
@@ -539,26 +537,42 @@ export default class TimelineChart extends Chart {
         return x
     }
 
-    getCell({ x, y }) {
-        const offset = this.unitWidth / 2
-        const xCell = Math.floor((x - offset) / this.unitWidth)
-        let year = this.timeline.from + xCell + 1
+    getCell({ x, y }, {
+        cursorWidth = 1,
+        windowWidth = 1,
+    } = {}) {
+
+        const value = this.getValue({ x, y }, cursorWidth)
+
+        let span = this.canvas.width / (this.timeline.to - this.timeline.from)
+        const pos = (value - this.timeline.from) * span
+
+        windowWidth = this.unitWidth * windowWidth
 
         return {
-            x: xCell * this.unitWidth + offset,
+            x: pos - windowWidth / 2,
             y: 0,
             height: this.canvas.height,
-            width: this.unitWidth,
-            year,
+            width: windowWidth,
         }
+    }
+
+    getValue(point, width = 1) {
+        let offset = this.timeline.from % width
+        let normalizedOffset = Math.floor((this.timeline.from - offset) / width) * width
+        const value = Math.floor((point.x - width / 2) / this.unitWidth / width) * width + normalizedOffset + width
+        return value
     }
 
 }
 
 
 export class HighlightGraph extends Graph {
-    constructor(position) {
+    constructor(position, { windowWidth = 1, cursorWidth = 1 } = {}) {
         super(position)
+
+        this.cursorWidth = cursorWidth
+        this.windowWidth = windowWidth
     }
 
     update(position) {
@@ -567,7 +581,21 @@ export class HighlightGraph extends Graph {
 
     draw(context, chart) {
         if (!this.data) return
-        const rect = chart.getCell(this.data)
+
+        console.log({
+            cursorWidth: this.cursorWidth,
+            windowWidth: this.windowWidth
+        })
+
+        const rect = chart.getCell(this.data, { cursorWidth: this.cursorWidth, windowWidth: this.windowWidth })
+
+        // if (this.windowSize != null) {
+        //     const originalCenterOffset = rect.x + chart.unitWidth / 2
+        //     rect.width = chart.unitWidth * this.windowSize
+        //     rect.x += originalCenterOffset - rect.width / 2
+        //     console.log("WINDOW SIZE", this.windowSize, chart.unitWidth)
+        // }
+
 
         context.beginPath()
         context.rect(rect.x, rect.y, rect.width, rect.height)

@@ -250,6 +250,8 @@ import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 import Chart from "chart.js/auto"
+import { WindowSampler } from "../../models/chart/sampler"
+import Falloff from "../../models/chart/falloff"
 
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
@@ -257,17 +259,18 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "../mixins/local-storage-mixin"
 import Sort from '../../utils/Sorter';
-import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph } from '../../models/timeline/TimelineChart';
+import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph, LineGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 import { MintLocationMarker } from "../../models/mintlocation"
 
 import L from 'leaflet'
+import { cloneDeep } from 'lodash'
 import Info from '../forms/Info.vue';
 import Range from '../../models/timeline/range';
 import Color from '../../utils/Color';
 import Row from '../layout/Row.vue';
-import { mdiAxisXRotateCounterclockwise } from '@mdi/js';
+import { mdiAlphaCCircle, mdiAxisXRotateCounterclockwise } from '@mdi/js';
 
 
 export default {
@@ -301,35 +304,78 @@ export default {
             yearCountData: {},
             mintRegions: [],
             mintLocationMarkerGroup: null,
+            cachedWeightData: [],
         };
     },
     mixins: [
         map,
         TimelineHighlightMixin({
-            canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, year) {
-
-                const data = this.yearCountData[year]
+            canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, value) {
 
 
-                let htmlText = `<b>${year}`
-                let countsHtml = []
-                if (data) {
-                    data.y.forEach((count, index) => {
-                        const treasure = this.selectedTreasures[index]
-                        if (count > 0) {
-                            countsHtml.push(`<span style="color: ${treasure.color}">${count}</span>`)
+                if (this.chartType === "weight") {
+                    const windowWidth = this.timeline_highlight_windowWidth
+                    const data = cloneDeep(this.cachedWeightData)
+                    let selection = data.filter(d => value - (windowWidth / 2) <= d.x && d.x <= value + (windowWidth / 2)).reduce((acc, d) => {
+
+                        if (acc.length > 0 && acc[acc.length - 1].x === d.x) {
+                            acc[acc.length - 1].y += d.y
+                        } else
+                            acc.push(d)
+                        return acc
+                    }, [])
+
+                    let html = "<table>"
+
+                    for (const point of selection) {
+                        const dist = point.x - value
+
+                        const normalizedError = (dist / (windowWidth / 2)).toFixed(3)
+                        const targetColor = normalizedError > 0 ? "#ff0000" : "#0000ff"
+                        const color = Color.hexBrighten("#000000", Math.abs(normalizedError), targetColor)
+
+                        html += `<tr style="valign:center;"><td>${point.x}g</td>`
+
+                            
+                        if (normalizedError !== 0) {
+                            const sign = normalizedError > 0 ? "+" : ""
+                            html += `<td style="color:${color}; font-weight:bold; font-size: .8rem; padding-left: 0.2rem;">${sign}${(normalizedError * windowWidth / 2).toFixed(2)}</td>`
+                        } else {
+                            html += `<td></td>`
                         }
-                    })
+
+                        if (point.y > 1) {
+                            html += `<td>x${point.y}</td>`
+                        }
+
+                        html += "</tr>"
+                    }
+
+                    html += "</table>"
+
+                    tooltip.innerHTML = html
                 }
+                else {
+                    const data = this.yearCountData[value]
+                    let htmlText = `<b>${value}`
+                    let countsHtml = []
+                    if (data) {
+                        data.y.forEach((count, index) => {
+                            const treasure = this.selectedTreasures[index]
+                            if (count > 0) {
+                                countsHtml.push(`<span style="color: ${treasure.color}">${count}</span>`)
+                            }
+                        })
+                    }
 
-                if (countsHtml.length > 0) {
-                    htmlText += `</b>: ${countsHtml.join(", ")}`
-                } else {
-                    htmlText += `</b>`
+                    if (countsHtml.length > 0) {
+                        htmlText += `</b>: ${countsHtml.join(", ")}`
+                    } else {
+                        htmlText += `</b>`
+                    }
 
+                    tooltip.innerHTML = htmlText
                 }
-
-                tooltip.innerHTML = htmlText
             }
         }),
         TimelineMixin(),
@@ -693,17 +739,87 @@ export default {
         },
         updateTimelineGraph() {
 
-            if (this.chartType === "weight") {
-                this.updateTimelineWeightGraph()
-
-            } else {
-                this.updateTimelineTimeGraph()
+            let data = {
+                graphs: [],
+                timeline: null
             }
+
+            if (this.chartType === "weight") {
+                this.timelineChart.unitBase = 0.01
+
+                this.timeline_highlight_set({
+                    windowWidth: 0.4,
+                    cursorWidth: 0.1,
+                    unitBase: 0.01
+                })
+
+                // this.timeline_highlight_graph.disable()
+                data = this.updateTimelineWeightGraph()
+            } else {
+                // this.timeline_highlight_graph.enable()
+                this.timelineChart.unitBase = 1
+
+                this.timeline_highlight_set({
+                    windowWidth: 1,
+                    cursorWidth: 1,
+                    unitBase: 1
+                })
+
+
+                data = this.updateTimelineTimeGraph()
+            }
+
+
+            if (data.timeline != null) {
+                this.timeline_highlight_setOverrideTimeline(data.timeline)
+            } else {
+                data.timeline = this.timeline
+                this.timeline_highlight_unsetOverrideTimeline()
+            }
+
+            this.timelineChart.update(data)
+
 
         },
         updateTimelineWeightGraph() {
 
-            const data = this.selectedTreasures.map(treasure => {
+            const data = this.getWeightData()
+            this.cachedWeightData = data
+
+            const { samples, max } = new WindowSampler(data, {
+                falloffFunction: Falloff.quadratic,
+                frequency: 0.02,
+                windowSize: 0.05,
+            }).sample()
+
+
+            const weightGraph = new LineGraph(samples, {
+                yMax: max,
+                yOffset: 10,
+                maxWidth: 1,
+                contextStyles: {
+                    strokeStyle: Color.Primary
+                }
+            })
+
+            const timeline = { from: data[0].x, to: data[data.length - 1].x }
+
+            const tickGraph = new TickGraph(timeline.from, timeline.to, {
+                contextStyles: { strokeStyle: Color.Black },
+                options: {
+                    steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100]
+                }
+            })
+
+            const graphs = [weightGraph, tickGraph]
+
+            return {
+                graphs,
+                timeline
+            }
+        },
+        getWeightData() {
+            return this.selectedTreasures.map(treasure => {
                 let data = []
                 treasure.items.forEach(itemArr => {
                     itemArr.items.forEach(item => {
@@ -714,68 +830,6 @@ export default {
                 })
                 return data
             }).reduce((acc, arr) => acc.concat(arr), []).sort((a, b) => a.x - b.x)
-
-
-            let maxDist = .3
-            let mergeDist = 0.05
-
-            let max = 0
-
-            for (let i = data.length - 1; i >= 1; i--) {
-                let overlapped = false
-                for (let j = i - 1; j >= 0; j--) {
-                    const a = data[i]
-                    const b = data[j]
-
-
-                    const dist = Math.abs(a.x - b.x)
-
-                    if (dist <= mergeDist) {
-                        overlapped = true
-                        a.y += b.y
-                        data.splice(j, 1)
-                    } else if (dist <= maxDist) {
-                        overlapped = true
-                        // We use a inversed quadratic function with y offset to 
-                        // calculate a weighted count to have a better visualization
-                        // of the weights
-                        //
-                        // Therefore we use the function: f(x) = (-x^2 / maxDist^2) +1
-                        // This creates a parabola that has value of 1 at the origin
-                        // and falls off to 0 at the maxDist
-
-                        const weight = Math.max(0, (-Math.pow(dist, 2) / Math.pow(maxDist, 2)) + 1)
-                        a.y += weight / 2
-                        b.y += weight / 2
-                    }
-
-                    if (a.y > max) {
-                        max = a.y
-                        // console.log(max)
-                    }
-                    if (b.y > max) {
-                        max = b.y
-                    }
-
-                    // else {
-                    //     // As the data is sorted we can break here
-                    //     if (overlapped) break
-                    // }
-                }
-            }
-
-
-            console.log(data)
-
-
-            this.timelineChart.update({
-                graphs: [new BarGraph(data, {
-                    yMax: max,
-                    yOffset: 10,
-                    maxWidth: 1
-                })],
-                timeline: {from: data[0].x, to: data[data.length - 1].x}
-            })
         },
         updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
@@ -806,10 +860,10 @@ export default {
                 to
             })
 
-            this.timelineChart.update({
+            return {
                 graphs: [nonZeroGraph, graph, new TickGraph(from, to, { contextStyles: { strokeStyle: Color.Black } })],
-                timeline: this.timeline
-            })
+                timeline: null
+            }
         },
         updateBarGraph(data) {
 

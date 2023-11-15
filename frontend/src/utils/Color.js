@@ -9,7 +9,7 @@ export default class Color {
 
     static rgbToHEX(rgb) {
         this._rgbGuard(rgb)
-        let cols = rgb.map(val => parseInt(val).toString(16))
+        let cols = rgb.map(val => parseInt(val).toString(16).padStart(2, "0"))
         return `#${cols.join("")}`
     }
 
@@ -33,7 +33,11 @@ export default class Color {
         for (let i in colors) {
             let col = colors[i]
             colors[i] += (targetColor[i] - col) * ratio
+            colors[i] = Math.round(colors[i])
         }
+
+        
+
         return this.rgbToHEX(colors)
     }
 
