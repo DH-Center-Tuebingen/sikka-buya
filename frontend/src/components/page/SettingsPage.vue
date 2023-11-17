@@ -38,6 +38,9 @@
 import Query from '../../database/query';
 import RouterTree from '../layout/tree/RouterTree.vue';
 import Breadcrumbs from "../navigation/Breadcrumbs.vue"
+
+import SettingsTemplate from "../../../settings.json"; 
+
 export default {
     components: {
         Breadcrumbs,
@@ -48,11 +51,11 @@ export default {
             addValue: "",
             activePath: null,
             activeElement: null,
-            tree: {}
+            tree: SettingsTemplate
         }
     },
     mounted() {
-        this.load()
+        // this.load()
     },
     methods: {
         requestAdd(path){

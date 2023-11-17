@@ -1,5 +1,7 @@
 import { isArray } from 'lodash'
 import Range from "./range.js"
+import { app } from '../../main.js'
+
 
 class Chart {
     constructor(canvas) {
@@ -30,8 +32,14 @@ export class Graph {
         this.contextStyles = contextStyles
     }
 
-    draw(context) {
+    draw(context, chart) {
         this.joinStyles(context)
+
+        if (this.data.length === 0) {
+            chart.print(app.vue.$t("graph.no_data"), {
+                font: "bold 16pt Arimo, Arial, sans-serif"
+            })
+        }
     }
 
     get baseStyles() {
@@ -52,6 +60,7 @@ export class TickGraph extends Graph {
         longDash = 50,
         shortDash = 10,
         textOffset = 5,
+        floatCutoff = 10,
         showShortTextWhenCountBelow = 20,
         steps = [1, 5, 10, 50, 100, 200, 500, 1000],
     } = {}, contextStyles = {} } = {}) {
@@ -62,16 +71,17 @@ export class TickGraph extends Graph {
         this.textOffset = textOffset
         this.showShortTextWhenCountBelow = showShortTextWhenCountBelow
         this.steps = steps
+        this.floatCutoff = floatCutoff
     }
 
     createLabel(context, chart, x, dash) {
         context.textAlign = "center"
         context.fillStyle = context.strokeStyle
-        context.fillText(x, chart.x(x), chart.y(0) - dash - this.textOffset)
+        context.fillText(parseFloat(x.toFixed(this.floatCutoff)), chart.x(x), chart.y(0) - dash - this.textOffset)
     }
 
     draw(context, chart) {
-        super.draw(context)
+        super.draw(context, chart)
 
         const from = this.data[0]
         const to = this.data[1]
@@ -92,7 +102,6 @@ export class TickGraph extends Graph {
             context.moveTo(chart.x(x), chart.y(0))
             this.createLabel(context, chart, x, this.longDash)
             context.lineTo(chart.x(x), chart.y(0) - this.longDash)
-            console.log(chart.x(x), chart.y(0), this.longDash)
             context.stroke()
         }
 
@@ -146,7 +155,7 @@ export class SplitYGraph extends Graph {
     }
 
     draw(context, chart) {
-        super.draw(context)
+        super.draw(context, chart)
 
         if (this.hlines) {
             this.drawHorizontalLines(context, chart)
@@ -207,7 +216,7 @@ export class YGraph extends Graph {
     }
 
     draw(context, chart) {
-        super.draw(context)
+        super.draw(context, chart)
 
         if (this.hlines) {
             this.drawHorizontalLines(context, chart)
@@ -295,7 +304,6 @@ export class MirrorGraph extends SplitYGraph {
 
 export class BarGraph extends YGraph {
     constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, contextStyles = {} } = {}) {
-        console.log(maxWidth)
         super(data, {
             yMax,
             yOffset,
@@ -314,8 +322,6 @@ export class BarGraph extends YGraph {
         if (this.maxWidth)
             width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
 
-
-        console.log(width, this.maxWidth)
         this.data.forEach(({ x, y }) => {
             let yOffset = 0
             if (!isArray(y)) y = [y]
@@ -564,6 +570,17 @@ export default class TimelineChart extends Chart {
         return value
     }
 
+    print(message, textStyles = {}) {
+        const context = this.getContext()
+
+        for (let key in textStyles) {
+            context[key] = textStyles[key]
+        }
+        context.textAlign = "center"
+        context.textBaseline = "middle"
+        context.fillText(message, this.canvas.width / 2, this.canvas.height / 2 )
+    }
+
 }
 
 
@@ -581,11 +598,6 @@ export class HighlightGraph extends Graph {
 
     draw(context, chart) {
         if (!this.data) return
-
-        console.log({
-            cursorWidth: this.cursorWidth,
-            windowWidth: this.windowWidth
-        })
 
         const rect = chart.getCell(this.data, { cursorWidth: this.cursorWidth, windowWidth: this.windowWidth })
 

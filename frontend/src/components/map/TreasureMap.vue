@@ -336,7 +336,7 @@ export default {
 
                         html += `<tr style="valign:center;"><td>${point.x}g</td>`
 
-                            
+
                         if (normalizedError !== 0) {
                             const sign = normalizedError > 0 ? "+" : ""
                             html += `<td style="color:${color}; font-weight:bold; font-size: .8rem; padding-left: 0.2rem;">${sign}${(normalizedError * windowWidth / 2).toFixed(2)}</td>`
@@ -486,9 +486,6 @@ export default {
         setTimeout(() => {
             this.updateDiagram()
         }, 1000)
-
-
-        this.map.setMaxBounds(null)
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeCanvas);
@@ -792,6 +789,8 @@ export default {
                 windowSize: 0.05,
             }).sample()
 
+            console.log(max)
+
 
             const weightGraph = new LineGraph(samples, {
                 yMax: max,
@@ -802,7 +801,7 @@ export default {
                 }
             })
 
-            const timeline = { from: data[0].x, to: data[data.length - 1].x }
+            const timeline = (samples.length > 0) ? { from: samples[0].x, to: samples[samples.length - 1].x } : { from: 0, to: 0 }
 
             const tickGraph = new TickGraph(timeline.from, timeline.to, {
                 contextStyles: { strokeStyle: Color.Black },

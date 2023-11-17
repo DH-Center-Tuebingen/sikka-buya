@@ -8,6 +8,7 @@
         class="mapview"
         :location="mapSettings.location"
         :zoom="mapSettings.zoom"
+        :boundaries="boundaries"
         ref="map"
         @ready="mapChanged"
         @moved="mapMoved"
@@ -63,10 +64,12 @@ export default {
       types: [],
       mapSettings,
       loading: false,
-      showDebugCrosshair: false
+      showDebugCrosshair: false,
+      boundaries: undefined
     };
+
   },
-  created() { 
+  created() {
     let queryObject = URLParams.getMany({
       zoom: 'int',
       location: 'array',
@@ -75,6 +78,32 @@ export default {
     this.$data.mapSettings = Object.assign({}, this.mapSettings, queryObject);
   },
   mounted() {
+
+    const defaultPath = "map.default";
+    let routePath = this.$route.path.split('/').filter((x) => x.trim() !== "");
+    if (routePath.length === 1) {
+      routePath.push("political");
+    }
+    routePath = routePath.join(".");
+
+    const properties = [
+      "center",
+      "zoom",
+      "boundaries",
+    ]
+
+    properties.forEach(prop => {
+      const propertyValue = this.$mconfig.joinMultiple(
+        routePath + "." + prop,
+        defaultPath + "." + prop
+      )
+      console.log(propertyValue)
+
+      this[prop] = propertyValue;
+    })
+
+
+
     settings.onSettingsChanged((keyValPairs) => {
       keyValPairs.forEach(([key, val]) => {
         this.$data.mapSettings[key] = val;

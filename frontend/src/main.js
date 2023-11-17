@@ -2,7 +2,6 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router/router'
 import store from "./store"
-import Settings from './settings'
 import { ConfigMixin } from './config'
 import I18n from './i18n/i18n';
 import VueI18n from 'vue-i18n';
@@ -11,6 +10,12 @@ import Selection from './models/selection';
 import mconfig from './plugins/mconfig';
 import StringUtils from './utils/StringUtils'
 import 'leaflet-svg-shape-markers'
+
+
+import Settings from './settings'
+import SettingsTemplate from '../settings.json'
+
+export const app = { vue: null }
 
 async function main() {
 
@@ -46,7 +51,8 @@ async function main() {
   }
 
   Vue.use(mconfig, {
-    path: "project_settings"
+    path: "project_settings",
+    template: SettingsTemplate
   })
 
   Vue.prototype.$selection = Selection
@@ -64,7 +70,7 @@ async function main() {
 
   I18n.init()
 
-  new Vue({
+  app.vue = new Vue({
     router,
     store,
     i18n: new VueI18n(),

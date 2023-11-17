@@ -1,0 +1,26 @@
+{
+    "project_name": "sikka:būya",
+    "map": {
+        "default": {
+            "center": [
+                40.0,
+                40.0
+            ],
+            "zoom": 3,
+            "boundaries": [
+                10,
+                10,
+                50,
+                90
+            ],
+            "timeline": {
+                "startYear": 433,
+                "active": true
+            }
+        },
+        "hoards": {
+            "marker_zoom_threshold": 9,
+            "boundaries": null
+        }
+    }
+}

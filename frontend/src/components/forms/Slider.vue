@@ -140,14 +140,17 @@ $caretWidth: 5px;
   }
 
   input[type='range'] {
+  appearance: none;
     -webkit-appearance: none;
   }
 
   input[type='range']::-webkit-slider-runnable-track {
+  appearance: none;
     -webkit-appearance: none;
   }
 
   input[type='range']::-webkit-slider-thumb {
+  appearance: none;
     -webkit-appearance: none;
 
     height: 1px;

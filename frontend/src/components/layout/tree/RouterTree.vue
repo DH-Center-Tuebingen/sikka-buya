@@ -6,8 +6,21 @@
                 v-for="([key, value], index) in childrenList"
                 :key="index"
             >
+                <div v-if="Array.isArray(value)">
+                    <SettingInput
+                        :ref="`input-${index}`"
+                        :label="key"
+                        :path="getPath(key)"
+
+                        :value=value
+                        :active="activeElementPath === getPath(key)"
+                        @apply="applyArraySettings(key, value)"
+                        @click.native="() => settingsInputClicked(key, `input-${index}`)"
+                    >
+                    </SettingInput>
+                </div>
                 <router-tree
-                    v-if="(typeof value === 'object')"
+                    v-else-if="(typeof value === 'object')"
                     :ref="`tree-${index}`"
                     :name="key"
                     :children="value"
@@ -80,6 +93,17 @@ export default {
         getPath(child) {
             return this.path + '/' + child
         },
+        async applyArraySettings(child, value) {
+            try {
+                this.error = ""
+                let val = `[${value}]`
+                let arr = JSON.parse(val)
+                this.applySettings(child, arr)
+            }catch(e){
+                console.error(e)
+            }
+            
+        },
         async applySettings(child, value) {
             try {
                 await Query.raw(`updateSetting ('${this.getPath(child)}', '${value}')`, {}, true)
@@ -128,5 +152,4 @@ ul {
     flex-direction: column;
     gap: $padding;
 }
-
 </style>

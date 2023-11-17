@@ -24,9 +24,11 @@ LeafletSmoothZoom(L);
 export default {
   name: 'MapView',
   props: {
-    useBoundaries: {
-      type: Boolean,
-      default: true,
+    boundaries: {
+      type: Array,
+      validator(value) {
+        return value === undefined || value.length === 4;
+      },
     },
     height: String,
     location: {
@@ -36,6 +38,19 @@ export default {
     zoom: {
       type: Number,
       required: true,
+    },
+  },
+  watch: {
+    boundaries: function (newVal) {
+      console.log(newVal, this.ready)
+
+
+      if (newVal && newVal.length === 4) {
+        this.map.setMaxBounds(L.latLngBounds(L.latLng(newVal[0], newVal[1]), L.latLng(newVal[2], newVal[3])));
+      } else {
+        this.map.setMaxBounds(null);
+      }
+
     },
   },
   data: function () {
@@ -51,10 +66,8 @@ export default {
   },
   mounted: function () {
     let mapBoundaries = null;
-    if (this.useBoundaries) {
-      const minBoundingPoint = L.latLng(10, 10);
-      const maxBoundingPoint = L.latLng(50, 90);
-      mapBoundaries = L.latLngBounds(minBoundingPoint, maxBoundingPoint);
+    if (this.boundaries && this.boundaries.length === 4) {
+      mapBoundaries = L.latLngBounds(L.latLng(this.boundaries[0], this.boundaries[1]), L.latLng(this.boundaries[2], this.boundaries[3]));
     }
 
     L.Map.include({
@@ -92,7 +105,7 @@ export default {
       },
     });
 
-
+    console.log("INIT MAP")
     // Initialize the map 
     var map = L.map('map_' + this._uid, {
       center: this.location,
