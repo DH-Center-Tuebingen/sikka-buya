@@ -3,7 +3,8 @@
         <section>
             <h1>Settings</h1>
 
-            <div style="display: flex;">
+            <button @click="updateConfig">Update</button>
+            <!-- <div style="display: flex;">
                 <input
                     type="text"
                     v-model="addPath"
@@ -18,7 +19,7 @@
                     ref="addValue"
                 >
                 <button @click="add">Add</button>
-            </div>
+            </div> -->
             <!-- <Breadcrumbs /> -->
             <RouterTree
                 ref="tree"
@@ -39,7 +40,7 @@ import Query from '../../database/query';
 import RouterTree from '../layout/tree/RouterTree.vue';
 import Breadcrumbs from "../navigation/Breadcrumbs.vue"
 
-import SettingsTemplate from "../../../settings.json"; 
+import SettingsTemplate from "../../../settings.json";
 
 export default {
     components: {
@@ -51,16 +52,16 @@ export default {
             addValue: "",
             activePath: null,
             activeElement: null,
-            tree: SettingsTemplate
+            tree: {}
         }
     },
     mounted() {
-        // this.load()
+        this.load()
     },
     methods: {
-        requestAdd(path){
+        requestAdd(path) {
             this.addPath = path + "/"
-            this.$refs.addPath.focus()
+
         },
         reload() {
             window.location.reload()
@@ -75,11 +76,20 @@ export default {
 
             }
         },
+        async updateConfig() {
+            await Query.raw(`mutation Generate($template: String!) { generateManagedConfigs(template: $template) }`, {
+                template: JSON.stringify(SettingsTemplate)
+            }, true)
+            // this.reload()
+        },
         async load() {
             const result = await Query.raw(`{settings}`)
             try {
-                const json = JSON.parse(result.data.data.settings)
-                this.tree = json
+                const loaded = JSON.parse(result.data.data.settings)
+
+                // TODO FILL ALL MISSING WITH TEMPLATE
+
+                this.tree = loaded
             } catch (e) {
                 console.error(e)
             }

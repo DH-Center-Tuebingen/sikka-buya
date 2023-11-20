@@ -6,6 +6,7 @@ class SettingsGQL extends GQL {
         return {
             updateSetting: (_, args) => Settings.update(args.path, args.value),
             deleteSetting: (_, args) => Settings.delete(args.path),
+            generateManagedConfigs: (_, args) => Settings.writeManagedFile(JSON.parse(args.template)),
         }
     }
 

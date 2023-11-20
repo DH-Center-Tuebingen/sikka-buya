@@ -97,10 +97,11 @@ export default {
         routePath + "." + prop,
         defaultPath + "." + prop
       )
-      console.log(propertyValue)
 
       this[prop] = propertyValue;
     })
+
+    console.log(this.boundaries)
 
 
 

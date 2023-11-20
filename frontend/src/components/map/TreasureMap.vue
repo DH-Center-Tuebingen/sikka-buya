@@ -407,6 +407,11 @@ export default {
     },
     created() {
         window.graphics = this.featureGroup
+
+        settings.boxStepSize = this.$mconfig.getInteger("map.hoards.box_step_size", 10)
+        settings.boxMinSize = this.$mconfig.getInteger("map.hoards.box_min_size", 5)
+        settings.stepSizeGroupsInPercent = this.$mconfig.getArray("map.hoards.step_size_groups_in_percent")
+        
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data.treasures

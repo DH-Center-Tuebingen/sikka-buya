@@ -20,7 +20,7 @@
                     </SettingInput>
                 </div>
                 <router-tree
-                    v-else-if="(typeof value === 'object')"
+                    v-else-if="value != null && (typeof value === 'object')"
                     :ref="`tree-${index}`"
                     :name="key"
                     :children="value"
@@ -42,12 +42,6 @@
                     </SettingInput>
                 </div>
             </li>
-            <li>
-                <Button @click="$emit('requestAdd', path)">
-                    +
-                </Button>
-            </li>
-
         </ul>
     </div>
 </template>

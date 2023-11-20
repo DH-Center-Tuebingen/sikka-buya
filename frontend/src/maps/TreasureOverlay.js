@@ -5,6 +5,7 @@ import Query from '../database/query';
 import Overlay from './Overlay';
 
 import { cloneDeep } from 'lodash';
+import { del } from "vue";
 
 
 
@@ -40,7 +41,6 @@ export default class TreasureOverlay extends Overlay {
         super(parent, settings, callbacks)
 
         this.onSelectTreasure = onSelectTreasure
-        this.bringTreasureToFront = this.bringTreasureToFront.bind(this)
     }
 
     async fetch({ selections = {} } = {}) {
@@ -466,12 +466,10 @@ export default class TreasureOverlay extends Overlay {
         const { count = null, totalCount = null } = feature.properties
         const percent = 100 * (count / totalCount)
 
-
-        const minSize = 5
-        const stepsize = 10
+        const minSize = this.settings.boxMinSize
+        const stepsize = this.settings.boxStepSize
         let size = minSize
-
-        const stepSizeGroupsInPercent = [1, 5, 10, 25, 40, 60]
+        const stepSizeGroupsInPercent = this.settings.stepSizeGroupsInPercent.slice()
 
         let targetSizeGroup = stepSizeGroupsInPercent.shift()
         while (stepSizeGroupsInPercent.length > 0 && percent > stepSizeGroupsInPercent[0]) {
@@ -511,7 +509,7 @@ export default class TreasureOverlay extends Overlay {
 
         let marker = null
         if (feature?.properties?.count > 0) {
-            marker = this.createRectMarker(latlng, feature)
+            marker = this.createRectMarker(latlng, feature, { selections, markerOptions })
             marker = this.extendBorder(marker, feature, this.createRectMarker.bind(this, latlng, feature))
         } else {
 

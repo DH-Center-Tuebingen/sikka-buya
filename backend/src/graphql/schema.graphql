@@ -626,6 +626,7 @@ type Mutation {
 
   deleteSetting(path:String!):Void
   updateSetting(path:String!, value:String!):Void
+  generateManagedConfigs(template:String!):Void
 
   addMintRegion(data: MintRegionInput!): Void
   updateMintRegion(id: ID!, data: MintRegionInput): Void

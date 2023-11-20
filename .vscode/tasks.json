@@ -2,33 +2,33 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Frontend",
+            "label": "frontend",
             "type": "shell",
             "command": "npm run frontend",
             "isBackground": true
         },
         {
-            "label": "Backend",
+            "label": "backend",
             "type": "shell",
             "command": "npm run backend",
             "isBackground": true
         },
         {
-            "label": "Backend - Testing",
+            "label": "backend-testing",
             "type": "shell",
             "command": "npm run test:backend",
             "isBackground": true
         },
         {
-            "label": "Application",
+            "label": "dev",
             "type": "shell",
-            "command": "npm run frontend",
             "dependsOn": [
-                "Backend",
-                "Frontend"
+                "frontend",
+                "backend"
             ],
             "dependsOrder": "parallel",
-            "isBackground": true
+            "isBackground": true,
+            "problemMatcher": [],
         }
     ]
 }
