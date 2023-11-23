@@ -100,11 +100,7 @@ export default {
 
       this[prop] = propertyValue;
     })
-
-    console.log(this.boundaries)
-
-
-
+    
     settings.onSettingsChanged((keyValPairs) => {
       keyValPairs.forEach(([key, val]) => {
         this.$data.mapSettings[key] = val;

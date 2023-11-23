@@ -196,7 +196,12 @@ export class SplitYGraph extends Graph {
 
 
 export class YGraph extends Graph {
-    constructor(data, { yMax = 0, yOffset = 0, hlines = false, contextStyles = {} } = {}) {
+    constructor(data, {
+        yMax = 0,
+        yOffset = 0,
+        hlines = false,
+        contextStyles = {},
+    } = {}) {
         super(data, { contextStyles })
         this.yMax = yMax
         this.yOffset = yOffset
@@ -260,7 +265,7 @@ export class MirrorGraph extends SplitYGraph {
 
     draw(context, chart) {
         super.draw(context, chart)
-        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth * this.unitBase
 
 
         const center = this.center(chart)
@@ -303,24 +308,27 @@ export class MirrorGraph extends SplitYGraph {
 }
 
 export class BarGraph extends YGraph {
-    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, contextStyles = {} } = {}) {
+    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, unitBase = 1, contextStyles = {} } = {}) {
         super(data, {
             yMax,
             yOffset,
             contextStyles,
-            hlines
+            hlines,
+            unitBase,
         })
         if (colors.length === 0) colors = defaultColors
         this.colors = colors
         this.maxWidth = maxWidth
+        this.unitBase = unitBase
     }
 
     draw(context, chart) {
         super.draw(context, chart)
 
-        let width = chart.unitWidth
-        if (this.maxWidth)
-            width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+        let width = chart.unitWidth * this.unitBase
+        if(this.maxWidth && width > this.maxWidth)
+            width = this.maxWidth
+
 
         this.data.forEach(({ x, y }) => {
             let yOffset = 0
@@ -578,7 +586,7 @@ export default class TimelineChart extends Chart {
         }
         context.textAlign = "center"
         context.textBaseline = "middle"
-        context.fillText(message, this.canvas.width / 2, this.canvas.height / 2 )
+        context.fillText(message, this.canvas.width / 2, this.canvas.height / 2)
     }
 
 }

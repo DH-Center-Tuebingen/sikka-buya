@@ -42,9 +42,6 @@ export default {
   },
   watch: {
     boundaries: function (newVal) {
-      console.log(newVal, this.ready)
-
-
       if (newVal && newVal.length === 4) {
         this.map.setMaxBounds(L.latLngBounds(L.latLng(newVal[0], newVal[1]), L.latLng(newVal[2], newVal[3])));
       } else {
@@ -105,7 +102,6 @@ export default {
       },
     });
 
-    console.log("INIT MAP")
     // Initialize the map 
     var map = L.map('map_' + this._uid, {
       center: this.location,

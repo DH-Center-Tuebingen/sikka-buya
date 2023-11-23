@@ -123,6 +123,19 @@
                             </template>
                             <span v-else>0</span>
                         </div>
+
+                        <div class="button-group">
+                            <radio-button-group
+                                v-if="chartType === 'weight'"
+                                id="weight-frequency"
+                                :labels="['0.01', '0.1']"
+                                :options="['0.01', '0.1']"
+                                :value="weightDataFrequency.toString()"
+                                @input="updateWeightFrequency"
+                            >
+
+                            </radio-button-group>
+                        </div>
                         <div
                             class="button-group"
                             style="justify-content: flex-end; display: flex;"
@@ -250,8 +263,7 @@ import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 import Chart from "chart.js/auto"
-import { WindowSampler } from "../../models/chart/sampler"
-import Falloff from "../../models/chart/falloff"
+import { FrequencySampler } from "../../models/chart/sampler"
 
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
@@ -304,7 +316,8 @@ export default {
             yearCountData: {},
             mintRegions: [],
             mintLocationMarkerGroup: null,
-            cachedWeightData: [],
+            cachedWeightDataMap: {},
+            weightDataFrequency: 0.1,
         };
     },
     mixins: [
@@ -315,45 +328,7 @@ export default {
 
                 if (this.chartType === "weight") {
                     const windowWidth = this.timeline_highlight_windowWidth
-                    const data = cloneDeep(this.cachedWeightData)
-                    let selection = data.filter(d => value - (windowWidth / 2) <= d.x && d.x <= value + (windowWidth / 2)).reduce((acc, d) => {
-
-                        if (acc.length > 0 && acc[acc.length - 1].x === d.x) {
-                            acc[acc.length - 1].y += d.y
-                        } else
-                            acc.push(d)
-                        return acc
-                    }, [])
-
-                    let html = "<table>"
-
-                    for (const point of selection) {
-                        const dist = point.x - value
-
-                        const normalizedError = (dist / (windowWidth / 2)).toFixed(3)
-                        const targetColor = normalizedError > 0 ? "#ff0000" : "#0000ff"
-                        const color = Color.hexBrighten("#000000", Math.abs(normalizedError), targetColor)
-
-                        html += `<tr style="valign:center;"><td>${point.x}g</td>`
-
-
-                        if (normalizedError !== 0) {
-                            const sign = normalizedError > 0 ? "+" : ""
-                            html += `<td style="color:${color}; font-weight:bold; font-size: .8rem; padding-left: 0.2rem;">${sign}${(normalizedError * windowWidth / 2).toFixed(2)}</td>`
-                        } else {
-                            html += `<td></td>`
-                        }
-
-                        if (point.y > 1) {
-                            html += `<td>x${point.y}</td>`
-                        }
-
-                        html += "</tr>"
-                    }
-
-                    html += "</table>"
-
-                    tooltip.innerHTML = html
+                    tooltip.innerHTML = `<b>${value}</b>: ${this.cachedWeightDataMap[value] || 0}`
                 }
                 else {
                     const data = this.yearCountData[value]
@@ -411,7 +386,7 @@ export default {
         settings.boxStepSize = this.$mconfig.getInteger("map.hoards.box_step_size", 10)
         settings.boxMinSize = this.$mconfig.getInteger("map.hoards.box_min_size", 5)
         settings.stepSizeGroupsInPercent = this.$mconfig.getArray("map.hoards.step_size_groups_in_percent")
-        
+
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data.treasures
@@ -739,6 +714,10 @@ export default {
         updateTimeline() {
             console.warn("NOTHING TO DO", arguments)
         },
+        updateWeightFrequency(value) {
+            this.weightDataFrequency = parseFloat(parseFloat(value).toPrecision(10))
+            this.updateTimelineGraph()
+        },
         updateTimelineGraph() {
 
             let data = {
@@ -747,12 +726,15 @@ export default {
             }
 
             if (this.chartType === "weight") {
-                this.timelineChart.unitBase = 0.01
+                const frequency = this.weightDataFrequency
+                this.timelineChart.unitBase = frequency
+
+                console.log(frequency)
 
                 this.timeline_highlight_set({
-                    windowWidth: 0.4,
-                    cursorWidth: 0.1,
-                    unitBase: 0.01
+                    windowWidth: frequency,
+                    cursorWidth: frequency,
+                    unitBase: frequency
                 })
 
                 // this.timeline_highlight_graph.disable()
@@ -786,27 +768,49 @@ export default {
         updateTimelineWeightGraph() {
 
             const data = this.getWeightData()
-            this.cachedWeightData = data
-
-            const { samples, max } = new WindowSampler(data, {
-                falloffFunction: Falloff.quadratic,
-                frequency: 0.02,
-                windowSize: 0.05,
-            }).sample()
-
-            console.log(max)
 
 
-            const weightGraph = new LineGraph(samples, {
-                yMax: max,
-                yOffset: 10,
-                maxWidth: 1,
-                contextStyles: {
-                    strokeStyle: Color.Primary
+            let timeline = { from: 0, to: 0 }
+            let graphs = []
+
+            let allSamples = []
+            console.log(data)
+
+            if (data.length > 0) {
+
+                for (const { data: treasureData, color: treasureColor } of Object.values(data)) {
+
+                    const frequency = this.weightDataFrequency
+                    const { samples, max } = new FrequencySampler(treasureData, {
+                        frequency,
+                    }).sample()
+
+                    allSamples.push(...samples)
+
+                    this.cachedWeightDataMap = samples.reduce((acc, obj) => {
+                        acc[obj.x.toString()] = obj.y
+                        return acc
+                    }, {})
+
+                    console.log(treasureColor)
+                    const weightGraph = new BarGraph(samples, {
+                        // hlines: true,
+                        yOffset: 10,
+                        frequency,
+                        yMax: max,
+                        unitBase: frequency,
+                        colors: [Color.hexToRGBA(treasureColor, 0.2)],
+                    })
+
+
+
+                    graphs.push(weightGraph)
                 }
-            })
+            }
 
-            const timeline = (samples.length > 0) ? { from: samples[0].x, to: samples[samples.length - 1].x } : { from: 0, to: 0 }
+            allSamples = allSamples.sort((a, b) => a.x - b.x)
+
+            timeline = (allSamples.length > 0) ? { from: allSamples[0].x, to: allSamples[allSamples.length - 1].x } : { from: 0, to: 0 }
 
             const tickGraph = new TickGraph(timeline.from, timeline.to, {
                 contextStyles: { strokeStyle: Color.Black },
@@ -815,7 +819,7 @@ export default {
                 }
             })
 
-            const graphs = [weightGraph, tickGraph]
+
 
             return {
                 graphs,
@@ -832,8 +836,11 @@ export default {
                         }
                     })
                 })
-                return data
-            }).reduce((acc, arr) => acc.concat(arr), []).sort((a, b) => a.x - b.x)
+                return {
+                    color: treasure.color,
+                    data: data.sort((a, b) => a.x - b.x)
+                }
+            })
         },
         updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
