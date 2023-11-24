@@ -336,3 +336,86 @@ export class TreasureItemsImporter extends Importer {
         return value !== "" && value % 1 === 0 && !isNaN(value)
     }
 }
+
+
+class Exporter {
+    constructor(data) {
+        this.data = data
+    }
+
+    download(filename, data) {
+        const blob = new Blob([data], { type: 'text/csv' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.setAttribute('hidden', '')
+        a.setAttribute('href', url)
+        a.setAttribute('download', filename)
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        return this
+    }
+
+    exec() {
+        throw new Error("Not implemented")
+    }
+}
+
+
+export class CsvExporter extends Exporter {
+
+    constructor(data, { delimiter = ";", linebreak = "\n" } = {}) {
+        super(data)
+        this.delimiter = delimiter
+        this.linebreak = linebreak
+        this.csv = ""
+    }
+
+    static use(data) {
+        return new CsvExporter(data)
+    }
+
+    download(filename) {
+        return super.download(filename, this.csv)
+    }
+
+    exec() {
+        let csv = ""
+
+        const columns = []
+
+        if (this.data.length > 0) {
+            for (let key of Object.keys(this.data[0])) {
+                columns.push(key)
+            }
+
+
+            for (let row of this.data) {
+                for (let column of columns) {
+                    const value = row[column]
+                    if (value != null) {
+
+                        if (typeof value === "object" && value.id !== undefined) {
+
+                            if (value.name) {
+                                csv += `${value.name}`
+                            } else if (value.projectId) {
+                                csv += `${value.projectId}`
+                            } else{
+                                csv += " "
+                            }
+                        }
+                        else {
+                            csv += `${value}`
+                        }
+                    }
+                    csv += this.delimiter
+                }
+                csv += this.linebreak
+            }
+        }
+
+        this.csv = csv
+        return this
+    }
+}

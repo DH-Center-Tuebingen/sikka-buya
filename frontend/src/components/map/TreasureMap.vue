@@ -128,8 +128,8 @@
                             <radio-button-group
                                 v-if="chartType === 'weight'"
                                 id="weight-frequency"
-                                :labels="['0.01', '0.1']"
-                                :options="['0.01', '0.1']"
+                                :labels="['0.01', '0.1', '1']"
+                                :options="['0.01', '0.1', '1']"
                                 :value="weightDataFrequency.toString()"
                                 @input="updateWeightFrequency"
                             >
@@ -282,7 +282,7 @@ import Info from '../forms/Info.vue';
 import Range from '../../models/timeline/range';
 import Color from '../../utils/Color';
 import Row from '../layout/Row.vue';
-import { mdiAlphaCCircle, mdiAxisXRotateCounterclockwise } from '@mdi/js';
+import { fixPrecision } from "../../utils/Number"
 
 
 export default {
@@ -325,10 +325,26 @@ export default {
         TimelineHighlightMixin({
             canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, value) {
 
-
                 if (this.chartType === "weight") {
-                    const windowWidth = this.timeline_highlight_windowWidth
-                    tooltip.innerHTML = `<b>${value}</b>: ${this.cachedWeightDataMap[value] || 0}`
+                    const data = this.cachedWeightDataMap[value]
+
+                    if (Array.isArray(data)) {
+
+                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>:`
+
+                        const treasures = []
+
+                        data.forEach((count, index) => {
+                            const treasure = this.selectedTreasures[index]
+                            if (count > 0) {
+                                treasures.push(`<span style="color: ${treasure.color}">${count}</span>`)
+                            }
+                        })
+
+                        tooltip.innerHTML += ` ${treasures.join(", ")}`
+                    } else {
+                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>: ${this.cachedWeightDataMap[value] || 0}`
+                    }
                 }
                 else {
                     const data = this.yearCountData[value]
@@ -729,12 +745,11 @@ export default {
                 const frequency = this.weightDataFrequency
                 this.timelineChart.unitBase = frequency
 
-                console.log(frequency)
-
                 this.timeline_highlight_set({
                     windowWidth: frequency,
                     cursorWidth: frequency,
-                    unitBase: frequency
+                    unitBase: frequency,
+                    align: "left",
                 })
 
                 // this.timeline_highlight_graph.disable()
@@ -746,7 +761,8 @@ export default {
                 this.timeline_highlight_set({
                     windowWidth: 1,
                     cursorWidth: 1,
-                    unitBase: 1
+                    unitBase: 1,
+                    align: "center",
                 })
 
 
@@ -766,50 +782,111 @@ export default {
 
         },
         updateTimelineWeightGraph() {
-
             const data = this.getWeightData()
-
 
             let timeline = { from: 0, to: 0 }
             let graphs = []
 
             let allSamples = []
-            console.log(data)
 
-            if (data.length > 0) {
+            if (data.length === 1) {
+
+                const { data: treasureData, color: treasureColor } = data[0]
+                const frequency = this.weightDataFrequency
+                const { samples, max } = new FrequencySampler(treasureData, {
+                    frequency,
+                }).sample()
+
+                allSamples.push(...samples)
+
+                this.cachedWeightDataMap = samples.reduce((acc, obj) => {
+                    acc[obj.x.toString()] = obj.y
+                    return acc
+                }, {})
+
+                const weightGraph = new BarGraph(samples, {
+                    hlines: true,
+                    yOffset: 10,
+                    frequency,
+                    yMax: max,
+                    unitBase: frequency,
+                    colors: [treasureColor],
+                    align: "left",
+                })
+
+                graphs.push(weightGraph)
+
+
+            } else if (data.length === 2) {
+
+                let colors = []
+                const maxs = []
+                let start = Infinity
+                let end = -Infinity
+                let allSampleObjects = []
 
                 for (const { data: treasureData, color: treasureColor } of Object.values(data)) {
+                    colors.push(treasureColor)
 
                     const frequency = this.weightDataFrequency
-                    const { samples, max } = new FrequencySampler(treasureData, {
+                    const { samples, max, start: treasure_start, end: treasure_end } = new FrequencySampler(treasureData, {
                         frequency,
                     }).sample()
 
+                    if (start > treasure_start) start = treasure_start
+                    if (end < treasure_end) end = treasure_end
+
+                    maxs.push(max)
                     allSamples.push(...samples)
 
-                    this.cachedWeightDataMap = samples.reduce((acc, obj) => {
+
+                    let sampleObject = samples.reduce((acc, obj) => {
                         acc[obj.x.toString()] = obj.y
                         return acc
                     }, {})
-
-                    console.log(treasureColor)
-                    const weightGraph = new BarGraph(samples, {
-                        // hlines: true,
-                        yOffset: 10,
-                        frequency,
-                        yMax: max,
-                        unitBase: frequency,
-                        colors: [Color.hexToRGBA(treasureColor, 0.2)],
-                    })
-
-
-
-                    graphs.push(weightGraph)
+                    allSampleObjects.push(sampleObject)
                 }
+
+                let mirrorData = []
+
+                for (let x = start; x <= end; x += this.weightDataFrequency) {
+
+                    x = fixPrecision(x)
+
+                    let y = []
+
+                    for (let i = 0; i < allSampleObjects.length; i++) {
+                        const sample = allSampleObjects[i]
+                        if (sample[x]) {
+                            y.push(sample[x])
+                        } else {
+                            y.push(0)
+                        }
+                    }
+
+                    mirrorData.push({ x, y })
+                }
+
+                this.cachedWeightDataMap = mirrorData.reduce((acc, obj) => {
+                    acc[obj.x.toString()] = obj.y
+                    return acc
+                }, {})
+
+                const weightGraph = new MirrorGraph(mirrorData, {
+                    hlines: true,
+                    offset: 10,
+                    frequency: this.weightDataFrequency,
+                    unitBase: this.weightDataFrequency,
+                    topMax: maxs[0],
+                    bottomMax: maxs[1],
+                    colors,
+                    align: "left",
+                })
+                graphs.push(weightGraph)
+
             }
 
             allSamples = allSamples.sort((a, b) => a.x - b.x)
-
             timeline = (allSamples.length > 0) ? { from: allSamples[0].x, to: allSamples[allSamples.length - 1].x } : { from: 0, to: 0 }
 
             const tickGraph = new TickGraph(timeline.from, timeline.to, {
@@ -818,6 +895,19 @@ export default {
                     steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100]
                 }
             })
+
+
+            const nonZeroSamples = allSamples.filter(a => a.y > 0)
+            let nonZeroRanges = Range.fromPointArray(nonZeroSamples, { mergeDistance: this.weightDataFrequency })
+
+            const nonZeroGraph = new RangeGraph(nonZeroRanges, {
+                contextStyles: {
+                    fillStyle: Color.LightGray,
+                },
+                translate: 0.5 * this.weightDataFrequency
+            })
+
+            graphs.unshift(nonZeroGraph)
 
 
 
@@ -845,8 +935,16 @@ export default {
         updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
 
+            if (data.length === 0) {
+                return {
+                    graphs: [],
+                    timeline: null
+                }
+            }
+
             let graph = null
             if (this.selectedTreasureIds.length === 2) {
+                console.log(data)
                 graph = this.updateMirrorGraph(data)
             } else {
                 graph = this.updateBarGraph(data)
@@ -871,8 +969,10 @@ export default {
                 to
             })
 
+            const tickGraph = new TickGraph(from, to, { contextStyles: { strokeStyle: Color.Black } })
+
             return {
-                graphs: [nonZeroGraph, graph, new TickGraph(from, to, { contextStyles: { strokeStyle: Color.Black } })],
+                graphs: [nonZeroGraph, graph, tickGraph],
                 timeline: null
             }
         },

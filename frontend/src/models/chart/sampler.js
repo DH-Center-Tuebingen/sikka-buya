@@ -1,3 +1,4 @@
+import Range from "../timeline/range"
 
 
 class Sampler {
@@ -94,12 +95,33 @@ export class FrequencySampler extends Sampler {
         frequency = 1,
         offset = 1,
         cutoff = 10,
+        start = null,
+        end = null
+
     }) {
         super(data)
 
         this.frequency = frequency
         this.offset = this.floor(offset)
         this.cutoff = cutoff
+
+        if (data.length > 0) {
+            if (start != null) {
+                this.start = this.floor(start)
+            }
+            else {
+                this.start = this.floor(this.data[0].x)
+            }
+
+            if (end != null) {
+                this.end = this.floor(end)
+            }
+            else {
+                this.end = this.floor(this.data.at(-1).x)
+            }
+        }
+
+
     }
 
     floor(x) {
@@ -117,35 +139,37 @@ export class FrequencySampler extends Sampler {
             return { min: 0, max: 0, samples: [] }
         }
 
-        let start = this.floor(this.data[0].x) - this.offset
-        let end = this.floor(this.data.at(-1).x) + this.frequency + this.offset
+        let start = this.fixPrecision(this.start - this.offset)
+        let end = this.fixPrecision(this.end + this.frequency + this.offset)
 
         let samples = []
         let min = Infinity
         let max = -1 * Infinity
 
-        for (let x = start; x <= end; x += this.frequency) {
+        for (let rangeStart = start; rangeStart <= end; rangeStart += this.frequency) {
             let value = 0
-            x = parseFloat(x.toFixed(this.cutoff))
-            for (let i = 0; i < this.data.length; i++) {
+            rangeStart = this.fixPrecision(rangeStart)
+            let rangeEnd = this.fixPrecision(rangeStart + this.frequency)
+            for (let i = 0;
+                i < this.data.length;
+                i++) {
 
-                if (this.data[i].x > x + this.frequency) {
-                    break
-                }
-
-                if (this.data[i].x >= x && this.data[i].x < x + this.frequency) {
+                if (Range.inBetween(rangeStart, rangeEnd).contains(this.data[i].x, {
+                    endInclusive: false
+                })) {
                     value += this.data[i].y
-                    this.data.shift()
-                    i--
                 }
             }
 
             if (value < min) min = value
             if (value > max) max = value
-            samples.push({ x, y: value })
+            samples.push({
+                x: rangeStart,
+                y: value
+            })
         }
 
 
-        return { min, max, samples }
+        return { min, max, samples, start, end }
     }
 }

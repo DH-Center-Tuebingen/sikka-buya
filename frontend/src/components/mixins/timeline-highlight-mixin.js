@@ -7,9 +7,20 @@ export default function ({ canvasRef, timelineRef, tooltipCallback = () => ({}) 
     return {
         data() {
             return {
+                // Size of the cursor.
+                // When the mouse leaves the 'cursor' area,
+                // the cursor will be moved to the new position.
                 [thMixin.member("cursorWidth")]: 1,
+                // Size of the window.
+                // This can be way greater than the cursor width, when e.g. 
+                // masking a area of unit steps.
                 [thMixin.member("windowWidth")]: 1,
+                // Normally the unitBase is 1
+                // so the unitWidth will be calculated on the basis of 1.
+                // This is working for values > 1, but when the unitBase is < 1,
+                // the unit Base can be set to e.g. 0.1.
                 [thMixin.member("unitBase")]: 1,
+                [thMixin.member("align")]: "center",
                 [thMixin.member("overrideTimeline")]: null,
                 [thMixin.member("enabled")]: false,
                 [thMixin.member("timelineChart")]: null,
@@ -55,7 +66,6 @@ export default function ({ canvasRef, timelineRef, tooltipCallback = () => ({}) 
             },
             [thMixin.member("windowSize")]: {
                 handler: function (windowSize) {
-                    console.log("WATCH")
                     this[thMixin.member("graph")].windowSize = windowSize
                     this[thMixin.member("timelineChart")].update()
                 }
@@ -66,11 +76,14 @@ export default function ({ canvasRef, timelineRef, tooltipCallback = () => ({}) 
                 cursorWidth = this[thMixin.member("cursorWidth")],
                 windowWidth = this[thMixin.member("windowWidth")],
                 unitBase = this[thMixin.member("unitBase")],
+                align = this[thMixin.member("align")]
             } = {}) {
                 this[thMixin.member("cursorWidth")] = cursorWidth
                 this[thMixin.member("windowWidth")] = windowWidth
+                this[thMixin.member("align")] = align
                 this[thMixin.member("graph")].cursorWidth = cursorWidth
                 this[thMixin.member("graph")].windowWidth = windowWidth
+                this[thMixin.member("graph")].align = align
                 this[thMixin.member("timelineChart")].unitBase = unitBase
                 this[thMixin.member("timelineChart")].update()
             },
@@ -130,8 +143,11 @@ export default function ({ canvasRef, timelineRef, tooltipCallback = () => ({}) 
                     y: position.y - containerRect.top
                 }
 
-                const value = this[thMixin.member("timelineChart")].getValue(relativePosition, this[thMixin.member("cursorWidth")])
-                this[thMixin.member("tooltipCallback")](tooltip, value.toPrecision(10)/1)
+                const value = this[thMixin.member("timelineChart")].getValue(relativePosition, {
+                    width: this[thMixin.member("cursorWidth")],
+                    align: this[thMixin.member("align")]
+                })
+                this[thMixin.member("tooltipCallback")](tooltip, value.toPrecision(10) / 1)
 
                 Object.assign(tooltip.style, {
                     position: "absolute",

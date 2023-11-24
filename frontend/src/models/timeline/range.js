@@ -1,5 +1,28 @@
 export default class Range {
 
+    constructor(start, end) {
+        if (start > end) {
+            let tmp = start
+            start = end
+            end = tmp
+        }
+        this.start = start
+        this.end = end
+    }
+
+    static inBetween(start, end) {
+        return new Range(start, end)
+    }
+
+    contains(value, {
+        startInclusive = true,
+        endInclusive = true
+    } = {}) {
+        const biggerThanStart = startInclusive ? value >= this.start : value > this.start
+        const smallerThanEnd = endInclusive ? value <= this.end : value < this.end
+        return biggerThanStart && smallerThanEnd
+    }
+
 
     static union(rangesArr) {
         if (rangesArr.length === 0) return []
@@ -90,7 +113,9 @@ export default class Range {
         return overlappingRanges
     }
 
-    static fromPointArray(arr) {
+    static fromPointArray(arr, {
+        mergeDistance = null
+    } = {}) {
         const nonEmptyPoints = arr.filter(point => {
             if (Array.isArray(point.y)) {
                 return point.y.reduce((a, b) => a + b, 0) > 0
@@ -99,11 +124,15 @@ export default class Range {
             }
         })
 
-        const yearArray = nonEmptyPoints.map(point => point.x)
-        return this.fromNumberSequence(yearArray)
+        const pointArray = nonEmptyPoints.map(point => point.x)
+        return this.fromNumberSequence(pointArray, {
+            mergeDistance
+        })
     }
 
-    static fromNumberSequence(arr) {
+    static fromNumberSequence(arr, {
+        mergeDistance = 1
+    } = {}) {
         let ranges = [];
         arr.sort((a, b) => a - b)
 
@@ -115,7 +144,7 @@ export default class Range {
             let prevRange = 0;
             for (let obj of arr) {
                 const value = obj
-                if (value - prev <= 1) {
+                if (value - prev <= mergeDistance) {
                     ranges[prevRange][1] = value;
                 } else {
                     ranges.push([value, value]);
