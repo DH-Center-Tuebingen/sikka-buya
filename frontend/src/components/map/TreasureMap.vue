@@ -319,6 +319,7 @@ export default {
             cachedWeightDataMap: {},
             weightDataFrequency: 0.1,
             graphOffset: 5,
+            tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
         };
     },
     mixins: [
@@ -779,8 +780,6 @@ export default {
             }
 
             this.timelineChart.update(data)
-
-
         },
         updateTimelineWeightGraph() {
             const data = this.getWeightData()
@@ -891,10 +890,8 @@ export default {
             timeline = (allSamples.length > 0) ? { from: allSamples[0].x, to: allSamples[allSamples.length - 1].x } : { from: 0, to: 0 }
 
             const tickGraph = new TickGraph(timeline.from, timeline.to, {
-                contextStyles: { strokeStyle: Color.Black },
-                options: {
-                    steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100]
-                }
+                options: { ...this.tickGraphOptions.options, steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100] },
+                contextStyles: this.tickGraphOptions.contextStyles,
             })
 
 
@@ -909,6 +906,7 @@ export default {
             })
 
             graphs.unshift(nonZeroGraph)
+            graphs.push(tickGraph)
 
 
 
@@ -970,7 +968,7 @@ export default {
                 to
             })
 
-            const tickGraph = new TickGraph(from, to, { contextStyles: { strokeStyle: Color.Black } })
+            const tickGraph = new TickGraph(from, to, this.tickGraphOptions)
 
             return {
                 graphs: [nonZeroGraph, graph, tickGraph],

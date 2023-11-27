@@ -4,6 +4,7 @@ import { app } from '../../main.js'
 import { fixPrecision } from '../../utils/Number.js'
 
 
+
 class Chart {
     constructor(canvas) {
         if (!canvas) throw new Error("Canvas is required")
@@ -59,7 +60,9 @@ export class TickGraph extends Graph {
 
     constructor(from, to, { options: {
         longDash = 50,
+        longDashThickness = 1,
         shortDash = 10,
+        shortDashThickness = 1,
         textOffset = 5,
         floatCutoff = 10,
         showShortTextWhenCountBelow = 20,
@@ -73,6 +76,8 @@ export class TickGraph extends Graph {
         this.showShortTextWhenCountBelow = showShortTextWhenCountBelow
         this.steps = steps
         this.floatCutoff = floatCutoff
+        this.longDashThickness = longDashThickness
+        this.shortDashThickness = shortDashThickness
     }
 
     createLabel(context, chart, x, dash) {
@@ -95,24 +100,29 @@ export class TickGraph extends Graph {
         let bigStep = this.steps[i + 1]
 
 
-
         const bigStart = Math.ceil(this.data[0] / bigStep) * bigStep
+        context.lineWidth = this.longDashThickness
         for (let x = bigStart; x <= this.data[1]; x += bigStep) {
             if (x === from || x === to) continue
             context.beginPath()
-            context.moveTo(chart.x(x), chart.y(0))
+            const chartX = chart.x(x)
+            const chartY = chart.y(0)
+            context.moveTo(chartX, chartY)
+            context.lineTo(chartX, chartY - this.longDash)
             this.createLabel(context, chart, x, this.longDash)
-            context.lineTo(chart.x(x), chart.y(0) - this.longDash)
             context.stroke()
         }
 
         const smallStart = Math.ceil(this.data[0] / smallStep) * smallStep
+        context.lineWidth = this.shortDashThickness
         for (let x = smallStart; x <= this.data[1]; x += smallStep) {
             if (x === from || x === to) continue
             if (x % bigStep === 0) continue
             context.beginPath()
-            context.moveTo(chart.x(x), chart.y(0))
-            context.lineTo(chart.x(x), chart.y(0) - this.shortDash)
+            const chartX = chart.x(x)
+            const chartY = chart.y(0)
+            context.moveTo(chartX, chartY)
+            context.lineTo(chartX, chartY - this.shortDash)
             if (range / smallStep < this.showShortTextWhenCountBelow) {
                 this.createLabel(context, chart, x, this.shortDash)
             }
@@ -168,8 +178,12 @@ export class SplitYGraph extends Graph {
     drawHorizontalLines(context, chart) {
         const steps = [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000]
         const step = steps.find(step => step > this.yMax / 10)
-        const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 5 }
-        context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+
+
+        const fontSize = 10
+
+        const padding = { left: 5, bottom: -fontSize / 2 + 2 }
+        context.strokeStyle = "#999"
 
 
 
@@ -181,13 +195,18 @@ export class SplitYGraph extends Graph {
                 else
                     y = this.center(chart) - this.height(chart, i)
 
-
-                context.font = this.hlines?.font ? this.hlines.font : "12px sans-serif"
+                context.font = `100 ${fontSize}px Arimo, Arial, Helvetica, sans-serif`
+                context.textAlign = "left"
                 context.strokeText(i, padding.left, y - padding.bottom)
+
+                context.textAlign = "right"
+                context.strokeText(i, chart.canvas.width - padding.left, y - padding.bottom)
+
                 context.beginPath();
 
-                context.moveTo(0, y)
-                context.lineTo(chart.canvas.width, y)
+                const lineOffset = padding.left * 5
+                context.moveTo(lineOffset, y)
+                context.lineTo(chart.canvas.width - lineOffset, y)
                 context.stroke()
             }
         }
@@ -209,8 +228,8 @@ export class YGraph extends Graph {
         super(data, { contextStyles })
         this.yMax = yMax
         this.yOffset = yOffset
-        this.hlines = hlines,
-            this.align = align
+        this.hlines = hlines
+        this.align = align
     }
 
     get yOptions() {
@@ -236,15 +255,23 @@ export class YGraph extends Graph {
     drawHorizontalLines(context, chart) {
         const steps = [1, 5, 10, 20, 50, 100, 200, 500, 1000]
         const step = steps.find(step => step > this.yMax / 10)
-        const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 3 }
-        context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+
+
+        const padding = { left: 5, bottom: -3 }
+        context.strokeStyle = "#999"
 
         for (let i = step; i < this.yMax; i += step) {
-            context.font = this.hlines?.font ? this.hlines.font : "9px sans-serif"
+            context.font = "10px normal  Arimo, Arial, Helvetica, sans-serif"
+
+            context.textAlign = "left"
             context.strokeText(i, padding.left, this.y(chart, i) - padding.bottom)
+            context.textAlign = "right"
+            context.strokeText(i, chart.canvas.width - padding.left, this.y(chart, i) - padding.bottom)
+
             context.beginPath();
-            context.moveTo(0, this.y(chart, i))
-            context.lineTo(chart.canvas.width, this.y(chart, i))
+            let offset = padding.left * 5
+            context.moveTo(offset, this.y(chart, i))
+            context.lineTo(chart.canvas.width - offset, this.y(chart, i))
             context.stroke()
         }
     }
@@ -542,6 +569,11 @@ export default class TimelineChart extends Chart {
     }
 
     height(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
+
+        if (val === null) {
+            return this.canvas.height - offset - bottomOffset
+        }
+
         const height = this.canvas.height - offset - bottomOffset
         if (max) {
             return (val / max) * height
