@@ -1,6 +1,8 @@
 import { isArray } from 'lodash'
 import Range from "./range.js"
 import { app } from '../../main.js'
+import { fixPrecision } from '../../utils/Number.js'
+
 
 
 class Chart {
@@ -58,7 +60,9 @@ export class TickGraph extends Graph {
 
     constructor(from, to, { options: {
         longDash = 50,
+        longDashThickness = 1,
         shortDash = 10,
+        shortDashThickness = 1,
         textOffset = 5,
         floatCutoff = 10,
         showShortTextWhenCountBelow = 20,
@@ -72,6 +76,8 @@ export class TickGraph extends Graph {
         this.showShortTextWhenCountBelow = showShortTextWhenCountBelow
         this.steps = steps
         this.floatCutoff = floatCutoff
+        this.longDashThickness = longDashThickness
+        this.shortDashThickness = shortDashThickness
     }
 
     createLabel(context, chart, x, dash) {
@@ -94,24 +100,29 @@ export class TickGraph extends Graph {
         let bigStep = this.steps[i + 1]
 
 
-
         const bigStart = Math.ceil(this.data[0] / bigStep) * bigStep
+        context.lineWidth = this.longDashThickness
         for (let x = bigStart; x <= this.data[1]; x += bigStep) {
             if (x === from || x === to) continue
             context.beginPath()
-            context.moveTo(chart.x(x), chart.y(0))
+            const chartX = chart.x(x)
+            const chartY = chart.y(0)
+            context.moveTo(chartX, chartY)
+            context.lineTo(chartX, chartY - this.longDash)
             this.createLabel(context, chart, x, this.longDash)
-            context.lineTo(chart.x(x), chart.y(0) - this.longDash)
             context.stroke()
         }
 
         const smallStart = Math.ceil(this.data[0] / smallStep) * smallStep
+        context.lineWidth = this.shortDashThickness
         for (let x = smallStart; x <= this.data[1]; x += smallStep) {
             if (x === from || x === to) continue
             if (x % bigStep === 0) continue
             context.beginPath()
-            context.moveTo(chart.x(x), chart.y(0))
-            context.lineTo(chart.x(x), chart.y(0) - this.shortDash)
+            const chartX = chart.x(x)
+            const chartY = chart.y(0)
+            context.moveTo(chartX, chartY)
+            context.lineTo(chartX, chartY - this.shortDash)
             if (range / smallStep < this.showShortTextWhenCountBelow) {
                 this.createLabel(context, chart, x, this.shortDash)
             }
@@ -127,7 +138,7 @@ export class TickGraph extends Graph {
 
 export class SplitYGraph extends Graph {
 
-    constructor(data, { topMax = 0, bottomMax = 0, offset = 0, hlines = false, contextStyles = {}, colors = [] } = {}) {
+    constructor(data, { topMax = 0, bottomMax = 0, offset = 0, hlines = false, contextStyles = {}, colors = [], unitBase = 1, align = "center" } = {}) {
         super(data, { contextStyles })
         this.topMax = topMax
         this.bottomMax = bottomMax
@@ -135,6 +146,8 @@ export class SplitYGraph extends Graph {
         this.hlines = hlines
         this.yMax = topMax + bottomMax
         this.colors = colors
+        this.unitBase = unitBase
+        this.align = align
     }
 
     get yOptions() {
@@ -165,8 +178,12 @@ export class SplitYGraph extends Graph {
     drawHorizontalLines(context, chart) {
         const steps = [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000]
         const step = steps.find(step => step > this.yMax / 10)
-        const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 5 }
-        context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+
+
+        const fontSize = 10
+
+        const padding = { left: 5, bottom: -fontSize / 2 + 2 }
+        context.strokeStyle = "#999"
 
 
 
@@ -178,13 +195,18 @@ export class SplitYGraph extends Graph {
                 else
                     y = this.center(chart) - this.height(chart, i)
 
-
-                context.font = this.hlines?.font ? this.hlines.font : "12px sans-serif"
+                context.font = `100 ${fontSize}px Arimo, Arial, Helvetica, sans-serif`
+                context.textAlign = "left"
                 context.strokeText(i, padding.left, y - padding.bottom)
+
+                context.textAlign = "right"
+                context.strokeText(i, chart.canvas.width - padding.left, y - padding.bottom)
+
                 context.beginPath();
 
-                context.moveTo(0, y)
-                context.lineTo(chart.canvas.width, y)
+                const lineOffset = padding.left * 5
+                context.moveTo(lineOffset, y)
+                context.lineTo(chart.canvas.width - lineOffset, y)
                 context.stroke()
             }
         }
@@ -196,11 +218,18 @@ export class SplitYGraph extends Graph {
 
 
 export class YGraph extends Graph {
-    constructor(data, { yMax = 0, yOffset = 0, hlines = false, contextStyles = {} } = {}) {
+    constructor(data, {
+        yMax = 0,
+        yOffset = 0,
+        hlines = false,
+        contextStyles = {},
+        align = "center"
+    } = {}) {
         super(data, { contextStyles })
         this.yMax = yMax
         this.yOffset = yOffset
         this.hlines = hlines
+        this.align = align
     }
 
     get yOptions() {
@@ -226,15 +255,23 @@ export class YGraph extends Graph {
     drawHorizontalLines(context, chart) {
         const steps = [1, 5, 10, 20, 50, 100, 200, 500, 1000]
         const step = steps.find(step => step > this.yMax / 10)
-        const padding = this.hlines.padding ? this.hlines.padding : { left: 5, bottom: 3 }
-        context.strokeStyle = this.hlines.color ? this.hlines.color : "#ccc"
+
+
+        const padding = { left: 5, bottom: -3 }
+        context.strokeStyle = "#999"
 
         for (let i = step; i < this.yMax; i += step) {
-            context.font = this.hlines?.font ? this.hlines.font : "9px sans-serif"
+            context.font = "10px normal  Arimo, Arial, Helvetica, sans-serif"
+
+            context.textAlign = "left"
             context.strokeText(i, padding.left, this.y(chart, i) - padding.bottom)
+            context.textAlign = "right"
+            context.strokeText(i, chart.canvas.width - padding.left, this.y(chart, i) - padding.bottom)
+
             context.beginPath();
-            context.moveTo(0, this.y(chart, i))
-            context.lineTo(chart.canvas.width, this.y(chart, i))
+            let offset = padding.left * 5
+            context.moveTo(offset, this.y(chart, i))
+            context.lineTo(chart.canvas.width - offset, this.y(chart, i))
             context.stroke()
         }
     }
@@ -260,7 +297,7 @@ export class MirrorGraph extends SplitYGraph {
 
     draw(context, chart) {
         super.draw(context, chart)
-        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+        const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth * this.unitBase
 
 
         const center = this.center(chart)
@@ -272,11 +309,19 @@ export class MirrorGraph extends SplitYGraph {
         context.stroke()
 
 
+        let alignmentOffset
+        if (this.align === "left") {
+            alignmentOffset = 0
+        } else if (this.align === "right") {
+            alignmentOffset = chart.unitWidth
+        } else {
+            alignmentOffset = chart.unitWidth / 2
+        }
+
+
         this.data.forEach(({ x: xVal, y }) => {
             if (!isArray(y)) y = [y]
             for (let i = 0; i < y.length && i < 2; i++) {
-
-
 
                 const yVal = y[i]
                 const color = this.colors[i % this.colors.length]
@@ -285,15 +330,14 @@ export class MirrorGraph extends SplitYGraph {
                 context.lineWidth = .5
                 context.fillStyle = color
 
-                const x = chart.x(xVal) - width / 2
+                const x = chart.x(xVal) - alignmentOffset
                 const height = this.height(chart, yVal)
+
                 if (i === 0) {
                     context.rect(x, center - height, width, height)
                 } else {
                     context.rect(x, center, width, height)
                 }
-
-
 
                 context.fill()
                 context.stroke()
@@ -303,24 +347,28 @@ export class MirrorGraph extends SplitYGraph {
 }
 
 export class BarGraph extends YGraph {
-    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, contextStyles = {} } = {}) {
+    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, unitBase = 1, contextStyles = {}, align = "center" } = {}) {
         super(data, {
             yMax,
             yOffset,
             contextStyles,
-            hlines
+            hlines,
+            unitBase,
+            align
         })
         if (colors.length === 0) colors = defaultColors
         this.colors = colors
         this.maxWidth = maxWidth
+        this.unitBase = unitBase
     }
 
     draw(context, chart) {
         super.draw(context, chart)
 
-        let width = chart.unitWidth
-        if (this.maxWidth)
-            width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth
+        let width = chart.unitWidth * this.unitBase
+        if (this.maxWidth && width > this.maxWidth)
+            width = this.maxWidth
+
 
         this.data.forEach(({ x, y }) => {
             let yOffset = 0
@@ -332,7 +380,15 @@ export class BarGraph extends YGraph {
                 context.lineWidth = .5
                 context.fillStyle = color
                 yOffset += this.height(chart, yVal)
-                context.rect(chart.x(x) - width / 2, this.y(chart, 0) - yOffset, width, this.height(chart, yVal))
+
+                let startOffset = 0
+                if (this.align === "center") {
+                    startOffset = width / 2
+                } else if (this.align === "right") {
+                    startOffset = width
+                }
+
+                context.rect(chart.x(x) - startOffset, this.y(chart, 0) - yOffset, width, this.height(chart, yVal))
                 context.fill()
                 context.stroke()
             }
@@ -409,20 +465,24 @@ export class LineGraph extends YGraph {
 
 export class RangeGraph extends Graph {
 
-    constructor(data, { contextStyles = {} } = {}) {
+    constructor(data, { start = "start", end = "end", contextStyles = {}, translate = 0 } = {}) {
         super(data, { contextStyles })
+        this.start = start
+        this.end = end
+        this.translate = translate
     }
 
     draw(context, chart) {
         super.draw(context, chart)
         this.data.forEach(range => {
-            let start = chart.x(range[0], "start")
-            let end = chart.x(range[1], "end")
+            const offset = this.translate * chart.unitWidth
+            let start = chart.x(range[0], this.start)
+            let end = chart.x(range[1], this.end)
             let width = Math.ceil(end - start)
             if (width === 0) {
                 width = 1
             }
-            context.fillRect(start, 0, width, chart.y(0))
+            context.fillRect(start + offset, 0, width, chart.y(0))
         })
     }
 }
@@ -509,8 +569,12 @@ export default class TimelineChart extends Chart {
     }
 
     height(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
-        const height = this.canvas.height - offset - bottomOffset
 
+        if (val === null) {
+            return this.canvas.height - offset - bottomOffset
+        }
+
+        const height = this.canvas.height - offset - bottomOffset
         if (max) {
             return (val / max) * height
         } else {
@@ -520,19 +584,18 @@ export default class TimelineChart extends Chart {
 
 
     y(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
-        const height = this.canvas.height - offset
+        const height = this.height(max, { max, offset, bottomOffset })
 
         if (max) {
-            return (height - (val / max) * height) + offset - bottomOffset
+            return (height - (val / max) * height) + offset
         } else
-            return height - val + offset - bottomOffset;
+            return height - val + offset;
     }
 
     x(val, pos = "center") {
-        const widthPerYear = this.unitWidth
-        let x = (val - this.timeline.from) * widthPerYear
-
-        let halfWidth = widthPerYear / 2
+        const widthPerUnit = this.unitWidth
+        let x = (val - this.timeline.from) * widthPerUnit
+        let halfWidth = (widthPerUnit / 2) * this.unitBase
         if (halfWidth < 1) halfWidth = 1
         if (pos === "start") {
             x = Math.floor(x - halfWidth)
@@ -546,28 +609,32 @@ export default class TimelineChart extends Chart {
     getCell({ x, y }, {
         cursorWidth = 1,
         windowWidth = 1,
+        align = "center"
     } = {}) {
 
-        const value = this.getValue({ x, y }, cursorWidth)
-
+        const value = this.getValue({ x, y }, { width: cursorWidth, align })
         let span = this.canvas.width / (this.timeline.to - this.timeline.from)
         const pos = (value - this.timeline.from) * span
-
         windowWidth = this.unitWidth * windowWidth
+        const alignmentOffset = align === "center" ? windowWidth / 2 : align === "right" ? windowWidth : 0
 
         return {
-            x: pos - windowWidth / 2,
+            x: pos - alignmentOffset,
             y: 0,
             height: this.canvas.height,
             width: windowWidth,
         }
     }
 
-    getValue(point, width = 1) {
-        let offset = this.timeline.from % width
-        let normalizedOffset = Math.floor((this.timeline.from - offset) / width) * width
-        const value = Math.floor((point.x - width / 2) / this.unitWidth / width) * width + normalizedOffset + width
-        return value
+    getValue(point, { width = 1, align = "center" } = {}) {
+
+
+        let normalizedOffset = Math.round(this.timeline.from / width) * width
+        const alignmentOffset = align === "center" ? width / 2 : align === "right" ? width : 0
+        const RoundingOperation = align === "center" ? Math.round : align === "right" ? Math.ceil : Math.floor
+
+        const value = RoundingOperation((point.x - alignmentOffset) / this.unitWidth / width) * width + normalizedOffset
+        return fixPrecision(value)
     }
 
     print(message, textStyles = {}) {
@@ -578,18 +645,19 @@ export default class TimelineChart extends Chart {
         }
         context.textAlign = "center"
         context.textBaseline = "middle"
-        context.fillText(message, this.canvas.width / 2, this.canvas.height / 2 )
+        context.fillText(message, this.canvas.width / 2, this.canvas.height / 2)
     }
 
 }
 
 
 export class HighlightGraph extends Graph {
-    constructor(position, { windowWidth = 1, cursorWidth = 1 } = {}) {
+    constructor(position, { windowWidth = 1, cursorWidth = 1, align = "center" } = {}) {
         super(position)
 
         this.cursorWidth = cursorWidth
         this.windowWidth = windowWidth
+        this.align = align
     }
 
     update(position) {
@@ -599,35 +667,13 @@ export class HighlightGraph extends Graph {
     draw(context, chart) {
         if (!this.data) return
 
-        const rect = chart.getCell(this.data, { cursorWidth: this.cursorWidth, windowWidth: this.windowWidth })
-
-        // if (this.windowSize != null) {
-        //     const originalCenterOffset = rect.x + chart.unitWidth / 2
-        //     rect.width = chart.unitWidth * this.windowSize
-        //     rect.x += originalCenterOffset - rect.width / 2
-        //     console.log("WINDOW SIZE", this.windowSize, chart.unitWidth)
-        // }
-
+        const rect = chart.getCell(this.data, { cursorWidth: this.cursorWidth, windowWidth: this.windowWidth, align: this.align })
 
         context.beginPath()
         context.rect(rect.x, rect.y, rect.width, rect.height)
         context.fillStyle = "rgba(0,0,0,0.05)"
         context.fill()
 
-        // context.textAlign = "center"
-        // context.fillStyle = "#111"
-        // context.font = "bold 10pt Arial, sans-serif"
-
-        // let x = rect.x + rect.width / 2
-        // if (x < 50) {
-        //     x = 10
-        //     context.textAlign = "left"
-        // } else if (x > chart.canvas.width - 50) {
-        //     x = chart.canvas.width - 10
-        //     context.textAlign = "right"
-        // }
-
-        // context.fillText(rect.year, x, 20)
     }
 }
 

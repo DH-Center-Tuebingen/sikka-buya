@@ -123,6 +123,19 @@
                             </template>
                             <span v-else>0</span>
                         </div>
+
+                        <div class="button-group">
+                            <radio-button-group
+                                v-if="chartType === 'weight'"
+                                id="weight-frequency"
+                                :labels="['0.01', '0.1', '1']"
+                                :options="['0.01', '0.1', '1']"
+                                :value="weightDataFrequency.toString()"
+                                @input="updateWeightFrequency"
+                            >
+
+                            </radio-button-group>
+                        </div>
                         <div
                             class="button-group"
                             style="justify-content: flex-end; display: flex;"
@@ -250,8 +263,7 @@ import MapToolbar from "./MapToolbar.vue"
 import MultiSelectList from '../MultiSelectList.vue';
 import MultiSelectListItem from '../MultiSelectListItem.vue';
 import Chart from "chart.js/auto"
-import { WindowSampler } from "../../models/chart/sampler"
-import Falloff from "../../models/chart/falloff"
+import { FrequencySampler } from "../../models/chart/sampler"
 
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
@@ -270,7 +282,7 @@ import Info from '../forms/Info.vue';
 import Range from '../../models/timeline/range';
 import Color from '../../utils/Color';
 import Row from '../layout/Row.vue';
-import { mdiAlphaCCircle, mdiAxisXRotateCounterclockwise } from '@mdi/js';
+import { fixPrecision } from "../../utils/Number"
 
 
 export default {
@@ -304,7 +316,10 @@ export default {
             yearCountData: {},
             mintRegions: [],
             mintLocationMarkerGroup: null,
-            cachedWeightData: [],
+            cachedWeightDataMap: {},
+            weightDataFrequency: 0.1,
+            graphOffset: 5,
+            tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
         };
     },
     mixins: [
@@ -312,48 +327,26 @@ export default {
         TimelineHighlightMixin({
             canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, value) {
 
-
                 if (this.chartType === "weight") {
-                    const windowWidth = this.timeline_highlight_windowWidth
-                    const data = cloneDeep(this.cachedWeightData)
-                    let selection = data.filter(d => value - (windowWidth / 2) <= d.x && d.x <= value + (windowWidth / 2)).reduce((acc, d) => {
+                    const data = this.cachedWeightDataMap[value]
 
-                        if (acc.length > 0 && acc[acc.length - 1].x === d.x) {
-                            acc[acc.length - 1].y += d.y
-                        } else
-                            acc.push(d)
-                        return acc
-                    }, [])
+                    if (Array.isArray(data)) {
 
-                    let html = "<table>"
+                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>:`
 
-                    for (const point of selection) {
-                        const dist = point.x - value
+                        const treasures = []
 
-                        const normalizedError = (dist / (windowWidth / 2)).toFixed(3)
-                        const targetColor = normalizedError > 0 ? "#ff0000" : "#0000ff"
-                        const color = Color.hexBrighten("#000000", Math.abs(normalizedError), targetColor)
+                        data.forEach((count, index) => {
+                            const treasure = this.selectedTreasures[index]
+                            if (count > 0) {
+                                treasures.push(`<span style="color: ${treasure.color}">${count}</span>`)
+                            }
+                        })
 
-                        html += `<tr style="valign:center;"><td>${point.x}g</td>`
-
-
-                        if (normalizedError !== 0) {
-                            const sign = normalizedError > 0 ? "+" : ""
-                            html += `<td style="color:${color}; font-weight:bold; font-size: .8rem; padding-left: 0.2rem;">${sign}${(normalizedError * windowWidth / 2).toFixed(2)}</td>`
-                        } else {
-                            html += `<td></td>`
-                        }
-
-                        if (point.y > 1) {
-                            html += `<td>x${point.y}</td>`
-                        }
-
-                        html += "</tr>"
+                        tooltip.innerHTML += ` ${treasures.join(", ")}`
+                    } else {
+                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>: ${this.cachedWeightDataMap[value] || 0}`
                     }
-
-                    html += "</table>"
-
-                    tooltip.innerHTML = html
                 }
                 else {
                     const data = this.yearCountData[value]
@@ -411,7 +404,7 @@ export default {
         settings.boxStepSize = this.$mconfig.getInteger("map.hoards.box_step_size", 10)
         settings.boxMinSize = this.$mconfig.getInteger("map.hoards.box_min_size", 5)
         settings.stepSizeGroupsInPercent = this.$mconfig.getArray("map.hoards.step_size_groups_in_percent")
-        
+
         this.overlay = new TreasureOverlay(this.featureGroup, settings, {
             onDataTransformed: (data) => {
                 this.treasures = data.treasures
@@ -739,6 +732,10 @@ export default {
         updateTimeline() {
             console.warn("NOTHING TO DO", arguments)
         },
+        updateWeightFrequency(value) {
+            this.weightDataFrequency = parseFloat(parseFloat(value).toPrecision(10))
+            this.updateTimelineGraph()
+        },
         updateTimelineGraph() {
 
             let data = {
@@ -747,12 +744,14 @@ export default {
             }
 
             if (this.chartType === "weight") {
-                this.timelineChart.unitBase = 0.01
+                const frequency = this.weightDataFrequency
+                this.timelineChart.unitBase = frequency
 
                 this.timeline_highlight_set({
-                    windowWidth: 0.4,
-                    cursorWidth: 0.1,
-                    unitBase: 0.01
+                    windowWidth: frequency,
+                    cursorWidth: frequency,
+                    unitBase: frequency,
+                    align: "left",
                 })
 
                 // this.timeline_highlight_graph.disable()
@@ -764,7 +763,8 @@ export default {
                 this.timeline_highlight_set({
                     windowWidth: 1,
                     cursorWidth: 1,
-                    unitBase: 1
+                    unitBase: 1,
+                    align: "center",
                 })
 
 
@@ -780,42 +780,135 @@ export default {
             }
 
             this.timelineChart.update(data)
-
-
         },
         updateTimelineWeightGraph() {
-
             const data = this.getWeightData()
-            this.cachedWeightData = data
 
-            const { samples, max } = new WindowSampler(data, {
-                falloffFunction: Falloff.quadratic,
-                frequency: 0.02,
-                windowSize: 0.05,
-            }).sample()
+            let timeline = { from: 0, to: 0 }
+            let graphs = []
 
-            console.log(max)
+            let allSamples = []
+
+            if (data.length === 1) {
+
+                const { data: treasureData, color: treasureColor } = data[0]
+                const frequency = this.weightDataFrequency
+                const { samples, max } = new FrequencySampler(treasureData, {
+                    frequency,
+                }).sample()
+
+                allSamples.push(...samples)
+
+                this.cachedWeightDataMap = samples.reduce((acc, obj) => {
+                    acc[obj.x.toString()] = obj.y
+                    return acc
+                }, {})
+
+                const weightGraph = new BarGraph(samples, {
+                    hlines: true,
+                    yOffset: this.graphOffset,
+                    frequency,
+                    yMax: max,
+                    unitBase: frequency,
+                    colors: [treasureColor],
+                    align: "left",
+                })
+
+                graphs.push(weightGraph)
 
 
-            const weightGraph = new LineGraph(samples, {
-                yMax: max,
-                yOffset: 10,
-                maxWidth: 1,
-                contextStyles: {
-                    strokeStyle: Color.Primary
+            } else if (data.length === 2) {
+
+                let colors = []
+                const maxs = []
+                let start = Infinity
+                let end = -Infinity
+                let allSampleObjects = []
+
+                for (const { data: treasureData, color: treasureColor } of Object.values(data)) {
+                    colors.push(treasureColor)
+
+                    const frequency = this.weightDataFrequency
+                    const { samples, max, start: treasure_start, end: treasure_end } = new FrequencySampler(treasureData, {
+                        frequency,
+                    }).sample()
+
+                    if (start > treasure_start) start = treasure_start
+                    if (end < treasure_end) end = treasure_end
+
+                    maxs.push(max)
+                    allSamples.push(...samples)
+
+
+                    let sampleObject = samples.reduce((acc, obj) => {
+                        acc[obj.x.toString()] = obj.y
+                        return acc
+                    }, {})
+                    allSampleObjects.push(sampleObject)
                 }
-            })
 
-            const timeline = (samples.length > 0) ? { from: samples[0].x, to: samples[samples.length - 1].x } : { from: 0, to: 0 }
+                let mirrorData = []
+
+                for (let x = start; x <= end; x += this.weightDataFrequency) {
+
+                    x = fixPrecision(x)
+
+                    let y = []
+
+                    for (let i = 0; i < allSampleObjects.length; i++) {
+                        const sample = allSampleObjects[i]
+                        if (sample[x]) {
+                            y.push(sample[x])
+                        } else {
+                            y.push(0)
+                        }
+                    }
+
+                    mirrorData.push({ x, y })
+                }
+
+                this.cachedWeightDataMap = mirrorData.reduce((acc, obj) => {
+                    acc[obj.x.toString()] = obj.y
+                    return acc
+                }, {})
+
+                const weightGraph = new MirrorGraph(mirrorData, {
+                    hlines: true,
+                    offset: this.graphOffset,
+                    frequency: this.weightDataFrequency,
+                    unitBase: this.weightDataFrequency,
+                    topMax: maxs[0],
+                    bottomMax: maxs[1],
+                    colors,
+                    align: "left",
+                })
+                graphs.push(weightGraph)
+
+            }
+
+            allSamples = allSamples.sort((a, b) => a.x - b.x)
+            timeline = (allSamples.length > 0) ? { from: allSamples[0].x, to: allSamples[allSamples.length - 1].x } : { from: 0, to: 0 }
 
             const tickGraph = new TickGraph(timeline.from, timeline.to, {
-                contextStyles: { strokeStyle: Color.Black },
-                options: {
-                    steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100]
-                }
+                options: { ...this.tickGraphOptions.options, steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100] },
+                contextStyles: this.tickGraphOptions.contextStyles,
             })
 
-            const graphs = [weightGraph, tickGraph]
+
+            const nonZeroSamples = allSamples.filter(a => a.y > 0)
+            let nonZeroRanges = Range.fromPointArray(nonZeroSamples, { mergeDistance: this.weightDataFrequency })
+
+            const nonZeroGraph = new RangeGraph(nonZeroRanges, {
+                contextStyles: {
+                    fillStyle: Color.LightGray,
+                },
+                translate: 0.5 * this.weightDataFrequency
+            })
+
+            graphs.unshift(nonZeroGraph)
+            graphs.push(tickGraph)
+
+
 
             return {
                 graphs,
@@ -832,14 +925,25 @@ export default {
                         }
                     })
                 })
-                return data
-            }).reduce((acc, arr) => acc.concat(arr), []).sort((a, b) => a.x - b.x)
+                return {
+                    color: treasure.color,
+                    data: data.sort((a, b) => a.x - b.x)
+                }
+            })
         },
         updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
 
+            if (data.length === 0) {
+                return {
+                    graphs: [],
+                    timeline: null
+                }
+            }
+
             let graph = null
             if (this.selectedTreasureIds.length === 2) {
+                console.log(data)
                 graph = this.updateMirrorGraph(data)
             } else {
                 graph = this.updateBarGraph(data)
@@ -864,8 +968,10 @@ export default {
                 to
             })
 
+            const tickGraph = new TickGraph(from, to, this.tickGraphOptions)
+
             return {
-                graphs: [nonZeroGraph, graph, new TickGraph(from, to, { contextStyles: { strokeStyle: Color.Black } })],
+                graphs: [nonZeroGraph, graph, tickGraph],
                 timeline: null
             }
         },
@@ -898,8 +1004,7 @@ export default {
             return new MirrorGraph(data, {
                 topMax,
                 bottomMax,
-                offset: 10,
-                bottomOffset: 10,
+                offset: this.graphOffset,
                 colors: this.yearCountColors,
                 hlines: true
             })

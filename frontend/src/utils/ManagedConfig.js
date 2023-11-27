@@ -80,7 +80,6 @@ export default class ManagedConfig {
         if (!jsWalker.status) {
             let templateWalker
             for (let path of paths) {
-                console.log(path)
                 const track = new ObjectTrack(path)
                 templateWalker = new ObjectWalker(this.template)
                 track.walk((part) => {
@@ -97,8 +96,6 @@ export default class ManagedConfig {
             if(!templateWalker.status) console.warn(`None of the paths were defined in template: ${paths.join(", ")}`)
             else console.error(`None of the paths were defined, applied template: ${paths.join(", ")}`, returnValue)
         }
-
-        console.log("returnValue", returnValue)
 
         return returnValue
     }
@@ -132,7 +129,6 @@ export default class ManagedConfig {
             let templateAddin = ""
             if (templateWalker.status) {
                 jsWalker.value = templateWalker.value
-                console.log("p2", jsWalker.value)
                 templateAddin = ", using template value instead"
             }
 
@@ -212,7 +208,6 @@ class ObjectWalker {
     next(key) {
         if (!this.status) return false
         if (this.value.hasOwnProperty(key)) {
-            console.log("key", key, this.value[key])
             this.value = this.value[key]
             return true
         } else {

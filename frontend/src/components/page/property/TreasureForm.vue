@@ -93,6 +93,9 @@
                 >
                     <Locale path="general.import"></Locale>
                 </FileUploadButton>
+                <Button @click="exportItems">
+                    <Locale path="general.export"></Locale>
+                </Button>
             </div>
 
             <ErrorMessage :error="importErrors" />
@@ -133,7 +136,7 @@ import Toggle from "@/components/layout/buttons/Toggle"
 import TreasureItemForm from "./TreasureItemForm"
 import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
-import { TreasureItemsImporter } from "@/models/importer"
+import { TreasureItemsImporter, CsvExporter } from "@/models/importer"
 import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 import ColorInput from '../../forms/ColorInput.vue';
 
@@ -259,8 +262,10 @@ export default {
             }
 
             this.importing = false
-
         },
+        exportItems() {
+            CsvExporter.use(this.value.items).exec().download(`${this.value.name} [Items] ${new Date().toDateString()}.csv`)
+        }
     }
 }
 </script>

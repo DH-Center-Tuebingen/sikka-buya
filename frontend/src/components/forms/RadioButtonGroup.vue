@@ -5,9 +5,10 @@
   >
     <Row
       v-for="(option, idx) in options"
-      v-bind:key="option"
+      v-bind:key="option.toString()"
       class="radio-button"
     >
+
       <input
         type="radio"
         :checked="value == option"
@@ -26,9 +27,10 @@
       </label>
       <label
         v-else
-        :for="option"
+        :for="option.toString()"
         tabindex="0"
       ><span>{{ labels[idx] }}</span></label>
+
     </Row>
   </Row>
 </template>
@@ -118,7 +120,7 @@ label {
   background-color: white;
   font-weight: normal;
   font-size: 1em;
-  
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,4 +144,5 @@ label {
       border-bottom-left-radius: 0 !important;
     }
   }
-}</style>
+}
+</style>
