@@ -448,7 +448,7 @@ export class RangeGraph extends Graph {
     draw(context, chart) {
         super.draw(context, chart)
         this.data.forEach(range => {
-            const offset = this.translate * chart.unitWidth 
+            const offset = this.translate * chart.unitWidth
             let start = chart.x(range[0], this.start)
             let end = chart.x(range[1], this.end)
             let width = Math.ceil(end - start)
@@ -543,7 +543,6 @@ export default class TimelineChart extends Chart {
 
     height(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
         const height = this.canvas.height - offset - bottomOffset
-
         if (max) {
             return (val / max) * height
         } else {
@@ -553,12 +552,12 @@ export default class TimelineChart extends Chart {
 
 
     y(val, { max = null, offset = 0, bottomOffset = 0 } = {}) {
-        const height = this.canvas.height - offset
+        const height = this.height(max, { max, offset, bottomOffset })
 
         if (max) {
-            return (height - (val / max) * height) + offset - bottomOffset
+            return (height - (val / max) * height) + offset
         } else
-            return height - val + offset - bottomOffset;
+            return height - val + offset;
     }
 
     x(val, pos = "center") {

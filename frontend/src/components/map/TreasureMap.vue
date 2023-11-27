@@ -318,6 +318,7 @@ export default {
             mintLocationMarkerGroup: null,
             cachedWeightDataMap: {},
             weightDataFrequency: 0.1,
+            graphOffset: 5,
         };
     },
     mixins: [
@@ -806,7 +807,7 @@ export default {
 
                 const weightGraph = new BarGraph(samples, {
                     hlines: true,
-                    yOffset: 10,
+                    yOffset: this.graphOffset,
                     frequency,
                     yMax: max,
                     unitBase: frequency,
@@ -874,7 +875,7 @@ export default {
 
                 const weightGraph = new MirrorGraph(mirrorData, {
                     hlines: true,
-                    offset: 10,
+                    offset: this.graphOffset,
                     frequency: this.weightDataFrequency,
                     unitBase: this.weightDataFrequency,
                     topMax: maxs[0],
@@ -1005,8 +1006,7 @@ export default {
             return new MirrorGraph(data, {
                 topMax,
                 bottomMax,
-                offset: 10,
-                bottomOffset: 10,
+                offset: this.graphOffset,
                 colors: this.yearCountColors,
                 hlines: true
             })
