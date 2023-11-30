@@ -530,8 +530,9 @@ export default {
                                 fillOpacity: 0.75,
 
                             }, MintLocationMarker.normalStyle, activeStyle))
-                            mlm.addTo(group)
+                            
                             circle.addTo(group)
+                            mlm.addTo(group)
 
 
                             /**
@@ -726,7 +727,7 @@ export default {
         },
 
         bringMintsToFront() {
-            this.mintLocationMarkerGroup.bringToFront()
+            // this.mintLocationMarkerGroup.bringToFront()
 
         },
         updateTimeline() {

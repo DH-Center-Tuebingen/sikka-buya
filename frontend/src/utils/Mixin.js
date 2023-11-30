@@ -2,9 +2,20 @@ export default class Mixin {
 
     constructor(name, {
         join = "_",
+        vue = null,
     } = {}) {
         this.name = name
         this.join = join
+        this.vue = vue
+    }
+
+    call(methodName, ...args) {
+        if (this.vue) {
+            const member = this.member(methodName)
+            return this.vue[member](...args)
+        } else {
+            throw new Error("Vue instance not set.")
+        }
     }
 
     get prefix() {
