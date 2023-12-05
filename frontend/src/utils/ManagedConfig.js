@@ -50,6 +50,10 @@ export default class ManagedConfig {
         return jsWalker.status
     }
 
+    determineValue(path, defaultValue) {
+
+    }
+
     /**
      * Gets multiple paths and returns the first one that is defined.
      * Useful when overwriting a specific path with an default path.
@@ -73,6 +77,11 @@ export default class ManagedConfig {
 
             if (jsWalker.status) {
                 returnValue = jsWalker.value
+                try {
+                    returnValue = JSON.parse(returnValue)
+                } catch (e) {
+                    // do nothing
+                }
                 break
             }
         }
@@ -93,7 +102,7 @@ export default class ManagedConfig {
                 }
             }
 
-            if(!templateWalker.status) console.warn(`None of the paths were defined in template: ${paths.join(", ")}`)
+            if (!templateWalker.status) console.warn(`None of the paths were defined in template: ${paths.join(", ")}`)
             else console.error(`None of the paths were defined, applied template: ${paths.join(", ")}`, returnValue)
         }
 
@@ -169,14 +178,14 @@ export default class ManagedConfig {
 
     getArray(path) {
         return this._typeValidatorFunction(path, "array", (value) => {
-            try{
+            try {
                 value = JSON.parse(value)
-            }catch(e){
+            } catch (e) {
                 return { valid: false, value }
             }
             return { valid: Array.isArray(value), value }
         })
-    
+
     }
 }
 
