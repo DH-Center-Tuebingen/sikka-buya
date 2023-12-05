@@ -523,7 +523,7 @@ export default class TimelineChart extends Chart {
         super(canvas)
         this.graphs = graphs
         this.timeline = timeline
-            = 1
+        this.unitBase = 1
 
         if (graphs.length > 0)
             this.draw()

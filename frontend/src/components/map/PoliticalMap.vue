@@ -543,20 +543,6 @@ export default {
         graphs.forEach((graph) => {
           graph.set("yMax", max)
         })
-
-        //// This was for creating horizontal lines to make the
-        //// line graph easier to undertand. But it adds too 
-        //// much clutter to the graph.
-
-        // const horizontals = []
-        // const step = Math.ceil(max / 6)
-        // for (let i = step; i <= max; i+=step) {
-        //   horizontals.push({ x: 0, y: i })
-        // }
-        // let horizontalGraph = new HorizontalLinesGraph(horizontals, { yOffset, yMax: max, contextStyles: { strokeStyle: "#e3e3e3", lineWidth: 1 } })
-
-        // graphs.unshift(horizontalGraph)
-
       }
 
 
@@ -567,80 +553,6 @@ export default {
 
 
       return [...andGraph, ...graphs]
-
-
-      // this.timelineChart.updateTimeline(this.raw_timeline);
-
-      // const timelineRuledBy = result.data.data.timelineRuledBy;
-
-      // if (this.selectedRulers.length > 1)
-      //   this.drawStripedAndBlock(timelineRuledBy);
-
-      // let ranges = [];
-
-      // if (drawAsHorizontals) {
-      //   const rulerLines = () => {
-      //     const lineHeight = 5;
-      //     const padding = Math.ceil(lineHeight / 2);
-      //     let allSelectedRulerRanges = [];
-
-      //     rulerPointArrays.forEach((rulerObj) => {
-      //       let rulerYearArr = rulerObj.data.slice().map((obj) => obj.x);
-      //       const rulerRangeArr = Range.fromNumberSequence(rulerYearArr);
-      //       allSelectedRulerRanges.push({
-      //         ruler: rulerObj.ruler,
-      //         range: rulerRangeArr.slice(),
-      //       });
-      //     });
-
-      //     allSelectedRulerRanges.sort((a, b) => {
-      //       return (
-      //         Range.getWidthFromRanges(b.range) -
-      //         Range.getWidthFromRanges(a.range)
-      //       );
-      //     });
-
-      //     let yPos = 0;
-      //     allSelectedRulerRanges.forEach((rangeObj) => {
-      //       yPos += lineHeight + padding;
-      //       this.timelineChart.drawRangeLineOnCanvas(rangeObj.range, yPos, {
-      //         lineCap: 'butt',
-      //         lineWidth: lineHeight,
-      //         strokeStyle: rangeObj.ruler.color,
-      //       });
-      //     });
-
-      //     return allSelectedRulerRanges;
-      //   };
-
-      //   ranges = Range.union(rulerLines().map((el) => el.range));
-      // } else {
-      //   let max = 0;
-      //   Object.values(rulerPointArrays).forEach(({ ruler, data }) => {
-      //     const c_max = data.reduce((prev, cur) => {
-      //       const value = cur.y;
-      //       return value > prev ? value : prev;
-      //     }, -Infinity);
-
-      //     if (c_max > max) max = c_max;
-      //   });
-
-      //   rulerPointArrays.forEach(({ ruler, data }) => {
-      //     this.timelineChart.drawGraphOnTimeline(
-      //       data,
-      //       {
-      //         strokeStyle: ruler.color + 'aa',
-      //         lineWidth: 2,
-      //         fillStyle: 'transparent',
-      //       },
-      //       {
-      //         max,
-      //       }
-      //     );
-      //   });
-      // }
-
-      // return ranges;
     },
     drawStripedAndBlock(timelineRuledBy) {
       let combinedRanges = Range.fromNumberSequence(timelineRuledBy.data);
@@ -654,7 +566,6 @@ export default {
           ),
           'repeat'
         );
-
 
 
       const rangeGraph = new RangeGraph(combinedRanges, {
