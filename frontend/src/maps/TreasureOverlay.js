@@ -273,24 +273,24 @@ export default class TreasureOverlay extends Overlay {
                                 treasure: treasure
                             })
 
-                            // const line = {
-                            //     type: "Feature",
-                            //     geometry: {
-                            //         type: "LineString",
-                            //         coordinates: [
-                            //             mintLocation.geometry.coordinates,
-                            //             location.geometry.coordinates
-                            //         ]
-                            //     },
-                            //     properties: {
-                            //         style: {
-                            //             color,
-                            //             weight: 1,
-                            //         }
-                            //     }
-                            // }
+                            const line = {
+                                type: "Feature",
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: [
+                                        mintLocation.geometry.coordinates,
+                                        location.geometry.coordinates
+                                    ]
+                                },
+                                properties: {
+                                    style: {
+                                        color,
+                                        weight: 1,
+                                    }
+                                }
+                            }
 
-                            // geoJSON.push(line)
+                            geoJSON.push(line)
                             geoJSON.push(treasureArea)
                         } else {
                             console.warn("No location for treasure", treasureCount.treasure)
@@ -384,7 +384,7 @@ export default class TreasureOverlay extends Overlay {
                                     location.properties = Object.assign({}, location.properties, properties)
                                 }
 
-                                // const to = geometry.coordinates
+                                const to = geometry.coordinates
 
                                 itemGeometries.push(location)
 
@@ -392,10 +392,10 @@ export default class TreasureOverlay extends Overlay {
                                  * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
                                  * so it should be good for the time beeing.
                                  */
-                                // const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, 0)
-                                // style.weight = 1
-                                // intersectionLineFeature.properties = Object.assign({}, properties, { style })
-                                // lineGeometries.push(intersectionLineFeature)
+                                const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, 0)
+                                style.weight = 1
+                                intersectionLineFeature.properties = Object.assign({}, properties, { style })
+                                lineGeometries.push(intersectionLineFeature)
                                 // lineGeometries.push(this.getIntersectionLine(from, to, 0, toRadius))
 
                             }
