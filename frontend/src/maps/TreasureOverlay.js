@@ -252,8 +252,9 @@ export default class TreasureOverlay extends Overlay {
                     },
                     coordsToLatLng: function (coords) {
                         return new L.LatLng(coords[0], coords[1], coords[2]);
-                    }
+                    },
                 }, this.geoJSONOptions));
+
 
                 this._addFeatureGroup(group)
                 group.bringToFront()
@@ -266,31 +267,51 @@ export default class TreasureOverlay extends Overlay {
 
         if (connections) {
 
-
+            const extendBorder = 10
 
             connections.forEach(connection => {
 
                 if (selectedTreasureIds.length > 0) {
-                    const treasure = treasureMap[connection.treasure]
-                    const mint = mintMap[connection.mint]
+                    let treasure = treasureMap[connection.treasure]
+                    if (treasure.original) treasure = treasure.original
+
+                    let mint = mintMap[connection.mint]
+                    if (mint.original) mint = mint.original
 
                     if (treasure && mint) {
-                        const line = L.connector([treasure, mint], {
+                        let line = L.connector([treasure, mint], {
                             color: treasure.options.color,
                             weight: 2,
                         })
+
+                        line = this.extendBorder(
+                            line,
+                            { properties: { extendBorder } },
+                            () => L.connector([treasure, mint])
+                        )
                         line.addTo(this.layer)
                     }
                 } else if (selectedMintIds.length > 0) {
-                    const treasure = treasureMap[connection.treasure]
-                    const mint = this.mintGeometryMap[connection.mint]
+                    let treasure = treasureMap[connection.treasure]
+                    if (treasure.original) treasure = treasure.original
+
+                    let mint = this.mintGeometryMap[connection.mint]
+                    if (mint.original) mint = mint.original
 
                     if (treasure && mint) {
-                        const line = L.connector([treasure, mint], {
+                        let line = L.connector([treasure, mint], {
                             color: treasure.options.color,
                             weight: 2,
                         })
+
+                        line = this.extendBorder(
+                            line,
+                            { properties: { extendBorder } },
+                            () => L.connector([treasure, mint])
+                        )
+
                         line.addTo(this.layer)
+
                     }
                 }
 
@@ -351,6 +372,7 @@ export default class TreasureOverlay extends Overlay {
                             let treasureArea = this.toFeature(location, {
                                 totalCount: treasuresByMint.totalCount,
                                 // count: treasureCount.count,
+                                extendBorder,
                                 isMint: true,
                                 text,
                                 style: {
@@ -672,13 +694,16 @@ export default class TreasureOverlay extends Overlay {
 
     extendBorder(marker, feature, func) {
         if (feature.properties.extendBorder) {
-            marker.setStyle(feature.properties.style)
+            let original = marker
+            original.setStyle(feature.properties.style)
+            marker = L.featureGroup()
+            marker.original = original
+            marker.addLayer(original)
             const border = func()
-            feature.properties.style = {}
-            border.setStyle({ color: "red", opacity: 0.5, weight: feature.properties.extendBorder })
-            // TODO REIMPLEMENT
-            // border.addTo(marker)
-            // border.bringToFront()
+            feature.properties.style = { fill: false }
+            border.setStyle({ fill: false, opacity: 0, weight: feature.properties.extendBorder })
+            border.addTo(marker)
+            border.bringToFront()
         }
         return marker
     }
@@ -694,7 +719,8 @@ export default class TreasureOverlay extends Overlay {
 
             if (!markerOptions) markerOptions = {}
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
-            marker = this.extendBorder(marker, feature, super.createCircle.bind(this, latlng, feature, { selections, markerOptions }))
+
+            marker = this.extendBorder(marker, feature, () => super.createCircle(latlng, feature, { selections, markerOptions }))
 
             const treasureId = feature.properties.treasureId
             if (feature.properties.onClick && treasureId != null) {
