@@ -64,9 +64,9 @@ export default class MintLocation {
         }
         if (this.bindPopupCallback)
             marker.bindPopup(this.bindPopupCallback(feature))
-        else
+        else {
             marker.bindPopup(Mint.popupMintHeader(feature.mint, ["underlined-header"]));
-
+        }
         return marker
     }
 }
@@ -76,6 +76,7 @@ export class MintLocationMarker {
 
     constructor(mint) {
         this.mint = mint
+        this._circleMarker = null
     }
 
     static get defaultSize() {
@@ -97,6 +98,10 @@ export class MintLocationMarker {
         }
     }
 
+    get circleMarker() {
+        return this._circleMarker
+    }
+
     create(latlng, { size = MintLocationMarker.defaultSize, active = false, added = false, removed = false, animationTime = 1000 } = {}) {
         const MintLocationMarkerSettings = new Settings(window, "MintLocationMarker")
 
@@ -116,6 +121,7 @@ export class MintLocationMarker {
             weight: 1,
             className: classList.join(" ")
         }, style))
+
 
 
         if (isSpecial) {
@@ -151,6 +157,8 @@ export class MintLocationMarker {
         if (isSpecial) {
             this.marker.isSpecial = true
         }
+
+        this._circleMarker = circleMarker
         return this.marker
     }
 }

@@ -1,15 +1,10 @@
-import L from "leaflet"
-const Earth = L.CRS.Earth
-
+import L from "@/leaflet.js"
 import Query from '../database/query';
 import Overlay from './Overlay';
+import { MintLocationMarker } from '../models/mintlocation'
 
 import { cloneDeep } from 'lodash';
-import { del } from "vue";
-
-
-
-
+import Mint from '../models/map/mint';
 
 
 // ON REFACTOR: I think trying to push all states in a single overlay is a bad idea.
@@ -17,32 +12,36 @@ import { del } from "vue";
 
 export default class TreasureOverlay extends Overlay {
 
-    constructor(parent, settings, callbacks = {}) {
+    constructor(parent, settings, options = {}) {
 
-        function bringToFront(e) {
-            e.target.bringToFront()
-            if (callbacks.onBringToFront) callbacks.onBringToFront(e)
-        }
+        if (!options?.additionalData?.mints) throw new Error("Missing mints in additionalData")
 
-        callbacks.onFeatureGroupAdded = function (group) {
-            group.on('mouseover', bringToFront)
 
-            console.log(group.forEach)
-        }
+        //TODO: REIMPLEMENT IF NEEDED
+        // function bringToFront(e) {
+        //     e.target.bringToFront()
+        //     if (callbacks.onBringToFront) callbacks.onBringToFront(e)
+        // }
 
-        callbacks.onFeatureGroupRemoved = function (group) {
-            group.off('mouseover', bringToFront)
-        }
+        // callbacks.onFeatureGroupAdded = function (group) {
+        //     group.on('mouseover', bringToFront)
+        // }
+
+        // callbacks.onFeatureGroupRemoved = function (group) {
+        //     group.off('mouseover', bringToFront)
+        // }
 
         let onSelectTreasure = () => { }
-        if (callbacks.onSelectTreasure) {
-            onSelectTreasure = callbacks.onSelectTreasure
-            delete callbacks.onSelectTreasure
+        if (options.onSelectTreasure) {
+            onSelectTreasure = options.onSelectTreasure
+            delete options.onSelectTreasure
         }
 
-        super(parent, settings, callbacks)
+        super(parent, settings, options)
 
         this.onSelectTreasure = onSelectTreasure
+
+        this.mintGeometryMap = {}
     }
 
     async fetch({ selections = {} } = {}) {
@@ -97,9 +96,6 @@ export default class TreasureOverlay extends Overlay {
                 description
                 color
                 items {
-                    coinType {
-                        projectId
-                    }
                     count
                     epoch {
                         id
@@ -192,6 +188,8 @@ export default class TreasureOverlay extends Overlay {
 
     toMapObject(data, selections = {}) {
         let geoJSON = []
+        let connections = []
+
         const extendBorder = 20
 
         const {
@@ -203,14 +201,103 @@ export default class TreasureOverlay extends Overlay {
             const geom = this.showClickableTreasureArea(data.treasures, { extendBorder })
             geoJSON.push(...geom)
         } else if (selectedMintIds.length > 0) {
-            geoJSON = this.createMintSelectionMapObjects(data.treasuresByMint, selectedMintIds, { extendBorder })
+            ; ({ geoJSON, connections } = this.createMintSelectionMapObjects(data.treasuresByMint, selectedMintIds, { extendBorder }))
         } else if (selectedTreasureIds.length > 0) {
-            geoJSON = this.createTreasureMapObjects(data.treasures, selectedTreasureIds, { extendBorder })
+            ; ({ geoJSON, connections } = this.createTreasureMapObjects(data.treasures, selectedTreasureIds, { extendBorder }))
         }
 
         return {
-            geoJSON
+            geoJSON,
+            connections
         }
+    }
+
+    createGeometry({ geoJSON = null, connections = null } = {}, { selections, markerOptions } = {}) {
+
+
+        const mintLocationFeatureGroup = this.updateMintLocationMarker({ selections })
+        mintLocationFeatureGroup.addTo(this.layer)
+        mintLocationFeatureGroup.bringToBack()
+
+        const treasureMap = {}
+        const mintMap = {}
+
+        const {
+            treasures: selectedTreasureIds = [],
+            mints: selectedMintIds = []
+        } = selections
+
+        if (geoJSON) {
+            const that = this
+            geoJSON.forEach(feature => {
+                let group = new L.geoJSON(feature, Object.assign({}, {
+                    pointToLayer: function (feature, latlng) {
+
+                        let geometry
+                        const radius = parseInt(feature?.properties?.radius)
+                        if (!isNaN(radius)) {
+                            geometry = that.createCircle.call(that, latlng, feature, { selections, markerOptions })
+                        } else {
+                            geometry = that.createMarker.call(that, latlng, feature, { selections, markerOptions })
+                        }
+
+                        if (feature?.properties?.treasure) {
+                            let id = feature.properties.treasure.id ? feature.properties.treasure.id : feature.properties.treasure
+                            treasureMap[id] = geometry
+                        } else if (feature?.properties?.mintId) {
+                            mintMap[feature.properties.mintId] = geometry
+                        }
+
+                        return geometry
+                    },
+                    coordsToLatLng: function (coords) {
+                        return new L.LatLng(coords[0], coords[1], coords[2]);
+                    }
+                }, this.geoJSONOptions));
+
+                this._addFeatureGroup(group)
+                group.bringToFront()
+            })
+        }
+
+
+
+
+
+        if (connections) {
+
+
+
+            connections.forEach(connection => {
+
+                if (selectedTreasureIds.length > 0) {
+                    const treasure = treasureMap[connection.treasure]
+                    const mint = mintMap[connection.mint]
+
+                    if (treasure && mint) {
+                        const line = L.connector([treasure, mint], {
+                            color: treasure.options.color,
+                            weight: 2,
+                        })
+                        line.addTo(this.layer)
+                    }
+                } else if (selectedMintIds.length > 0) {
+                    const treasure = treasureMap[connection.treasure]
+                    const mint = this.mintGeometryMap[connection.mint]
+
+                    if (treasure && mint) {
+                        const line = L.connector([treasure, mint], {
+                            color: treasure.options.color,
+                            weight: 2,
+                        })
+                        line.addTo(this.layer)
+                    }
+                }
+
+
+            })
+        }
+
     }
 
 
@@ -239,6 +326,7 @@ export default class TreasureOverlay extends Overlay {
 
     createMintSelectionMapObjects(data, selectedMintIds, { extendBorder = 20 } = {}) {
         let geoJSON = []
+        let connections = []
         data.forEach(treasuresByMint => {
             if (treasuresByMint?.mint?.location) {
                 let mintLocation = treasuresByMint.mint.location
@@ -273,24 +361,11 @@ export default class TreasureOverlay extends Overlay {
                                 treasure: treasure
                             })
 
-                            const line = {
-                                type: "Feature",
-                                geometry: {
-                                    type: "LineString",
-                                    coordinates: [
-                                        mintLocation.geometry.coordinates,
-                                        location.geometry.coordinates
-                                    ]
-                                },
-                                properties: {
-                                    style: {
-                                        color,
-                                        weight: 1,
-                                    }
-                                }
-                            }
+                            connections.push({
+                                treasure: treasure.id,
+                                mint: treasuresByMint.mint.id,
+                            })
 
-                            geoJSON.push(line)
                             geoJSON.push(treasureArea)
                         } else {
                             console.warn("No location for treasure", treasureCount.treasure)
@@ -299,12 +374,15 @@ export default class TreasureOverlay extends Overlay {
                 }
             }
         })
-        return geoJSON
+
+        return { geoJSON, connections }
     }
 
 
     createTreasureMapObjects(treasures, selectedTreasureIds, { extendBorder = 20 } = {}) {
-        let geoJSON = []
+        const geoJSON = []
+        const connections = []
+
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color
@@ -359,6 +437,12 @@ export default class TreasureOverlay extends Overlay {
 
                             const mintRegion = item.mintRegion
                             if (mintRegion.location) {
+
+                                connections.push({
+                                    treasure: treasure.id,
+                                    mint: mintRegion.id,
+                                })
+
                                 let geometry
                                 let location = mintRegion.location
                                 const properties =
@@ -367,6 +451,7 @@ export default class TreasureOverlay extends Overlay {
                                     totalCount: treasure.totalCount,
                                     count: item.count,
                                     hoard: treasure.name,
+                                    mintId: mintRegion.id,
                                     mint: mintRegion.name,
                                     extendBorder,
                                     text: `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
@@ -410,13 +495,13 @@ export default class TreasureOverlay extends Overlay {
                 // ...treasureGeometriesShadows,
                 // ...mintGeometriesShadows,
                 // Normal layers
-                ...lineGeometries,
+                // ...lineGeometries
                 ...treasureGeometries,
                 ...itemGeometries,
             ])
         }
 
-        return geoJSON
+        return { geoJSON, connections }
     }
 
 
@@ -462,6 +547,97 @@ export default class TreasureOverlay extends Overlay {
         }
     }
 
+    updateMintLocationMarker({ selections = [] } = {}) {
+        this.mintGeometryMap = {}
+        const mintSelection = selections.mints || []
+
+        let allMintGroup = L.featureGroup()
+
+        const overlayContext = this
+        this.additionalData.mints.forEach(mint => {
+            const geoJSON = new L.geoJSON(mint.location, {
+                pointToLayer(point) {
+                    let position = point.geometry ? point.geometry : point
+                    const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
+
+                    let marker
+                    const active = mintSelection.includes(mint.id)
+                    if (point?.properties?.radius) {
+                        const group = L.featureGroup()
+
+                        const mintRegionMarker = new MintLocationMarker(mint)
+                        let mlm = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
+                        mlm.bindPopup(Mint.popupMintHeader(mint, ["underlined-header"]))
+
+
+                        let activeStyle = {}
+                        if (active) {
+                            activeStyle = {
+                                color: "white",
+                                fillColor: "#000"
+                            }
+                        }
+
+                        const circle = L.circle(latlng, point.properties.radius, Object.assign({
+                            weight: 1,
+                            fillOpacity: 0.75,
+
+                        }, MintLocationMarker.normalStyle, activeStyle))
+
+
+
+                        circle.addTo(group)
+                        mlm.addTo(group)
+
+                        overlayContext.mintGeometryMap[mint.id] = circle
+                        // TODO: REIMPLEMENT
+                        // /**
+                        //  * Hides the markers at a specific zoom level
+                        //  */
+                        // vueContext.map.on("zoomend", () => {
+                        //     const zoom = vueContext.map.getZoom()
+                        //     if (zoom > vueContext.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)) {
+                        //         group.removeLayer(mlm)
+                        //     } else {
+                        //         group.addLayer(mlm)
+                        //     }
+                        // })
+
+                        group.addLayer(mlm)
+                        group.getElement = () => {
+                            return mlm.getElement()
+                        }
+                        marker = group
+                    } else {
+                        const mintRegionMarker = new MintLocationMarker(mint)
+                        marker = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
+                        marker.bindPopup(Mint.popupMintHeader(mint, ["underlined-header"]))
+                        overlayContext.mintGeometryMap[mint.id] = mintRegionMarker.circleMarker
+                    }
+
+                    return marker
+                }
+            })
+
+            // TODO: REIMPLEMENT
+            // geoJSON.bindTooltip(mint.name, { sticky: true })
+            // geoJSON.on("click", () => {
+            //     if (vueContext.selectedTreasureIds.length === 0) {
+            //         if (vueContext.selectedMintIds.includes(mint.id)) {
+            //             vueContext.selectedMintIds = vueContext.selectedMintIds.filter(id => id !== mint.id)
+            //         } else {
+            //             vueContext.selectedMintIds = [mint.id]
+            //         }
+
+            //         vueContext.update()
+            //     }
+            // })
+            geoJSON.addTo(allMintGroup)
+        })
+
+        return allMintGroup
+    }
+
 
     createRectMarker(latlng, feature) {
         let marker = null
@@ -482,7 +658,7 @@ export default class TreasureOverlay extends Overlay {
 
 
         if (count != null && totalCount != null) {
-            marker = L.shapeMarker(latlng, { shape: "square", radius: size, fill: false })
+            marker = new L.ShapeMarker(latlng, { shape: "square", radius: size, fill: false })
 
             //     marker.bindTooltip(`
             // ${feature.properties.mint} (${feature.properties.hoard})<br>
@@ -497,12 +673,12 @@ export default class TreasureOverlay extends Overlay {
     extendBorder(marker, feature, func) {
         if (feature.properties.extendBorder) {
             marker.setStyle(feature.properties.style)
-            marker = L.featureGroup([marker])
             const border = func()
             feature.properties.style = {}
-            border.setStyle({ color: "red", opacity: 0, weight: feature.properties.extendBorder })
-            border.addTo(marker)
-            border.bringToFront()
+            border.setStyle({ color: "red", opacity: 0.5, weight: feature.properties.extendBorder })
+            // TODO REIMPLEMENT
+            // border.addTo(marker)
+            // border.bringToFront()
         }
         return marker
     }
@@ -548,15 +724,20 @@ export default class TreasureOverlay extends Overlay {
     }
 
     repaint() {
-        if (this.layer) {
-            this.layer.off('mouseover', this.bringTreasureToFront)
+        if (this.graphicsLayer) {
+            this.graphicsLayer.off('mouseover', this.bringTreasureToFront)
         }
+        // We need to do this beforehand to fill the mintGeometryMap ...
+        this.mintFeatureGroup = this.updateMintLocationMarker(...arguments)
 
+        // ... the repaint recreates the layer object, so we need to readd the mintFeatureGroup ...
         super.repaint(...arguments)
 
-        if (this.layer) {
-            this.layer.on('mouseover', this.bringTreasureToFront)
+
+        if (this.graphicsLayer) {
+            this.graphicsLayer.on('mouseover', this.bringTreasureToFront)
         }
+
     }
 
     get geoJSONOptions() {

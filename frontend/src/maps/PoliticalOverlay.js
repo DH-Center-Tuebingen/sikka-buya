@@ -1,4 +1,4 @@
-import L from "leaflet"
+import L from '@/leaflet'
 import Mint from '../models/map/mint';
 import Overlay from './Overlay';
 import Query from '../database/query';

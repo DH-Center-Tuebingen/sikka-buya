@@ -9,8 +9,7 @@ import { camelCase, pascalCase, snakeCase } from 'change-case';
 import Selection from './models/selection';
 import mconfig from './plugins/mconfig';
 import StringUtils from './utils/StringUtils'
-import 'leaflet-svg-shape-markers'
-
+import L from '@/leaflet'
 
 import Settings from './settings'
 import SettingsTemplate from '../settings.json'
@@ -56,6 +55,7 @@ async function main() {
   })
 
   Vue.prototype.$selection = Selection
+  Vue.prototype.$L = L
 
   Vue.mixin(ConfigMixin)
   Vue.mixin({

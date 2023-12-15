@@ -32,9 +32,6 @@
 
 <script>
 import Settings from '../../settings';
-require('leaflet-semirings');
-require('../../plugins/leaflet-svg-icon');
-
 import URLParams from '../../utils/URLParams';
 import Crosshair from '../debug/Crosshair.vue';
 

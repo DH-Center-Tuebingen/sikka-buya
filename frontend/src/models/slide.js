@@ -1,4 +1,4 @@
-import L from 'leaflet'
+import L from '@/leaflet'
 import StringUtils from '../utils/StringUtils'
 
 export class Slide {
@@ -99,7 +99,7 @@ export class FilterSlide extends Slide {
 
         secondRow.forEach(row => row.columns = 6 / secondRow.length)
 
-        slide.display = {rows: [...rows, ...secondRow]}
+        slide.display = { rows: [...rows, ...secondRow] }
 
         return slide
     }
