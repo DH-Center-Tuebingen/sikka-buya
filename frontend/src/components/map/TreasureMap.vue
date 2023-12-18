@@ -304,7 +304,7 @@ export default {
         return {
             chart: null,
             diagramMode: null,
-            chartType: null,
+            chartType: "time",
             filters: {},
             painter: null,
             selectedTreasureIds: [],
@@ -499,7 +499,7 @@ export default {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
         },
 
-       
+
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
