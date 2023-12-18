@@ -12,7 +12,7 @@
 
             <MultiSelectList>
                 <MultiSelectListItem
-                    v-for="mint of mints"
+                    v-for="mint of filteredMints"
                     :key="`mint-list-item-${mint.id}`"
                     :class="{
                         'selected': selectedMintIds.includes(mint.id)
@@ -379,6 +379,9 @@ export default {
         MountedAndLoadedMixin(['storage', 'data'])
     ],
     computed: {
+        filteredMints() {
+            return this.mints.filter(mint => mint.name !== "xxx") 
+        },
         hasUncertainYears() {
             // if(!this.yearCountData["undefined"]) return false
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
