@@ -96,9 +96,17 @@
                     <Row>
                         <div>
                             <span>
-                                <Locale path="label.timeline.uncertain_years" />:
+                                <Locale
+                                    v-if="chartType == 'time'"
+                                    path="label.timeline.uncertain_years"
+                                />
+                                <Locale
+                                    v-else
+                                    path="label.timeline.unknown_weight"
+                                />
+                                :
                             </span>
-                            <template v-if="yearCountData.undefined != undefined">
+                            <template v-if="chartType === 'time' && yearCountData.undefined != undefined">
                                 <span style="margin-left: 1em;">
                                     {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) || 0 }}
                                 </span>
@@ -121,21 +129,12 @@
                                     )
                                 </template>
                             </template>
+                            <span v-else-if="chartType === 'weight'">
+                                {{ unknownWeights }}
+                            </span>
                             <span v-else>0</span>
                         </div>
 
-                        <div class="button-group">
-                            <radio-button-group
-                                v-if="chartType === 'weight'"
-                                id="weight-frequency"
-                                :labels="['0.01', '0.1', '1']"
-                                :options="['0.01', '0.1', '1']"
-                                :value="weightDataFrequency.toString()"
-                                @input="updateWeightFrequency"
-                            >
-
-                            </radio-button-group>
-                        </div>
                         <div
                             class="button-group"
                             style="justify-content: flex-end; display: flex;"
@@ -317,6 +316,7 @@ export default {
             cachedWeightDataMap: {},
             weightDataFrequency: 0.1,
             graphOffset: 5,
+            unknownWeights: 0,
             tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
         };
     },
@@ -328,10 +328,9 @@ export default {
                 if (this.chartType === "weight") {
                     const data = this.cachedWeightDataMap[value]
 
+
+                    let tooltipText = `<b>${value.toLocaleString()}-${value.toLocaleString()}<span style="text-decoration: overline;">9</span></b>`
                     if (Array.isArray(data)) {
-
-                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>:`
-
                         const treasures = []
 
                         data.forEach((count, index) => {
@@ -341,9 +340,9 @@ export default {
                             }
                         })
 
-                        tooltip.innerHTML += ` ${treasures.join(", ")}`
+                        tooltip.innerHTML = `${tooltipText}: ${treasures.join(", ")}`
                     } else {
-                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>: ${this.cachedWeightDataMap[value] || 0}`
+                        tooltip.innerHTML = `${tooltipText}: ${data || 0}`
                     }
                 }
                 else {
@@ -380,7 +379,7 @@ export default {
     ],
     computed: {
         filteredMints() {
-            return this.mints.filter(mint => mint.name !== "xxx") 
+            return this.mints.filter(mint => mint.name !== "xxx")
         },
         hasUncertainYears() {
             // if(!this.yearCountData["undefined"]) return false
@@ -662,10 +661,6 @@ export default {
         updateTimeline() {
             console.warn("NOTHING TO DO", arguments)
         },
-        updateWeightFrequency(value) {
-            this.weightDataFrequency = parseFloat(parseFloat(value).toPrecision(10))
-            this.updateTimelineGraph()
-        },
         updateTimelineGraph() {
 
             let data = {
@@ -846,12 +841,15 @@ export default {
             }
         },
         getWeightData() {
-            return this.selectedTreasures.map(treasure => {
+            let unknownWeights = 0
+            let weightData = this.selectedTreasures.map(treasure => {
                 let data = []
                 treasure.items.forEach(itemArr => {
                     itemArr.items.forEach(item => {
                         if (item.weight) {
                             data.push({ x: item.weight, y: 1 })
+                        } else {
+                            unknownWeights++
                         }
                     })
                 })
@@ -860,6 +858,9 @@ export default {
                     data: data.sort((a, b) => a.x - b.x)
                 }
             })
+
+            this.unknownWeights = unknownWeights
+            return weightData
         },
         updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
