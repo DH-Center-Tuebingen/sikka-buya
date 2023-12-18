@@ -168,7 +168,6 @@ export default class TreasureOverlay extends Overlay {
             transformedData.push(clone)
         })
         data.treasures = transformedData
-
         return data
     }
 
@@ -222,6 +221,18 @@ export default class TreasureOverlay extends Overlay {
         const treasureMap = {}
         const mintMap = {}
 
+        // For some obscure reason we cannot manage the connectors in a feature group
+        // with the treasure geometries, as it then (and only then) throws an error
+        // possibly cause a square marker is not properly projected in the time the
+        // connector is added to that feature group.
+        //
+        // So we just reorder the whole group after adding the connectors.
+        let geometryGroups = {
+
+        }
+
+        let order = 0
+
         const {
             treasures: selectedTreasureIds = [],
             mints: selectedMintIds = []
@@ -230,7 +241,10 @@ export default class TreasureOverlay extends Overlay {
         if (geoJSON) {
             const that = this
             geoJSON.forEach(feature => {
-                let group = new L.geoJSON(feature, Object.assign({}, {
+
+                let treasureId = null
+
+                let geometry = new L.geoJSON(feature, Object.assign({}, {
                     pointToLayer: function (feature, latlng) {
 
                         let geometry
@@ -244,8 +258,14 @@ export default class TreasureOverlay extends Overlay {
                         if (feature?.properties?.treasure) {
                             let id = feature.properties.treasure.id ? feature.properties.treasure.id : feature.properties.treasure
                             treasureMap[id] = geometry
+                            treasureId = id
                         } else if (feature?.properties?.mintId) {
-                            mintMap[feature.properties.mintId] = geometry
+
+                            const hoard = feature.properties.hoardId
+
+                            if (!mintMap[hoard]) mintMap[hoard] = {}
+
+                            mintMap[hoard][feature.properties.mintId] = geometry
                         }
 
                         return geometry
@@ -256,14 +276,13 @@ export default class TreasureOverlay extends Overlay {
                 }, this.geoJSONOptions));
 
 
-                this._addFeatureGroup(group)
-                group.bringToFront()
+                if (treasureId) {
+                    geometryGroups[treasureId] = { order: order++, geometries: [geometry] }
+                }
+
+                this._addFeatureGroup(geometry)
             })
         }
-
-
-
-
 
         if (connections) {
 
@@ -275,21 +294,29 @@ export default class TreasureOverlay extends Overlay {
                     let treasure = treasureMap[connection.treasure]
                     if (treasure.original) treasure = treasure.original
 
-                    let mint = mintMap[connection.mint]
-                    if (mint.original) mint = mint.original
+                    if (treasure) {
+                        let mint = mintMap[connection.treasure][connection.mint]
+                        if (mint.original) mint = mint.original
 
-                    if (treasure && mint) {
-                        let line = L.connector([treasure, mint], {
-                            color: treasure.options.color,
-                            weight: 2,
-                        })
+                        if (mint) {
 
-                        line = this.extendBorder(
-                            line,
-                            { properties: { extendBorder } },
-                            () => L.connector([treasure, mint])
-                        )
-                        line.addTo(this.layer)
+                            let line = L.connector([treasure, mint], {
+                                color: treasure.options.color,
+                                weight: 2,
+                            })
+
+                            line = this.extendBorder(
+                                line,
+                                { properties: { extendBorder } },
+                                () => L.connector([treasure, mint])
+                            )
+
+                            geometryGroups[connection.treasure].geometries.push(line)
+                            line.addTo(this.layer)
+
+
+                            line.bindTooltip(connection.text, { sticky: true })
+                        }
                     }
                 } else if (selectedMintIds.length > 0) {
                     let treasure = treasureMap[connection.treasure]
@@ -314,11 +341,29 @@ export default class TreasureOverlay extends Overlay {
 
                     }
                 }
-
-
             })
         }
 
+
+        const _bringToFront = (geometry) => {
+            geometry.bringToFront()
+            geometry.addTo(targetLayer)
+        }
+
+        const targetLayer = this.layer
+        for (let group of Object.values(geometryGroups)) {
+            group.geometries.forEach(geometry => {
+
+                geometry.off("mouseover", _bringToFront)
+                geometry.on("mouseover", () => {
+                    group.geometries.forEach(geometry => {
+                        _bringToFront(geometry)
+                    })
+                })
+                geometry.bringToFront()
+                geometry.addTo(targetLayer)
+            })
+        }
     }
 
 
@@ -460,9 +505,12 @@ export default class TreasureOverlay extends Overlay {
                             const mintRegion = item.mintRegion
                             if (mintRegion.location) {
 
+                                const text = `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
+
                                 connections.push({
                                     treasure: treasure.id,
                                     mint: mintRegion.id,
+                                    text
                                 })
 
                                 let geometry
@@ -472,11 +520,12 @@ export default class TreasureOverlay extends Overlay {
                                     style: mintStyle,
                                     totalCount: treasure.totalCount,
                                     count: item.count,
+                                    hoardId: treasure.id,
                                     hoard: treasure.name,
                                     mintId: mintRegion.id,
                                     mint: mintRegion.name,
                                     extendBorder,
-                                    text: `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
+                                    text,
                                 }
 
                                 if (location.type.toLowerCase() != "feature") {
