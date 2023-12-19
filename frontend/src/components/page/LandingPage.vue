@@ -85,18 +85,15 @@
             :noImage="true"
             :disabled="$mconfig.getBoolean('working_papers.disabled')"
             :to="{
-              name: 'CMSList',
-              params: {
-                group: 'working_papers',
-              }
+              name: 'Working Papers'
             }"
           >
 
-            <div :class="{ subtitled: $mconfig.getBoolean('working_papers.disabled') }">
+            <div :class=" { subtitled: $mconfig.getBoolean('working_papers.disabled') } ">
               <locale path="cms.group.Working Papers" />
               <span
                 class="subtitle"
-                v-if="$mconfig.getBoolean('working_papers.disabled')"
+                v-if=" $mconfig.getBoolean('working_papers.disabled') "
               >Demnächst verfügbar!</span>
             </div>
           </card-link>
