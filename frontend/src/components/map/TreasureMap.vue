@@ -12,7 +12,7 @@
 
             <MultiSelectList>
                 <MultiSelectListItem
-                    v-for="mint of filteredMints"
+                    v-for="mint of getFilteredMints()"
                     :key="`mint-list-item-${mint.id}`"
                     :class="{
                         'selected': selectedMintIds.includes(mint.id)
@@ -21,35 +21,33 @@
                     @checkbox-selected="() => addMintSelection([mint.id])"
                     @click.native="selectMint(mint.id)"
                 >
-                    {{ mint.name }}
+                    <span v-if="activeMintMap[mint.id]" style="overflow: clip;">
+                        {{ mint.name }}
+                    </span>
+                    <span v-else>
+                        {{ mint.name }}
+                    </span>
+
+                    <div
+                        v-if="activeMintMap[mint.id]"
+                        style="margin-left: auto; margin-right: .5rem; display: flex;"
+                    >
+                        <span
+                            v-for="treasure of selectedTreasures"
+                            :key="`mint-list-num-${mint.id}-${treasure.id}`"
+                            class="mint-count-text-wrapper"
+                            :style="`color: ${treasure.color}; `"
+                        >
+                            <span
+                                v-if="activeMintMap?.[mint.id]?.treasures?.[treasure.id]"
+                                class="mint-count-text"
+                            >
+                                {{ activeMintMap[mint.id].treasures[treasure.id].count }}
+                            </span>
+                        </span>
+                    </div>
                 </MultiSelectListItem>
             </MultiSelectList>
-
-
-
-            <!-- <table>
-                <tbody>
-                    <tr
-                        v-for="mint of mints"
-                        :key="`mint-list-item-${mint.id}`"
-                        :class="{
-                            'selected': selectedMintIds.includes(mint.id)
-                        }"
-                        @click="selectMints([mint.id])"
-                    >
-                        <td>
-                            {{ mint.name }}
-                        </td>
-                        <td
-                            v-for="treasure of selectedTreasures"
-                            :key="`mint-count-${treasure.id}`"
-                            :style="`color: ${treasure.color}`"
-                        >
-                            {{ getMintCount(mint, treasure) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table> -->
         </Sidebar>
 
         <div class="center-ui center-ui-top">
@@ -312,6 +310,7 @@ export default {
             treasures: [],
             yearCountData: {},
             mintRegions: [],
+            activeMintMap: {},
             mintLocationMarkerGroup: null,
             cachedWeightDataMap: {},
             weightDataFrequency: 0.1,
@@ -378,9 +377,8 @@ export default {
         MountedAndLoadedMixin(['storage', 'data'])
     ],
     computed: {
-        filteredMints() {
-            return this.mints.filter(mint => mint.name !== "xxx")
-        },
+
+
         hasUncertainYears() {
             // if(!this.yearCountData["undefined"]) return false
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
@@ -494,6 +492,42 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
+        getFilteredMints() {
+            const mints = this.mints.filter(mint => mint.name !== "xxx")
+            let activeMints = []
+            let interactiveMints = []
+            mints.forEach(mint => {
+                if (this.activeMintMap[mint.id]) {
+                    activeMints.push(mint)
+                } else {
+                    interactiveMints.push(mint)
+                }
+            })
+
+            activeMints = activeMints.sort(Sort.stringPropAlphabetically("name"))
+            interactiveMints = interactiveMints.sort(Sort.stringPropAlphabetically("name"))
+
+            return [...activeMints, ...interactiveMints]
+        },
+        getActiveMints() {
+            return Object.values(this.activeMintMap).sort(Sort.stringPropAlphabetically("name"))
+        },
+        getActiveMintsHTML(mint) {
+            let html = ""
+            if (mint.count > 0) {
+                html += `(${mint.count})`
+            }
+
+            if (Object.keys(mint.treasures).length > 0) {
+                html += ` <span style="font-size: 0.8em;">`
+                html += Object.values(mint.treasures).sort(Sort.stringPropAlphabetically("treasure.name")).map(obj => {
+                    return `<span style="color: ${obj.treasure.color}">${obj.count}</span>`
+                }).join(", ")
+                html += `</span>`
+            }
+
+            return html
+        },
         mounted_and_loaded_mixin_mountedAndLoaded() {
             this.removeInvalidIds()
         },
@@ -617,6 +651,15 @@ export default {
         resizeCanvas() {
             this.timelineChart.updateSize()
         },
+        isActiveMint(mint) {
+            return this.selectedTreasures.some(treasure => {
+                return treasure.items.some(item => {
+                    return item.items.some(treasureItem => {
+                        return treasureItem.mintRegion.id === mint.id
+                    })
+                })
+            })
+        },
         getMintCount(mint, treasure) {
             let count = 0;
             treasure.items.forEach(item => {
@@ -649,6 +692,8 @@ export default {
                 }
             })
 
+
+            this.updateActiveMintMap()
             this.updateYearCount()
             this.updateTimelineGraph()
             this.bringMintsToFront()
@@ -1028,8 +1073,33 @@ export default {
         selectionChanged() {
             this.update()
             this.updateDiagram()
+
             //TODO REIMPLEMENT
             // this.$local_storage_mixin_save()
+        },
+        updateActiveMintMap() {
+
+            this.activeMintMap = {}
+
+            this.selectedTreasures.forEach(treasure => {
+                treasure.items.forEach(item => {
+                    if (!this.activeMintMap[item.mintRegion.id]) {
+                        this.activeMintMap[item.mintRegion.id] = item.mintRegion
+                        this.activeMintMap[item.mintRegion.id].count = 0
+                        this.activeMintMap[item.mintRegion.id].treasures = {}
+                    }
+
+                    if (!this.activeMintMap[item.mintRegion.id].treasures[treasure.id]) {
+                        this.activeMintMap[item.mintRegion.id].treasures[treasure.id] = { treasure, count: 0 }
+                    }
+
+                    this.activeMintMap[item.mintRegion.id].count += parseInt(item.count) || 1
+                    this.activeMintMap[item.mintRegion.id].treasures[treasure.id].count += parseInt(item.count) || 1
+                })
+            })
+
+            // Reassign to trigger vue reactivity
+            this.activeMintMap = { ...this.activeMintMap }
         },
         isTreasureSelected(id) {
             return this.selectedTreasureIds.includes(id)
@@ -1111,6 +1181,21 @@ tr {
 
 tr.selected {
     background-color: $primary-color;
+}
+
+.mint-count-text-wrapper {
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: .25em;
+    width: 2.5em;
+    display: inline-block;
+    text-align: right;
+}
+
+.mint-count-text {
+    background-color: white;
+    padding: 2px;
+    border-radius: 2px;
 }
 </style>
   
