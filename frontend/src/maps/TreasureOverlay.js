@@ -338,6 +338,7 @@ export default class TreasureOverlay extends Overlay {
                         )
 
                         line.addTo(this.layer)
+                        line.bindTooltip(connection.text, { sticky: true })
 
                     }
                 }
@@ -412,7 +413,9 @@ export default class TreasureOverlay extends Overlay {
 
                             const color = treasure.color
 
-                            const text = `${treasure.name}: ${treasureCount.count} / ${treasuresByMint.totalCount} (${(100 * treasureCount.count / treasuresByMint.totalCount).toFixed(2)}%)`
+                            console.log(treasuresByMint)
+
+                            const text = `${treasure.name}: ${treasureCount.count}`
 
                             let treasureArea = this.toFeature(location, {
                                 totalCount: treasuresByMint.totalCount,
@@ -431,6 +434,7 @@ export default class TreasureOverlay extends Overlay {
                             connections.push({
                                 treasure: treasure.id,
                                 mint: treasuresByMint.mint.id,
+                                text
                             })
 
                             geoJSON.push(treasureArea)
@@ -544,16 +548,6 @@ export default class TreasureOverlay extends Overlay {
 
                                 itemGeometries.push(location)
 
-                                /**
-                                 * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
-                                 * so it should be good for the time beeing.
-                                 */
-                                const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, 0)
-                                style.weight = 1
-                                intersectionLineFeature.properties = Object.assign({}, properties, { style })
-                                lineGeometries.push(intersectionLineFeature)
-                                // lineGeometries.push(this.getIntersectionLine(from, to, 0, toRadius))
-
                             }
                         }
                     })
@@ -561,61 +555,12 @@ export default class TreasureOverlay extends Overlay {
             }
 
             geoJSON.push([
-                // Shadow layers
-                // ...lineGeometriesShadows,
-                // ...treasureGeometriesShadows,
-                // ...mintGeometriesShadows,
-                // Normal layers
-                // ...lineGeometries
                 ...treasureGeometries,
                 ...itemGeometries,
             ])
         }
 
         return { geoJSON, connections }
-    }
-
-
-
-    /**
-     * This is the 'inverse' function for 
-     * the L.CRS.Earth distance function.
-     * 
-     */
-    getLatLngFromDistanceAndDirection(latlng1, distance, direction) {
-        const R = 6371e3; // Earth's radius in meters
-        const rad = Math.PI / 180;
-        const lat1 = latlng1.lat * rad;
-        const lng1 = latlng1.lng * rad;
-        const bearing = Math.atan2(direction[1], direction[0]);
-
-        const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) +
-            Math.cos(lat1) * Math.sin(distance / R) * Math.cos(bearing));
-        const lng2 = lng1 + Math.atan2(Math.sin(bearing) * Math.sin(distance / R) * Math.cos(lat1),
-            Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
-
-        const point = { lat: lat2 / rad, lng: lng2 / rad };
-
-        return [point.lat, point.lng];
-    }
-
-    getIntersectionLine(from, to, fromRadius, toRadius) {
-        const connectionVector = [to[0] - from[0], to[1] - from[1]]
-        const connectionVectorLength = Math.sqrt(connectionVector[0] ** 2 + connectionVector[1] ** 2)
-        const connectionVectorNormalized = [connectionVector[0] / connectionVectorLength, connectionVector[1] / connectionVectorLength]
-        const start = this.getLatLngFromDistanceAndDirection({ lat: from[0], lng: from[1] }, fromRadius, connectionVectorNormalized)
-        const end = this.getLatLngFromDistanceAndDirection({ lat: to[0], lng: to[1] }, toRadius, connectionVectorNormalized.map(x => -x))
-
-        return {
-            type: "Feature",
-            geometry: {
-                type: "LineString",
-                coordinates: [
-                    start,
-                    end
-                ]
-            }
-        }
     }
 
     updateMintLocationMarker({ selections = [] } = {}) {
@@ -721,20 +666,14 @@ export default class TreasureOverlay extends Overlay {
         let size = minSize
         const stepSizeGroupsInPercent = this.settings.stepSizeGroupsInPercent.slice()
 
-        let targetSizeGroup = stepSizeGroupsInPercent.shift()
         while (stepSizeGroupsInPercent.length > 0 && percent > stepSizeGroupsInPercent[0]) {
-            targetSizeGroup = stepSizeGroupsInPercent.shift()
+            stepSizeGroupsInPercent.shift()
             size += stepsize
         }
 
 
         if (count != null && totalCount != null) {
             marker = new L.ShapeMarker(latlng, { shape: "square", radius: size, fill: false })
-
-            //     marker.bindTooltip(`
-            // ${feature.properties.mint} (${feature.properties.hoard})<br>
-            // ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
-            // ` , { sticky: true })
         }
 
         return marker
