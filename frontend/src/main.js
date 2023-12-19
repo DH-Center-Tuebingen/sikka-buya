@@ -51,7 +51,7 @@ async function main() {
 
   Vue.use(mconfig, {
     path: "project_settings",
-    template: SettingsTemplate
+    template: SettingsTemplate.project_settings
   })
 
   Vue.prototype.$selection = Selection
@@ -69,6 +69,10 @@ async function main() {
   registerGlobalComponents()
 
   I18n.init()
+
+
+  
+
 
   app.vue = new Vue({
     router,
