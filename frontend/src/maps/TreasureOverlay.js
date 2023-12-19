@@ -16,21 +16,6 @@ export default class TreasureOverlay extends Overlay {
 
         if (!options?.additionalData?.mints) throw new Error("Missing mints in additionalData")
 
-
-        //TODO: REIMPLEMENT IF NEEDED
-        // function bringToFront(e) {
-        //     e.target.bringToFront()
-        //     if (callbacks.onBringToFront) callbacks.onBringToFront(e)
-        // }
-
-        // callbacks.onFeatureGroupAdded = function (group) {
-        //     group.on('mouseover', bringToFront)
-        // }
-
-        // callbacks.onFeatureGroupRemoved = function (group) {
-        //     group.off('mouseover', bringToFront)
-        // }
-
         let onSelectTreasure = () => { }
         if (options.onSelectTreasure) {
             onSelectTreasure = options.onSelectTreasure
@@ -38,10 +23,10 @@ export default class TreasureOverlay extends Overlay {
         }
 
         super(parent, settings, options)
-
         this.onSelectTreasure = onSelectTreasure
-
         this.mintGeometryMap = {}
+        this.mlms = []
+        this._markersRemoved = false
     }
 
     async fetch({ selections = {} } = {}) {
@@ -567,6 +552,10 @@ export default class TreasureOverlay extends Overlay {
         this.mintGeometryMap = {}
         const mintSelection = selections.mints || []
 
+        this.mlms.forEach(mlm => {
+            delete mlm.parent
+        })
+        this.mlms = []
         let allMintGroup = L.featureGroup()
 
         const overlayContext = this
@@ -606,18 +595,11 @@ export default class TreasureOverlay extends Overlay {
                         mlm.addTo(group)
 
                         overlayContext.mintGeometryMap[mint.id] = circle
-                        // TODO: REIMPLEMENT
-                        // /**
-                        //  * Hides the markers at a specific zoom level
-                        //  */
-                        // vueContext.map.on("zoomend", () => {
-                        //     const zoom = vueContext.map.getZoom()
-                        //     if (zoom > vueContext.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)) {
-                        //         group.removeLayer(mlm)
-                        //     } else {
-                        //         group.addLayer(mlm)
-                        //     }
-                        // })
+
+
+                        mlm.parent = group
+                        overlayContext.mlms.push(mlm)
+
 
                         group.addLayer(mlm)
                         group.getElement = () => {
@@ -652,6 +634,23 @@ export default class TreasureOverlay extends Overlay {
         })
 
         return allMintGroup
+    }
+
+
+    hideMarkersOnSpecifiedZoomLevel(zoom, removeDistance) {
+        let remove = zoom > removeDistance
+
+        if (remove != this._markersRemoved) {
+            this._markersRemoved = remove
+            this.mlms.forEach(mlm => {
+                if (remove) {
+                    mlm.parent.removeLayer(mlm)
+                } else {
+                    mlm.parent.addLayer(mlm)
+                }
+            })
+        }
+
     }
 
 

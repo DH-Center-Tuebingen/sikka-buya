@@ -150,7 +150,10 @@ export default class ManagedConfig {
     }
 
     _typeValidatorFunction(path, type, validator) {
-        const raw_value = this.get(path)
+        let raw_value = this.get(path)
+
+        // TODO: Fix this in the backend that it does only have atmost one empty string
+        while(raw_value[""] !== undefined) raw_value = raw_value[""]
         if (raw_value == null) return null
 
         let { valid, value } = validator(raw_value)

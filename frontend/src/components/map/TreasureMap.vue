@@ -207,7 +207,10 @@
                     style="margin: 1em;margin-top: auto;"
                 >
 
-                    <div class="diagram-select-bar" style="margin-top: .5rem;">
+                    <div
+                        class="diagram-select-bar"
+                        style="margin-top: .5rem;"
+                    >
                         <div
                             class="select-wrapper"
                             style="position: relative;"
@@ -524,6 +527,12 @@ export default {
         this.updateTimeline(true);
         window.addEventListener('resize', this.resizeCanvas);
         this.update()
+
+        const hideMarkersThreshold = this.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)
+        this.map.on("zoomend", () => {
+            const zoom = this.map.getZoom()
+            this.overlay.hideMarkersOnSpecifiedZoomLevel(zoom, hideMarkersThreshold)
+        })
 
         //this is a hack to make sure the diagram is updated after the map is loaded
         setTimeout(() => {
@@ -1113,9 +1122,7 @@ export default {
         selectionChanged() {
             this.update()
             this.updateDiagram()
-
-            //TODO REIMPLEMENT
-            // this.$local_storage_mixin_save()
+            this.$local_storage_mixin_save()
         },
         updateActiveMintMap() {
 
