@@ -21,7 +21,10 @@
                     @checkbox-selected="() => addMintSelection([mint.id])"
                     @click.native="selectMint(mint.id)"
                 >
-                    <span v-if="activeMintMap[mint.id]" style="overflow: clip;">
+                    <span
+                        v-if="activeMintMap[mint.id]"
+                        style="overflow: clip;"
+                    >
                         {{ mint.name }}
                     </span>
                     <span v-else>
@@ -203,29 +206,49 @@
                     :class="{ hide: !(selectedTreasures.length > 0), collapsed: diagramMode === null }"
                     style="margin: 1em;margin-top: auto;"
                 >
-                    <select
-                        ref="diagramSelect"
-                        @input="updateDiagram"
-                    >
-                        <option
-                            :value="null"
-                            selected
+
+                    <div class="diagram-select-bar" style="margin-top: .5rem;">
+                        <div
+                            class="select-wrapper"
+                            style="position: relative;"
                         >
-                            <Locale path="label.diagram" />
-                        </option>
-                        <option value="material">
-                            <Locale path="property.material" />
-                        </option>
-                        <option value="epoch">
-                            <Locale path="property.epoch" />
-                        </option>
-                        <option value="fragment">
-                            <Locale path="property.fragment" />
-                        </option>
-                    </select>
+                            <span
+                                class="diagram-select-placeholder"
+                                v-if="diagramMode === null"
+                            >
+                                {{ $t('label.diagram') }}
+                            </span>
+                            <select
+                                ref="diagramSelect"
+                                :value="diagramMode"
+                                @input="updateDiagram"
+                            >
+
+                                <option value="material">
+                                    <Locale path="property.material" />
+                                </option>
+                                <option value="epoch">
+                                    <Locale path="property.epoch" />
+                                </option>
+                                <option value="fragment">
+                                    <Locale path="property.fragment" />
+                                </option>
+                            </select>
+                        </div>
+                        <Button
+                            :disabled="diagramMode === null"
+                            @click="() => diagramMode = null"
+                        >
+                            <Icon
+                                type="mdi"
+                                :path="icons.mdiClose"
+                                :size="IconSize.Tiny"
+                            ></Icon>
+                        </Button>
+                    </div>
 
                     <canvas
-                        height="500px"
+                        height="500"
                         ref="diagramCanvas"
                     >
 
@@ -246,6 +269,7 @@ import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
 import RadioButtonGroup from '../forms/RadioButtonGroup.vue';
 
 //Components
+import Button from '../layout/buttons/Button.vue';
 import LabeledInputContainer from '../LabeledInputContainer.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
@@ -280,9 +304,15 @@ import Row from '../layout/Row.vue';
 import { fixPrecision } from "../../utils/Number"
 
 
+import IconMixin from '../mixins/icon-mixin';
+import { mdiClose } from '@mdi/js';
+import { IconSize } from '../../config';
+
+
 export default {
     name: 'TreasureMap',
     components: {
+        Button,
         LabeledInputContainer,
         ListColorIndicator,
         Locale,
@@ -295,7 +325,7 @@ export default {
         Info,
         ScrollView,
         Row,
-        RadioButtonGroup,
+        RadioButtonGroup
     },
     data: function () {
         return {
@@ -372,9 +402,13 @@ export default {
         LocaleStorageMixin("treasure-map", [
             "selectedTreasureIds",
             "selectedMintIds",
-            "chartType"
+            "chartType",
+            "diagramMode",
         ]),
-        MountedAndLoadedMixin(['storage', 'data'])
+        MountedAndLoadedMixin(['storage', 'data']),
+        IconMixin({
+            mdiClose,
+        }),
     ],
     computed: {
 
@@ -467,9 +501,17 @@ export default {
             },
             options: {
                 borderWidth: 0,
+                aspectRatio: .7,
                 plugins: {
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            boxHeight: 10,
+                            useBorderRadius: 4,
+                            sort: Sort.stringPropAlphabetically("text"),
+                        },
+
                     }
                 }
             }
@@ -540,6 +582,7 @@ export default {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
             this.diagramMode = value === "" ? null : value
+            this.local_storage_mixin_save()
 
             if (value) {
                 let map = {}
@@ -640,10 +683,7 @@ export default {
                 const mapValues = Object.values(map)
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
                 this.chart.data.labels = mapValues.map(obj => obj.label)
-                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
-
-                const types = Object.keys(map).length
-                this.chart.options.plugins.legend.display = types <= 8
+                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count).sort((a, b) => b - a)
                 this.chart.update()
             }
         },
@@ -1129,12 +1169,27 @@ table {
     padding-right: 10px;
 }
 
+
+.diagram-select-bar {
+    display: flex;
+
+    .select-wrapper {
+        flex: 1;
+        display: flex;
+        position: relative;
+    }
+
+    select {
+        flex: 1;
+        margin-right: math.div($padding, 2);
+    }
+}
+
 .diagram-view {
     display: flex;
     flex-direction: column;
     gap: $padding;
-    max-height: 50vh;
-    transition: all 0.3s ease-in;
+    transition: all 0.1s ease-in;
     transform: translateY(0);
 
     &.hide {
@@ -1196,6 +1251,34 @@ tr.selected {
     background-color: white;
     padding: 2px;
     border-radius: 2px;
+}
+
+
+.diagram-select-bar {
+    display: flex;
+}
+
+.diagram-view {
+    select {
+        height: 100%;
+        flex: 1;
+    }
+}
+
+.diagram-select-placeholder {
+    overflow: clip;
+    position: absolute;
+    z-index: 100;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    right: 1.3rem;
+    bottom: 0;
+    padding: 0 .5rem;
+    display: flex;
+    align-items: center;
+    font-style: italic;
+    opacity: 0.5;
 }
 </style>
   
