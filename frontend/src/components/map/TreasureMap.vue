@@ -488,7 +488,7 @@ export default {
                 this.selectionChanged()
             },
             onSelectMint: (id) => {
-                
+
                 this.selectedTreasureIds = []
                 if (this.selectedMintIds.includes(id)) {
                     this.selectedMintIds.splice(this.selectedMintIds.indexOf(id), 1)
@@ -1172,8 +1172,15 @@ export default {
             this.selectionChanged()
         },
         setTreasure(id) {
-            this.selectedTreasureIds = [id]
+            
             this.selectedMintIds = []
+            
+            if (this.selectedTreasureIds.length === 1 && this.selectedTreasureIds[0] === id) {
+                this.selectedTreasureIds = []
+            } else {
+                this.selectedTreasureIds = [id]
+            }
+
             this.selectionChanged()
         }
     }
