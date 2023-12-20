@@ -26,5 +26,9 @@ for (let [target, source] of Object.entries(map)) {
 
 
 run(process.env).then(() => {
-    Settings.writeManagedFile().catch(console.error)
+    try {
+        Settings.writeManagedFile().catch(console.error)
+    } catch (e) {
+        console.warn("Couldn't write managed file on startup. This is normal if you are running tests.")
+    }
 }).catch(console.error)

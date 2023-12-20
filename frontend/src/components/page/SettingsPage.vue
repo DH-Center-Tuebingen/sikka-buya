@@ -86,10 +86,7 @@ export default {
             const result = await Query.raw(`{settings}`)
             try {
                 const loaded = JSON.parse(result.data.data.settings)
-
                 this.fillTemplateBranch(loaded, SettingsTemplate)
-
-
                 this.tree = loaded
             } catch (e) {
                 console.error(e)
