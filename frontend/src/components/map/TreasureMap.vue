@@ -487,6 +487,17 @@ export default {
                 this.selectedTreasureIds = [id]
                 this.selectionChanged()
             },
+            onSelectMint: (id) => {
+                
+                this.selectedTreasureIds = []
+                if (this.selectedMintIds.includes(id)) {
+                    this.selectedMintIds.splice(this.selectedMintIds.indexOf(id), 1)
+                } else {
+                    this.selectedMintIds = [id]
+                }
+
+                this.selectionChanged()
+            },
             onBringToFront: () => {
                 this.bringMintsToFront()
             }
@@ -1122,7 +1133,7 @@ export default {
         selectionChanged() {
             this.update()
             this.updateDiagram()
-            this.$local_storage_mixin_save()
+            this.local_storage_mixin_save()
         },
         updateActiveMintMap() {
 

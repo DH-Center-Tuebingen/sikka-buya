@@ -22,7 +22,14 @@ export default class TreasureOverlay extends Overlay {
             delete options.onSelectTreasure
         }
 
+        let onSelectMint = () => { }
+        if (options.onSelectMint) {
+            onSelectMint = options.onSelectMint
+            delete options.onSelectMint
+        }
+
         super(parent, settings, options)
+        this.onSelectMint = onSelectMint
         this.onSelectTreasure = onSelectTreasure
         this.mintGeometryMap = {}
         this.mlms = []
@@ -395,18 +402,12 @@ export default class TreasureOverlay extends Overlay {
                         const treasure = treasureCount.treasure
 
                         if (location) {
-
                             const color = treasure.color
-
-                            console.log(treasuresByMint)
-
                             const text = `${treasure.name}: ${treasureCount.count}`
 
                             let treasureArea = this.toFeature(location, {
                                 totalCount: treasuresByMint.totalCount,
-                                // count: treasureCount.count,
                                 extendBorder,
-                                isMint: true,
                                 text,
                                 style: {
                                     color,
@@ -451,7 +452,6 @@ export default class TreasureOverlay extends Overlay {
 
             let treasureGeometries = []
             let itemGeometries = []
-            let lineGeometries = []
 
             if (treasure.location) {
 
@@ -474,9 +474,6 @@ export default class TreasureOverlay extends Overlay {
                         extendBorder,
                     }, properties)
                 }
-
-                const from = geometry.coordinates
-                const fromRadius = properties.radius || 0
 
                 treasureGeometries.push(findLocation)
 
@@ -572,7 +569,6 @@ export default class TreasureOverlay extends Overlay {
 
                         const mintRegionMarker = new MintLocationMarker(mint)
                         let mlm = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
-                        mlm.bindPopup(Mint.popupMintHeader(mint, ["underlined-header"]))
 
 
                         let activeStyle = {}
@@ -609,7 +605,6 @@ export default class TreasureOverlay extends Overlay {
                     } else {
                         const mintRegionMarker = new MintLocationMarker(mint)
                         marker = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
-                        marker.bindPopup(Mint.popupMintHeader(mint, ["underlined-header"]))
                         overlayContext.mintGeometryMap[mint.id] = mintRegionMarker.circleMarker
                     }
 
@@ -618,18 +613,10 @@ export default class TreasureOverlay extends Overlay {
             })
 
             // TODO: REIMPLEMENT
-            // geoJSON.bindTooltip(mint.name, { sticky: true })
-            // geoJSON.on("click", () => {
-            //     if (vueContext.selectedTreasureIds.length === 0) {
-            //         if (vueContext.selectedMintIds.includes(mint.id)) {
-            //             vueContext.selectedMintIds = vueContext.selectedMintIds.filter(id => id !== mint.id)
-            //         } else {
-            //             vueContext.selectedMintIds = [mint.id]
-            //         }
-
-            //         vueContext.update()
-            //     }
-            // })
+            geoJSON.bindTooltip(mint.name, { sticky: true })
+            geoJSON.on("click", () => {
+                this.onSelectMint(mint.id)
+            })
             geoJSON.addTo(allMintGroup)
         })
 
@@ -709,17 +696,21 @@ export default class TreasureOverlay extends Overlay {
 
             marker = this.extendBorder(marker, feature, () => super.createCircle(latlng, feature, { selections, markerOptions }))
 
-            const treasureId = feature.properties.treasureId
-            if (feature.properties.onClick && treasureId != null) {
-                marker.on('click', () => this.select(treasureId))
+
+            const treasureId = feature?.properties?.treasureId || feature?.properties?.treasure?.id || null
+
+            if (treasureId) {
+                marker.on('click', () => { this.select(treasureId) })
                 marker.on('remove', () => marker.off())
             }
+
         }
 
         return marker
     }
 
     select(treasureId) {
+        console.log("SELECTED")
         this.onSelectTreasure(treasureId)
     }
 

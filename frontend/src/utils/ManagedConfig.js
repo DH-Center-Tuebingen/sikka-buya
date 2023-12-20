@@ -113,15 +113,13 @@ export default class ManagedConfig {
         const jsWalker = new ObjectWalker(target)
         const templateWalker = new ObjectWalker(this.template)
 
-        console.log(this.template, target)
-
         track.walk((part) => {
             jsWalker.next(part)
             templateWalker.next(part)
             return jsWalker.status || templateWalker.status
         })
 
-        
+
 
         return {
             jsWalker,
@@ -152,7 +150,7 @@ export default class ManagedConfig {
         let raw_value = this.get(path)
         if (raw_value == null) return null
         // TODO: Fix this in the backend that it does only have atmost one empty string
-        while(raw_value[""] !== undefined) raw_value = raw_value[""]
+        while (raw_value[""] !== undefined) raw_value = raw_value[""]
         if (raw_value == null) return null
 
         let { valid, value } = validator(raw_value)
@@ -171,7 +169,7 @@ export default class ManagedConfig {
 
     getBoolean(path) {
         return this._typeValidatorFunction(path, "boolean", (str) => {
-            if(str === true || str === false) return { valid: true, value: str }
+            if (str === true || str === false) return { valid: true, value: str }
 
             const value = (str === "true") ? true
                 : (str === "false") ? false

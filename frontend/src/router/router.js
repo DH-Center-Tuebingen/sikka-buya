@@ -142,7 +142,7 @@ const routes = [
       },
       {
         path: "hoards",
-        name: "Treasure Map",
+        name: "Hoards Map",
         component: TreasureMap
       },
       // TODO: Remove
