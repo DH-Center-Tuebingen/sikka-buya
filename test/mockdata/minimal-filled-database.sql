@@ -2,15 +2,15 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.16
--- Dumped by pg_dump version 12.16
+-- Dumped from database version 13.1
+-- Dumped by pg_dump version 13.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
---SELECT pg_catalog.set_config('search_path', '', false);
+-- SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
@@ -43,10 +43,6 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 
 COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
 
-
---
--- Name: rename_if_column_exists(text, text, text); Type: FUNCTION; Schema: public; Owner: -
---
 
 SET default_tablespace = '';
 
@@ -836,7 +832,8 @@ CREATE TABLE public.treasure (
     latest_year integer,
     location public.geometry,
     properties jsonb,
-    uncertain boolean DEFAULT false NOT NULL
+    uncertain boolean DEFAULT false NOT NULL,
+    color text
 );
 
 
@@ -1382,10 +1379,10 @@ INSERT INTO public.dynasty VALUES (2, 'ʿAbbāside');
 --
 -- Data for Name: epoch; Type: TABLE DATA; Schema: public; Owner: -
 --
-INSERT INTO public.epoch VALUES (1, 'Stone Age');
-INSERT INTO public.epoch VALUES (2, 'Bronze Age');
-INSERT INTO public.epoch VALUES (3, 'Iron Age');
 
+INSERT INTO public.epoch VALUES (1, 'Stone Age', '2023-12-20 13:13:10.759001', '2023-12-20 13:13:10.759001');
+INSERT INTO public.epoch VALUES (2, 'Bronze Age', '2023-12-20 13:13:10.759001', '2023-12-20 13:13:10.759001');
+INSERT INTO public.epoch VALUES (3, 'Iron Age', '2023-12-20 13:13:10.759001', '2023-12-20 13:13:10.759001');
 
 
 --
@@ -1593,9 +1590,8 @@ INSERT INTO public.title VALUES (2, 'šāhānšāh');
 --
 -- Data for Name: treasure; Type: TABLE DATA; Schema: public; Owner: -
 --
-
 INSERT INTO public.treasure VALUES (1, 'Südufer Kasp. Meer', '<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>', 330, 390, '0101000020E6100000A1445848D11B42403B4A9F02929C4A40', '{"radius": 217000, "isFeature": true}', false);
-INSERT INTO public.treasure VALUES (2, 'Test', NULL, NULL, NULL, NULL, NULL, false);
+INSERT INTO public.treasure VALUES (2, 'Test', null, null, null, null, null, false);
 
 
 --
