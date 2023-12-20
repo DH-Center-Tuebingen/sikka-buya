@@ -69,7 +69,7 @@
         <section class="alternate-buttons">
           <card-link
             class="subtle-card-link alternative-card-link"
-            :disabled="false"
+            :disabled="$mconfig.getBoolean('bibliography.disabled')"
             :noImage="true"
             :to="{
               name: 'Bibliography',
@@ -80,22 +80,21 @@
             </div>
 
           </card-link>
-
           <card-link
             class="subtle-card-link alternative-card-link"
-            :disabled="true"
             :noImage="true"
+            :disabled="$mconfig.getBoolean('working_papers.disabled')"
             :to="{
-              name: 'CMSList',
-              params: {
-                group: 'working_papers',
-              }
+              name: 'Working Papers'
             }"
           >
 
-            <div class="subtitled">
+            <div :class=" { subtitled: $mconfig.getBoolean('working_papers.disabled') } ">
               <locale path="cms.group.Working Papers" />
-              <span class="subtitle">Demnächst verfügbar!</span>
+              <span
+                class="subtitle"
+                v-if=" $mconfig.getBoolean('working_papers.disabled') "
+              >Demnächst verfügbar!</span>
             </div>
           </card-link>
         </section>

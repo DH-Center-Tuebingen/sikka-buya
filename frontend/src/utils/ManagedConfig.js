@@ -50,9 +50,6 @@ export default class ManagedConfig {
         return jsWalker.status
     }
 
-    determineValue(path, defaultValue) {
-
-    }
 
     /**
      * Gets multiple paths and returns the first one that is defined.
@@ -122,8 +119,9 @@ export default class ManagedConfig {
             return jsWalker.status || templateWalker.status
         })
 
+
+
         return {
-            value: jsWalker.value,
             jsWalker,
             templateWalker
         }
@@ -132,8 +130,7 @@ export default class ManagedConfig {
 
     get(path) {
 
-        const { value, jsWalker, templateWalker } = this._get(path)
-
+        const { jsWalker, templateWalker } = this._get(path)
         if (!jsWalker.status) {
             let templateAddin = ""
             if (templateWalker.status) {
@@ -150,7 +147,10 @@ export default class ManagedConfig {
     }
 
     _typeValidatorFunction(path, type, validator) {
-        const raw_value = this.get(path)
+        let raw_value = this.get(path)
+        if (raw_value == null) return null
+        // TODO: Fix this in the backend that it does only have atmost one empty string
+        while (raw_value[""] !== undefined) raw_value = raw_value[""]
         if (raw_value == null) return null
 
         let { valid, value } = validator(raw_value)
@@ -169,6 +169,8 @@ export default class ManagedConfig {
 
     getBoolean(path) {
         return this._typeValidatorFunction(path, "boolean", (str) => {
+            if (str === true || str === false) return { valid: true, value: str }
+
             const value = (str === "true") ? true
                 : (str === "false") ? false
                     : null

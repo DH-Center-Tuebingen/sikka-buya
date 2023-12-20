@@ -7,6 +7,9 @@ const { readFile, writeFile } = require('fs/promises');
 const promisify = require('node:util').promisify;
 const exec = promisify(require('child_process').exec);
 
+const SettingsTemplate = require("../frontend/settings.json")
+
+
 async function run(command, options = {}) {
     const { stdout, stderr } = await exec(command, options)
     console.log(stdout)
@@ -160,7 +163,7 @@ async function main() {
         ]
     }))
 
-    await Settings.writeManagedFile()
+    await Settings.writeManagedFile(SettingsTemplate)
 
 }
 

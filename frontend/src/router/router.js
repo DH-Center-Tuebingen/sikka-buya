@@ -102,9 +102,12 @@ import { componentTestRoutes } from "@/component-test.js"
 import { superUserIsSet } from '../utils/Setup.js'
 import store from '../store.js'
 import PropertyRoute from './routes/property_routes.js'
+import ManagedConfig from "../utils/ManagedConfig.js"
+import SettingsTemplate from '../../settings.json'
+
 
 Vue.use(VueRouter)
-
+const mconfig = new ManagedConfig("project_settings", SettingsTemplate["project_settings"])
 
 
 const routes = [
@@ -139,7 +142,7 @@ const routes = [
       },
       {
         path: "hoards",
-        name: "Treasure Map",
+        name: "Hoards Map",
         component: TreasureMap
       },
       // TODO: Remove
@@ -170,6 +173,7 @@ const routes = [
       {
         path: "/bibliography",
         component: RouterContainer,
+        disabled: mconfig.getBoolean("bibliography.disabled", false),
         children: [
           {
             path: "", name: "Bibliography", component: CMSView, props: {
@@ -234,7 +238,7 @@ const routes = [
                 title: "routes.Analytics Table",
                 identity: "catalog-link-page-table",
                 to: { name: "Analytics Table" },
-                disabled: true
+                disabled: mconfig.getBoolean("catalog.analytics_table.disabled", false)
               }
             ]
           }
@@ -285,7 +289,8 @@ const routes = [
                 title: "routes.Hoards Map",
                 to: { name: "Hoards Map" },
                 identity: "map-landing-treasure-map-link",
-                disabled: true
+                disabled: mconfig.getBoolean("map.hoards.disabled")
+
               }
               ]
             },
@@ -411,7 +416,8 @@ const routes = [
         props: {
           orderBy: "created"
         },
-        component: FileListPage
+        component: FileListPage,
+        disabled: mconfig.getBoolean("bibliography.disabled", false),
       },
       {
         path: "/404",

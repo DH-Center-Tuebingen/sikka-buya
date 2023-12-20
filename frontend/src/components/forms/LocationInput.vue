@@ -92,7 +92,6 @@ import MapView from '../map/MapView.vue';
 import Locale from '../cms/Locale.vue';
 import { isValidGeoJson } from '../../utils/Validators';
 
-var L = require('leaflet');
 export default {
   name: 'LocationInput',
   components: {
@@ -464,7 +463,7 @@ export default {
 
           let nextPoint = lineString[(idx + 1) % lineString.length];
 
-          let lineHandle = L.polyline([point, nextPoint], {
+          let lineHandle = this.$L.polyline([point, nextPoint], {
             color: '#ff0000',
             weight: 15,
             opacity: 0,
@@ -537,8 +536,6 @@ export default {
     updateMarker() {
       this.removeMarker();
 
-      console.log(this.coordinates)
-
       // Return when the coordinates are empty
       if (this.coordinates == null) return
 
@@ -554,7 +551,7 @@ export default {
           const coordinates = this.coordinates[0].length > 1 ? this.coordinates[0].slice(0, -1) : []
           if (coordinates.length < 1) return
 
-          this.marker = L.polygon(coordinates).addTo(this.map);
+          this.marker = this.$L.polygon(coordinates).addTo(this.map);
 
           this.drawPolygonInteractiveLines(this.coordinates[0]);
 
@@ -565,7 +562,7 @@ export default {
           // We ignore the last element as in GeoJSON its the same as the first
           this.handles = coordinates.map((point, i) => {
 
-            let marker = L.circleMarker(point, {
+            let marker = this.$L.circleMarker(point, {
               radius: this.polygonPointRadius,
               fillOpacity: 1,
               fillColor: this.activeMarkerIndex == i ? '#ffffff' : '#3388ff',
@@ -634,21 +631,21 @@ export default {
           const defaultMarkerShadow =
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC';
 
-          let defaultIcon = new L.Icon({
+          let defaultIcon = new this.$L.Icon({
             iconUrl: defaultMarker,
             iconAnchor: [12, 41],
             shadowUrl: defaultMarkerShadow,
           });
 
-          const marker = L.marker(this.coordinates, {
+          const marker = this.$L.marker(this.coordinates, {
             icon: defaultIcon,
           })
 
-          const circlePolygon = L.circle(this.coordinates, {
+          const circlePolygon = this.$L.circle(this.coordinates, {
             radius: this.getRadius(),
           })
 
-          this.marker = L.featureGroup([marker, circlePolygon]).addTo(this.map);
+          this.marker = this.$L.featureGroup([marker, circlePolygon]).addTo(this.map);
 
         } else {
           const defaultMarker =
@@ -657,13 +654,13 @@ export default {
           const defaultMarkerShadow =
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVR4Ae3ShY7jQBAE0Aoz/f9/HTMzhg1zrdKUrJbdx+Kd2nD8VNudfsL/Th///dyQN2TH6f3y/BGpC379rV+S+qqetBOxImNQXL8JCAr2V4iMQXHGNJxeCfZXhSRBcQMfvkOWUdtfzlLgAENmZDcmo2TVmt8OSM2eXxBp3DjHSMFutqS7SbmemzBiR+xpKCNUIRkdkkYxhAkyGoBvyQFEJEefwSmmvBfJuJ6aKqKWnAkvGZOaZXTUgFqYULWNSHUckZuR1HIIimUExutRxwzOLROIG4vKmCKQt364mIlhSyzAf1m9lHZHJZrlAOMMztRRiKimp/rpdJDc9Awry5xTZCte7FHtuS8wJgeYGrex28xNTd086Dik7vUMscQOa8y4DoGtCCSkAKlNwpgNtphjrC6MIHUkR6YWxxs6Sc5xqn222mmCRFzIt8lEdKx+ikCtg91qS2WpwVfBelJCiQJwvzixfI9cxZQWgiSJelKnwBElKYtDOb2MFbhmUigbReQBV0Cg4+qMXSxXSyGUn4UbF8l+7qdSGnTC0XLCmahIgUHLhLOhpVCtw4CzYXvLQWQbJNmxoCsOKAxSgBJno75avolkRw8iIAFcsdc02e9iyCd8tHwmeSSoKTowIgvscSGZUOA7PuCN5b2BX9mQM7S0wYhMNU74zgsPBj3HU7wguAfnxxjFQGBE6pwN+GjME9zHY7zGp8wVxMShYX9NXvEWD3HbwJf4giO4CFIQxXScH1/TM+04kkBiAAAAAElFTkSuQmCC';
 
-          let defaultIcon = new L.Icon({
+          let defaultIcon = new this.$L.Icon({
             iconUrl: defaultMarker,
             iconAnchor: [12, 41],
             shadowUrl: defaultMarkerShadow,
           });
 
-          this.marker = L.marker(this.coordinates, {
+          this.marker = this.$L.marker(this.coordinates, {
             icon: defaultIcon,
           }).addTo(this.map);
         }

@@ -51,7 +51,12 @@
       />
     </div>
 
-    <ul :class="'search-box ' + (listVisible ? 'visible' : 'hidden')">
+    <ul
+      :class="'search-box ' + (listVisible ? 'visible' : 'hidden')"
+      ref="scrollable"
+      @mousedown.stop.prevent
+      @mouseup.stop.prevent
+    >
       <li
         v-if="internal_error"
         class="error non-selectable"
@@ -194,13 +199,16 @@ export default {
   },
   methods: {
     setValue: function (event, data) {
+      this.$refs.nameField.blur();
+      this.listVisible = false;
+      
       const target = event.target;
       const value = this.value;
-      this.listVisible = false;
       value.id = target.getAttribute('data-id');
       value[this.attribute] = target.textContent;
       this.$emit('input', value);
       this.$emit('select', value, data);
+
     },
     input: async function (event, preventSimiliarityCheck = false) {
       let value = this.value;

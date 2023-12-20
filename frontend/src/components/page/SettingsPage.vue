@@ -80,18 +80,31 @@ export default {
             await Query.raw(`mutation Generate($template: String!) { generateManagedConfigs(template: $template) }`, {
                 template: JSON.stringify(SettingsTemplate)
             }, true)
-            // this.reload()
+            this.reload()
         },
         async load() {
             const result = await Query.raw(`{settings}`)
             try {
                 const loaded = JSON.parse(result.data.data.settings)
-
-                // TODO FILL ALL MISSING WITH TEMPLATE
-
+                this.fillTemplateBranch(loaded, SettingsTemplate)
                 this.tree = loaded
             } catch (e) {
                 console.error(e)
+            }
+        },
+        fillTemplateBranch(target, template) {
+            for (let key in template) {
+                if (typeof template[key] === "object") {
+                    if (target[key]) {
+                        this.fillTemplateBranch(target[key], template[key])
+                    } else {
+                        target[key] = template[key]
+                    }
+                } else {
+                    if (!target[key]) {
+                        target[key] = template[key]
+                    }
+                }
             }
         },
         activate(path, element) {

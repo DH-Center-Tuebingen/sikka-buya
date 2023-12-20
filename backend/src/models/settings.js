@@ -18,22 +18,54 @@ class Settings {
             name = pieces.shift()
         } while (!name)
 
+        const insertedNameParentMap = {}
+
+        function getInserted(name, parent) {
+            let value = null
+            if (insertedNameParentMap?.[name]?.[parent]) {
+                value = insertedNameParentMap?.[name]?.[parent]
+            }
+            return null
+        }
+
+        function addInsertedToMap(name, parent, value) {
+
+            if (!insertedNameParentMap[name]) {
+                insertedNameParentMap[name] = {}
+            }
+
+            const id = parent?.id || null
+            if (!insertedNameParentMap[name][id]) {
+                insertedNameParentMap[name][id] = {}
+            }
+
+            insertedNameParentMap[name][id] = value
+        }
+
         await WriteableDatabase.tx(async t => {
 
-            let root = await t.oneOrNone(`SELECT * from settings WHERE parent IS NULL and name=$1`, name)
+            let root = getInserted(name, null)
+            if (!root)
+                root = await t.oneOrNone(`SELECT * from settings WHERE parent IS NULL and name=$1`, name)
             if (!root) {
                 let { id } = await t.one(`INSERT INTO settings (name) VALUES ($[name])  RETURNING id`, { name })
+
                 root = {
                     id,
                     name,
                     parent: null
                 }
+                addInsertedToMap(name, null, root)
             }
 
             let parent = root
             do {
                 let name = pieces.shift()
-                let element = await t.oneOrNone("SELECT * FROM settings WHERE parent=$[id] AND name=$[name] ", { id: parent.id, name })
+
+                let element = getInserted(name, parent)
+                if (!element)
+                    element = await t.oneOrNone("SELECT * FROM settings WHERE parent=$[id] AND name=$[name] ", { id: parent.id, name })
+
                 if (!element) {
                     let { id } = await t.one(`INSERT INTO settings (name, parent) VALUES ($[name], $[parent])  RETURNING id`, { name, parent: parent.id })
                     element = {
@@ -41,6 +73,8 @@ class Settings {
                         name,
                         parent: parent.id
                     }
+
+                    addInsertedToMap(name, parent, element)
                 }
                 parent = element
             } while (pieces.length > 0)
@@ -58,7 +92,6 @@ class Settings {
         if (parent.value) return parent.value
         else {
             const results = await t.manyOrNone(`SELECT * FROM settings WHERE parent=$[parent]`, { parent: parent.id })
-
             let obj = results.length > 0 ? {} : null
             for (let result of results) {
                 obj[result.name] = await this._getListItem(t, result)
@@ -149,7 +182,7 @@ class Settings {
 
         for (const [key, value] of Object.entries(template)) {
             if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-                this.applyTemplate(value, [...localParts, key])
+                await this.applyTemplate(value, [...localParts, key])
             } else {
                 const path = [...localParts, key].join("/")
 
@@ -181,7 +214,6 @@ class Settings {
         ]
 
         for (const [name, value] of Object.entries(settings)) {
-            console.log(name, JSON.stringify(value, null, 4))
             file.push(`window.${name} = ${JSON.stringify(value, null, 4)}`)
             file.push("")
         }

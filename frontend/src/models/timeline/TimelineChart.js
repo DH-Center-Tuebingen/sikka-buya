@@ -83,7 +83,7 @@ export class TickGraph extends Graph {
     createLabel(context, chart, x, dash) {
         context.textAlign = "center"
         context.fillStyle = context.strokeStyle
-        context.fillText(parseFloat(x.toFixed(this.floatCutoff)), chart.x(x), chart.y(0) - dash - this.textOffset)
+        context.fillText(parseFloat(x.toFixed(this.floatCutoff)).toLocaleString(), chart.x(x), chart.y(0) - dash - this.textOffset)
     }
 
     draw(context, chart) {

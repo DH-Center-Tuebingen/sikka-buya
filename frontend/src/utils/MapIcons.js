@@ -1,7 +1,7 @@
-import L from 'leaflet'
+import L from '@/leaflet'
 
-function makeMarker(options){
-    if(!options. iconUrl) throw new Error("No iconUrl provided.")
+function makeMarker(options) {
+    if (!options.iconUrl) throw new Error("No iconUrl provided.")
 
 
     const width = 14
@@ -9,7 +9,7 @@ function makeMarker(options){
 
     return L.icon(Object.assign({
         iconSize: [width, height],
-        iconAnchor: [width/2, height],
+        iconAnchor: [width / 2, height],
         popupAnchor: [0, -height],
     }, options))
 }

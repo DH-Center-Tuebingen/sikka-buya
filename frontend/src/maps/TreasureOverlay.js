@@ -1,15 +1,10 @@
-import L from "leaflet"
-const Earth = L.CRS.Earth
-
+import L from "@/leaflet.js"
 import Query from '../database/query';
 import Overlay from './Overlay';
+import { MintLocationMarker } from '../models/mintlocation'
 
 import { cloneDeep } from 'lodash';
-import { del } from "vue";
-
-
-
-
+import Mint from '../models/map/mint';
 
 
 // ON REFACTOR: I think trying to push all states in a single overlay is a bad idea.
@@ -17,32 +12,28 @@ import { del } from "vue";
 
 export default class TreasureOverlay extends Overlay {
 
-    constructor(parent, settings, callbacks = {}) {
+    constructor(parent, settings, options = {}) {
 
-        function bringToFront(e) {
-            e.target.bringToFront()
-            if (callbacks.onBringToFront) callbacks.onBringToFront(e)
-        }
-
-        callbacks.onFeatureGroupAdded = function (group) {
-            group.on('mouseover', bringToFront)
-
-            console.log(group.forEach)
-        }
-
-        callbacks.onFeatureGroupRemoved = function (group) {
-            group.off('mouseover', bringToFront)
-        }
+        if (!options?.additionalData?.mints) throw new Error("Missing mints in additionalData")
 
         let onSelectTreasure = () => { }
-        if (callbacks.onSelectTreasure) {
-            onSelectTreasure = callbacks.onSelectTreasure
-            delete callbacks.onSelectTreasure
+        if (options.onSelectTreasure) {
+            onSelectTreasure = options.onSelectTreasure
+            delete options.onSelectTreasure
         }
 
-        super(parent, settings, callbacks)
+        let onSelectMint = () => { }
+        if (options.onSelectMint) {
+            onSelectMint = options.onSelectMint
+            delete options.onSelectMint
+        }
 
+        super(parent, settings, options)
+        this.onSelectMint = onSelectMint
         this.onSelectTreasure = onSelectTreasure
+        this.mintGeometryMap = {}
+        this.mlms = []
+        this._markersRemoved = false
     }
 
     async fetch({ selections = {} } = {}) {
@@ -97,9 +88,6 @@ export default class TreasureOverlay extends Overlay {
                 description
                 color
                 items {
-                    coinType {
-                        projectId
-                    }
                     count
                     epoch {
                         id
@@ -172,7 +160,6 @@ export default class TreasureOverlay extends Overlay {
             transformedData.push(clone)
         })
         data.treasures = transformedData
-
         return data
     }
 
@@ -192,6 +179,8 @@ export default class TreasureOverlay extends Overlay {
 
     toMapObject(data, selections = {}) {
         let geoJSON = []
+        let connections = []
+
         const extendBorder = 20
 
         const {
@@ -203,13 +192,170 @@ export default class TreasureOverlay extends Overlay {
             const geom = this.showClickableTreasureArea(data.treasures, { extendBorder })
             geoJSON.push(...geom)
         } else if (selectedMintIds.length > 0) {
-            geoJSON = this.createMintSelectionMapObjects(data.treasuresByMint, selectedMintIds, { extendBorder })
+            ; ({ geoJSON, connections } = this.createMintSelectionMapObjects(data.treasuresByMint, selectedMintIds, { extendBorder }))
         } else if (selectedTreasureIds.length > 0) {
-            geoJSON = this.createTreasureMapObjects(data.treasures, selectedTreasureIds, { extendBorder })
+            ; ({ geoJSON, connections } = this.createTreasureMapObjects(data.treasures, selectedTreasureIds, { extendBorder }))
         }
 
         return {
-            geoJSON
+            geoJSON,
+            connections
+        }
+    }
+
+    createGeometry({ geoJSON = null, connections = null } = {}, { selections, markerOptions } = {}) {
+
+
+        const mintLocationFeatureGroup = this.updateMintLocationMarker({ selections })
+        mintLocationFeatureGroup.addTo(this.layer)
+        mintLocationFeatureGroup.bringToBack()
+
+        const treasureMap = {}
+        const mintMap = {}
+
+        // For some obscure reason we cannot manage the connectors in a feature group
+        // with the treasure geometries, as it then (and only then) throws an error
+        // possibly cause a square marker is not properly projected in the time the
+        // connector is added to that feature group.
+        //
+        // So we just reorder the whole group after adding the connectors.
+        let geometryGroups = {
+
+        }
+
+        let order = 0
+
+        const {
+            treasures: selectedTreasureIds = [],
+            mints: selectedMintIds = []
+        } = selections
+
+        if (geoJSON) {
+            const that = this
+            geoJSON.forEach(feature => {
+
+                let treasureId = null
+
+                let geometry = new L.geoJSON(feature, Object.assign({}, {
+                    pointToLayer: function (feature, latlng) {
+
+                        let geometry
+                        const radius = parseInt(feature?.properties?.radius)
+                        if (!isNaN(radius)) {
+                            geometry = that.createCircle.call(that, latlng, feature, { selections, markerOptions })
+                        } else {
+                            geometry = that.createMarker.call(that, latlng, feature, { selections, markerOptions })
+                        }
+
+                        if (feature?.properties?.treasure) {
+                            let id = feature.properties.treasure.id ? feature.properties.treasure.id : feature.properties.treasure
+                            treasureMap[id] = geometry
+                            treasureId = id
+                        } else if (feature?.properties?.mintId) {
+
+                            const hoard = feature.properties.hoardId
+
+                            if (!mintMap[hoard]) mintMap[hoard] = {}
+
+                            mintMap[hoard][feature.properties.mintId] = geometry
+                        }
+
+                        return geometry
+                    },
+                    coordsToLatLng: function (coords) {
+                        return new L.LatLng(coords[0], coords[1], coords[2]);
+                    },
+                }, this.geoJSONOptions));
+
+
+                if (treasureId) {
+                    geometryGroups[treasureId] = { order: order++, geometries: [geometry] }
+                }
+
+                this._addFeatureGroup(geometry)
+            })
+        }
+
+        if (connections) {
+
+            const extendBorder = 10
+
+            connections.forEach(connection => {
+
+                if (selectedTreasureIds.length > 0) {
+                    let treasure = treasureMap[connection.treasure]
+                    if (treasure.original) treasure = treasure.original
+
+                    if (treasure) {
+                        let mint = mintMap[connection.treasure][connection.mint]
+                        if (mint.original) mint = mint.original
+
+                        if (mint) {
+
+                            let line = L.connector([treasure, mint], {
+                                color: treasure.options.color,
+                                weight: 2,
+                            })
+
+                            line = this.extendBorder(
+                                line,
+                                { properties: { extendBorder } },
+                                () => L.connector([treasure, mint])
+                            )
+
+                            geometryGroups[connection.treasure].geometries.push(line)
+                            line.addTo(this.layer)
+
+
+                            line.bindTooltip(connection.text, { sticky: true })
+                        }
+                    }
+                } else if (selectedMintIds.length > 0) {
+                    let treasure = treasureMap[connection.treasure]
+                    if (treasure.original) treasure = treasure.original
+
+                    let mint = this.mintGeometryMap[connection.mint]
+                    if (mint.original) mint = mint.original
+
+                    if (treasure && mint) {
+                        let line = L.connector([treasure, mint], {
+                            color: treasure.options.color,
+                            weight: 2,
+                        })
+
+                        line = this.extendBorder(
+                            line,
+                            { properties: { extendBorder } },
+                            () => L.connector([treasure, mint])
+                        )
+
+                        line.addTo(this.layer)
+                        line.bindTooltip(connection.text, { sticky: true })
+
+                    }
+                }
+            })
+        }
+
+
+        const _bringToFront = (geometry) => {
+            geometry.bringToFront()
+            geometry.addTo(targetLayer)
+        }
+
+        const targetLayer = this.layer
+        for (let group of Object.values(geometryGroups)) {
+            group.geometries.forEach(geometry => {
+
+                geometry.off("mouseover", _bringToFront)
+                geometry.on("mouseover", () => {
+                    group.geometries.forEach(geometry => {
+                        _bringToFront(geometry)
+                    })
+                })
+                geometry.bringToFront()
+                geometry.addTo(targetLayer)
+            })
         }
     }
 
@@ -239,6 +385,7 @@ export default class TreasureOverlay extends Overlay {
 
     createMintSelectionMapObjects(data, selectedMintIds, { extendBorder = 20 } = {}) {
         let geoJSON = []
+        let connections = []
         data.forEach(treasuresByMint => {
             if (treasuresByMint?.mint?.location) {
                 let mintLocation = treasuresByMint.mint.location
@@ -255,15 +402,12 @@ export default class TreasureOverlay extends Overlay {
                         const treasure = treasureCount.treasure
 
                         if (location) {
-
                             const color = treasure.color
-
-                            const text = `${treasure.name}: ${treasureCount.count} / ${treasuresByMint.totalCount} (${(100 * treasureCount.count / treasuresByMint.totalCount).toFixed(2)}%)`
+                            const text = `${treasure.name}: ${treasureCount.count}`
 
                             let treasureArea = this.toFeature(location, {
                                 totalCount: treasuresByMint.totalCount,
-                                // count: treasureCount.count,
-                                isMint: true,
+                                extendBorder,
                                 text,
                                 style: {
                                     color,
@@ -273,24 +417,12 @@ export default class TreasureOverlay extends Overlay {
                                 treasure: treasure
                             })
 
-                            const line = {
-                                type: "Feature",
-                                geometry: {
-                                    type: "LineString",
-                                    coordinates: [
-                                        mintLocation.geometry.coordinates,
-                                        location.geometry.coordinates
-                                    ]
-                                },
-                                properties: {
-                                    style: {
-                                        color,
-                                        weight: 1,
-                                    }
-                                }
-                            }
+                            connections.push({
+                                treasure: treasure.id,
+                                mint: treasuresByMint.mint.id,
+                                text
+                            })
 
-                            geoJSON.push(line)
                             geoJSON.push(treasureArea)
                         } else {
                             console.warn("No location for treasure", treasureCount.treasure)
@@ -299,12 +431,15 @@ export default class TreasureOverlay extends Overlay {
                 }
             }
         })
-        return geoJSON
+
+        return { geoJSON, connections }
     }
 
 
     createTreasureMapObjects(treasures, selectedTreasureIds, { extendBorder = 20 } = {}) {
-        let geoJSON = []
+        const geoJSON = []
+        const connections = []
+
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color
@@ -317,7 +452,6 @@ export default class TreasureOverlay extends Overlay {
 
             let treasureGeometries = []
             let itemGeometries = []
-            let lineGeometries = []
 
             if (treasure.location) {
 
@@ -341,9 +475,6 @@ export default class TreasureOverlay extends Overlay {
                     }, properties)
                 }
 
-                const from = geometry.coordinates
-                const fromRadius = properties.radius || 0
-
                 treasureGeometries.push(findLocation)
 
                 if (treasure.items) {
@@ -359,6 +490,15 @@ export default class TreasureOverlay extends Overlay {
 
                             const mintRegion = item.mintRegion
                             if (mintRegion.location) {
+
+                                const text = `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
+
+                                connections.push({
+                                    treasure: treasure.id,
+                                    mint: mintRegion.id,
+                                    text
+                                })
+
                                 let geometry
                                 let location = mintRegion.location
                                 const properties =
@@ -366,10 +506,12 @@ export default class TreasureOverlay extends Overlay {
                                     style: mintStyle,
                                     totalCount: treasure.totalCount,
                                     count: item.count,
+                                    hoardId: treasure.id,
                                     hoard: treasure.name,
+                                    mintId: mintRegion.id,
                                     mint: mintRegion.name,
                                     extendBorder,
-                                    text: `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
+                                    text,
                                 }
 
                                 if (location.type.toLowerCase() != "feature") {
@@ -388,16 +530,6 @@ export default class TreasureOverlay extends Overlay {
 
                                 itemGeometries.push(location)
 
-                                /**
-                                 * TODO: This is not quite correct, but the points recide on the circumference near the actual intersection
-                                 * so it should be good for the time beeing.
-                                 */
-                                const intersectionLineFeature = this.getIntersectionLine(from, to, fromRadius, 0)
-                                style.weight = 1
-                                intersectionLineFeature.properties = Object.assign({}, properties, { style })
-                                lineGeometries.push(intersectionLineFeature)
-                                // lineGeometries.push(this.getIntersectionLine(from, to, 0, toRadius))
-
                             }
                         }
                     })
@@ -405,61 +537,107 @@ export default class TreasureOverlay extends Overlay {
             }
 
             geoJSON.push([
-                // Shadow layers
-                // ...lineGeometriesShadows,
-                // ...treasureGeometriesShadows,
-                // ...mintGeometriesShadows,
-                // Normal layers
-                ...lineGeometries,
                 ...treasureGeometries,
                 ...itemGeometries,
             ])
         }
 
-        return geoJSON
+        return { geoJSON, connections }
+    }
+
+    updateMintLocationMarker({ selections = [] } = {}) {
+        this.mintGeometryMap = {}
+        const mintSelection = selections.mints || []
+
+        this.mlms.forEach(mlm => {
+            delete mlm.parent
+        })
+        this.mlms = []
+        let allMintGroup = L.featureGroup()
+
+        const overlayContext = this
+        this.additionalData.mints.forEach(mint => {
+            const geoJSON = new L.geoJSON(mint.location, {
+                pointToLayer(point) {
+                    let position = point.geometry ? point.geometry : point
+                    const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
+
+                    let marker
+                    const active = mintSelection.includes(mint.id)
+                    if (point?.properties?.radius) {
+                        const group = L.featureGroup()
+
+                        const mintRegionMarker = new MintLocationMarker(mint)
+                        let mlm = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
+
+
+                        let activeStyle = {}
+                        if (active) {
+                            activeStyle = {
+                                color: "white",
+                                fillColor: "#000"
+                            }
+                        }
+
+                        const circle = L.circle(latlng, point.properties.radius, Object.assign({
+                            weight: 1,
+                            fillOpacity: 0.75,
+
+                        }, MintLocationMarker.normalStyle, activeStyle))
+
+
+
+                        circle.addTo(group)
+                        mlm.addTo(group)
+
+                        overlayContext.mintGeometryMap[mint.id] = circle
+
+
+                        mlm.parent = group
+                        overlayContext.mlms.push(mlm)
+
+
+                        group.addLayer(mlm)
+                        group.getElement = () => {
+                            return mlm.getElement()
+                        }
+                        marker = group
+                    } else {
+                        const mintRegionMarker = new MintLocationMarker(mint)
+                        marker = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
+                        overlayContext.mintGeometryMap[mint.id] = mintRegionMarker.circleMarker
+                    }
+
+                    return marker
+                }
+            })
+
+            // TODO: REIMPLEMENT
+            geoJSON.bindTooltip(mint.name, { sticky: true })
+            geoJSON.on("click", () => {
+                this.onSelectMint(mint.id)
+            })
+            geoJSON.addTo(allMintGroup)
+        })
+
+        return allMintGroup
     }
 
 
+    hideMarkersOnSpecifiedZoomLevel(zoom, removeDistance) {
+        let remove = zoom > removeDistance
 
-    /**
-     * This is the 'inverse' function for 
-     * the L.CRS.Earth distance function.
-     * 
-     */
-    getLatLngFromDistanceAndDirection(latlng1, distance, direction) {
-        const R = 6371e3; // Earth's radius in meters
-        const rad = Math.PI / 180;
-        const lat1 = latlng1.lat * rad;
-        const lng1 = latlng1.lng * rad;
-        const bearing = Math.atan2(direction[1], direction[0]);
-
-        const lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / R) +
-            Math.cos(lat1) * Math.sin(distance / R) * Math.cos(bearing));
-        const lng2 = lng1 + Math.atan2(Math.sin(bearing) * Math.sin(distance / R) * Math.cos(lat1),
-            Math.cos(distance / R) - Math.sin(lat1) * Math.sin(lat2));
-
-        const point = { lat: lat2 / rad, lng: lng2 / rad };
-
-        return [point.lat, point.lng];
-    }
-
-    getIntersectionLine(from, to, fromRadius, toRadius) {
-        const connectionVector = [to[0] - from[0], to[1] - from[1]]
-        const connectionVectorLength = Math.sqrt(connectionVector[0] ** 2 + connectionVector[1] ** 2)
-        const connectionVectorNormalized = [connectionVector[0] / connectionVectorLength, connectionVector[1] / connectionVectorLength]
-        const start = this.getLatLngFromDistanceAndDirection({ lat: from[0], lng: from[1] }, fromRadius, connectionVectorNormalized)
-        const end = this.getLatLngFromDistanceAndDirection({ lat: to[0], lng: to[1] }, toRadius, connectionVectorNormalized.map(x => -x))
-
-        return {
-            type: "Feature",
-            geometry: {
-                type: "LineString",
-                coordinates: [
-                    start,
-                    end
-                ]
-            }
+        if (remove != this._markersRemoved) {
+            this._markersRemoved = remove
+            this.mlms.forEach(mlm => {
+                if (remove) {
+                    mlm.parent.removeLayer(mlm)
+                } else {
+                    mlm.parent.addLayer(mlm)
+                }
+            })
         }
+
     }
 
 
@@ -474,20 +652,14 @@ export default class TreasureOverlay extends Overlay {
         let size = minSize
         const stepSizeGroupsInPercent = this.settings.stepSizeGroupsInPercent.slice()
 
-        let targetSizeGroup = stepSizeGroupsInPercent.shift()
         while (stepSizeGroupsInPercent.length > 0 && percent > stepSizeGroupsInPercent[0]) {
-            targetSizeGroup = stepSizeGroupsInPercent.shift()
+            stepSizeGroupsInPercent.shift()
             size += stepsize
         }
 
 
         if (count != null && totalCount != null) {
-            marker = L.shapeMarker(latlng, { shape: "square", radius: size, fill: false })
-
-            //     marker.bindTooltip(`
-            // ${feature.properties.mint} (${feature.properties.hoard})<br>
-            // ${feature.properties.count} / ${feature.properties.totalCount} (${percent.toFixed(2)}%)
-            // ` , { sticky: true })
+            marker = new L.ShapeMarker(latlng, { shape: "square", radius: size, fill: false })
         }
 
         return marker
@@ -496,11 +668,14 @@ export default class TreasureOverlay extends Overlay {
 
     extendBorder(marker, feature, func) {
         if (feature.properties.extendBorder) {
-            marker.setStyle(feature.properties.style)
-            marker = L.featureGroup([marker])
+            let original = marker
+            original.setStyle(feature.properties.style)
+            marker = L.featureGroup()
+            marker.original = original
+            marker.addLayer(original)
             const border = func()
-            feature.properties.style = {}
-            border.setStyle({ color: "red", opacity: 0, weight: feature.properties.extendBorder })
+            feature.properties.style = { fill: false }
+            border.setStyle({ fill: false, opacity: 0, weight: feature.properties.extendBorder })
             border.addTo(marker)
             border.bringToFront()
         }
@@ -518,19 +693,24 @@ export default class TreasureOverlay extends Overlay {
 
             if (!markerOptions) markerOptions = {}
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
-            marker = this.extendBorder(marker, feature, super.createCircle.bind(this, latlng, feature, { selections, markerOptions }))
 
-            const treasureId = feature.properties.treasureId
-            if (feature.properties.onClick && treasureId != null) {
-                marker.on('click', () => this.select(treasureId))
+            marker = this.extendBorder(marker, feature, () => super.createCircle(latlng, feature, { selections, markerOptions }))
+
+
+            const treasureId = feature?.properties?.treasureId || feature?.properties?.treasure?.id || null
+
+            if (treasureId) {
+                marker.on('click', () => { this.select(treasureId) })
                 marker.on('remove', () => marker.off())
             }
+
         }
 
         return marker
     }
 
     select(treasureId) {
+        console.log("SELECTED")
         this.onSelectTreasure(treasureId)
     }
 
@@ -548,15 +728,20 @@ export default class TreasureOverlay extends Overlay {
     }
 
     repaint() {
-        if (this.layer) {
-            this.layer.off('mouseover', this.bringTreasureToFront)
+        if (this.graphicsLayer) {
+            this.graphicsLayer.off('mouseover', this.bringTreasureToFront)
         }
+        // We need to do this beforehand to fill the mintGeometryMap ...
+        this.mintFeatureGroup = this.updateMintLocationMarker(...arguments)
 
+        // ... the repaint recreates the layer object, so we need to readd the mintFeatureGroup ...
         super.repaint(...arguments)
 
-        if (this.layer) {
-            this.layer.on('mouseover', this.bringTreasureToFront)
+
+        if (this.graphicsLayer) {
+            this.graphicsLayer.on('mouseover', this.bringTreasureToFront)
         }
+
     }
 
     get geoJSONOptions() {

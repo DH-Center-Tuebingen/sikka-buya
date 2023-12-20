@@ -12,7 +12,7 @@
 
             <MultiSelectList>
                 <MultiSelectListItem
-                    v-for="mint of mints"
+                    v-for="mint of getFilteredMints()"
                     :key="`mint-list-item-${mint.id}`"
                     :class="{
                         'selected': selectedMintIds.includes(mint.id)
@@ -21,35 +21,36 @@
                     @checkbox-selected="() => addMintSelection([mint.id])"
                     @click.native="selectMint(mint.id)"
                 >
-                    {{ mint.name }}
+                    <span
+                        v-if="activeMintMap[mint.id]"
+                        style="overflow: clip;"
+                    >
+                        {{ mint.name }}
+                    </span>
+                    <span v-else>
+                        {{ mint.name }}
+                    </span>
+
+                    <div
+                        v-if="activeMintMap[mint.id]"
+                        style="margin-left: auto; margin-right: .5rem; display: flex;"
+                    >
+                        <span
+                            v-for="treasure of selectedTreasures"
+                            :key="`mint-list-num-${mint.id}-${treasure.id}`"
+                            class="mint-count-text-wrapper"
+                            :style="`color: ${treasure.color}; `"
+                        >
+                            <span
+                                v-if="activeMintMap?.[mint.id]?.treasures?.[treasure.id]"
+                                class="mint-count-text"
+                            >
+                                {{ activeMintMap[mint.id].treasures[treasure.id].count }}
+                            </span>
+                        </span>
+                    </div>
                 </MultiSelectListItem>
             </MultiSelectList>
-
-
-
-            <!-- <table>
-                <tbody>
-                    <tr
-                        v-for="mint of mints"
-                        :key="`mint-list-item-${mint.id}`"
-                        :class="{
-                            'selected': selectedMintIds.includes(mint.id)
-                        }"
-                        @click="selectMints([mint.id])"
-                    >
-                        <td>
-                            {{ mint.name }}
-                        </td>
-                        <td
-                            v-for="treasure of selectedTreasures"
-                            :key="`mint-count-${treasure.id}`"
-                            :style="`color: ${treasure.color}`"
-                        >
-                            {{ getMintCount(mint, treasure) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table> -->
         </Sidebar>
 
         <div class="center-ui center-ui-top">
@@ -96,9 +97,17 @@
                     <Row>
                         <div>
                             <span>
-                                <Locale path="label.timeline.uncertain_years" />:
+                                <Locale
+                                    v-if="chartType == 'time'"
+                                    path="label.timeline.uncertain_years"
+                                />
+                                <Locale
+                                    v-else
+                                    path="label.timeline.unknown_weight"
+                                />
+                                :
                             </span>
-                            <template v-if="yearCountData.undefined != undefined">
+                            <template v-if="chartType === 'time' && yearCountData.undefined != undefined">
                                 <span style="margin-left: 1em;">
                                     {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) || 0 }}
                                 </span>
@@ -121,21 +130,12 @@
                                     )
                                 </template>
                             </template>
+                            <span v-else-if="chartType === 'weight'">
+                                {{ unknownWeights }}
+                            </span>
                             <span v-else>0</span>
                         </div>
 
-                        <div class="button-group">
-                            <radio-button-group
-                                v-if="chartType === 'weight'"
-                                id="weight-frequency"
-                                :labels="['0.01', '0.1', '1']"
-                                :options="['0.01', '0.1', '1']"
-                                :value="weightDataFrequency.toString()"
-                                @input="updateWeightFrequency"
-                            >
-
-                            </radio-button-group>
-                        </div>
                         <div
                             class="button-group"
                             style="justify-content: flex-end; display: flex;"
@@ -206,29 +206,52 @@
                     :class="{ hide: !(selectedTreasures.length > 0), collapsed: diagramMode === null }"
                     style="margin: 1em;margin-top: auto;"
                 >
-                    <select
-                        ref="diagramSelect"
-                        @input="updateDiagram"
+
+                    <div
+                        class="diagram-select-bar"
+                        style="margin-top: .5rem;"
                     >
-                        <option
-                            :value="null"
-                            selected
+                        <div
+                            class="select-wrapper"
+                            style="position: relative;"
                         >
-                            <Locale path="label.diagram" />
-                        </option>
-                        <option value="material">
-                            <Locale path="property.material" />
-                        </option>
-                        <option value="epoch">
-                            <Locale path="property.epoch" />
-                        </option>
-                        <option value="fragment">
-                            <Locale path="property.fragment" />
-                        </option>
-                    </select>
+                            <span
+                                class="diagram-select-placeholder"
+                                v-if="diagramMode === null"
+                            >
+                                {{ $t('label.diagram') }}
+                            </span>
+                            <select
+                                ref="diagramSelect"
+                                :value="diagramMode"
+                                @input="updateDiagram"
+                            >
+
+                                <option value="material">
+                                    <Locale path="property.material" />
+                                </option>
+                                <option value="epoch">
+                                    <Locale path="property.epoch" />
+                                </option>
+                                <option value="fragment">
+                                    <Locale path="property.fragment" />
+                                </option>
+                            </select>
+                        </div>
+                        <Button
+                            :disabled="diagramMode === null"
+                            @click="() => diagramMode = null"
+                        >
+                            <Icon
+                                type="mdi"
+                                :path="icons.mdiClose"
+                                :size="IconSize.Tiny"
+                            ></Icon>
+                        </Button>
+                    </div>
 
                     <canvas
-                        height="500px"
+                        height="500"
                         ref="diagramCanvas"
                     >
 
@@ -249,6 +272,7 @@ import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
 import RadioButtonGroup from '../forms/RadioButtonGroup.vue';
 
 //Components
+import Button from '../layout/buttons/Button.vue';
 import LabeledInputContainer from '../LabeledInputContainer.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
@@ -274,9 +298,7 @@ import Sort from '../../utils/Sorter';
 import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph, LineGraph } from '../../models/timeline/TimelineChart';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
-import { MintLocationMarker } from "../../models/mintlocation"
 
-import L from 'leaflet'
 import { cloneDeep } from 'lodash'
 import Info from '../forms/Info.vue';
 import Range from '../../models/timeline/range';
@@ -285,9 +307,15 @@ import Row from '../layout/Row.vue';
 import { fixPrecision } from "../../utils/Number"
 
 
+import IconMixin from '../mixins/icon-mixin';
+import { mdiClose } from '@mdi/js';
+import { IconSize } from '../../config';
+
+
 export default {
     name: 'TreasureMap',
     components: {
+        Button,
         LabeledInputContainer,
         ListColorIndicator,
         Locale,
@@ -300,13 +328,13 @@ export default {
         Info,
         ScrollView,
         Row,
-        RadioButtonGroup,
+        RadioButtonGroup
     },
     data: function () {
         return {
             chart: null,
             diagramMode: null,
-            chartType: null,
+            chartType: "time",
             filters: {},
             painter: null,
             selectedTreasureIds: [],
@@ -315,10 +343,12 @@ export default {
             treasures: [],
             yearCountData: {},
             mintRegions: [],
+            activeMintMap: {},
             mintLocationMarkerGroup: null,
             cachedWeightDataMap: {},
             weightDataFrequency: 0.1,
             graphOffset: 5,
+            unknownWeights: 0,
             tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
         };
     },
@@ -330,10 +360,9 @@ export default {
                 if (this.chartType === "weight") {
                     const data = this.cachedWeightDataMap[value]
 
+
+                    let tooltipText = `<b>${value.toLocaleString()}-${value.toLocaleString()}<span style="text-decoration: overline;">9</span></b>`
                     if (Array.isArray(data)) {
-
-                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>:`
-
                         const treasures = []
 
                         data.forEach((count, index) => {
@@ -343,9 +372,9 @@ export default {
                             }
                         })
 
-                        tooltip.innerHTML += ` ${treasures.join(", ")}`
+                        tooltip.innerHTML = `${tooltipText}: ${treasures.join(", ")}`
                     } else {
-                        tooltip.innerHTML = `<b>[${value},${fixPrecision(value + this.weightDataFrequency)})</b>: ${this.cachedWeightDataMap[value] || 0}`
+                        tooltip.innerHTML = `${tooltipText}: ${data || 0}`
                     }
                 }
                 else {
@@ -376,11 +405,17 @@ export default {
         LocaleStorageMixin("treasure-map", [
             "selectedTreasureIds",
             "selectedMintIds",
-            "chartType"
+            "chartType",
+            "diagramMode",
         ]),
-        MountedAndLoadedMixin(['storage', 'data'])
+        MountedAndLoadedMixin(['storage', 'data']),
+        IconMixin({
+            mdiClose,
+        }),
     ],
     computed: {
+
+
         hasUncertainYears() {
             // if(!this.yearCountData["undefined"]) return false
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
@@ -405,22 +440,7 @@ export default {
         settings.boxMinSize = this.$mconfig.getInteger("map.hoards.box_min_size", 5)
         settings.stepSizeGroupsInPercent = this.$mconfig.getArray("map.hoards.step_size_groups_in_percent")
 
-        this.overlay = new TreasureOverlay(this.featureGroup, settings, {
-            onDataTransformed: (data) => {
-                this.treasures = data.treasures
-            },
-            onEnd: () => {
-                this.mounted_and_loaded_mixin_loaded("data")
-            },
-            onSelectTreasure: (id) => {
-                this.selectedMintIds = []
-                this.selectedTreasureIds = [id]
-                this.selectionChanged()
-            },
-            onBringToFront: () => {
-                this.bringMintsToFront()
-            }
-        })
+
 
 
         // settings.onSettingsChanged((changedSettings) => {
@@ -452,6 +472,37 @@ export default {
         const result = await Query.raw(`{mintRegion { id name location }}`)
         this.mintRegions = result.data.data.mintRegion
 
+        this.overlay = new TreasureOverlay(this.featureGroup, settings, {
+            additionalData: {
+                mints: this.mintRegions
+            },
+            onDataTransformed: (data) => {
+                this.treasures = data.treasures
+            },
+            onEnd: () => {
+                this.mounted_and_loaded_mixin_loaded("data")
+            },
+            onSelectTreasure: (id) => {
+                this.selectedMintIds = []
+                this.selectedTreasureIds = [id]
+                this.selectionChanged()
+            },
+            onSelectMint: (id) => {
+
+                this.selectedTreasureIds = []
+                if (this.selectedMintIds.includes(id)) {
+                    this.selectedMintIds.splice(this.selectedMintIds.indexOf(id), 1)
+                } else {
+                    this.selectedMintIds = [id]
+                }
+
+                this.selectionChanged()
+            },
+            onBringToFront: () => {
+                this.bringMintsToFront()
+            }
+        })
+
 
         const diagramCanvas = this.$refs.diagramCanvas
         const diagramContext = diagramCanvas.getContext('2d')
@@ -464,21 +515,35 @@ export default {
             },
             options: {
                 borderWidth: 0,
+                aspectRatio: .7,
                 plugins: {
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            boxHeight: 10,
+                            useBorderRadius: 4,
+                            sort: Sort.stringPropAlphabetically("text"),
+                        },
+
                     }
                 }
             }
         })
 
-        this.mintLocationMarkerGroup = this.L.featureGroup()
-        this.mintLocationMarkerGroup.addTo(this.map)
+        // this.mintLocationMarkerGroup = this.$L.featureGroup()
+        // this.mintLocationMarkerGroup.addTo(this.map)
 
         await this.initTimeline();
         this.updateTimeline(true);
         window.addEventListener('resize', this.resizeCanvas);
         this.update()
+
+        const hideMarkersThreshold = this.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)
+        this.map.on("zoomend", () => {
+            const zoom = this.map.getZoom()
+            this.overlay.hideMarkersOnSpecifiedZoomLevel(zoom, hideMarkersThreshold)
+        })
 
         //this is a hack to make sure the diagram is updated after the map is loaded
         setTimeout(() => {
@@ -489,6 +554,42 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
+        getFilteredMints() {
+            const mints = this.mints.filter(mint => mint.name !== "xxx")
+            let activeMints = []
+            let interactiveMints = []
+            mints.forEach(mint => {
+                if (this.activeMintMap[mint.id]) {
+                    activeMints.push(mint)
+                } else {
+                    interactiveMints.push(mint)
+                }
+            })
+
+            activeMints = activeMints.sort(Sort.stringPropAlphabetically("name"))
+            interactiveMints = interactiveMints.sort(Sort.stringPropAlphabetically("name"))
+
+            return [...activeMints, ...interactiveMints]
+        },
+        getActiveMints() {
+            return Object.values(this.activeMintMap).sort(Sort.stringPropAlphabetically("name"))
+        },
+        getActiveMintsHTML(mint) {
+            let html = ""
+            if (mint.count > 0) {
+                html += `(${mint.count})`
+            }
+
+            if (Object.keys(mint.treasures).length > 0) {
+                html += ` <span style="font-size: 0.8em;">`
+                html += Object.values(mint.treasures).sort(Sort.stringPropAlphabetically("treasure.name")).map(obj => {
+                    return `<span style="color: ${obj.treasure.color}">${obj.count}</span>`
+                }).join(", ")
+                html += `</span>`
+            }
+
+            return html
+        },
         mounted_and_loaded_mixin_mountedAndLoaded() {
             this.removeInvalidIds()
         },
@@ -496,88 +597,12 @@ export default {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
         },
 
-        updateMintLocationMarker() {
-            this.mintLocationMarkerGroup.clearLayers()
 
-            const vueContext = this
-            this.mintRegions.forEach(region => {
-                const geoJSON = new this.L.geoJSON(region.location, {
-                    pointToLayer(point) {
-                        let position = point.geometry ? point.geometry : point
-                        const latlng = { lat: position.coordinates[0], lng: position.coordinates[1] }
-
-                        let marker
-                        const active = vueContext.selectedMintIds.includes(region.id)
-                        if (point?.properties?.radius) {
-                            // const mlmStyle = active ? MintLocationMarker.activeStyle : MintLocationMarker.normalStyle
-
-                            const group = vueContext.L.featureGroup()
-
-                            const mintRegionMarker = new MintLocationMarker(region)
-                            let mlm = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
-
-
-                            let activeStyle = {}
-                            if (active) {
-                                activeStyle = {
-                                    color: "white",
-                                    fillColor: "#000"
-                                }
-                            }
-
-                            const circle = L.circle(latlng, point.properties.radius, Object.assign({
-                                weight: 1,
-                                fillOpacity: 0.75,
-
-                            }, MintLocationMarker.normalStyle, activeStyle))
-                            
-                            circle.addTo(group)
-                            mlm.addTo(group)
-
-
-                            /**
-                             * Hides the markers at a specific zoom level
-                             */
-                            vueContext.map.on("zoomend", () => {
-                                const zoom = vueContext.map.getZoom()
-                                if (zoom > vueContext.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)) {
-                                    group.removeLayer(mlm)
-                                } else {
-                                    group.addLayer(mlm)
-                                }
-                            })
-
-                            group.addLayer(mlm)
-                            group.getElement = () => {
-                                return mlm.getElement()
-                            }
-                            marker = group
-                        } else {
-                            const mintRegionMarker = new MintLocationMarker(region)
-                            marker = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
-                        }
-                        return marker
-                    }
-                })
-                geoJSON.bindTooltip(region.name, { sticky: true })
-                geoJSON.on("click", () => {
-                    if (vueContext.selectedTreasureIds.length === 0) {
-                        if (vueContext.selectedMintIds.includes(region.id)) {
-                            vueContext.selectedMintIds = vueContext.selectedMintIds.filter(id => id !== region.id)
-                        } else {
-                            vueContext.selectedMintIds = [region.id]
-                        }
-
-                        vueContext.update()
-                    }
-                })
-                geoJSON.addTo(this.mintLocationMarkerGroup)
-            })
-        },
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
             this.diagramMode = value === "" ? null : value
+            this.local_storage_mixin_save()
 
             if (value) {
                 let map = {}
@@ -678,16 +703,22 @@ export default {
                 const mapValues = Object.values(map)
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
                 this.chart.data.labels = mapValues.map(obj => obj.label)
-                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
-
-                const types = Object.keys(map).length
-                this.chart.options.plugins.legend.display = types <= 8
+                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count).sort((a, b) => b - a)
                 this.chart.update()
             }
         },
 
         resizeCanvas() {
             this.timelineChart.updateSize()
+        },
+        isActiveMint(mint) {
+            return this.selectedTreasures.some(treasure => {
+                return treasure.items.some(item => {
+                    return item.items.some(treasureItem => {
+                        return treasureItem.mintRegion.id === mint.id
+                    })
+                })
+            })
         },
         getMintCount(mint, treasure) {
             let count = 0;
@@ -713,7 +744,7 @@ export default {
             this.filters = {}
         },
         async update() {
-            this.updateMintLocationMarker()
+            // this.updateMintLocationMarker()
             await this.overlay.update({
                 selections: {
                     treasures: this.selectedTreasureIds,
@@ -721,6 +752,8 @@ export default {
                 }
             })
 
+
+            this.updateActiveMintMap()
             this.updateYearCount()
             this.updateTimelineGraph()
             this.bringMintsToFront()
@@ -732,10 +765,6 @@ export default {
         },
         updateTimeline() {
             console.warn("NOTHING TO DO", arguments)
-        },
-        updateWeightFrequency(value) {
-            this.weightDataFrequency = parseFloat(parseFloat(value).toPrecision(10))
-            this.updateTimelineGraph()
         },
         updateTimelineGraph() {
 
@@ -917,12 +946,15 @@ export default {
             }
         },
         getWeightData() {
-            return this.selectedTreasures.map(treasure => {
+            let unknownWeights = 0
+            let weightData = this.selectedTreasures.map(treasure => {
                 let data = []
                 treasure.items.forEach(itemArr => {
                     itemArr.items.forEach(item => {
                         if (item.weight) {
                             data.push({ x: item.weight, y: 1 })
+                        } else {
+                            unknownWeights++
                         }
                     })
                 })
@@ -931,6 +963,9 @@ export default {
                     data: data.sort((a, b) => a.x - b.x)
                 }
             })
+
+            this.unknownWeights = unknownWeights
+            return weightData
         },
         updateTimelineTimeGraph() {
             const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
@@ -944,7 +979,6 @@ export default {
 
             let graph = null
             if (this.selectedTreasureIds.length === 2) {
-                console.log(data)
                 graph = this.updateMirrorGraph(data)
             } else {
                 graph = this.updateBarGraph(data)
@@ -1101,6 +1135,30 @@ export default {
             this.updateDiagram()
             this.local_storage_mixin_save()
         },
+        updateActiveMintMap() {
+
+            this.activeMintMap = {}
+
+            this.selectedTreasures.forEach(treasure => {
+                treasure.items.forEach(item => {
+                    if (!this.activeMintMap[item.mintRegion.id]) {
+                        this.activeMintMap[item.mintRegion.id] = item.mintRegion
+                        this.activeMintMap[item.mintRegion.id].count = 0
+                        this.activeMintMap[item.mintRegion.id].treasures = {}
+                    }
+
+                    if (!this.activeMintMap[item.mintRegion.id].treasures[treasure.id]) {
+                        this.activeMintMap[item.mintRegion.id].treasures[treasure.id] = { treasure, count: 0 }
+                    }
+
+                    this.activeMintMap[item.mintRegion.id].count += parseInt(item.count) || 1
+                    this.activeMintMap[item.mintRegion.id].treasures[treasure.id].count += parseInt(item.count) || 1
+                })
+            })
+
+            // Reassign to trigger vue reactivity
+            this.activeMintMap = { ...this.activeMintMap }
+        },
         isTreasureSelected(id) {
             return this.selectedTreasureIds.includes(id)
         },
@@ -1114,8 +1172,15 @@ export default {
             this.selectionChanged()
         },
         setTreasure(id) {
-            this.selectedTreasureIds = [id]
+            
             this.selectedMintIds = []
+            
+            if (this.selectedTreasureIds.length === 1 && this.selectedTreasureIds[0] === id) {
+                this.selectedTreasureIds = []
+            } else {
+                this.selectedTreasureIds = [id]
+            }
+
             this.selectionChanged()
         }
     }
@@ -1129,12 +1194,27 @@ table {
     padding-right: 10px;
 }
 
+
+.diagram-select-bar {
+    display: flex;
+
+    .select-wrapper {
+        flex: 1;
+        display: flex;
+        position: relative;
+    }
+
+    select {
+        flex: 1;
+        margin-right: math.div($padding, 2);
+    }
+}
+
 .diagram-view {
     display: flex;
     flex-direction: column;
     gap: $padding;
-    max-height: 50vh;
-    transition: all 0.3s ease-in;
+    transition: all 0.1s ease-in;
     transform: translateY(0);
 
     &.hide {
@@ -1181,6 +1261,49 @@ tr {
 
 tr.selected {
     background-color: $primary-color;
+}
+
+.mint-count-text-wrapper {
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: .25em;
+    width: 2.5em;
+    display: inline-block;
+    text-align: right;
+}
+
+.mint-count-text {
+    background-color: white;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+
+.diagram-select-bar {
+    display: flex;
+}
+
+.diagram-view {
+    select {
+        height: 100%;
+        flex: 1;
+    }
+}
+
+.diagram-select-placeholder {
+    overflow: clip;
+    position: absolute;
+    z-index: 100;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    right: 1.3rem;
+    bottom: 0;
+    padding: 0 .5rem;
+    display: flex;
+    align-items: center;
+    font-style: italic;
+    opacity: 0.5;
 }
 </style>
   

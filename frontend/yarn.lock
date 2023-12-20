@@ -6268,11 +6268,6 @@ gensync@^1.0.0-beta.2:
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
 
-geodesy@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/geodesy/-/geodesy-2.4.0.tgz#6a0ad3dab3c1f95d8430aaa04fbe620b639c3e48"
-  integrity sha512-tHjQ1sXq8UAIEg1V0Pa6mznUxGU0R+3H5PIF6NULr0yPCAVLKqJro93Bbr19jSE18BMfyjN4osWDI4sm92m0kw==
-
 geojson-equality@0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/geojson-equality/-/geojson-equality-0.1.6.tgz#a171374ef043e5d4797995840bae4648e0752d72"
@@ -7915,6 +7910,13 @@ lazy-ass@^1.6.0:
   resolved "https://registry.yarnpkg.com/lazy-ass/-/lazy-ass-1.6.0.tgz#7999655e8646c17f089fdd187d150d3324d54513"
   integrity sha512-cc8oEVoctTvsFZ/Oje/kGnHbpWHYBe8IAJe4C0QNc3t8uM/0Y8+erSz/7Y1ALuXTEZTMvxXwO6YbX1ey3ujiZw==
 
+leaflet-outline-connector@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/leaflet-outline-connector/-/leaflet-outline-connector-0.1.4.tgz#e2107981b1a6096e79faa52098e1f91399e7f95f"
+  integrity sha512-mMFYgB5CK78rk2ZFb92aHHPh5qk1eOAMLMPiSRvKXSiqL9H6ExK+dAepyhtA+yDkj9YMbbsHyOfGiMZM8SRcdg==
+  dependencies:
+    leaflet "^1.0.0"
+
 leaflet-semirings@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/leaflet-semirings/-/leaflet-semirings-2.0.6.tgz#3d9d8e512763d82e1e137831cfbe3c0442448a9f"
@@ -7932,10 +7934,10 @@ leaflet.pattern@^0.1.0:
   dependencies:
     leaflet "~0.7.1"
 
-leaflet@^1.7.1:
-  version "1.9.3"
-  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.9.3.tgz#52ec436954964e2d3d39e0d433da4b2500d74414"
-  integrity sha512-iB2cR9vAkDOu5l3HAay2obcUHZ7xwUBBjph8+PGtmW/2lYhbLizWtG7nTeYht36WfOslixQF9D/uSIzhZgGMfQ==
+leaflet@^1.0.0, leaflet@^1.9.4:
+  version "1.9.4"
+  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.9.4.tgz#23fae724e282fa25745aff82ca4d394748db7d8d"
+  integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
 
 leaflet@~0.7.1:
   version "0.7.7"

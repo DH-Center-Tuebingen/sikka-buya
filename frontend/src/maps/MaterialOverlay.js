@@ -1,6 +1,6 @@
 import { concentricCircles } from "../maps/graphics/ConcentricCircles"
 import Mint from "../models/map/mint"
-import L from "leaflet"
+import L from '@/leaflet'
 import Overlay from './Overlay'
 import MaterialStats from '../models/material/MaterialStats'
 import { MintLocationMarker } from '../models/mintlocation'

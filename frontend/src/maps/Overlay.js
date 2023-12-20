@@ -1,9 +1,10 @@
-import L from "leaflet"
+import L from '@/leaflet'
 import { RequestGuard } from '../utils/Async.mjs';
 
 export default class Overlay {
 
     constructor(parent, settings, {
+        additionalData = {},
         onDataTransformed = null,
         onGeoJSONTransform = null,
         onFetch = null,
@@ -16,6 +17,7 @@ export default class Overlay {
         this.parent = parent
         this.settings = settings
         this.fetchGuard = new RequestGuard(this.fetch.bind(this))
+        this.additionalData = additionalData
         this._onDataTransformed = onDataTransformed
         this._onGeoJSONTransform = onGeoJSONTransform
         this._onApplyData = onApplyData
@@ -23,6 +25,8 @@ export default class Overlay {
         this._onFetch = onFetch
         this._onFeatureGroupAdded = onFeatureGroupAdded
         this._onFeatureGroupRemoved = onFeatureGroupRemoved
+
+        this.clearLayer()
     }
 
     async guardedFetch(data) {
@@ -106,27 +110,33 @@ export default class Overlay {
 
             this.layer.remove()
         }
+        this.layer = L.featureGroup()
     }
 
     async repaint({
         selections = {},
         markerOptions = {},
-
     } = {}) {
         this.clearLayer()
 
-        const { geoJSON = [], patterns = [] } = this.toMapObject(this.data, selections)
-        if (this._onGeoJSONTransform)
+        const data = this.toMapObject(this.data, selections)
+        const geoJSON = data.geoJSON
+        if (this._onGeoJSONTransform && data.geoJSON)
             this._onGeoJSONTransform(geoJSON)
 
+        const patterns = data.patterns || []
         patterns.forEach(pattern => pattern.addTo(this.parent._map))
+        this.createGeometry(data, { selections, markerOptions })
+        this.layer.addTo(this.parent)
+    }
 
+    createGeometry({ geoJSON = null } = {}, { selections, markerOptions } = {}) {
+        if (!geoJSON) {
+            throw new Error("No geoJSON provided.")
+        }
         const that = this
-
-        let _geoJSON = geoJSON
-        if (!Array.isArray(_geoJSON)) _geoJSON = [_geoJSON]
-        this.layer = L.featureGroup()
-        _geoJSON.forEach(feature => {
+        if (!Array.isArray(geoJSON)) geoJSON = [geoJSON]
+        geoJSON.forEach(feature => {
             let group = new L.geoJSON(feature, Object.assign({}, {
                 pointToLayer: function (feature, latlng) {
                     const radius = parseInt(feature?.properties?.radius)
@@ -141,12 +151,14 @@ export default class Overlay {
                 }
             }, this.geoJSONOptions));
 
-            group.addTo(this.layer)
-            if (this._onFeatureGroupAdded)
-                this._onFeatureGroupAdded(group)
+            this._addFeatureGroup(group)
         })
+    }
 
-        this.layer.addTo(this.parent)
+    _addFeatureGroup(group) {
+        group.addTo(this.layer)
+        if (this._onFeatureGroupAdded)
+            this._onFeatureGroupAdded(group)
     }
 
 
