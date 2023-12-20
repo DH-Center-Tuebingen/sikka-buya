@@ -32,6 +32,7 @@ export default {
   methods: {
     select(state) {
       state = this.invertIfNecessary(state);
+      if(state === this.value) state = null;
       this.$emit('input', state);
     },
     isActive(state) {
