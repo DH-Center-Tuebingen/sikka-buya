@@ -1,6 +1,6 @@
 {
     "name": "backend",
-    "version": "0.3.52",
+    "version": "1.0.0",
     "description": "Backend for the coin collection.",
     "private": true,
     "main": "index.js",
