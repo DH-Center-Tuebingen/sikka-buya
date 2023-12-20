@@ -182,7 +182,7 @@ class Settings {
 
         for (const [key, value] of Object.entries(template)) {
             if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-                this.applyTemplate(value, [...localParts, key])
+                await this.applyTemplate(value, [...localParts, key])
             } else {
                 const path = [...localParts, key].join("/")
 
