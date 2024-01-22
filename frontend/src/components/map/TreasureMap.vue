@@ -650,7 +650,7 @@ export default {
                         while (pickedColors[colorIdx]) {
                             colorIdx = (++colorIdx % colors.length)
                         }
-                        console.log(colorIdx)
+                        
                         pickedColors[colorIdx] = true
                         color = `rgb(${colors[(colorIdx)].join(",")})`
                     }
