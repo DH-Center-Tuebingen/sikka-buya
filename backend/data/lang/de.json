@@ -2,6 +2,9 @@
     "bibliography": {
         "treadwell_2002": "Luke Treadwell, Buyid Coinage. A die corpus (322–445 A.H.), Oxford 2002."
     },
+    "graph": {
+        "no_data": "Keine Daten verfügbar"
+    },
     "cms": {
         "auto-save": "auto",
         "contact_page": "Kontakt",
@@ -188,6 +191,7 @@
         "small_coin": "kleine Münze | kleine Münzen",
         "specialities_and_variants": "Besonderheiten / Varianten",
         "specials": "Besonderheiten und Varianten",
+        "time": "Zeit",
         "title": "Herrschertitel | Herrschertitel",
         "treadwell_id": "Treadwell-ID | Treadwell-IDs",
         "treasure": "Schatzfund | Schatzfunde",
