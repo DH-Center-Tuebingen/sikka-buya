@@ -25,7 +25,12 @@
                 <locale path="system.user_login" />
               </router-link></li>
             <li>
-              <div>© 2023</div>
+              <i>
+                Version {{ $store.state.version  }}
+              </i>
+            </li>
+            <li>
+              <div>© 2024</div>
             </li>
           </ul>
 
