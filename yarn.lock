@@ -149,11 +149,6 @@ joi@^17.6.0:
     "@sideway/formula" "^3.0.1"
     "@sideway/pinpoint" "^2.0.0"
 
-leaflet-svg-shape-markers@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/leaflet-svg-shape-markers/-/leaflet-svg-shape-markers-1.4.0.tgz#46376bc833a68dcd1c296d83ade21cd2b31a8723"
-  integrity sha512-vUBwso51+4ZVGcLZbhdBGxz+xrbul5jDYxool2yTKbIjAC6rvOMLjr8YBTQbLaa1LBRBQIaWUbmCafdXm17pxw==
-
 lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"

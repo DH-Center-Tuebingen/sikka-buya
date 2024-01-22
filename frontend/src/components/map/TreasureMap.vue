@@ -626,22 +626,35 @@ export default {
                 [124, 170, 216],
                 [207, 117, 52],
                 [76, 93, 137],
-                [117, 139, 51],
-                [144, 63, 120],
-                [190, 220, 156],
-                [91, 38, 54],
-                [212, 181, 130],
-                [211, 153, 201],
-                [48, 88, 52],
-                [204, 126, 123],
-                [84, 153, 136],
-                [80, 67, 28],
-                [143, 118, 64]]
-                let colorIdx = -1
+            ]
+
+                const pickedColors = {}
+
+                function getIndexBySring(str) {
+                    let index = 0
+                    let maxLength = 7
+                    for (let i = 0; i < str.length && i < maxLength; i++) {
+                        index += str.charCodeAt(i)
+                    }
+                    return index
+                }
 
                 function getColor(obj) {
-                    colorIdx = (++colorIdx % colors.length)
-                    return obj?.color ? obj.color : `rgb(${colors[(colorIdx)].join(",")})`
+                    let color
+                    if (obj && obj.color) color = obj.color
+                    else {
+                        const name = obj?.name || "no_name"
+                        const idx = getIndexBySring(name)
+
+                        let colorIdx = idx % colors.length
+                        while (pickedColors[colorIdx]) {
+                            colorIdx = (++colorIdx % colors.length)
+                        }
+                        console.log(colorIdx)
+                        pickedColors[colorIdx] = true
+                        color = `rgb(${colors[(colorIdx)].join(",")})`
+                    }
+                    return color
                 }
 
                 if (value === "fragment") {
@@ -703,7 +716,7 @@ export default {
                 const mapValues = Object.values(map)
                 this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
                 this.chart.data.labels = mapValues.map(obj => obj.label)
-                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count).sort((a, b) => b - a)
+                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
                 this.chart.update()
             }
         },
@@ -1172,9 +1185,9 @@ export default {
             this.selectionChanged()
         },
         setTreasure(id) {
-            
+
             this.selectedMintIds = []
-            
+
             if (this.selectedTreasureIds.length === 1 && this.selectedTreasureIds[0] === id) {
                 this.selectedTreasureIds = []
             } else {
