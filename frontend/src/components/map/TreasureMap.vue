@@ -44,6 +44,9 @@
                             <span
                                 v-if="activeMintMap?.[mint.id]?.treasures?.[treasure.id]"
                                 class="mint-count-text"
+                                :class="{
+                                    inverted: invertBackgroundIfNecessary(treasure.color),
+                                }"
                             >
                                 {{ activeMintMap[mint.id].treasures[treasure.id].count }}
                             </span>
@@ -570,6 +573,9 @@ export default {
             interactiveMints = interactiveMints.sort(Sort.stringPropAlphabetically("name"))
 
             return [...activeMints, ...interactiveMints]
+        },
+        invertBackgroundIfNecessary(color){
+            return Color.isBright(color)
         },
         getActiveMints() {
             return Object.values(this.activeMintMap).sort(Sort.stringPropAlphabetically("name"))
@@ -1286,9 +1292,13 @@ tr.selected {
 }
 
 .mint-count-text {
-    background-color: white;
+    background-color: rgba(255,255,255,0.5);
     padding: 2px;
-    border-radius: 2px;
+    border-radius: 1px;
+}
+
+.mint-count-text.inverted {
+    background-color: rgba(0,0,0,0.5);
 }
 
 

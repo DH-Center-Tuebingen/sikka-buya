@@ -24,6 +24,11 @@ export default class Color {
         return colors
     }
 
+    static isBright(hex) {
+        const [r, g, b] = this.hexToRGB(hex)
+        return (r * 0.299 + g * 0.587 + b * 0.114) > 152
+    }
+
     static hexBrighten(hex, ratio, targetColor = "#ffffff") {
         if (isNaN(ratio) || ratio > 1 || ratio < 0) throw new Error("Ratio outside scope. Must be inbetween 0 and 1 (both inclusive).")
 
