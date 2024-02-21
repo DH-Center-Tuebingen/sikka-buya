@@ -277,8 +277,6 @@ class Treasure extends Table {
 
                     treasure.location = GeoJSON.rebuild(treasure.location, treasure.properties)
 
-                    console.log(treasure.location)
-
                     if (treasure) {
                         treasures.push({
                             treasure,
@@ -295,7 +293,6 @@ class Treasure extends Table {
                     treasures
                 })
             }
-            console.log({ result })
 
             return result
         })

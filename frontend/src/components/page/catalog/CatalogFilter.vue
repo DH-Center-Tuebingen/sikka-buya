@@ -141,6 +141,9 @@ import { FilterType, filterConfig, filterNameMap } from '../../../config/catalog
 import StringUtils from '../../../utils/StringUtils';
 import URLParams from '../../../utils/URLParams';
 import { snakeCase } from "change-case";
+
+import { cloneDeep } from "lodash";
+
 const filters = filterConfig
 
 let filterData = {};
@@ -271,7 +274,7 @@ export default {
           this.initData[input.name] = this.initData[input.name].value || [];
 
           this.initData[input.name].forEach((item) => {
-            if (item.id !== undefined && item.name.startsWith("...")) {
+            if (item.id !== undefined && item?.name.startsWith("...")) {
               reload.push({ id: item.id, category: input.name, type: FilterType.multiSelect })
             }
           })
@@ -355,8 +358,7 @@ export default {
               pagination: Pagination.fromPageInfo(this.pageInfo),
               filters,
               typeBody: this.typeBody,
-            },
-            true
+            }
           ));
         }
       } catch (e) {
@@ -481,8 +483,9 @@ export default {
       });
 
       [...filters[FilterType.multiSelect]].forEach((filter) => {
-        const emptyObj = Filter.mapData(filter.name, filter.defaultValue);
+        const emptyObj = cloneDeep(Filter.mapData(filter.name, filter.defaultValue));
         for (let [key, val] of Object.entries(emptyObj)) {
+
           this.$set(this.filters, key, val);
           const mode = filter?.mode || Mode.And
           this.$set(this.filterMode, key, mode);
@@ -490,7 +493,7 @@ export default {
       });
 
       [...filters[FilterType.multiSelect2D]].forEach((filter) => {
-        const emptyObj = FilterList.mapData(filter.name, filter.defaultValue);
+        const emptyObj = cloneDeep(FilterList.mapData(filter.name, filter.defaultValue));
         for (let [key, val] of Object.entries(emptyObj)) {
           this.$set(this.filters, key, val);
           this.$set(this.filterMode, key, filter?.mode || Mode.And);

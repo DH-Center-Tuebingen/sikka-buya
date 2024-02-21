@@ -53,6 +53,7 @@
           <Locale path="system.quick_access" />
         </h4>
         <div class="items">
+
           <router-link
             v-for="(item, idx) of quickAccessItems"
             :to="item.to"
@@ -61,6 +62,29 @@
             <button>
               <locale :path="item.locale" />
             </button></router-link>
+
+          <div style="flex:1;"></div>
+          <div class="stats number-stats">
+            <Locale
+              class="stat-title"
+              :iconBefore="true"
+              path="editor.stats.types_without_treadwell_id"
+            />
+            <span>
+              {{ typesWithoutTreadwellIdCount }}
+            </span>
+          </div>
+          <div class="stats number-stats">
+            <Locale
+              class="stat-title"
+              :iconBefore="true"
+              path="editor.stats.all_types"
+            />
+            <span>
+              {{ typesCount }}
+            </span>
+          </div>
+
         </div>
       </aside>
 
@@ -79,6 +103,7 @@ import ListItem from '../layout/ListItem.vue';
 
 
 import { QuickAccessItems } from '../../config/quickaccess.js';
+import Query from '../../database/query';
 
 export default {
   name: 'EditorPanel',
@@ -89,6 +114,25 @@ export default {
     ListHeader,
     Button,
     Locale,
+  },
+  data() {
+    return {
+      typesCount: "-",
+      typesWithoutTreadwellIdCount: "-",
+    };
+  },
+  mounted() {
+    Query.raw(`{
+      countTypesInCatalogWithoutTreadwellId,
+      countTypes
+    }`).then(
+      (result) => {
+        const data = result?.data?.data
+        if (!data) throw new Error("No data returned");
+        this.typesCount = data.countTypes;
+        this.typesWithoutTreadwellIdCount = data.countTypesInCatalogWithoutTreadwellId;
+      }
+    )
   },
   methods: {
     getPropertyByPermission(permission) {
@@ -116,6 +160,7 @@ export default {
         { name: 'compare_last_cleanup', to: { name: 'FixDiff' } },
       ];
     },
+
     properties() {
       let props = [
         'coin_mark',
@@ -175,6 +220,31 @@ a {
   @include resetLinkStyle();
 }
 
+.stats {
+  position: relative;
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: $border;
+  // background-color: $white;
+  overflow: hidden;
+  padding: $large-box-padding;
+  padding-top: 2.5rem;
+  border-radius: $border-radius;
+
+
+  .stat-title {
+    position: absolute;
+    font-size: $small-font;
+    font-weight: bold;
+    top: 0;
+    left: 0;
+    margin: $padding;
+  }
+}
+
 header {
   display: flex;
   justify-content: space-between;
@@ -210,6 +280,8 @@ h3 {
 }
 
 .quick-access {
+  display: flex;
+  flex-direction: column;
 
   margin: 0 $padding;
   min-width: 200px;
@@ -226,11 +298,17 @@ h3 {
     color: $gray;
   }
 
+
+  .items {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
   .items {
     // display: flex;
 
     >* {
-      flex: 1;
       display: flex;
       max-width: 200px;
       margin-bottom: $padding;

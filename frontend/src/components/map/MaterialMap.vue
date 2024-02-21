@@ -337,9 +337,12 @@ export default {
         this.timelineActive = false;
       }
 
-      if (options.selectedMints)
-        this.mintSelectionChanged(options.selectedMints);
-      else this.mintSelectionChanged([]);
+      if (options.selectedMints) {
+        this.mintSelectionChanged({
+          active: options.selectedMints,
+          ...this.addedAndRemovedFromNewMintSelection(options.selectedMints)
+        });
+      } else this.mintSelectionChanged({ active: [], remoced: this.selectedMints });
 
       this.$refs.catalogFilter.resetFilters();
       this.$refs.catalogFilter.setFilters(options)

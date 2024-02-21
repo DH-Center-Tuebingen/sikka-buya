@@ -62,7 +62,21 @@ export function MintLocationsMixin({
             this.mintLocation = new MintLocation({ markerOptions: mintMarkerOptions, popup: this.mintLocationPopup });
         },
         methods: {
+            addedAndRemovedFromNewMintSelection(nextSelection) {
+                let added = []
+                let removed = []
 
+                this.selectedMints.forEach(mintId => {
+                    const index = nextSelection.indexOf(mintId)
+                    if (index != -1) {
+                        added.splice(index, 1)
+                    } else {
+                        removed.push(mintId)
+                    }
+                })
+
+                return { added, removed }
+            },
             mintLocationPopup(feature) {
                 return Mint.popupMintHeader(feature.mint, ["underlined-header", "black"])
             },

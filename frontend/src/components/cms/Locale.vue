@@ -3,34 +3,19 @@
         class="locale-comp"
         :class="{ editable: $store.getters.canEdit }"
     >
-        <template v-if="$store.getters.canEdit"><!--
+        <template v-if="$store.getters.canEdit">
+            <LocaleIcon
+                v-if="iconBefore"
+                :lang="lang"
+                :path="path"
+            /><!--
             -->{{ $tc(path, count) }}<!--
-            --><router-link
-                class="locale-link"
-                :to="{
-                    name: 'Locale',
-                    force: true,
-                    params: {
-                        lang,
-                        path
-                    }
-                }"
-            >
-                <div
-                    @mouseenter="() => mouseover = true"
-                    @mouseleave="() => mouseover = false"
-                    @click.stop
-                >
-                    <EarthIcon
-                        :size="10"
-                        :class="{ active }"
-                    />
-
-                    <Tooltip v-if="mouseover">
-                        {{ path }}
-                    </Tooltip>
-                </div>
-            </router-link>
+            -->
+            <LocaleIcon
+                v-if="!iconBefore"
+                :lang="lang"
+                :path="path"
+            />
         </template>
         <template v-else><!--
             -->{{ $tc(path, count) }}<!--
@@ -41,10 +26,7 @@
 <script>
 import Button from '../layout/buttons/Button.vue';
 import Toggle from '../layout/buttons/Toggle.vue';
-
-import EarthIcon from "vue-material-design-icons/Earth"
-import EarthCloseIcon from "vue-material-design-icons/EarthRemove"
-import Tooltip from '../forms/Tooltip.vue';
+import LocaleIcon from './LocaleIcon.vue';
 
 
 export default {
@@ -56,13 +38,15 @@ export default {
         count: {
             type: Number,
             default: 1
+        },
+        iconBefore: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
         return {
-            active: false,
             plural: false,
-            mouseover: false
         }
     },
     computed: {
@@ -70,7 +54,7 @@ export default {
             return this.$root.$i18n.locale
         }
     },
-    components: { Button, EarthIcon, EarthCloseIcon, Toggle, Tooltip }
+    components: { Button, Toggle, LocaleIcon }
 };
 </script>
 

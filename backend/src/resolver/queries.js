@@ -600,7 +600,19 @@ ORDER BY person.id;
             throw new Error("Unsupported property: " + property)
 
         return Database.oneOrNone(`SELECT id, name FROM ${property} WHERE  name=$1 LIMIT 1`, [name])
-    }
+    },
+    countTypesInCatalogWithoutTreadwellId: async function () {
+        return Type.countTypesInCatalogWithoutTreadwellId()
+    },
+    countTypes() {
+        return Type.countTypes()
+    },
+    countTypesForMap() {
+        return Type.countTypesForMap()
+    },
+    countTypesInCatalog() {
+        return Type.countTypesInCatalog()
+    },
 }
 
 const UserQueries = {

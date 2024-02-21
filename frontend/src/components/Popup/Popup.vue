@@ -169,4 +169,5 @@ $color: $white;
   right: 0;
   top: 0;
   padding: $small-padding;
-}</style>
+}
+</style>

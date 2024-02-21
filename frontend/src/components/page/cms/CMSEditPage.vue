@@ -397,7 +397,7 @@ export default {
         throw new Error(`Attribute 'data-property' is missing on component!`);
       else {
         if (target.hasAttribute('contenteditable')) {
-          this.page[property] = target.innerHTML;
+          this.page[property] = target.textContent;
 
         } else {
           this.page[property] = target.value;

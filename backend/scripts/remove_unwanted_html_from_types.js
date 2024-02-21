@@ -98,4 +98,4 @@ function removeComments(el) {
 }
 
 
-main().catch(console.log)
+main().catch(console.error)

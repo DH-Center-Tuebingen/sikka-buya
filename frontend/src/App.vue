@@ -124,6 +124,7 @@ body {
   min-height: 100%;
   background-color: $background-color;
   color: $text-color;
+  overflow-x: clip;
 }
 
 body {

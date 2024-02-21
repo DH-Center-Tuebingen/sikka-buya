@@ -41,7 +41,7 @@ export default class Color {
             colors[i] = Math.round(colors[i])
         }
 
-        
+
 
         return this.rgbToHEX(colors)
     }
@@ -49,6 +49,15 @@ export default class Color {
     static hexToRGBA(hex, alpha) {
         const [r, g, b] = this.hexToRGB(hex)
         return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    }
+
+    static lerpRGB(start, end, t) {
+        let rgb = []
+        for (let i in start) {
+            let col = start[i] + (end[i] - start[i]) * t
+            rgb.push(Math.round(col))
+        }
+        return rgb
     }
 
     static get Debug() {
@@ -75,7 +84,7 @@ export default class Color {
         return "#eeeeee"
     }
 
-    static get LightGray(){
+    static get LightGray() {
         return "#e6e6e6"
     }
 
@@ -87,7 +96,15 @@ export default class Color {
         return "#333333"
     }
 
+    static get Red() {
+        return "#ff0000"
+    }
+
     static get Primary() {
         return "#48ac48"
+    }
+
+    static get PrimaryRGB() {
+        return this.hexToRGB(this.Primary)
     }
 }

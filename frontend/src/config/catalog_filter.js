@@ -137,7 +137,7 @@ const _filterConfig = {
         },
         {
             label: 'property.ruler',
-            name: 'buyid',
+            name: 'ruler',
             join: 'ruler',
             // This is somewhat unsatisfying to use a dynamic value as input for the buyids here.
             additionalParameters: { dynasty: 1 },

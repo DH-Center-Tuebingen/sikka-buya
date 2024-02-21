@@ -21,7 +21,11 @@
       </aside>
 
       <div class="right-controls">
-        <FilterControl :activeFilters="activeFilters" @resetFilter="resetFilter" @resetAllFilters="resetAllFilters" />
+        <FilterControl
+          :activeFilters="activeFilters"
+          @resetFilter="resetFilter"
+          @resetAllFilters="resetAllFilters"
+        />
 
         <pagination
           :pageInfo="pageInfo"
@@ -104,7 +108,7 @@ export default {
     },
     resetAllFilters() {
       this.text = '';
-      this.catalog_filter_mixin_reset(this.$refs.catalogFilter);
+      this.$refs.catalogFilter.resetFilters();
     },
     resetFilter(name) {
       if (name == "plain_text") {
@@ -174,8 +178,8 @@ aside {
 
 
 .right-controls {
-    display: flex;
-    flex-direction: column;
-    gap: .5em;
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
 }
 </style>

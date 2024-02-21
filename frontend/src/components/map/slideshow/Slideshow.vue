@@ -32,53 +32,18 @@
         class="button icon-button"
         @click="button.action"
         :key="`action-button-${button.icon}}`"
+        :title="button.hotkey ? `${button.name} (${button.hotkey})` : button.name"
       >
         <Icon
           type="mdi"
           :path="button.icon"
           :size="iconSize"
         />
-        <Locale v-if="button.name" :path="`slideshow.${button.name}`" />
+        <Locale
+          v-if="button.name"
+          :path="`slideshow.${button.name}`"
+        />
       </div>
-      <!-- <div
-        class="button icon-button"
-        @click="prevSlide"
-      >
-        <PrevIcon :size="iconSize" />
-      </div> 
-      <div
-        class="button icon-button"
-        @click="requestSlide(currentSlide, true)"
-      >
-        <SyncIcon :size="iconSize" />
-        <div class="text">
-          <Locale path="slideshow.override" />
-        </div>
-      </div>
-      <div
-        class="button icon-button"
-        @click="requestSlide()"
-      >
-        <CameraOutlineIcon :size="iconSize" />
-        <div class="text">
-          <Locale path="slideshow.record" />
-        </div>
-      </div>
-      <div
-        class="button icon-button"
-        @click="removeSlide()"
-      >
-        <DeleteIcon :size="iconSize" />
-        <div class="text">
-          <Locale path="slideshow.delete" />
-        </div>
-      </div>
-      <div
-        class="button icon-button"
-        @click="nextSlide"
-      >
-        <NextIcon :size="iconSize" />
-      </div> -->
     </div>
   </div>
 </template>
@@ -92,7 +57,15 @@ import HotkeyMixin from '../../mixins/hotkey';
 import Hotkeyed from '../../interactive/Hotkeyed.vue';
 
 import Icon from "@jamescoyle/vue-icon"
-import { mdiCameraOutline, mdiDelete, mdiSkipNext, mdiSkipPrevious, mdiSync } from '@mdi/js';
+import {
+  mdiCameraOutline,
+  mdiDelete,
+  mdiSkipNext,
+  mdiSkipPrevious,
+  mdiSync,
+  mdiExport,
+  mdiImport
+} from '@mdi/js';
 
 const storagePostFix = '-slideshow';
 
@@ -124,11 +97,16 @@ export default {
         {
           icon: mdiSkipPrevious,
           action: this.prevSlide,
+          hotkey: this.$t('key.page_up')
         },
         {
           name: "override",
           icon: mdiSync,
           action: this.overrideSlide,
+        }, {
+          name: "delete",
+          icon: mdiDelete,
+          action: this.removeSlide,
         },
         {
           name: "record",
@@ -136,13 +114,19 @@ export default {
           action: this.requestSlide,
         },
         {
-          name: "delete",
-          icon: mdiDelete,
-          action: this.removeSlide,
+          name: "import",
+          icon: mdiImport,
+          action: this.importSlideshow,
+        },
+        {
+          name: "export",
+          icon: mdiExport,
+          action: this.exportSlideshow,
         },
         {
           icon: mdiSkipNext,
           action: this.nextSlide,
+          hotkey: this.$t('key.page_down')
         }
       ]
     };
@@ -160,6 +144,41 @@ export default {
     },
     removeEventListener() {
       this.scrollContent.removeEventListener('wheel', this.scroll);
+    },
+    importSlideshow() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = JSON.parse(e.target.result);
+          if (data.type === this.storagePrefix) {
+            this.slides = data.slides;
+            this.currentSlide = data.currentSlide;
+            this.slideChanged();
+          } else {
+            alert('Invalid file type');
+          }
+        }
+        reader.readAsText(file);
+      }
+      input.click();
+    },
+    exportSlideshow() {
+      const dataString = JSON.stringify({
+        type: this.storagePrefix,
+        slides: this.slides,
+        currentSlide: this.currentSlide,
+      })
+
+      const blob = new Blob([dataString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sikka-buya_${this.storagePrefix}_${(new Date().toISOString().slice(0, -5))}.json`;
+      a.click();
     },
     loadSlides() {
       if (this.storagePrefix) {

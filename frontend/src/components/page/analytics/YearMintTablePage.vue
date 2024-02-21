@@ -1,34 +1,46 @@
 <template>
   <div class="page">
     <header>
-      <h2>Analytics Table</h2>
+      <h2>
+        <Locale path="routes.Analytics Table" />
+      </h2>
 
       <div class="select-row">
         <labeled-property label="X-Achse">
           <select @input="xChanged">
             <option
-              v-for="(val, index) of values"
-              :value="val"
+              v-for="(value, index) of availableProperties"
+              :value="value.name"
               :key="index"
-              :selected="val == x"
+              :selected="value.name == x"
             >
-              {{ val }}
+              {{ $tc(value.locale) }}
             </option>
           </select>
         </labeled-property>
+        <div
+          class="button"
+          style="flex: 0; padding 5px; margin: .5rem; display: flex; align-items: center; justify-content: center;"
+          @click="swap"
+        >
+          <Icon
+            type="mdi"
+            :path="icons.mdiSwapHorizontal"
+          />
+        </div>
         <labeled-property label="Y-Achse">
           <select @input="yChanged">
             <option
-              v-for="(val, index) of values"
-              :value="val"
+              v-for="(value, index) of availableProperties"
+              :value="value.name"
               :key="index"
-              :selected="val == y"
+              :selected="value.name == y"
             >
-              {{ val }}
+              {{ $tc(value.locale) }}
             </option>
           </select>
         </labeled-property>
-        <labeled-property label="Skalierung">
+        <!-- <labeled-property label="Skalierung">
           <slider
             :min="0"
             :max="1"
@@ -36,7 +48,7 @@
             @input="updateScale"
             :step="0.01"
           />
-        </labeled-property>
+        </labeled-property> -->
       </div>
     </header>
     <div
@@ -50,14 +62,17 @@
       @scroll.passive="pinTableHeaders($event)"
     >
       <table ref="table">
-        <thead>
+        <thead :style="{ height: availablePropertiesMap[x].space }">
           <tr>
             <td></td>
             <td
               v-for="(itemX, xIdx) of xValues"
               :key="'row-' + xIdx"
+              :title="itemX"
             >
-              {{ itemX }}
+              <span class="rotated">
+                {{ itemX }}
+              </span>
             </td>
           </tr>
         </thead>
@@ -66,14 +81,19 @@
             v-for="(itemY, yIdx) in yValues"
             :key="'head-' + yIdx"
           >
-            <td>{{ itemY }}</td>
+            <td
+              :style="{ width: availablePropertiesMap[y].space }"
+              :title="itemY"
+            >{{ itemY }}</td>
             <td
               v-for="(itemX, xIdx) of xValues"
               v-bind:key="'cell-' + yIdx + '-' + xIdx"
               class="color-box"
+              :style="getColumnStyle(itemX, itemY)"
               :class="{ exists: getTypesFromMap(itemX, itemY).length != 0 }"
+              :title="`${yValues[yIdx]} - ${xValues[xIdx]}: ${getTypesFromMap(itemX, itemY).length}`"
             >
-              {{ getTypesFromMap(itemX, itemY).length }}
+              <!-- {{ getTypesFromMap(itemX, itemY).length }} -->
             </td>
           </tr>
         </tbody>
@@ -88,23 +108,59 @@ import Query from '../../../database/query';
 import Slider from '../../forms/Slider.vue';
 import LabeledProperty from '../../display/LabeledProperty.vue';
 import RequestBuffer from '../../../models/request-buffer';
+import Color from '../../../utils/Color';
+import IconMixin from '../../mixins/icon-mixin.js';
+import { mdiSwapHorizontal } from '@mdi/js';
+import Locale from '../../cms/Locale.vue';
+
 export default {
-  components: { Slider, LabeledProperty },
+  components: {
+    LabeledProperty,
+    Slider,
+    Locale
+  },
+  mixins: [IconMixin({ mdiSwapHorizontal })],
   name: 'YearMintTablePage',
   created: function () {
     this.fetchTypes();
 
     this.pinXBuffer = new RequestBuffer(25, { allowSame: true });
     this.pinYBuffer = new RequestBuffer(25, { allowSame: true });
+
+
+    const property = (name, space = "5rem", locale = null) => {
+      return {
+        name: name,
+        locale: locale || `property.${name}`,
+        space,
+      }
+    }
+
+    this.availableProperties = [
+      property('yearOfMint', "3rem", 'property.year_of_mint'),
+      property('mint', "15rem"),
+      property('material'),
+      property('nominal'),
+    ]
+
+    this.availablePropertiesMap = this.availableProperties.reduce((acc, cur) => {
+      acc[cur.name] = cur;
+      return acc;
+    }, {});
   },
   data: function () {
     return {
       x: 'mint',
       y: 'yearOfMint',
-      values: ['yearOfMint', 'mint', 'material', 'nominal'],
+      popupActive: false,
+      popup: null,
+      availableProperties: [],
+      availablePropertiesMap: {},
       types: null,
       error: '',
       map: new Map(),
+      mapMax: 0,
+      densityMap: {},
       plainValues: ['yearOfMint'],
       nameObjects: ['mint', 'material', 'nominal'],
       scale: 1,
@@ -113,6 +169,15 @@ export default {
     };
   },
   methods: {
+    swap() {
+      const temp = this.x;
+      this.x = this.y;
+      this.y = temp;
+      this.fetchTypes();
+    },
+    getColumnStyle(itemX, itemY) {
+      return { backgroundColor: this.countColor(this.getTypesFromMap(itemX, itemY).length) }
+    },
     updateScale(event) {
       this.scale = parseFloat(event.currentTarget.value);
       this.$refs.table.style.transformOrigin = 'top left';
@@ -133,6 +198,7 @@ export default {
                 pagination: { count: ${requestSize}, page: ${page} },
                 filters: {excludeFromTypeCatalogue: false}) {
                 types {
+                  projectId
                   ${this.getQuery(this.x)}
                    ${this.getQuery(this.y)}
                 }
@@ -160,7 +226,22 @@ export default {
           page++;
         }
 
-        this.types = types;
+        this.types = types.filter(type => {
+          for (const key of [this.x, this.y]) {
+            if (!type[key]) {
+              return false;
+            }
+
+            if (typeof (type[key]) === 'string') {
+              let val = type[key].trim();
+              if (val === '' || val.toLowerCase() === 'null') {
+                return false;
+              }
+            }
+          }
+          return true;
+        });
+
         this.updateMap();
       } catch (e) {
         console.error('Could not fetch types: ', e);
@@ -175,25 +256,25 @@ export default {
       this.fetchTypes();
     },
     pinTableHeaders(event) {
-      const scrollLeft = this.$refs.viewport.scrollLeft;
+      // const scrollLeft = this.$refs.viewport.scrollLeft;
 
-      this.pinXBuffer.update(scrollLeft, (value) => {
-        var scaleX =
-          this.tableHead.getBoundingClientRect().width /
-          this.tableHead.offsetWidth;
-        this.tableFirstColumn.forEach((td) => {
-          td.style.left = `${value / scaleX}px`;
-        });
-      });
+      // this.pinXBuffer.update(scrollLeft, (value) => {
+      //   var scaleX =
+      //     this.tableHead.getBoundingClientRect().width /
+      //     this.tableHead.offsetWidth;
+      //   this.tableFirstColumn.forEach((td) => {
+      //     td.style.left = `${value / scaleX}px`;
+      //   });
+      // });
 
-      const scrollTop = this.$refs.viewport.scrollTop;
+      // const scrollTop = this.$refs.viewport.scrollTop;
 
-      this.pinYBuffer.update(scrollTop, (value) => {
-        var scaleX =
-          this.tableHead.getBoundingClientRect().width /
-          this.tableHead.offsetWidth;
-        this.tableHead.style.top = `${value / scaleX}px`;
-      });
+      // this.pinYBuffer.update(scrollTop, (value) => {
+      //   var scaleX =
+      //     this.tableHead.getBoundingClientRect().width /
+      //     this.tableHead.offsetWidth;
+      //   this.tableHead.style.top = `${value / scaleX}px`;
+      // });
     },
     typeByMintAndYear(mint, year) {
       return this.map[mint].has(year.toString());
@@ -210,17 +291,31 @@ export default {
       return [];
     },
     updateMap() {
+
+
       if (this.types) {
-        this.map = new Map();
+        let map = new Map();
+        let max = 0;
+
         for (let type of this.types.values()) {
           let x = this.getLabel(this.x, type);
           let y = this.getLabel(this.y, type);
 
-          if (!this.map.has(x)) this.map.set(x, new Map());
-          if (!this.map.get(x).has(y)) this.map.get(x).set(y, []);
-          this.map.get(x).get(y).push(type);
+          if (!map.has(x)) map.set(x, new Map());
+          if (!map.get(x).has(y)) map.get(x).set(y, []);
+          map.get(x).get(y).push(type);
+          const length = map.get(x).get(y).length;
+          if (length > max) max = length;
         }
+
+        this.map = map
+        this.mapMax = max;
       }
+    },
+    countColor(value) {
+      if (value == 0) return '#cdcdcd';
+      const rgb = Color.lerpRGB([200, 217, 102], Color.PrimaryRGB, value / this.mapMax)
+      return Color.rgbToHEX(rgb);
     },
     toKey(val) {
       return val.replace(' ', '_').toLowerCase();
@@ -270,23 +365,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.viewport {
+  overflow-x: auto;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+table {
+  position: relative;
+}
+
+.popup {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  min-height: 100px;
+  width: 100px;
+
+  z-index: 100;
+  background-color: white;
+  border: $border;
+  padding: $padding;
+  box-shadow: $shadow;
+  border-radius: $border-radius;
+  box-sizing: border-box;
+}
+
 .slider {
   margin: 10px;
 }
 
-.page {
-  max-height: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 
-  // font-size: 10px;
-}
 
-.viewport {
-  overflow: scroll;
-  background-color: white;
-  flex: 1 0 0;
+tbody {
+  overflow-y: auto;
 }
 
 .select-row {
@@ -306,9 +420,17 @@ export default {
 
 thead {
   z-index: 1;
-  position: relative;
+  position: sticky;
   top: 0;
   background-color: rgba(whitesmoke, 0.95);
+
+  tr {
+    td {
+      text-align: end;
+      vertical-align: bottom;
+      overflow: hidden;
+    }
+  }
 }
 
 h1 {
@@ -316,28 +438,55 @@ h1 {
 }
 
 .color-box {
-  width: 20px;
-  height: 20px;
   background-color: rgb(204, 204, 204);
 
-  font-weight: bold;
   text-transform: uppercase;
-  color: white;
+  color: rgba(255, 255, 255, 0.3);
+
+
+  &:hover {
+    border-radius: 3px;
+    outline: 2px solid $primary-color;
+  }
 
   &.exists {
     background-color: green;
   }
 }
 
+.rotated {
+  display: block;
+  white-space: nowrap;
+  padding-left: $padding;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+  transition: all 0.3s ease
+}
+
+$size: 10px;
+
 td {
+
+  @include interactive();
   text-align: center;
-  width: 50px;
-  min-width: 50px;
-  height: 30px;
+  width: $size;
+  max-width: $size;
+  height: 10px;
+  aspect-ratio: 1 / 1;
+  font-size: $small-font;
 }
 
 td:first-of-type {
+  width: 50px;
+  max-width: 5rem;
+  max-height: $size;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   position: relative;
   left: 0;
+  overflow: hidden;
+  aspect-ratio: auto;
+  text-align: left;
   background-color: rgba(whitesmoke, 0.95);
-}</style>
+}
+</style>

@@ -449,7 +449,10 @@ type Query {
 
   files(group:String!, orderBy:String):[NamedURL]
 
-
+  countTypes:Int
+  countTypesForMap:Int
+  countTypesInCatalog:Int
+  countTypesInCatalogWithoutTreadwellId: Int
 
   getSetting(path:String!):String 
   settings: String
@@ -751,6 +754,7 @@ input TypeFilter {
   yearOfMint: String
   yearUncertain: Boolean
 }
+
 
 type PageInfo {
   page: Int

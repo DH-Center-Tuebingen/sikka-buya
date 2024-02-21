@@ -1,7 +1,9 @@
 <template>
     <div class="settings-page page">
         <section>
-            <h1>Settings</h1>
+            <h1>
+                <Locale path="routes.settings" />
+            </h1>
 
             <button @click="updateConfig">Update</button>
             <!-- <div style="display: flex;">
@@ -41,11 +43,13 @@ import RouterTree from '../layout/tree/RouterTree.vue';
 import Breadcrumbs from "../navigation/Breadcrumbs.vue"
 
 import SettingsTemplate from "../../../settings.json";
+import Locale from '../cms/Locale.vue';
 
 export default {
     components: {
         Breadcrumbs,
-        RouterTree
+        RouterTree,
+        Locale
     }, data() {
         return {
             addPath: "",

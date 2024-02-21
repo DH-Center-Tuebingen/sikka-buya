@@ -137,8 +137,6 @@ class PageGQL extends GQL {
                     throw new Error(`Could not get page with id ${id}: ${e}`)
                 }
 
-                console.log(page, id)
-
                 return page
             },
             getSinglePage: async function (_, { group } = {}) {

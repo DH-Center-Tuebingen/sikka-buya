@@ -668,6 +668,27 @@ class Type {
         return queryBuilder
     }
 
+
+    static async countTypes() {
+        const { count } = await Database.one(`SELECT count(*) FROM type`)
+        return count
+    }
+
+    static async countTypesForMap() {
+        const { count } = await Database.one(`SELECT count(*) FROM type t WHERE t.exclude_from_map_app=false`)
+        return count
+    }
+
+    static async countTypesInCatalog() {
+        const { count } = await Database.one(`SELECT count(*) FROM type t WHERE t.exclude_from_type_catalogue=false`)
+        return count
+    }
+
+    static async countTypesInCatalogWithoutTreadwellId() {
+        const { count } = await Database.one(`SELECT count(*) FROM type t WHERE t.exclude_from_type_catalogue=false AND (t.treadwell_id IS NULL OR t.treadwell_id = '')`)
+        return count
+    }
+
     static async getType(_, { id = null } = {}, context, info) {
         if (!id) throw new Error("Id must be provided!")
         let postProcessFields = graphqlFields(info)
