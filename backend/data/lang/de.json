@@ -29,7 +29,8 @@
         "schedule": "planen",
         "scheduled": "geplant",
         "unpublish": "Veröffentlichung zurückziehen",
-        "unschedule": "Planung aufheben"
+        "unschedule": "Planung aufheben",
+        "Working Papers": "Working Paper"
     },
     "custom": {
         "fint": {
@@ -90,6 +91,10 @@
     },
     "info": {
         "overlords": "Notiz: Bei der Oberherren-Eingabe geht man in der Hierarchie von unten (1.) nach oben, d. h. Nr. 2. steht über Nr. 1, Nr. 3 über Nr. 2 usw."
+    },
+    "key": {
+        "page_down": "Bild runter",
+        "page_up": "Bild hoch"
     },
     "location": {
         "point": "Ort",
@@ -236,14 +241,17 @@
         "map": "Karten | Karten",
         "Map Landing": "Kartenübersicht",
         "Political Map": "politische Karte",
-        "Treasure Map": "Schatzfundkarte"
+        "Treasure Map": "Schatzfundkarte",
+        "settings": "Einstellungen"
     },
     "slideshow": {
         "delete": "löschen",
         "override": "überschreiben",
         "pause": "Anhalten",
         "play": "Abspielen",
-        "record": "aufnehmen"
+        "record": "aufnehmen",
+        "import": "Importieren",
+        "export": "Exportieren"
     },
     "system": {
         "email": "Email",
