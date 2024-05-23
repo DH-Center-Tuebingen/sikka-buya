@@ -14,6 +14,12 @@ import CMSPage from '../../models/CMSPage'
  */
 
 export default {
+    data() {
+        return {
+            exists: true,
+            loaded: false
+        }
+    },
     methods: {
         cms_mixin_getPublishedState(timestamp) {
             timestamp = parseInt(timestamp)
@@ -41,6 +47,7 @@ export default {
         },
         cms_mixin_get: async function ({ id, group }) {
             let page = null
+            this.$data.loaded = false
 
             if (!id && !group) throw new Error("Id or group must be provided")
             else if (!id) {
@@ -49,6 +56,13 @@ export default {
             } else {
                 // get the page with the id
                 page = CMSPage.get(id)
+            }
+
+            this.$data.loaded = false
+            if (page?.id == null) {
+                this.$data.exists = false
+            } else {
+                this.$data.exists = true
             }
 
             return page

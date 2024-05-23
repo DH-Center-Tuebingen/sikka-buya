@@ -206,7 +206,7 @@ class ObjectTrack {
 }
 
 class ObjectWalker {
-    constructor(obj) {
+    constructor(obj = {}) {
         this.reset(obj)
     }
 

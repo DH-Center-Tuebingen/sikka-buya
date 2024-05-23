@@ -4,7 +4,6 @@ export default function (name, variables = []) {
     const watch = variables.reduce((acc, key) => {
         acc[key] = function (newVal, oldVal) {
             this.local_storage_mixin_save()
-
         }
         return acc
     }, {})
@@ -45,9 +44,7 @@ export default function (name, variables = []) {
             })
         },
         methods: {
-            local_storage_mixin_loaded() {
-                throw new Error("Not implemented error. You need to implement the 'local_storage_mixin_loaded' method in your component.")
-            },
+            local_storage_mixin_loaded() { },
             local_storage_mixin_save() {
                 const data = {}
                 this.local_storage_mixin_variables.forEach(key => {

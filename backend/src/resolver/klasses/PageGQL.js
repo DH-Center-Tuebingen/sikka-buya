@@ -4,6 +4,8 @@ const { Database, WriteableDatabase } = require('../../utils/database')
 const GQL = require('./gql')
 
 
+const isPublished = "published_timestamp > timestamp '1971-01-01 00:00:00' AND published_timestamp <= now()"
+
 /*
     Converts a result from the database to a GraphQL object
 */
@@ -16,7 +18,7 @@ function entryToGraphQL(entry) {
     obj.body = entry.body
     obj.image = entry.image
     obj.createdTimestamp = entry.created_timestamp
-    obj.publishedTimestamp = entry.published_timestamp
+    obj.publishedTimestamp = entry.published_timestamp.getTime() === 0 ? null : entry.published_timestamp
     obj.modifiedTimestamp = entry.modified_timestamp
     return obj
 }
@@ -40,7 +42,6 @@ class PageGQL extends GQL {
                 return id
             },
             createPage: async function (_, { title = "", group } = {}) {
-
                 let returnedValue = await WriteableDatabase.oneOrNone("SELECT id FROM web_page_group WHERE name=$1 LIMIT 1", group)
                 if (returnedValue == null)
                     returnedValue = await WriteableDatabase.one("INSERT INTO web_page_group (name) VALUES ($1) RETURNING id", group)
@@ -114,7 +115,6 @@ class PageGQL extends GQL {
                 try {
                     await Database.tx(async t => {
 
-                        let res = []
                         let results = await t.oneOrNone(`
                     SELECT web_page.*, page_group FROM web_page 
                     LEFT JOIN web_page_group ON web_page_group.id = web_page.page_group
@@ -126,11 +126,7 @@ class PageGQL extends GQL {
                     SELECT * FROM web_page_block WHERE page=$[id] ORDER BY position
                     `, { id })
 
-
-                        if (results != null) {
-                            res.push(results)
-                            page = resultsToGraphQLPage(res)[0]
-                        }
+                        page = entryToGraphQL(results)
                         page.blocks = childBlocks
                     })
                 } catch (e) {
@@ -143,7 +139,8 @@ class PageGQL extends GQL {
 
                 const result = await Database.oneOrNone(`SELECT web_page.* FROM web_page 
                 LEFT JOIN web_page_group ON web_page_group.id = web_page.page_group
-                WHERE web_page_group.name = $1
+                WHERE web_page_group.name = $1 AND ${isPublished}
+                ORDER BY created_timestamp ASC
                 LIMIT 1`, group)
 
                 return result ? entryToGraphQL(result) : null
@@ -153,7 +150,7 @@ class PageGQL extends GQL {
 
                 const auth = Auth.authContext(context)
 
-                const where = auth ? "" : "AND published_timestamp > timestamp '1971-01-01 00:00:00' AND published_timestamp <= now()"
+                const where = auth ? "" : `AND ${isPublished}`
                 const orderBY = auth ? "created_timestamp DESC" : "published_timestamp DESC"
 
                 let results = []

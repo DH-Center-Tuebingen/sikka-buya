@@ -162,8 +162,14 @@ export default class CMSPage {
 
     static async timestampsToNumbers(page) {
         page.createdTimestamp = parseInt(page.createdTimestamp)
+        if (isNaN(page.createdTimestamp)) page.createdTimestamp = null
+
         page.modifiedTimestamp = parseInt(page.modifiedTimestamp)
+        if (isNaN(page.modifiedTimestamp)) page.modifiedTimestamp = null
+
         page.publishedTimestamp = parseInt(page.publishedTimestamp)
+        if (isNaN(page.publishedTimestamp)) page.publishedTimestamp = null
+
         return page
     }
 

@@ -267,10 +267,10 @@ export default {
           page = await CMSPage.get(this.id)
         }
 
-        const loadedPublishedTimestamp = parseInt(page.publishedTimestamp);
+        const loadedPublishedTimestamp = page.publishedTimestamp;
         this.lastPublishedTimestamp = loadedPublishedTimestamp;
 
-        if (isNaN(loadedPublishedTimestamp) || loadedPublishedTimestamp === 0) {
+        if (loadedPublishedTimestamp === null || loadedPublishedTimestamp === 0) {
           delete page.publishedTimestamp
         }
 

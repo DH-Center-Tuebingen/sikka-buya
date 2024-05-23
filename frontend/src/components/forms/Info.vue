@@ -1,11 +1,13 @@
 <template>
-  <div :class="'info ' + type" :hidden="hidden">
+  <div
+    :class="'info ' + type"
+    :hidden="hidden"
+  >
     <slot />
   </div>
 </template>
 
 <script>
-import CoinSideGroupVue from '../display/CoinSideGroup.vue';
 export default {
   name: 'Info',
   props: {

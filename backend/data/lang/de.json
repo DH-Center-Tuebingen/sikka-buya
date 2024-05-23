@@ -3,7 +3,7 @@
         "treadwell_2002": "Luke Treadwell, Buyid Coinage. A die corpus (322–445 A.H.), Oxford 2002."
     },
     "graph": {
-        "no_data": "Keine Daten verfügbar"
+        "no_data": "keine Daten vorhanden"
     },
     "cms": {
         "auto-save": "auto",
@@ -20,6 +20,9 @@
             "landing_page_main_article": "Startseitentext",
             "news": "Neuigkeiten",
             "Working Papers": "Working Papers"
+        },
+        "message": {
+            "page_not_found": "Diese Seite wurde leider nicht gefunden."
         },
         "normal-save": "normal",
         "publish": "veröffentlichen",
@@ -41,7 +44,11 @@
         "administration": "Nutzerbereich",
         "assist_tools": "Hilfsprogramme",
         "compare_last_cleanup": "Letzte Bereinigung vergleichen",
-        "expert_search": "Expertensuche"
+        "expert_search": "Expertensuche",
+        "stats": {
+            "all_types": "Alle Typen",
+            "types_without_treadwell_id": "Alle Typen Ohne Treadwell Id"
+        }
     },
     "error": {
         "already_submitted": "De Anfrage wurde bereits beantragt!",
@@ -74,7 +81,7 @@
         "filter_active": "Filter aktiv",
         "id": "ID",
         "import": "Importieren",
-        "name": "Name | Namen",
+        "name": "Fundbezeichnung",
         "or": "oder",
         "reset_filter": "Filter aufheben",
         "save": "speichern",
@@ -87,7 +94,8 @@
         "treasure_spot": "Fundort",
         "user": "Nutzer",
         "literature": "Literatur",
-        "range": "Zeitspanne"
+        "range": "Zeitspanne Prägejahre",
+        "description": "Informationen zum Fundbestand"
     },
     "info": {
         "overlords": "Notiz: Bei der Oberherren-Eingabe geht man in der Hierarchie von unten (1.) nach oben, d. h. Nr. 2. steht über Nr. 1, Nr. 3 über Nr. 2 usw."
@@ -111,7 +119,12 @@
             "active": "Zeitleiste aktivieren",
             "deactivate": "Zeitleiste deaktivieren"
         },
-        "type_filter": "Filter"
+        "type_filter": "Filter",
+        "hoards": {
+            "message": {
+                "no_mints_in_list": "Wählen Sie einen Schatzfund aus, um die enthaltenen Prägeorte anzuzeigen."
+            }
+        }
     },
     "message": {
         "initial_setup_info": "Dies ist die Seite für die Ersteinrichtung. Geben Sie den Benutzernamen und das Passwort für den Superuser ein. Sobald der Superuser eingerichtet ist, wird diese Seite nicht mehr zugänglich sein!",
@@ -139,7 +152,8 @@
             "innerInscript": "Innere Avers-Umschrift",
             "intermediateInscript": "Mittlere Avers-Umschrift",
             "misc": "Avers-Randbeschriftung",
-            "outerInscript": "äussere Avers-Umschrift"
+            "outerInscript": "äussere Avers-Umschrift",
+            "inscript": "Avers-Umschrift"
         },
         "caliph": "Thronfolger d. Kalifen",
         "coin_mark": "Münz- und Beizeichen | Münz- und Beizeichen",
@@ -151,7 +165,7 @@
         "excludeFromMapApp": "nicht für polit. Karten",
         "excludeFromTypeCatalogue": "Nicht für Typenkatalog",
         "field_text": "Feld | Felder",
-        "fragment": "Fragment",
+        "fragment": "Fragmente",
         "honorific": "Ehrennamen | Ehrennamen",
         "inner_inscript": "innere Umschrift",
         "intermediate_inscript": "mittlere Umschrift",
@@ -184,7 +198,8 @@
             "innerInscript": "Innere Revers-Umschrift",
             "intermediateInscript": "mittlere Revers-Umschrift",
             "misc": "Revers-Randbeschriftung",
-            "outerInscript": "äussere Revers-Umschrift"
+            "outerInscript": "äussere Revers-Umschrift",
+            "inscript": "Revers-Umschrift"
         },
         "role": "Rolle | Rollen",
         "ruler": "Herrscher",
@@ -196,11 +211,11 @@
         "small_coin": "kleine Münze | kleine Münzen",
         "specialities_and_variants": "Besonderheiten / Varianten",
         "specials": "Besonderheiten und Varianten",
-        "time": "Zeit",
+        "time": "Prägejahre",
         "title": "Herrschertitel | Herrschertitel",
         "treadwell_id": "Treadwell-ID | Treadwell-IDs",
-        "treasure": "Schatzfund | Schatzfunde",
-        "treasure-items": "Schatzfundinhalt",
+        "treasure": "Schatzfunde | Schatzfunde",
+        "treasure-items": "Schatzfund-Münzen",
         "type": "Typ",
         "typeview": {
             "issuer": "Münzherr | Münzherr(en)",
@@ -209,12 +224,23 @@
         "user": "Benutzer | Benutzer",
         "year_of_mint": "Prägejahr",
         "year_uncertain": "Jahr nicht sicher",
-        "no_fragment": "kein Fragment",
+        "no_fragment": "ganze Münzen",
         "weight": "Gewicht",
         "uncertain_mint": "Prägeort unsicher",
         "year_of_mint_uncertain": "Prägejahr unsicher",
-        "mint_region": "Münzgebiet",
-        "uncertain_mint_region": "Münzregion unsicher"
+        "mint_region": "Prägeort (Schatzfundkarte)",
+        "uncertain_mint_region": "Erklärung zur Mzst.",
+        "settings": "Einstellungen | Einstellungen",
+        "reconstructed": "Mzst. erschlossen",
+        "mint-region-uncertain": "Prägeort unsicher",
+        "mintAsOnCoin": "Prägeort wie auf Münze",
+        "epoch": "dynastische Einordnung",
+        "label": {
+            "fragment": {
+                "fragment": "Fragmente",
+                "no_fragment": "ganze Münzen"
+            }
+        }
     },
     "role": {
         "caliph": "Kalif | Kalif",
@@ -239,10 +265,13 @@
         "home": "Startseite",
         "impressum": "Impressum",
         "map": "Karten | Karten",
+        "settings": "Einstellungen",
         "Map Landing": "Kartenübersicht",
         "Political Map": "politische Karte",
         "Treasure Map": "Schatzfundkarte",
-        "settings": "Einstellungen"
+        "Map Hoards": "Schatzfundkarte",
+        "Hoards Map": "Schatzfundkarte",
+        "Bibliography": "Bibliographie"
     },
     "slideshow": {
         "delete": "löschen",
@@ -261,7 +290,7 @@
         "signup": "Anmelden",
         "signup_title": "Registrierung",
         "supported_by": "in Zusammenarbeit mit:",
-        "user_login": "Mitarbeiter Login"
+        "user_login": "Mitarbeiter-Login"
     },
     "time": {
         "created": "erstellt am",
@@ -296,7 +325,8 @@
             "cms": "Ersteller",
             "editor": "Editor | Editoren",
             "recorder": "Bearbeiter",
-            "super": "Super"
+            "super": "Super",
+            "creator": "Ersteller"
         }
     },
     "values": {
@@ -307,5 +337,19 @@
     "warning": {
         "list_is_empty": "Bisher sind keine Werte in dieser Liste.",
         "not_reviewed_warning": "Achtung: Dieses Katalogisat wurde noch nicht (abschließend) geprüft und korrekturgelesen!"
+    },
+    "label": {
+        "timeline": {
+            "uncertain_years": "unbekannte Jahre",
+            "unknown_weight": "ohne Gewichtsangabe"
+        },
+        "diagram": "Diagramm"
+    },
+    "propery": {
+        "label": {
+            "fragment": {
+                "no_fragment": "propery.label.no_fragment | propery.no_fragment"
+            }
+        }
     }
 }

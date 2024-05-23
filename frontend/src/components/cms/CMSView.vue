@@ -1,6 +1,5 @@
 <template>
     <div class="cms-view">
-
         <header v-if="$store.getters.canEdit">
             <button
                 v-if="pageMissing"
@@ -19,21 +18,31 @@
             </button>
         </header>
 
-        <component
-            :is="headingTag"
-            class="cms-title"
-            v-if="isPresent('title')"
-        >{{ page.title }}</component>
-        <p
-            class="cms-subtitle"
-            v-if="isPresent('subtitle')"
-        >{{ page.subtitle }}</p>
+        <Info
+            :always-show="true"
+            type="warning"
+            v-if="!exists"
+            style="margin-top: 1rem;"
+        >
+            {{ $t('cms.message.page_not_found') }}
+        </Info>
+        <div v-else>
+            <component
+                :is="headingTag"
+                class="cms-title"
+                v-if="isPresent('title')"
+            >{{ page.title }}</component>
+            <p
+                class="cms-subtitle"
+                v-if="isPresent('subtitle')"
+            >{{ page.subtitle }}</p>
 
-        <p
-            v-if="isPresent('body')"
-            class="cms-body"
-            v-html="page.body"
-        ></p>
+            <p
+                v-if="isPresent('body')"
+                class="cms-body"
+                v-html="page.body"
+            ></p>
+        </div>
     </div>
 </template>
 
@@ -42,9 +51,10 @@ import Button from '../layout/buttons/Button.vue';
 import CMSPage from '../../models/CMSPage';
 import CMSMixin from '../mixins/cms-mixin';
 import Locale from './Locale.vue';
+import Info from '../forms/Info.vue';
 
 export default {
-    components: { Button, Locale },
+    components: { Button, Info, Locale },
     mixins: [CMSMixin],
     mounted() {
         this.init();
