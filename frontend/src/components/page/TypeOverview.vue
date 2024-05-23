@@ -2,7 +2,12 @@
   <div :class="`overview type-overview`">
     <BackHeader :to="{ name: 'Editor' }" />
     <header>
-      <h1>Typ</h1>
+      <h1>
+        <Locale
+          path="property.type"
+          :count="2"
+        />
+      </h1>
       <div
         v-if="isEditor"
         id="create-button"
@@ -13,7 +18,9 @@
         @keydown.enter="create"
       >
         <PlusCircleOutline />
-        <span><locale path="form.create" /></span>
+        <span>
+          <locale path="form.create" />
+        </span>
       </div>
     </header>
     <SearchField
@@ -25,7 +32,10 @@
       :filtered="isListFiltered"
       @clearFilters="clearFilters"
     >
-      <div class="toggle-group" v-if="isEditor">
+      <div
+        class="toggle-group"
+        v-if="isEditor"
+      >
         <labeled-property
           v-for="name of evalFilter"
           :key="'toggle-filter-' + name"
@@ -95,20 +105,25 @@
       </div>
     </ListFilterContainer>
 
-    <pagination :pageInfo="pageInfo" @input="updatePagination">
-      <List :error="error" :items="list" :loading="loading">
+    <pagination
+      :pageInfo="pageInfo"
+      @input="updatePagination"
+    >
+      <List
+        :error="error"
+        :items="list"
+        :loading="loading"
+      >
         <ListItem
           v-for="item of items"
           v-bind:key="item.key"
           :id="`list-item-type-${item.id}`"
           :class="item.completed ? 'completed' : 'incomplete'"
         >
-          <ListItemCell
-            :to="{
-              name: path,
-              params: { id: item.id },
-            }"
-          >
+          <ListItemCell :to="{
+            name: path,
+            params: { id: item.id },
+          }">
             {{ item.projectId }}
           </ListItemCell>
           <CompletedToggle
@@ -201,8 +216,8 @@ export default {
     LabeledProperty,
     ThreeWayToggle,
     Pagination,
-    Locale
-},
+    Locale,
+  },
   mounted: function () {
     let filters = this.isEditor
       ? localStorage.getItem('type-list-filter')
@@ -527,13 +542,12 @@ export default {
   }
 
   .toggle-button.active {
-      background-color: $bright-blue;
+    background-color: $bright-blue;
   }
 }
 </style>
 
 <style lang="scss" scoped>
-
 .list {
   display: flex;
   flex-direction: column;
@@ -589,12 +603,12 @@ export default {
 
   border-radius: $border-radius;
 
-  > * {
+  >* {
     margin-right: $padding;
   }
 }
 
-.overview > * {
+.overview>* {
   margin-bottom: $padding;
 }
 

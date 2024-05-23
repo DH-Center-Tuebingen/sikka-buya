@@ -2,7 +2,12 @@
   <div :class="`overview ${this.property}-page`">
     <BackHeader :to="{ name: 'Editor' }" />
     <header>
-      <h1>{{ $tc(`property.${fixedPropertyName}`) }}</h1>
+      <h1>
+        <Locale
+          :path="`property.${fixedPropertyName}`"
+          :count="2"
+        />
+      </h1>
 
       <Button
         id="create-button"

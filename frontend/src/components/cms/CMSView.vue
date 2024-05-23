@@ -24,7 +24,7 @@
             v-if="!exists"
             style="margin-top: 1rem;"
         >
-            {{ $t('cms.message.page_not_found') }}
+            <locale :path="'cms.message.page_not_found'" />
         </Info>
         <div v-else>
             <component

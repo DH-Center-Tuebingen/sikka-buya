@@ -16,12 +16,12 @@ describe(`Treasures`, function () {
 
     it("Item in editor list", function () {
         cy.visit('/editor')
-        cy.get(".list-item").contains("Schatzfund")
+        cy.get(".list-item").contains("Schatzfunde")
     })
 
     it("Navigate to List", function () {
         cy.visit('/editor')
-        cy.get(".list-item").contains("Schatzfund").click()
+        cy.get(".list-item").contains("Schatzfunde").click()
         cy.location("pathname").should((pathname) => {
             expect(pathname).to.eq("/editor/treasure")
         })

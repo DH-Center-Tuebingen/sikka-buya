@@ -26,7 +26,10 @@
               :to="property.to"
             >
               <span>
-                <locale :path="'property.' + property.name" />
+                <locale
+                  :path="'property.' + property.name"
+                  :count="2"
+                />
               </span>
             </list-item>
           </list>
