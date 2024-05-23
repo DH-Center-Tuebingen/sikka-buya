@@ -46,7 +46,8 @@ function constructFileName(prefix, ext) {
 
 function dump(fileName, options) {
     return new Promise((resolve, reject) => {
-        const command = `pg_dump --username ${process.env.DB_USER} --no-privileges --exclude-table-data app_user --no-password ${options}  --file ${fileName} ${process.env.DB_NAME} `
+        const backupPath = os.homedir() + "/backup"
+        const command = `pg_dump --username ${process.env.DB_USER} --no-privileges --exclude-table-data app_user --no-password ${options}  --file ${backupPath}/${fileName} ${process.env.DB_NAME} `
         execute(command).then(() => {
             console.log(`Successfully exported dump to: ${fileName}`)
             resolve()
@@ -87,7 +88,7 @@ if (options.mode == "backend-schema") {
         // 
         // A definite reason, why this happens remains unknown.
         txt = txt.replace("SELECT pg_catalog.set_config('search_path', '', false);", "-- SELECT pg_catalog.set_config('search_path', '', false);")
-        writeFileSync(fileName, txt, { encoding: "utf-8", flag: "w"})
+        writeFileSync(fileName, txt, { encoding: "utf-8", flag: "w" })
         notice("Schema updated correctly!")
     }).catch((err) => {
         error("Failed to update schema", err)
@@ -95,14 +96,14 @@ if (options.mode == "backend-schema") {
 } else {
     let name = (options.mode === "data") ? "data" : (options.mode === "schema") ? "schema" : "both"
 
-    let ext 
+    let ext
     if (options.format === "custom") {
         ext = "dump"
         additionalOptions.push("--format=custom")
-    } else if (options.format === "text"){
+    } else if (options.format === "text") {
         ext = "sql"
         options.inserts = true
-    }else throw new Error(`Unknown format: ${options.format}`)
+    } else throw new Error(`Unknown format: ${options.format}`)
 
     if (!options.owner) {
         additionalOptions.push("--no-owner")
