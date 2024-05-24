@@ -39,24 +39,24 @@ function showManual() {
 
     Options:
 
-    [no option | ? | --help | -h]   Shows this manual. 
-    [--mode=?]                      Backs up the database in the specified mode:
-                                    --mode=data: Data only
-                                    --mode=schema: Schema only
-                                    --mode=both: Both schema and data *Default*
-                                    --mode=backend-schema: Updates the schema file located at backend/schema.sql
+    [ ? | --help | -h ]   Shows this manual. 
+    [ --mode=? ]                      Backs up the database in the specified mode:
+                                     --mode=data: Data only
+                                     --mode=schema: Schema only
+                                     --mode=both: Both schema and data *Default*
+                                     --mode=backend-schema: Updates the schema file located at backend/schema.sql
 
-    [--owner=?]                     If set to true, the owner of the database objects will be included in the dump. Default is false.
-    [--format=?]                    The format of the dump file:
-                                    --format=custom: Custom format *Default*
-                                    --format=text: Plain text format
+    [ --owner=? ]                     If set to true, the owner of the database objects will be included in the dump. Default is false.
+    [ --format=? ]                    The format of the dump file:
+                                     --format=custom: Custom format *Default*
+                                     --format=text: Plain text format
 
-    [--inserts=?]                   If set to true, the dump will contain INSERT commands to restore the data. Default is false.
-    [--out=?]                       The directory where the dump file will be saved, relative to the 'backend' directory. Default is the current directory. 
-                                    This will override --outAbsolute, if both are present.
+    [ --inserts=? ]                   If set to true, the dump will contain INSERT commands to restore the data. Default is false.
+    [ --out=? ]                       The directory where the dump file will be saved, relative to the 'backend' directory. Default is the current directory. 
+                                      This will override --outAbsolute, if both are present.
 
-    [--outAbsolute=?]               The absolute path where the dump file will be saved. Default is the current directory.
-    [--name=?]                      The name of the dump file. Default is the database name followed by the mode and the current date and time.
+    [ --outAbsolute=? ]               The absolute path where the dump file will be saved. Default is the current directory.
+    [ --name=? ]                      The name of the dump file. Default is the database name followed by the mode and the current date and time.
     `)
 }
 /**
@@ -120,10 +120,9 @@ function dump(fileName, options) {
 
 let args = process.argv.slice(2)
 
-if (args.length <= 1) {
-    const noArgs = args.length === 0
+if (args.length == 1) {
     const isHelp = args.length === 1 && (args[0] === "--help" || args[0] === "-h" || args[0] === "?")
-    if (noArgs || isHelp) {
+    if (isHelp) {
         showManual()
         process.exit(0)
     }
