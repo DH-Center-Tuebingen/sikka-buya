@@ -6,7 +6,7 @@
 
         <header v-if="$store.getters.loggedIn">
 
-            <CMSPublicationStatus :pageTimestamp="parseInt(value.publishedTimestamp)" />
+            <CMSPublicationStatus :pageTimestamp="value.publishedTimestamp" />
             <span class="date">
                 {{ time_mixin_formatDate(value.publishedTimestamp) || "-" }}
             </span>

@@ -18,8 +18,13 @@ function entryToGraphQL(entry) {
     obj.body = entry.body
     obj.image = entry.image
     obj.createdTimestamp = entry.created_timestamp
-    obj.publishedTimestamp = entry.published_timestamp.getTime() === 0 ? null : entry.published_timestamp
     obj.modifiedTimestamp = entry.modified_timestamp
+
+    obj.publishedTimestamp = null
+    if (entry.published_timestamp && entry.published_timestamp.getTime() !== 0) {
+        obj.publishedTimestamp = entry.published_timestamp
+    }
+
     return obj
 }
 

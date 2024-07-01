@@ -105,7 +105,7 @@ export default class CMSPage {
             }
         }`, { group })
         const list = result.data.data.getPageList
-        list.forEach(page => this.timestampsToNumbers(page))
+        list.forEach(page => this.postprocessPage(page))
         return list
     }
 
