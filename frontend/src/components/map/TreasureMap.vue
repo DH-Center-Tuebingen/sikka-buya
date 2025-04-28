@@ -861,6 +861,9 @@ export default {
                     unitBase: frequency,
                     colors: [treasureColor],
                     align: "left",
+                    extras: {
+                        showNoDataMessage: true,
+                    }
                 })
 
                 graphs.push(weightGraph)
@@ -1042,11 +1045,13 @@ export default {
                 }, -Infinity)
 
             return new BarGraph(data, {
-                hlines: true, colors: this.yearCountColors, yMax, yOffset: 10, maxWidth: 10
+                hlines: true, colors: this.yearCountColors, yMax, yOffset: 10, maxWidth: 10,
+                extras: {
+                    showNoDataMessage: true,
+                }
             })
         },
         updateMirrorGraph(data) {
-
             let topMax = 0
             let bottomMax = 0
 
@@ -1060,7 +1065,10 @@ export default {
                 bottomMax,
                 offset: this.graphOffset,
                 colors: this.yearCountColors,
-                hlines: true
+                hlines: true,
+                extras: {
+                    showNoDataMessage: true,
+                }
             })
         },
         updateYearCount() {

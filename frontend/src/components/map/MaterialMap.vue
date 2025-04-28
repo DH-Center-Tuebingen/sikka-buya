@@ -19,7 +19,7 @@
         :items="mintList"
         :selectedIds="selectedMints"
         @selectionChanged="(val) => mintSelectionChanged(val, { preventUpdate: true })
-          "
+        "
       />
     </Sidebar>
 
@@ -380,7 +380,9 @@ export default {
       } else {
         const data = await this.getTypePlot(filters)
         const ranges = Range.fromPointArray(data)
-        const graph = new RangeGraph(ranges, { height: height, contextStyles: { fillStyle: Color.Gray } })
+        const graph = new RangeGraph(ranges, {
+          height: height, contextStyles: { fillStyle: Color.Gray }
+        })
 
         const yMax = data.reduce((acc, val) => Math.max(acc, val.y), 0)
         const linGraph = new LineGraph(data, { edges: "line", yMax, yOffset: 20, contextStyles: { strokeStyle: "#bbb", lineWidth: 1, strokeLinecap: "round" } })

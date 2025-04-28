@@ -29,15 +29,16 @@ class Chart {
 
 export class Graph {
 
-    constructor(data, { contextStyles = {} } = {}) {
+    constructor(data, { contextStyles = {}, extras = {} } = {}) {
         this.data = data
         this.contextStyles = contextStyles
+        this.extras = extras
     }
 
     draw(context, chart) {
         this.joinStyles(context)
 
-        if (this.data.length === 0) {
+        if (this.extras.showNoDataMessage && this.data.length === 0) {
             chart.print(app.vue.$t("graph.no_data"), {
                 font: "bold 16pt Arimo, Arial, sans-serif"
             })
@@ -58,18 +59,20 @@ export class Graph {
 
 export class TickGraph extends Graph {
 
-    constructor(from, to, { options: {
-        longDash = 50,
-        longDashThickness = 1,
-        shortDash = 10,
-        shortDashThickness = 1,
-        textOffset = 5,
-        floatCutoff = 10,
-        showShortTextWhenCountBelow = 20,
-        steps = [1, 5, 10, 50, 100, 200, 500, 1000],
-    } = {}, contextStyles = {} } = {}) {
-        super([from, to], { contextStyles })
+    constructor(from, to, config = {}) {
 
+        const { options: {
+            longDash = 50,
+            longDashThickness = 1,
+            shortDash = 10,
+            shortDashThickness = 1,
+            textOffset = 5,
+            floatCutoff = 10,
+            showShortTextWhenCountBelow = 20,
+            steps = [1, 5, 10, 50, 100, 200, 500, 1000],
+        } = {}, contextStyles = {} } = config
+
+        super([from, to], { contextStyles })
         this.longDash = longDash
         this.shortDash = shortDash
         this.textOffset = textOffset
@@ -138,8 +141,9 @@ export class TickGraph extends Graph {
 
 export class SplitYGraph extends Graph {
 
-    constructor(data, { topMax = 0, bottomMax = 0, offset = 0, hlines = false, contextStyles = {}, colors = [], unitBase = 1, align = "center" } = {}) {
-        super(data, { contextStyles })
+    constructor(data, config = {}) {
+        const { topMax = 0, bottomMax = 0, offset = 0, hlines = false, colors = [], unitBase = 1, align = "center" } = config
+        super(data, config)
         this.topMax = topMax
         this.bottomMax = bottomMax
         this.offset = offset
@@ -218,14 +222,14 @@ export class SplitYGraph extends Graph {
 
 
 export class YGraph extends Graph {
-    constructor(data, {
-        yMax = 0,
-        yOffset = 0,
-        hlines = false,
-        contextStyles = {},
-        align = "center"
-    } = {}) {
-        super(data, { contextStyles })
+    constructor(data, config = {}) {
+        const {
+            yMax = 0,
+            yOffset = 0,
+            hlines = false,
+            align = "center"
+        } = config
+        super(data, config)
         this.yMax = yMax
         this.yOffset = yOffset
         this.hlines = hlines
@@ -299,7 +303,6 @@ export class MirrorGraph extends SplitYGraph {
         super.draw(context, chart)
         const width = chart.unitWidth > this.maxWidth ? this.maxWidth : chart.unitWidth * this.unitBase
 
-
         const center = this.center(chart)
         context.beginPath();
         context.lineWidth = 1
@@ -307,7 +310,6 @@ export class MirrorGraph extends SplitYGraph {
         context.moveTo(0, center)
         context.lineTo(chart.canvas.width, center)
         context.stroke()
-
 
         let alignmentOffset
         if (this.align === "left") {
@@ -347,17 +349,10 @@ export class MirrorGraph extends SplitYGraph {
 }
 
 export class BarGraph extends YGraph {
-    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, unitBase = 1, contextStyles = {}, align = "center" } = {}) {
-        super(data, {
-            yMax,
-            yOffset,
-            contextStyles,
-            hlines,
-            unitBase,
-            align
-        })
-        if (colors.length === 0) colors = defaultColors
-        this.colors = colors
+    constructor(data, config = {}) {
+        const { colors = defaultColors, maxWidth = null, unitBase = 1 } = config
+        super(data, config)
+        this.colors = (colors.length === 0) ? defaultColors : colors
         this.maxWidth = maxWidth
         this.unitBase = unitBase
     }
@@ -412,8 +407,9 @@ export class HorizontalLinesGraph extends YGraph {
 
 export class LineGraph extends YGraph {
 
-    constructor(data, { yMax = 0, yOffset = 0, edges = "drop", contextStyles = {} } = {}) {
-        super(data, { yMax, yOffset, contextStyles })
+    constructor(data, config = {}) {
+        const { edges = "drop" } = {}
+        super(data, config)
         this.edges = edges
     }
 
@@ -465,8 +461,9 @@ export class LineGraph extends YGraph {
 
 export class RangeGraph extends Graph {
 
-    constructor(data, { start = "start", end = "end", contextStyles = {}, translate = 0 } = {}) {
-        super(data, { contextStyles })
+    constructor(data, config = {}) {
+        const { start = "start", end = "end", contextStyles = {}, options = {}, translate = 0 } = {}
+        super(data, config)
         this.start = start
         this.end = end
         this.translate = translate
@@ -489,8 +486,9 @@ export class RangeGraph extends Graph {
 
 export class StackedRanges extends Graph {
 
-    constructor(data, { y = 0, contextStyles = {} } = {}) {
-        super(data, { contextStyles })
+    constructor(data, config = {}) {
+        const { y = 0 } = {}
+        super(data, config)
         this.y = y
     }
 
@@ -652,8 +650,9 @@ export default class TimelineChart extends Chart {
 
 
 export class HighlightGraph extends Graph {
-    constructor(position, { windowWidth = 1, cursorWidth = 1, align = "center" } = {}) {
-        super(position)
+    constructor(position, config = {}) {
+        const { windowWidth = 1, cursorWidth = 1, align = "center" } = config 
+        super(position, config)
 
         this.cursorWidth = cursorWidth
         this.windowWidth = windowWidth
