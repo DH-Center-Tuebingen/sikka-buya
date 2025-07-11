@@ -957,8 +957,6 @@ export default {
             graphs.unshift(nonZeroGraph)
             graphs.push(tickGraph)
 
-
-
             return {
                 graphs,
                 timeline

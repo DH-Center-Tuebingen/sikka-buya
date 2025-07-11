@@ -27,21 +27,46 @@ class Chart {
     }
 }
 
+
+/**
+ * Modules can be passed to Graphs to extend their functionality.
+ */
+export class Module {
+    draw(graph, context, chart) {
+        // This method should be overridden by subclasses to implement custom drawing logic.
+        // The context and chart parameters can be used to draw on the canvas.
+    }
+    baseStyles(graph) {
+        // This method can be overridden to provide base styles for the module.
+        return {}
+    }
+}
+
+export class NoDataModule extends Module {
+    draw(grah, context, chart) {
+        console.log("NoDataModule draw called")
+        if (grah.data.length === 0) {
+            chart.print(app.vue.$t("graph.no_data"), {
+                font: "bold 16pt Arimo, Arial, sans-serif"
+            })
+        }
+    }
+}
+
+
 export class Graph {
 
-    constructor(data, { contextStyles = {} } = {}) {
+    constructor(data, { contextStyles = {}, modules = [] } = {}) {
         this.data = data
+        this.modules = modules
         this.contextStyles = contextStyles
     }
 
     draw(context, chart) {
         this.joinStyles(context)
-
-        if (this.data.length === 0) {
-            chart.print(app.vue.$t("graph.no_data"), {
-                font: "bold 16pt Arimo, Arial, sans-serif"
-            })
-        }
+        this.modules.forEach(module => {
+            module.draw(this, context, chart)
+        })
     }
 
     get baseStyles() {
@@ -52,7 +77,12 @@ export class Graph {
     }
 
     joinStyles(context) {
-        Object.assign(context, this.baseStyles, this.contextStyles)
+        Object.assign(context, this.baseStyles)
+        this.modules.forEach(module => {
+            const styles = module.baseStyles(this)
+            Object.assign(context, styles)
+        })
+        Object.assign(context, this.contextStyles)
     }
 }
 
@@ -67,8 +97,11 @@ export class TickGraph extends Graph {
         floatCutoff = 10,
         showShortTextWhenCountBelow = 20,
         steps = [1, 5, 10, 50, 100, 200, 500, 1000],
-    } = {}, contextStyles = {} } = {}) {
-        super([from, to], { contextStyles })
+    } = {},
+        contextStyles = {},
+        modules = [],
+    } = {}) {
+        super([from, to], { contextStyles, modules })
 
         this.longDash = longDash
         this.shortDash = shortDash
@@ -138,8 +171,18 @@ export class TickGraph extends Graph {
 
 export class SplitYGraph extends Graph {
 
-    constructor(data, { topMax = 0, bottomMax = 0, offset = 0, hlines = false, contextStyles = {}, colors = [], unitBase = 1, align = "center" } = {}) {
-        super(data, { contextStyles })
+    constructor(data, {
+        topMax = 0,
+        bottomMax = 0,
+        offset = 0,
+        hlines = false,
+        contextStyles = {},
+        colors = [],
+        unitBase = 1,
+        align = "center",
+        modules = []
+    } = {}) {
+        super(data, { contextStyles, modules })
         this.topMax = topMax
         this.bottomMax = bottomMax
         this.offset = offset
@@ -216,16 +259,16 @@ export class SplitYGraph extends Graph {
 
 }
 
-
 export class YGraph extends Graph {
     constructor(data, {
         yMax = 0,
         yOffset = 0,
         hlines = false,
+        align = "center",
         contextStyles = {},
-        align = "center"
+        modules = [],
     } = {}) {
-        super(data, { contextStyles })
+        super(data, { contextStyles, modules })
         this.yMax = yMax
         this.yOffset = yOffset
         this.hlines = hlines
@@ -347,14 +390,26 @@ export class MirrorGraph extends SplitYGraph {
 }
 
 export class BarGraph extends YGraph {
-    constructor(data, { colors = defaultColors, hlines = false, yMax = 0, yOffset = 0, maxWidth = null, unitBase = 1, contextStyles = {}, align = "center" } = {}) {
+    constructor(data, {
+        colors = defaultColors,
+        hlines = false,
+        yMax = 0,
+        yOffset = 0,
+        maxWidth = null,
+        unitBase = 1,
+        align = "center",
+        contextStyles = {},
+        modules = [],
+    } = {}) {
+
         super(data, {
             yMax,
             yOffset,
-            contextStyles,
             hlines,
             unitBase,
-            align
+            align,
+            contextStyles,
+            modules,
         })
         if (colors.length === 0) colors = defaultColors
         this.colors = colors
@@ -412,8 +467,8 @@ export class HorizontalLinesGraph extends YGraph {
 
 export class LineGraph extends YGraph {
 
-    constructor(data, { yMax = 0, yOffset = 0, edges = "drop", contextStyles = {} } = {}) {
-        super(data, { yMax, yOffset, contextStyles })
+    constructor(data, { yMax = 0, yOffset = 0, edges = "drop", contextStyles = {}, modules = [] } = {}) {
+        super(data, { yMax, yOffset, contextStyles, modules })
         this.edges = edges
     }
 
@@ -465,8 +520,8 @@ export class LineGraph extends YGraph {
 
 export class RangeGraph extends Graph {
 
-    constructor(data, { start = "start", end = "end", contextStyles = {}, translate = 0 } = {}) {
-        super(data, { contextStyles })
+    constructor(data, { start = "start", end = "end", translate = 0, contextStyles = {}, modules = [] } = {}) {
+        super(data, { contextStyles, modules })
         this.start = start
         this.end = end
         this.translate = translate
@@ -489,8 +544,8 @@ export class RangeGraph extends Graph {
 
 export class StackedRanges extends Graph {
 
-    constructor(data, { y = 0, contextStyles = {} } = {}) {
-        super(data, { contextStyles })
+    constructor(data, { y = 0, contextStyles = {}, modules = [] } = {}) {
+        super(data, { contextStyles, modules })
         this.y = y
     }
 
@@ -652,8 +707,14 @@ export default class TimelineChart extends Chart {
 
 
 export class HighlightGraph extends Graph {
-    constructor(position, { windowWidth = 1, cursorWidth = 1, align = "center" } = {}) {
-        super(position)
+    constructor(position,
+        { windowWidth = 1,
+            cursorWidth = 1,
+            align = "center",
+            modules = [],
+            contextStyles = {}
+        } = {}) {
+        super(position, { contextStyles, modules })
 
         this.cursorWidth = cursorWidth
         this.windowWidth = windowWidth
@@ -673,7 +734,6 @@ export class HighlightGraph extends Graph {
         context.rect(rect.x, rect.y, rect.width, rect.height)
         context.fillStyle = "rgba(0,0,0,0.05)"
         context.fill()
-
     }
 }
 

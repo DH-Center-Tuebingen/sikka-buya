@@ -5,3 +5,8 @@
 ### Bug Fixes
 - Added scrollwheel support to slider component: Shift scolls 10 years and Ctrl scrolls 100 years.
 - Slider now emits the new value instead of the event object.
+- Fixed 'No data' message on material map when no data is available.
+    - Created a Module system to add additional functionalities to single graphs.
+    - Created a NoDataModule that displays a message when no data is available.
+    - Removed TimelineTicks from MaterialMap and replaced it with a TickGraph
+    - Added TimellineCreateMarks prop on TimelineSlideshowArea 
