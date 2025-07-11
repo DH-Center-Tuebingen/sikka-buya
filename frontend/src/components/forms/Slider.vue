@@ -27,8 +27,9 @@
         :max="max"
         :step="step"
         :name="name"
-        @change="(event) => $emit('change', event)"
-        @input="(event) => $emit('input', event)"
+        @wheel.prevent.stop="(event) => onWheel(event)"
+        @change="(event) => onValueChange(event)"
+        @input="(event) => onValueChange(event)"
         @focus="(event) => $emit('focus', event)"
         @blur="(event) => $emit('blur', event)"
       />
@@ -70,26 +71,24 @@ export default {
     focus() {
       this.$refs.slider.focus()
     },
-    updateValue(event) {
-      const { x: sliderX, width } = event.currentTarget.getBoundingClientRect();
-      let { x } = event;
-
-      let clickPosition = x - sliderX;
-      const ratio = clickPosition / width;
-      let value = ratio * this.range;
-      const rest = value % this.step;
-      if (rest !== 0) {
-        if (rest < this.step / 2) {
-          value -= rest;
-        } else {
-          value += this.step - rest;
-        }
+    onValueChange(event) {
+      if (this.interactive) {
+        this.applyValue(event.target.value);
       }
-      event.value = value;
-
-      this.$emit('change', event);
-      this.$emit('input', event);
     },
+    onWheel(event){
+      if(this.interactive) {
+        const modifier = event.ctrlKey ? 100 : event.shiftKey ? 10 : 1;
+        let value = this.value - this.step * modifier * Math.sign(event.deltaY);
+        this.applyValue(value)
+      }
+    },
+    applyValue(newValue) {
+      newValue = newValue > this.max ? this.max : newValue
+      newValue = newValue < this.min ? this.min : newValue
+      this.$emit('input', newValue);
+      this.$emit('change', newValue)
+    }
   },
   computed: {
     ratio() {

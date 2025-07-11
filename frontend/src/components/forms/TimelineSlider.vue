@@ -6,7 +6,7 @@
     :max="max"
     :step="step"
     :interactive="interactive"
-    @input="(arg) => $emit('input', arg)"
+    @input="(value) => $emit('input', value)"
     @focus="(arg) => $emit('focus', arg)"
     @blur="(arg) => $emit('blur', arg)"
     ref="slider"

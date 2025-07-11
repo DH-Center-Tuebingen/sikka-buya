@@ -90,7 +90,7 @@
               <slider
                 name="maxRadius"
                 :value="overlaySettings.maxRadius"
-                @input="overlaySettingsChanged"
+                @input="(value) => overlaySettingsChanged('maxRadius', value)"
                 :min="overlaySettings.maxRadiusMinimum"
                 :max="overlaySettings.maxRadiusMaximum"
               />
