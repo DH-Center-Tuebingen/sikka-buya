@@ -10,6 +10,7 @@
           v-model="text"
         />
         <catalog-filter
+          :filterConfig="filterConfig"
           :pageInfo="pageInfo"
           :initData="catalog_filter_mixin_initData"
           :overwriteOrder="filterOrder"
@@ -65,6 +66,7 @@ import SearchField from '../../layout/SearchField.vue';
 import catalogFilterMixin from '../../mixins/catalog-filter';
 import Locale from '../../cms/Locale.vue';
 import FilterControl from '../../interactive/search/filters/FilterControl.vue';
+import { filterConfig } from '../../../config/catalog_filter';
 
 export default {
   components: {
@@ -84,6 +86,7 @@ export default {
       error: null,
       types: [],
       pageInfo: { count: 50, page: 0, total: 0, last: 0 },
+      filterConfig,
     };
   },
   mixins: [catalogFilterMixin('sikka-buya-catalog-filter-search')],

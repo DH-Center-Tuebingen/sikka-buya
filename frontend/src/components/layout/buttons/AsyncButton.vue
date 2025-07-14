@@ -55,6 +55,7 @@ export default {
 }
 
 .spinner {
+  color: white;
   position: absolute;
   left: 50%;
   top: 50%;

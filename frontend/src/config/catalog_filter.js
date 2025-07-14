@@ -1,4 +1,5 @@
 import Mode from "../models/Mode";
+import { cloneDeep } from "lodash";
 
 export const FilterType = {
     text: "text",
@@ -186,25 +187,31 @@ function getDefaultValueByFilterType(type) {
         default:
             throw new Error("No default value for filter type " + type)
     }
-
 }
 
-export const filterConfig = Object.entries(_filterConfig).reduce((acc, [typeName, types]) => {
-    acc[typeName] = types.map((filter) => {
-        filter.type = typeName;
-        filter.defaultValue = filter.defaultValue || getDefaultValueByFilterType(typeName);
-        return filter;
-    });
-    return acc;
-}, {});
+function applyDefaultValues(filterConfig) {
+    return Object.entries(filterConfig).reduce((acc, [typeName, filters]) => {
+        acc[typeName] = filters.map((filter) => {
+            filter.type = typeName;
+            filter.defaultValue = filter.defaultValue || getDefaultValueByFilterType(typeName);
+            return filter;
+        });
+        return acc;
+    }, {});
+}
+
+export const filterConfig = applyDefaultValues(_filterConfig);
 
 
 
-export const filterConfigFlat = Object.values(filterConfig).flat();
-export const filtersFlatOrdered = filterConfigFlat.sort((a, b) => a.order - b.order);
-export const filterKeys = filterConfigFlat.map((filter) => filter.name);
 
-export const filterNameMap = Object.values(filterConfigFlat).reduce((acc, filter) => {
-    acc[filter.name] = filter;
-    return acc;
-}, {})
+let _expertConfig = cloneDeep(filterConfig);
+const rulerOption = _expertConfig[FilterType.multiSelect].find(obj => obj.name === 'ruler')
+if(!rulerOption) {
+    throw new Error("Ruler configuration not found in filterConfig");
+}
+delete rulerOption.additionalParameters;
+export const expertFilterConfig = applyDefaultValues(_expertConfig);
+
+
+

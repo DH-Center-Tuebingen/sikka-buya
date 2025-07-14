@@ -69,6 +69,7 @@
         <catalog-filter
           ref="catalogFilter"
           :initData="catalog_filter_mixin_initData"
+          :filterConfig="filterConfig"
           @loading="setLoading"
           @update="dataUpdated"
           @dynamic-change="recalculateCatalogSidebar"
@@ -152,6 +153,7 @@ import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
 import { RangeGraph, LineGraph, NoDataModule, TickGraph } from '../../models/timeline/TimelineChart.js';
 import Color from '../../utils/Color';
+import { filterConfig } from '../../config/catalog_filter';
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'MaterialOverlay');
@@ -191,6 +193,7 @@ export default {
       pageInfo: { page: 0, count: 100000 },
       painter: null,
       chart: null,
+      filterConfig: filterConfig,
     };
   },
   mixins: [
@@ -377,8 +380,6 @@ export default {
       delete otherFilters['excludeFromMapApp']
 
       const graphs = []
-      console.log("Drawing timeline with filters", filters, otherFilters)
-
       const tickGraph = new TickGraph(this.timeline.from, this.timeline.to, {
         options: { longDash: 20 },
         contextStyles: { strokeStyle: Color.Black, lineWidth: 1 },
