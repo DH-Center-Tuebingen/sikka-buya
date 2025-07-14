@@ -126,8 +126,15 @@ export default {
     },
     activeFilters() {
       const activeFilters = this.catalog_filter_mixin_activeFilters
-      if (this.text != '') {
-        activeFilters.push({ key: "plain_text", value: this.text });
+
+      if (this.text !== '') {
+        const textFilterIndex = activeFilters.findIndex(f => f.key === "plain_text")
+        const filter = { key: "plain_text", value: this.text }
+        if (textFilterIndex === -1) {
+          activeFilters.push(filter);
+        } else{
+          activeFilters[textFilterIndex] = filter;
+        }
       }
 
       return activeFilters;
