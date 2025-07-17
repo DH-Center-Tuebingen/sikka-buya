@@ -11,7 +11,7 @@
     <div class="flex row">
 
       <div class="flex-fill">
-        <template v-for="permission of ['super', 'cms', 'editor']">
+        <template v-for="permission of ['super', 'writer', 'editor']">
           <list
             :items="getPropertyByPermission(permission)"
             v-if="$store.getters.userHasPermission(permission) &&
@@ -154,7 +154,7 @@ export default {
           { name: 'user', to: { name: 'UserManagement' } },
           { name: 'settings', to: { name: 'Settings' } }
         ],
-        cms: this.properties,
+        editor: this.properties,
       };
     },
     supportPrograms() {

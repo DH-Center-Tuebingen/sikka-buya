@@ -4,7 +4,7 @@
     :class="mode"
   >
     <div
-      v-if="$store.getters.canEdit"
+      v-if="$store.getters.isEditableByWriter"
       class="cms-image-container"
     >
       <loading-spinner

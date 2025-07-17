@@ -9,15 +9,17 @@ const { guardFunctionObject: guard } = require('../utils/guard.js')
 const { WriteableDatabase, pgp, Database } = require('../utils/database.js')
 const Type = require('../utils/type')
 
+// Generic Klasses
+const NamedGQL = require('./klasses/NamedGQL')
 // Klasses
 const BlockGQL = require('./klasses/BlockGQL')
-const PageGQL = require('./klasses/PageGQL')
-const TreasureGQL = require('./klasses/TreasureGQL')
-const Frontend = require('../frontend')
-const SettingsGQL = require('./klasses/SettingsGQL')
+const EpochGQL = new NamedGQL("epoch")
 const MintRegionGQL = require('./klasses/MintRegionGQL')
-const NamedGQL = require('./klasses/NamedGQL')
+const PageGQL = require('./klasses/PageGQL')
+const SettingsGQL = require('./klasses/SettingsGQL')
+const TreasureGQL = require('./klasses/TreasureGQL')
 
+const Frontend = require('../frontend')
 /**
  * Most mutations require the user to be logged in to
  * manipulate the database.
@@ -136,20 +138,6 @@ const SuperUserMutations = {
 
 
 const UserMutations = {
-    async changePersonExplorerOrder(_, args) {
-        return WriteableDatabase.none("INSERT INTO person_explorer_custom_sorting (person, position) VALUES ($[person], $[position]) ON CONFLICT (person) DO UPDATE SET position=$[position]", args)
-    },
-    async updateNote(_, args) {
-        let { text, property, propertyId: property_id } = args
-        await WriteableDatabase.none(`
-            INSERT INTO note (text, property, property_id) 
-            VALUES ($[text], $[property], $[property_id])
-            ON CONFLICT (property, property_id)
-            DO UPDATE SET text=$[text]
-            WHERE note.property=$[property] AND note.property_id=$[property_id];
-            `, { text, property, property_id })
-
-    },
     async updateLang(_, args, context) {
         let { id,
             table,
@@ -169,16 +157,12 @@ const UserMutations = {
             await WriteableDatabase.none(query + " ON CONFLICT (id) DO UPDATE SET $[attr:name]=$[value]", { attr, value })
         }
     },
-    async updateMaterialColor(_, args) {
-        return WriteableDatabase.none(`INSERT INTO material_color (material, color) VALUES ($[id], $[color]) ON CONFLICT (material) DO UPDATE SET color=$[color]`, args)
-    },
+
     async addComment(_, args) {
         let { text,
             user,
             property,
             propertyId: property_id } = args
-
-
 
         await WriteableDatabase.none("INSERT INTO comment (text, property, property_id, user_id) VALUES ($[text], $[property], $[property_id],$[user])", {
             text,
@@ -188,6 +172,42 @@ const UserMutations = {
         })
     },
 
+
+    setLang(_, { path, lang, singular, plural } = {}) {
+        Argument.require({ path, lang, singular })
+        Language.set(path, lang, singular, plural)
+    }
+}
+
+/**
+ * Editors are users that have the 'editor' privilege set.
+ * 
+ * 
+ * Generally any priovilege (just a string) can be stored in the 'app_user_privilege' table 
+ * and be used to guard specific routes like it's done with the editor mutations.
+ */
+const EditorMutations = {
+    ...TreasureGQL.Mutations,
+    ...MintRegionGQL.Mutations,
+    ...EpochGQL.Mutations,
+    async changePersonExplorerOrder(_, args) {
+        return WriteableDatabase.none("INSERT INTO person_explorer_custom_sorting (person, position) VALUES ($[person], $[position]) ON CONFLICT (person) DO UPDATE SET position=$[position]", args)
+    },
+    async updateCoinType(_, args, context) {
+        if (!args.id) throw new Error("No id provided!")
+
+        return Type.updateType(args.id, args.data, context)
+    },
+    async updateNote(_, args) {
+        let { text, property, propertyId: property_id } = args
+        await WriteableDatabase.none(`
+            INSERT INTO note (text, property, property_id) 
+            VALUES ($[text], $[property], $[property_id])
+            ON CONFLICT (property, property_id)
+            DO UPDATE SET text=$[text]
+            WHERE note.property=$[property] AND note.property_id=$[property_id];
+            `, { text, property, property_id })
+    },
     async addCoinType(_, args, context, info) {
         return Type.addType(_, args, context, info)
     },
@@ -220,25 +240,14 @@ const UserMutations = {
 
         return Type.deleteType(args.id)
     },
-    async updateCoinType(_, args, context) {
-        if (!args.id) throw new Error("No id provided!")
-
-        return Type.updateType(args.id, args.data, context)
+    async updateMaterialColor(_, args) {
+        return WriteableDatabase.none(`INSERT INTO material_color (material, color) VALUES ($[id], $[color]) ON CONFLICT (material) DO UPDATE SET color=$[color]`, args)
     },
-    setLang(_, { path, lang, singular, plural } = {}) {
-        Argument.require({ path, lang, singular })
-        Language.set(path, lang, singular, plural)
-    }
 }
 
-/**
- * Editors are users that have the 'editor' privilege set.
- * 
- * 
- * Generally any priovilege (just a string) can be stored in the 'app_user_privilege' table 
- * and be used to guard specific routes like it's done with the editor mutations.
- */
-const EditorMutations = {
+const WriterMutations = {
+    ...PageGQL.Mutations,
+    ...BlockGQL.Mutations,
     async uploadFile(_, { identity, file: filePromise }) {
         if (!identity) throw new Error("Identity field is required!")
         if (!filePromise) throw new Error("File field is required!")
@@ -269,20 +278,12 @@ const EditorMutations = {
     },
 }
 
-const EpochGQL = new NamedGQL("epoch")
 const Mutations = Object.assign({},
     UnguardedMutations,
-    guard(
-        Object.assign(
-            UserMutations,
-            PageGQL.Mutations,
-            BlockGQL.Mutations,
-            TreasureGQL.Mutations,
-            MintRegionGQL.Mutations,
-            EpochGQL.Mutations,
-        ), (_, __, context) => {
-            return Auth.verifyContext(context)
-        }),
+    guard(UserMutations, (_, __, context) => {
+        return Auth.verifyContext(context)
+    }),
+    guard(WriterMutations, async (_, __, context) => await Auth.requirePermission(context, 'writer')),
     guard(EditorMutations, async (_, __, context) => await Auth.requirePermission(context, 'editor')),
     guard(Object.assign(
         SuperUserMutations,

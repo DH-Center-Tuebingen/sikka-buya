@@ -65,7 +65,6 @@ const store = new Vuex.Store({
     printError(state, error) {
       if (!Array.isArray(error)) error = [error]
       state.errors.push(...error)
-
       setTimeout(() => state.errors.shift(0, error.length), 5000)
     },
     resetErrors(state) {
@@ -91,8 +90,11 @@ const store = new Vuex.Store({
     editor(state, getters) {
       return getters.userHasPermission("editor")
     },
-    canEdit(state, getters) {
-      return state.editmode && getters.editor
+    writer(state, getters) {
+      return getters.userHasPermission("writer")
+    },
+    isEditableByWriter(state, getters) {
+      return state.editmode && getters.writer
     },
     hasErrors(state) {
       return state.errors.length > 0

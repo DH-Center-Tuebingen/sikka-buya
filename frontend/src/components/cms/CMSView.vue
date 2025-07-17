@@ -1,6 +1,6 @@
 <template>
     <div class="cms-view">
-        <header v-if="$store.getters.canEdit">
+        <header v-if="$store.getters.isEditableByWriter">
             <button
                 v-if="pageMissing"
                 @click="cms_mixin_createAndVisit(group)"
@@ -107,7 +107,7 @@ export default {
     },
     computed: {
         pageMissing() {
-            return (this.ready && this.page.id === null) && this.$store.getters.canEdit
+            return (this.ready && this.page.id === null) && this.$store.getters.isEditableByWriter
         }
     }
 };

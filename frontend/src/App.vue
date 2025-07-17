@@ -637,12 +637,9 @@ a {
   width: 720px;
   bottom: 0;
 
-  background-color: $red;
-  color: $white;
   left: 50%;
   transform: translateX(-50%) translateY(100%);
-  padding: $padding;
-  border-radius: $small-border-radius;
+
   z-index: 99999999999;
 
   transition: all $transition-time;
@@ -659,6 +656,14 @@ a {
       margin-bottom: 0;
     }
   }
+}
+
+.error-message {
+  background-color: $red;
+  color: $white;
+  padding: $padding;
+  margin-top: $small-padding;
+  border-radius: $small-border-radius;
 }
 
 .hint {

@@ -1,9 +1,9 @@
 <template>
     <span
         class="locale-comp"
-        :class="{ editable: $store.getters.canEdit }"
+        :class="{ editable: $store.getters.isEditableByWriter }"
     >
-        <template v-if="$store.getters.canEdit">
+        <template v-if="$store.getters.isEditableByWriter">
             <LocaleIcon
                 v-if="iconBefore"
                 :lang="lang"
