@@ -32,17 +32,17 @@
         class="button icon-button"
         @click="button.action"
         :key="`action-button-${button.icon}}`"
-        :title="button.hotkey ? `${button.name} (${button.hotkey})` : button.name"
+        :title="button.hotkey ? `${$tc(`slideshow.${button.name}`)} (${button.hotkey})` : $tc(`slideshow.${button.name}`)"
       >
         <Icon
           type="mdi"
           :path="button.icon"
           :size="iconSize"
         />
-        <Locale
+        <!-- <Locale
           v-if="button.name"
           :path="`slideshow.${button.name}`"
-        />
+        /> -->
       </div>
     </div>
   </div>
@@ -95,6 +95,7 @@ export default {
       iconSize: 18,
       controls: [
         {
+          name: "previous",
           icon: mdiSkipPrevious,
           action: this.prevSlide,
           hotkey: this.$t('key.page_up')
@@ -106,12 +107,12 @@ export default {
         }, {
           name: "delete",
           icon: mdiDelete,
-          action: this.removeSlide,
+          action: ()=> this.removeSlide(this.currentSlide),
         },
         {
           name: "record",
           icon: mdiCameraOutline,
-          action: this.requestSlide,
+          action: ()=>this.requestSlide(null),
         },
         {
           name: "import",
@@ -124,6 +125,7 @@ export default {
           action: this.exportSlideshow,
         },
         {
+          name: "next",
           icon: mdiSkipNext,
           action: this.nextSlide,
           hotkey: this.$t('key.page_down')
@@ -221,7 +223,7 @@ export default {
     overrideSlide() {
       this.requestSlide(this.currentSlide, true)
     },
-    requestSlide(index, overwrite) {
+    requestSlide(index = null, overwrite = false) {
       this.$root.$emit('request-slide-options', {
         slideshow: this,
         index,
@@ -275,6 +277,8 @@ export default {
       this.updateSlide();
     },
     removeSlide(index) {
+
+      console.log('Removing slide at index:', index);
       if (index == null) index = this.currentSlide;
       if (index === this.slides.length - 1) {
         this.currentSlide = this.slides.length - 2;
@@ -352,6 +356,12 @@ export default {
   >* {
     flex: 1;
   }
+
+  .button {
+    
+    border-right: 1px solid $dark-white;
+  }
+
 }
 
 .icon-button .text {
@@ -371,12 +381,13 @@ export default {
   box-sizing: border-box;
   border-color: $dark-white;
 
-  &:not(:last-child) {
+  &:last-child {
     border-right-width: 0;
   }
 
   &:hover {
     color: $black;
+    background-color: $dark-white;
   }
 }
 </style>

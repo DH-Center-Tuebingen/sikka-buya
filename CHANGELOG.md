@@ -10,3 +10,4 @@
     - Created a NoDataModule that displays a message when no data is available.
     - Removed TimelineTicks from MaterialMap and replaced it with a TickGraph
     - Added TimellineCreateMarks prop on TimelineSlideshowArea 
+- Fixed timeline delete and add and removed timeline labels (now as titles on hoveru).

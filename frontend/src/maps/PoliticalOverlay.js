@@ -482,7 +482,7 @@ export default class PoliticalOverlay extends Overlay {
 
       let marker = this.createMintLocationMarker(latlng, feature, { active: isMintSelected, added: wasAdded, removed: wasRemoved, animationTime })
       marker.addTo(layer)
-      if (marker.isSpecial) layer.isSpecial = true
+      layer.isSpecial = Boolean(marker.isSpecial)
     } else {
       layer = this.createMintLocationMarker(latlng, feature, { active: isMintSelected, added: wasAdded, removed: wasRemoved, animationTime })
     }
