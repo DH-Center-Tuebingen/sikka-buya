@@ -7,6 +7,7 @@
 - Changed permission 'cms' to 'writer'. Now the 'writer' permission is required
   to create and edit CMS pages.
 - Localization changes is now part of the 'writer' permission.
+- Removed heirs from political map (w/o timeline)
 
 ### Bug Fixes
 

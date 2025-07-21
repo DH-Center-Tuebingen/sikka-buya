@@ -108,7 +108,6 @@ export default class PoliticalOverlay extends Overlay {
         getPersonMints(mints: $mints) {
           mint { id, name, location }
           caliphs {id shortName name color dynasty {id name } }
-          heirs {id shortName name color dynasty {id name } }
           issuers {id shortName name color dynasty {id name } }
           overlords {id shortName name color dynasty {id name } }
         }
@@ -199,7 +198,7 @@ export default class PoliticalOverlay extends Overlay {
           mintMap[pm.mint.id].data.personMints = pm
           availableMints[pm.mint.id] = mintMap[pm.mint.id]
 
-            ;[...pm.heirs, ...pm.caliphs, ...pm.issuers, ...pm.overlords].forEach(person => {
+            ;[ ...pm.caliphs, ...pm.issuers, ...pm.overlords].forEach(person => {
               rulers[person.id] = person
             })
         }
