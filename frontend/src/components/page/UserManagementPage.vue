@@ -159,7 +159,6 @@ export default {
   mounted: async function () {
     try {
       await this.refreshUserList();
-      console.log('UserManagementPage mounted');
     } catch (err) {
       this.$store.commit('printError', err);
     }

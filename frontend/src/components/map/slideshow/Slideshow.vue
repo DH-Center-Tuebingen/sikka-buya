@@ -277,8 +277,6 @@ export default {
       this.updateSlide();
     },
     removeSlide(index) {
-
-      console.log('Removing slide at index:', index);
       if (index == null) index = this.currentSlide;
       if (index === this.slides.length - 1) {
         this.currentSlide = this.slides.length - 2;

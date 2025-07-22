@@ -43,9 +43,8 @@ export class Module {
 }
 
 export class NoDataModule extends Module {
-    draw(grah, context, chart) {
-        console.log("NoDataModule draw called")
-        if (grah.data.length === 0) {
+    draw(graph, context, chart) {
+        if (graph.data.length === 0) {
             chart.print(app.vue.$t("graph.no_data"), {
                 font: "bold 16pt Arimo, Arial, sans-serif"
             })

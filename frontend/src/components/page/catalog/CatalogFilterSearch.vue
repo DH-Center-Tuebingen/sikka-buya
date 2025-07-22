@@ -135,7 +135,7 @@ export default {
         const filter = { key: "plain_text", value: this.text }
         if (textFilterIndex === -1) {
           activeFilters.push(filter);
-        } else{
+        } else {
           activeFilters[textFilterIndex] = filter;
         }
       }

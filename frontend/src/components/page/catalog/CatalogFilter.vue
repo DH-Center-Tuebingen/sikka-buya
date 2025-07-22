@@ -487,7 +487,6 @@ export default {
         ...this.filterConfig[FilterType.buttonGroup],
         ...this.filterConfig[FilterType.number],
       ].forEach((item) => {
-        console.log(item.name, this.filters[item.name])
         this.resetFilter(item.name)
       });
 
@@ -545,7 +544,6 @@ export default {
         name,
         idx
       );
-      console.log(methodName, target, idx)
       return this[methodName](target, idx);
     },
     resetFilter(name) {
@@ -564,8 +562,6 @@ export default {
         name,
         index
       );
-      console.log(methodName, target, index)
-
       return this[methodName](target, index);
     },
     removeFilterItemGroup(name, idx) {
@@ -573,8 +569,6 @@ export default {
     },
     addToFilterList(name) {
       const methodName = FilterList.pushMethodName(name);
-      console.log(methodName)
-
       return this[methodName]();
     },
     searchVariableName(value) {
