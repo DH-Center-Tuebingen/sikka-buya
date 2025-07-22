@@ -8,7 +8,7 @@
                 <FileUploadButton
                     @change="uploadFile"
                     :loading="uploading"
-                    v-if="$store.getters.canEdit"
+                    v-if="$store.getters.isEditableByWriter"
                 >
                     <Locale path="general.add" />
                 </FileUploadButton>
@@ -33,7 +33,7 @@
                 </a>
 
                 <ActionsDrawer
-                    v-if="$store.getters.canEdit"
+                    v-if="$store.getters.isEditableByWriter"
                     :actions="[{ name: 'delete', label: $tc('general.delete') }]"
                     @select="(action) => executeAction(action, file)"
                     align="right"

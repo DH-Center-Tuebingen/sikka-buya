@@ -10,6 +10,7 @@
           v-model="text"
         />
         <catalog-filter
+          :filterConfig="filterConfig"
           :pageInfo="pageInfo"
           :initData="catalog_filter_mixin_initData"
           :overwriteOrder="filterOrder"
@@ -65,6 +66,7 @@ import SearchField from '../../layout/SearchField.vue';
 import catalogFilterMixin from '../../mixins/catalog-filter';
 import Locale from '../../cms/Locale.vue';
 import FilterControl from '../../interactive/search/filters/FilterControl.vue';
+import { useFilterConfig } from '../../../config/catalog_filter';
 
 export default {
   components: {
@@ -84,6 +86,7 @@ export default {
       error: null,
       types: [],
       pageInfo: { count: 50, page: 0, total: 0, last: 0 },
+      filterConfig: useFilterConfig(),
     };
   },
   mixins: [catalogFilterMixin('sikka-buya-catalog-filter-search')],
@@ -126,8 +129,15 @@ export default {
     },
     activeFilters() {
       const activeFilters = this.catalog_filter_mixin_activeFilters
-      if (this.text != '') {
-        activeFilters.push({ key: "plain_text", value: this.text });
+
+      if (this.text !== '') {
+        const textFilterIndex = activeFilters.findIndex(f => f.key === "plain_text")
+        const filter = { key: "plain_text", value: this.text }
+        if (textFilterIndex === -1) {
+          activeFilters.push(filter);
+        } else {
+          activeFilters[textFilterIndex] = filter;
+        }
       }
 
       return activeFilters;

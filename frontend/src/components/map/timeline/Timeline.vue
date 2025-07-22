@@ -30,8 +30,8 @@
         :subdivisions="10"
         :interactive="interactive"
         :create-marks="createMarks"
-        @change.stop="change"
-        @input.stop="change"
+        @change="change"
+        @input="change"
         @focus="() => focussed = true"
         @blur="() => focussed = false"
         ref="timelineSlider"
@@ -129,15 +129,14 @@ export default {
       this.map.setView(options.location, options.zoom, { animation: true });
       this.changed(options.year);
     },
-    input(event) {
+    input(value) {
+      let newValue = parseFloat(value)
+      if (isNaN(newValue)) newValue = "";
 
-      let value = parseFloat(event.currentTarget.value)
-      if (isNaN(value)) value = "";
-
-      this.$emit('input', value);
+      this.$emit('input', newValue);
     },
-    change(event) {
-      this.changed(parseFloat(event.currentTarget.value));
+    change(value) {
+      this.changed(parseFloat(value));
     },
     changed(val, isPlaying = false) {
       this.$emit('change', val, isPlaying);

@@ -18,6 +18,23 @@
         />
       </form>
     </section>
+    <section class="permissions-descriptions">
+      <div
+        v-for="permission in permissions"
+        :key="permission.name"
+        class="permission-description"
+      >
+        <header>
+          <Icon
+            type="mdi"
+            :path="permission.icon"
+            size="50"
+          />
+          <h3>{{ permission.name }}</h3>
+        </header>
+        <p>{{ permission.description }}</p>
+      </div>
+    </section>
     <section>
       <h2>Registered Users</h2>
       <div
@@ -31,7 +48,30 @@
           :key="`user-id-${user.id}`"
         >
           <span class="email">{{ user.email }}</span>
+
           <toggle
+            v-for="permission in permissions"
+            :key="`toggle-${permission.name}`"
+            :value="user[permission.name.toLowerCase()]"
+            @input="() => togglePermission(user, permission.name.toLowerCase())"
+          >
+            <template v-slot:active>
+              <Icon
+                :path="permission.icon"
+                :size="24"
+                :viewbox="'0 0 24 24'"
+              />
+            </template>
+            <template v-slot:inactive>
+              <Icon
+                :path="permission.icon"
+                :size="24" 
+                :viewbox="'0 0 24 24'"
+              />
+            </template>
+          </toggle>
+
+          <!-- <toggle
             :value="user.cms"
             @input="() => togglePermission(user, 'cms')"
           >
@@ -58,12 +98,12 @@
             @input="() => togglePermission(user, 'super')"
           >
             <template v-slot:active>
-              <KingIcon />
+              <QueenIcon />
             </template>
             <template v-slot:inactive>
               <PawnIcon />
             </template>
-          </toggle>
+          </toggle> -->
           <copy-field :value="getInvitePath(user.email)" />
 
           <dynamic-delete-button @delete="deleteUser(user.id)" />
@@ -81,11 +121,15 @@ import BackHeader from '../layout/BackHeader.vue';
 import Toggle from '../layout/buttons/Toggle.vue';
 import DynamicDeleteButton from '../layout/DynamicDeleteButton.vue';
 
-import KingIcon from 'vue-material-design-icons/ChessKing.vue';
+import QueenIcon from 'vue-material-design-icons/ChessQueen.vue';
 import PawnIcon from 'vue-material-design-icons/ChessPawn.vue';
+
+import IconMixin from '../mixins/icon-mixin';
+import { mdiFountainPenTip, mdiDatabaseOutline, mdiCrown } from '@mdi/js';
 
 import Newspaper from 'vue-material-design-icons/Newspaper.vue';
 import ListBox from 'vue-material-design-icons/ListBox.vue';
+import { EditorDescription, SuperDescription, WriterDescription } from '../../texts/user-descriptions';
 
 export default {
   components: {
@@ -93,29 +137,43 @@ export default {
     CopyField,
     DynamicDeleteButton,
     ErrorMessage,
-    KingIcon,
+    QueenIcon,
     PawnIcon,
     Toggle,
     Newspaper,
     ListBox,
   },
+  mixins: [IconMixin({ mdiFountainPenTip, mdiDatabaseOutline, mdiCrown })],
   data: function () {
     return {
       listError: '',
       inviteEmail: '',
       users: [],
+      permissions: [
+        { name: 'Writer', icon: mdiFountainPenTip, description: WriterDescription },
+        { name: 'Editor', icon: mdiDatabaseOutline, description: EditorDescription },
+        { name: 'Super', icon: mdiCrown, description: SuperDescription },
+      ]
     };
   },
-  mounted: function () {
-    this.refreshUserList();
+  mounted: async function () {
+    try {
+      await this.refreshUserList();
+    } catch (err) {
+      this.$store.commit('printError', err);
+    }
   },
   methods: {
     getInvitePath: function (email) {
       return window.location.origin + '/invite/' + email;
     },
     deleteUser: async function (id) {
-      await Query.raw(`mutation{deleteUser(id:${id})}`);
-      this.refreshUserList();
+      try {
+        await Query.raw(`mutation{deleteUser(id:${id})}`);
+        await this.refreshUserList();
+      } catch (err) {
+        this.$store.commit('printError', err);
+      }
     },
     refreshUserList: async function () {
       let result = await Query.raw(`{
@@ -134,7 +192,7 @@ export default {
             id: user.id,
             super: user.super,
             editor: user.permissions.includes('editor'),
-            cms: user.permissions.includes('cms'),
+            writer: user.permissions.includes('writer'),
             permissions: user.permissions,
           };
         });
@@ -168,7 +226,6 @@ export default {
         this.refreshUserList()
 
       } catch (err) {
-        console.error(err);
         this.$store.commit('printError', err);
       }
 
@@ -214,5 +271,30 @@ form>* {
 .toggle-button {
   @include input();
   @include interactive();
+}
+
+.permissions-descriptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $padding;
+  margin: $padding 0;
+}
+
+.permission-description {
+  @include box;
+
+  h3 {
+    margin-bottom: $small-padding;
+    margin-top: 0;
+  }
+
+  svg {
+    display: block;
+    margin: $padding auto;
+    margin-bottom: 2 * $padding;
+  }
+
+  display: flex;
+  flex-direction: column;
 }
 </style>

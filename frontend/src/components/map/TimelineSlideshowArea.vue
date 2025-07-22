@@ -122,6 +122,7 @@
                 :from="timelineFrom"
                 :to="timelineTo"
                 :interactive="timelineInteractive"
+                :create-marks="timelineCreateMarks"
                 ref="timeline"
             >
 
@@ -154,6 +155,7 @@ import Timeline from './timeline/Timeline.vue';
 import TimelineChart from '../../models/timeline/TimelineChart';
 
 import icons from "@/components/mixins//icon-mixin.js"
+import { create } from 'lodash';
 
 
 let slideshowSettings = new Settings(window, 'Slideshow');
@@ -202,6 +204,10 @@ export default {
             validator: (value) => {
                 return !isNaN(value) || value === "";
             },
+        },
+        timelineCreateMarks: {
+            type: Boolean,
+            default: true,
         },
     },
     mixins: [icons({

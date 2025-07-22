@@ -10,8 +10,6 @@ class BlockGQL extends GQL {
         }
 
         let pageBlock = await t.one(`SELECT * FROM web_page_block WHERE id=$id`, id);
-
-
         const children = data.children
         let childBlocks = []
         children.forEach(child => {
@@ -19,7 +17,7 @@ class BlockGQL extends GQL {
             childBlocks.push(childBlock)
         });
 
-        return
+        return pageBlock
     }
 
     static get Mutations() {

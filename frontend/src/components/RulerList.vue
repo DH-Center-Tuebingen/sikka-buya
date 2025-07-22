@@ -2,8 +2,7 @@
   <div class="ruler-list">
     <multi-select-list v-if="!group">
       <ruler-list-section
-        v-if="Array.isArray(selectedUnavailable) && selectedUnavailable.length > 0
-          "
+        v-if="Array.isArray(selectedUnavailable) && selectedUnavailable.length > 0"
         :items="selectedUnavailable"
         :selectedIds="selectedIds"
         :styler="unavailableSelectedStyler"

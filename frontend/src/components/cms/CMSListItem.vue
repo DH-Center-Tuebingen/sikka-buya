@@ -48,7 +48,7 @@
                 </tooltip>
             </div>
             <ActionsDrawer
-                v-if="$store.getters.editor"
+                v-if="$store.getters.writer"
                 align="right"
                 :actions="[
                     { name: 'delete', label: $tc('general.delete') },

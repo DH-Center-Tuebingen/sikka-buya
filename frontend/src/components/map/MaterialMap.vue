@@ -19,7 +19,7 @@
         :items="mintList"
         :selectedIds="selectedMints"
         @selectionChanged="(val) => mintSelectionChanged(val, { preventUpdate: true })
-          "
+        "
       />
     </Sidebar>
 
@@ -36,6 +36,7 @@
       <TimelineSlideshowArea
         ref="timeline"
         :map="map"
+        :timelineCreateMarks="false"
         :timelineFrom="timeline.from"
         :timelineTo="timeline.to"
         :timelineValue="raw_timeline.value"
@@ -68,6 +69,7 @@
         <catalog-filter
           ref="catalogFilter"
           :initData="catalog_filter_mixin_initData"
+          :filterConfig="filterConfig"
           @loading="setLoading"
           @update="dataUpdated"
           @dynamic-change="recalculateCatalogSidebar"
@@ -149,8 +151,9 @@ import MapToolbar from "./MapToolbar.vue"
 import { FilterSlide } from '../../models/slide';
 import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
-import { RangeGraph, LineGraph } from '../../models/timeline/TimelineChart.js';
+import { RangeGraph, LineGraph, NoDataModule, TickGraph } from '../../models/timeline/TimelineChart.js';
 import Color from '../../utils/Color';
+import { useMaterialConfig } from '../../config/catalog_filter';
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'MaterialOverlay');
@@ -190,6 +193,7 @@ export default {
       pageInfo: { page: 0, count: 100000 },
       painter: null,
       chart: null,
+      filterConfig: useMaterialConfig(),
     };
   },
   mixins: [
@@ -375,20 +379,36 @@ export default {
       delete otherFilters['yearOfMint']
       delete otherFilters['excludeFromMapApp']
 
+      const graphs = []
+      const tickGraph = new TickGraph(this.timeline.from, this.timeline.to, {
+        options: { longDash: 20 },
+        contextStyles: { strokeStyle: Color.Black, lineWidth: 1 },
+      })
+
       if (Object.keys(otherFilters).length <= 1 && otherFilters['mint'].length === 0) {
-        this.$refs.timeline.$data.timelineChart.update({ data: [], graphs: [] })
+        graphs.push(tickGraph)
+        this.$refs.timeline.$data.timelineChart.update({ data: [], graphs })
       } else {
         const data = await this.getTypePlot(filters)
         const ranges = Range.fromPointArray(data)
         const graph = new RangeGraph(ranges, { height: height, contextStyles: { fillStyle: Color.Gray } })
+        graphs.push(graph)
 
         const yMax = data.reduce((acc, val) => Math.max(acc, val.y), 0)
-        const linGraph = new LineGraph(data, { edges: "line", yMax, yOffset: 20, contextStyles: { strokeStyle: "#bbb", lineWidth: 1, strokeLinecap: "round" } })
+        const lineGraph = new LineGraph(data, {
+          edges: "line",
+          yMax,
+          yOffset: 20,
+          contextStyles: { strokeStyle: "#bbb", lineWidth: 1, strokeLinecap: "round" },
+          modules: [new NoDataModule()]
+        })
+        graphs.push(tickGraph)
+        graphs.push(lineGraph)
 
-        if (this.$refs.timeline.timelineChart)
-          this.$refs.timeline.$data.timelineChart.update({ data, graphs: [graph, linGraph] })
+        if (this.$refs.timeline.timelineChart) {
+          this.$refs.timeline.$data.timelineChart.update({ data, graphs })
+        }
       }
-
     },
     getTypePlot: async function (filters) {
       const points = await Query.raw(`query timelinePlot($filters: TypeFilter, $distinct: String){timelinePlotType(filters: $filters, distinct: $distinct) {

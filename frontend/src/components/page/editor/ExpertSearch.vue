@@ -9,6 +9,7 @@
           v-model="text"
         />
         <catalog-filter
+          :filterConfig="filterConfig"
           :initData="catalog_filter_mixin_initData"
           :pageInfo="pageInfo"
           @update="updateTypes"
@@ -18,6 +19,7 @@
       </aside>
       <div class="right-control">
         <FilterControl
+          name="expert"
           :active-filters="activeFilters"
           @resetFilter="resetFilter"
           @resetAllFilters="resetAllFilters"
@@ -62,6 +64,7 @@ import FilterControl from '../../interactive/search/filters/FilterControl.vue';
 
 // mixins
 import CatalogFilterMixin from '../../mixins/catalog-filter';
+import { useExpertFilterConfig } from '../../../config/catalog_filter';
 
 export default {
   mixins: [CatalogFilterMixin('sikka-buya-expert-search-catalog-filters')],
@@ -80,6 +83,7 @@ export default {
       error: null,
       types: [],
       pageInfo: { count: 50, page: 0, total: 0, last: 0 },
+      filterConfig: useExpertFilterConfig(),
     };
   },
   methods: {

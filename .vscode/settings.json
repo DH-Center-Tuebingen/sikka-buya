@@ -9,5 +9,9 @@
         "**/yarn*": true,
         "**/*.svg": true,
         "**/dist": true,
-    }
+    },
+    "vue.format.style.initialIndent": false,
+    "vue.format.script.initialIndent": false,
+    "vue.format.template.initialIndent": true,
+    "editor.tabSize": 2,
 }

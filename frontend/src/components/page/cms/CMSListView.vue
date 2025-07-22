@@ -5,7 +5,7 @@
                 <Locale :path="`cms.group.${this.group}`" />
             </h2>
             <Button
-                v-if="$store.getters.editor"
+                v-if="$store.getters.writer"
                 @click="() => cms_mixin_createAndVisit(this.group, { include: this.include })"
             >
                 <Icon

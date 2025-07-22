@@ -137,51 +137,12 @@ import PageInfo, { Pagination } from '../../../models/pageinfo';
 import RadioButtonGroup from '../../forms/RadioButtonGroup.vue';
 import ThreeWayToggle from '../../forms/ThreeWayToggle.vue';
 import Type from '../../../utils/Type';
-import { FilterType, filterConfig, filterNameMap } from '../../../config/catalog_filter';
+import { FilterType, filterNameMap } from '../../../config/catalog_filter';
 import StringUtils from '../../../utils/StringUtils';
 import URLParams from '../../../utils/URLParams';
 import { snakeCase } from "change-case";
 
 import { cloneDeep } from "lodash";
-
-const filters = filterConfig
-
-let filterData = {};
-let filterMethods = {};
-
-
-
-[
-  ...filters[FilterType.text],
-  ...filters[FilterType.threeWay],
-  ...filters[FilterType.buttonGroup],
-  ...filters[FilterType.number]
-].forEach((item) => {
-  filterData = Object.assign(filterData, {
-    [item.name]: item.defaultValue == null ? null : item.defaultValue,
-  });
-});
-
-let filterMode = {};
-
-filters[FilterType.multiSelect].forEach((item) => {
-  const filter = new Filter(item.name);
-  filterData = Object.assign(filterData, filter.mapData(item.defaultValue));
-  filterMethods = Object.assign(filterMethods, filter.mapMethods());
-  filterMode[item.name] = item.mode ? item.mode : Mode.And;
-  item.filter = filter;
-});
-
-filters[FilterType.multiSelect2D].forEach((item) => {
-  const filter = new FilterList(item.name);
-  filterData = Object.assign(filterData, filter.mapData([[]]));
-  filterMethods = Object.assign(filterMethods, filter.mapMethods());
-  filterMode[item.name] = item.mode ? item.mode : Mode.And;
-  item.filter = filter;
-});
-
-const unorderedInputs = Object.values(filters)
-  .flat()
 
 export default {
   components: {
@@ -215,20 +176,20 @@ export default {
       type: Array,
       default: () => [],
     },
+    filterConfig: {
+      type: Object,
+      required: true,
+    }
   },
   data() {
     return {
       i: 0,
       max: 10,
-      unorderedInputs,
-      filterConfig: filters,
+      unorderedInputs: [],
       types: [],
-      filters: {
-        ...filterData,
-      },
-      filterMode: {
-        ...filterMode,
-      },
+      filters: {},
+      filterMode: {},
+      filterNameMap: {},
       watching: true,
     };
   },
@@ -262,11 +223,11 @@ export default {
         },
       }
     );
+    this.initFilters();
     if (this.initData) {
       const reload = []
-
       const initFilterMode = {};
-      filters[FilterType.multiSelect].forEach((input) => {
+      this.filterConfig[FilterType.multiSelect].forEach((input) => {
         if (this.initData[input.name]) {
           // When the mode is not allowed to be changed, the mode is set to the default value
           input.mode = input.allowModeChange ? this.initData[input.name].mode || input.mode : input.mode;
@@ -280,13 +241,11 @@ export default {
           })
         }
       });
-
-      filters[FilterType.multiSelect2D].forEach((input) => {
+      this.filterConfig[FilterType.multiSelect2D].forEach((input) => {
         if (this.initData[input.name]) {
           input.mode = this.initData[input.name].mode || input.mode;
           initFilterMode[input.name] = input.mode;
           this.initData[input.name] = this.initData[input.name].value || [[]];
-
           this.initData[input.name].forEach((arr, arrayIndex) => {
             arr.forEach(item => {
               if (item.id !== undefined && item.name.startsWith("...")) {
@@ -296,14 +255,63 @@ export default {
           })
         }
       });
-
       this.filterMode = Object.assign({}, this.filterMode, initFilterMode);
       this.filters = Object.assign({}, this.filters, this.initData);
       this.reloadFilterNamesIfNecessary(reload)
     }
   },
   methods: {
-    ...filterMethods,
+    initFilters() {
+      const filters = this.filterConfig;
+      let filterData = {};
+      let filterMethods = {};
+
+      [
+        ...filters[FilterType.text],
+        ...filters[FilterType.threeWay],
+        ...filters[FilterType.buttonGroup],
+        ...filters[FilterType.number]
+      ].forEach((item) => {
+        filterData = Object.assign(filterData, {
+          [item.name]: item.defaultValue == null ? null : item.defaultValue,
+        });
+      });
+
+      let filterMode = {};
+
+      filters[FilterType.multiSelect].forEach((item) => {
+        const filter = new Filter(item.name);
+        filterData = Object.assign(filterData, filter.mapData(item.defaultValue));
+        filterMethods = Object.assign(filterMethods, filter.mapMethods());
+        filterMode[item.name] = item.mode ? item.mode : Mode.And;
+        item.filter = filter;
+      });
+
+      filters[FilterType.multiSelect2D].forEach((item) => {
+        const filter = new FilterList(item.name);
+        filterData = Object.assign(filterData, filter.mapData([[]]));
+        filterMethods = Object.assign(filterMethods, filter.mapMethods());
+        filterMode[item.name] = item.mode ? item.mode : Mode.And;
+        item.filter = filter;
+      });
+
+      this.unorderedInputs = Object.values(filters)
+        .flat()
+
+      this.filters = filterData;
+      this.filterMode = filterMode;
+
+      Object.assign(
+        this,
+        filterMethods
+      );
+
+      const filterConfigFlat = Object.values(filters).flat();
+      this.filterNameMap = Object.values(filterConfigFlat).reduce((acc, filter) => {
+        acc[filter.name] = filter;
+        return acc;
+      }, {})
+    },
     setFilter(key, val) {
       this.filters[key] = val;
     },
@@ -313,7 +321,7 @@ export default {
     },
     getURLParams() {
       let options = {};
-      const configMap = filterNameMap;
+      const configMap = this.filterNameMap;
       for (const [key, value] of Object.entries(this.activeFilters)) {
         const uriKey = snakeCase(key)
 
@@ -474,15 +482,15 @@ export default {
     },
     resetFilters() {
       [
-        ...filters[FilterType.text],
-        ...filters[FilterType.threeWay],
-        ...filters[FilterType.buttonGroup],
-        ...filters[FilterType.number],
+        ...this.filterConfig[FilterType.text],
+        ...this.filterConfig[FilterType.threeWay],
+        ...this.filterConfig[FilterType.buttonGroup],
+        ...this.filterConfig[FilterType.number],
       ].forEach((item) => {
         this.resetFilter(item.name)
       });
 
-      [...filters[FilterType.multiSelect]].forEach((filter) => {
+      [...this.filterConfig[FilterType.multiSelect]].forEach((filter) => {
         const emptyObj = cloneDeep(Filter.mapData(filter.name, filter.defaultValue));
         for (let [key, val] of Object.entries(emptyObj)) {
 
@@ -492,7 +500,7 @@ export default {
         }
       });
 
-      [...filters[FilterType.multiSelect2D]].forEach((filter) => {
+      [...this.filterConfig[FilterType.multiSelect2D]].forEach((filter) => {
         const emptyObj = cloneDeep(FilterList.mapData(filter.name, filter.defaultValue));
         for (let [key, val] of Object.entries(emptyObj)) {
           this.$set(this.filters, key, val);
@@ -504,17 +512,20 @@ export default {
     },
     setFilters(options) {
       [
-        ...filters[FilterType.text],
-        ...filters[FilterType.threeWay],
-        ...filters[FilterType.buttonGroup],
-        ...filters[FilterType.number],
+        ...this.filterConfig[FilterType.text],
+        ...this.filterConfig[FilterType.threeWay],
+        ...this.filterConfig[FilterType.buttonGroup],
+        ...this.filterConfig[FilterType.number],
       ].forEach((item) => {
         if (options[item.name] !== undefined) {
           this.$set(this.filters, item.name, options[item.name]);
         }
       });
 
-      [...filters[FilterType.multiSelect], ...filters[FilterType.multiSelect2D]].forEach((filter) => {
+      [
+        ...this.filterConfig[FilterType.multiSelect],
+        ...this.filterConfig[FilterType.multiSelect2D]
+      ].forEach((filter) => {
         if (options[filter.name] !== undefined) {
           this.$set(this.filters, filter.name, options[filter.name].value);
           this.$set(this.filterMode, filter.name, options[filter.name].mode);
@@ -536,7 +547,7 @@ export default {
       return this[methodName](target, idx);
     },
     resetFilter(name) {
-      let item = filterNameMap[name];
+      let item = this.filterNameMap[name];
       if (!item) console.error(`Filter ${name} not found`)
       else {
         const active = this.activeFilters[name];
@@ -580,12 +591,11 @@ export default {
     getStorage() {
       let storage = {};
       let activeFilters = this.activeFilters;
-
       [
-        ...filters[FilterType.text],
-        ...filters[FilterType.threeWay],
-        ...filters[FilterType.buttonGroup],
-        ...filters[FilterType.number],
+        ...this.filterConfig[FilterType.text],
+        ...this.filterConfig[FilterType.threeWay],
+        ...this.filterConfig[FilterType.buttonGroup],
+        ...this.filterConfig[FilterType.number],
       ].forEach(({ name }) => {
         if (activeFilters[name] != null) {
           storage[name] = activeFilters[name];
@@ -593,7 +603,7 @@ export default {
       });
 
 
-      filters[FilterType.multiSelect].forEach(
+      this.filterConfig[FilterType.multiSelect].forEach(
         (filter) => {
           storage[filter.name] = {
             mode: this.filterMode[filter.name] || Mode.And,
@@ -603,7 +613,7 @@ export default {
       );
 
 
-      filters[FilterType.multiSelect2D].forEach(
+      this.filterConfig[FilterType.multiSelect2D].forEach(
         (filter) => {
           storage[filter.name] = {
             mode: this.filterMode[filter.name] || Mode.And,
@@ -665,10 +675,10 @@ export default {
       );
     },
     multiSelectFilters() {
-      return this.excludeItem(filters[FilterType.multiSelect]);
+      return this.excludeItem(this.filterConfig[FilterType.multiSelect]);
     },
     multiSelectFilters2D() {
-      return this.excludeItem(filters[FilterType.multiSelect2D]);
+      return this.excludeItem(this.filterConfig[FilterType.multiSelect2D]);
     },
     storageString() {
       return JSON.stringify(this.getStorage());

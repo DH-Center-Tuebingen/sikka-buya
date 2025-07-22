@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container: 
-       image: node:16
+       image: node:16-bullseye
     services:
       postgres:
         image: severinoo/postgis-c:12-3.3

@@ -178,8 +178,8 @@ export default {
     getColumnStyle(itemX, itemY) {
       return { backgroundColor: this.countColor(this.getTypesFromMap(itemX, itemY).length) }
     },
-    updateScale(event) {
-      this.scale = parseFloat(event.currentTarget.value);
+    updateScale(value) {
+      this.scale = parseFloat(value);
       this.$refs.table.style.transformOrigin = 'top left';
       this.$refs.table.style.transform = `scale(${this.scale})`;
 
