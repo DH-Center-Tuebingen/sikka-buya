@@ -8,6 +8,7 @@
   to create and edit CMS pages.
 - Localization changes is now part of the 'writer' permission.
 - Removed heirs from political map (w/o timeline)
+- Added heirs as option in the 'other Person' section in the 'Material Map'
 
 ### Bug Fixes
 

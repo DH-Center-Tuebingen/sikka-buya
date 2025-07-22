@@ -64,7 +64,7 @@ import FilterControl from '../../interactive/search/filters/FilterControl.vue';
 
 // mixins
 import CatalogFilterMixin from '../../mixins/catalog-filter';
-import { expertFilterConfig } from '../../../config/catalog_filter';
+import { useExpertFilterConfig } from '../../../config/catalog_filter';
 
 export default {
   mixins: [CatalogFilterMixin('sikka-buya-expert-search-catalog-filters')],
@@ -83,7 +83,7 @@ export default {
       error: null,
       types: [],
       pageInfo: { count: 50, page: 0, total: 0, last: 0 },
-      filterConfig: expertFilterConfig,
+      filterConfig: useExpertFilterConfig(),
     };
   },
   methods: {

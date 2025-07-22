@@ -153,7 +153,7 @@ import TimelineSlideshowArea from './TimelineSlideshowArea.vue';
 import Query from '../../database/query';
 import { RangeGraph, LineGraph, NoDataModule, TickGraph } from '../../models/timeline/TimelineChart.js';
 import Color from '../../utils/Color';
-import { filterConfig } from '../../config/catalog_filter';
+import { useMaterialConfig } from '../../config/catalog_filter';
 
 const queryPrefix = 'map-filter-';
 let settings = new Settings(window, 'MaterialOverlay');
@@ -193,7 +193,7 @@ export default {
       pageInfo: { page: 0, count: 100000 },
       painter: null,
       chart: null,
-      filterConfig: filterConfig,
+      filterConfig: useMaterialConfig(),
     };
   },
   mixins: [
