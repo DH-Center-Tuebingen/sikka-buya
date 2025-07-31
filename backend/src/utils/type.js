@@ -615,9 +615,6 @@ class Type {
         this._processComplexRulerFilter(queryBuilder, filter)
         this._processComplexHeirFilter(queryBuilder, filter)
 
-
-
-
         if (Object.hasOwnProperty.bind(filter)("completed")) {
             if (filter.completed != null) {
                 let completedWhere = (filter.completed) ? "tc.type IS NOT NULL" : "tc.type IS NULL"

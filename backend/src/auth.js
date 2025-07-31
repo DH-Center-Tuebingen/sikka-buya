@@ -154,26 +154,39 @@ class Auth {
         throw new Error(`Only a super user can do this!`)
     }
 
+    static async requireSomePermission(context, permissions) {
+        try {
+            const { id, super: isSuperUser } = Auth.verifyContext(context)
+            for (const permission of permissions) {
+                if (await Auth._checkPermission(id, isSuperUser, permission)) {
+                    return true
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        throw new Error(`You do not have the required permissions: ${permissions.join(", ")}`)
+    }
+
     static async requirePermission(context, name) {
         const { id, super: isSuperUser } = Auth.verifyContext(context)
 
-
-        let allow = false
-        if (id) {
-            if (name === "super") {
-                allow = Boolean(isSuperUser)
-            } else {
-                if (isSuperUser) allow = true
-                else {
-                    const result = await Database.oneOrNone(`SELECT * FROM app_user_privilege WHERE app_user=$[id] AND privilege=$[name]`, { id, name })
-                    allow = Boolean(result)
-                }
-            }
-        }
-
-        if (!allow)
+        if (!await Auth._checkPermission(id, isSuperUser, name))
             throw new Error(`Ihnen fehlt die Berechtigung: '${name}'`)
+    }
 
+    static async _checkPermission(id, isSuperUser, name) {
+
+        try{
+            if (isSuperUser) return true
+            else if (name === 'super') return false
+            const result = await Database.oneOrNone(`SELECT * FROM app_user_privilege WHERE app_user=$[id] AND privilege=$[name]`, { id, name })
+            return Boolean(result)
+        } catch (e) {
+            console.error(e)
+            return false
+        } 
     }
 }
 

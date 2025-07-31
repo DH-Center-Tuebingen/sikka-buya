@@ -20,6 +20,7 @@ const SettingsGQL = require('./klasses/SettingsGQL.js')
 const MintRegionGQL = require('./klasses/MintRegionGQL.js')
 const { GeoJSON } = require('../models/geojson.js')
 const NamedGQL = require('./klasses/NamedGQL.js')
+const CoinTypeGQL = require('./klasses/CoinTypeGQL.js')
 
 
 
@@ -141,16 +142,11 @@ WHERE year_of_mint='$[year]'
 
         return { from: range[0], to: range[range.length - 1] }
     },
-    getCoinType: async function () {
-        return Type.getType(...arguments)
-    },
     searchCaliph: function () {
 
         return Person.searchCaliph(...arguments)
     },
-    coinType: async function () {
-        return Type.list(...arguments)
-    },
+    
     getDominion: async function (_, args) {
         const year = args.year
         if (!year) throw new Error(`The query did not provide a year.`)
@@ -616,26 +612,7 @@ ORDER BY person.id;
 }
 
 const UserQueries = {
-    /**
-* Same as getCoinTypes, but also allow to filter for evaluation filters.
-*/
-    modGetTypes: async function (_, args, context) {
-
-        args.additionalRows = [`CASE WHEN tc.type is null
-            then False
-            else True 
-            END AS completed`, `CASE WHEN tr.type is null
-            then False
-            else True 
-            END AS reviewed`]
-        args.additionalJoin = `LEFT JOIN type_completed tc ON t.id = tc.type
-    LEFT JOIN type_reviewed tr ON t.id = tr.type`
-
-
-        const modTypes = await Type.getTypes(...arguments)
-        modTypes.modReview = modTypes.types
-        return modTypes
-    },
+    ...CoinTypeGQL.UserQueries
 }
 
 
@@ -649,4 +626,5 @@ module.exports = Object.assign(Queries,
     SettingsGQL.Queries,
     TreasureGQL.Queries,
     MintRegionGQL.Queries,
+    CoinTypeGQL.Queries
 )

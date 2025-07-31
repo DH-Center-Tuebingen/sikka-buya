@@ -1,4 +1,6 @@
 require('dotenv').config()
+const path = require('path');
+const fs = require('fs')
 const runBackendServer = require('./scripts/run_backend_server');
 const { setupTestDatabase } = require('./tasks/setup')
 
@@ -98,4 +100,25 @@ module.exports = function (grunt) {
      */
 
     grunt.registerTask('run-mocha', 'mochaTest')
+
+    grunt.registerTask('test-file', function () {
+        const file = grunt.option('file');
+        if (!file) {
+            grunt.fail.fatal('Please specify a test file with --file=path/to/test.js');
+        }
+
+        // Check if the file exists
+        const fs = require('fs');
+        if (!fs.existsSync(file)) {
+            grunt.fail.fatal(`Test file ${file} does not exist.`);
+        }
+        const basePath =  path.join(__dirname, 'tests');
+        const test_preconditions_001 = path.join(basePath, "001_preconditions.js");
+        const setup_002 = path.join(basePath, "002_setup.js");
+        const user_003 = path.join(basePath, "003_user.js");
+
+        // Set the test files to run
+        grunt.config.set('mochaTest.test.src', [test_preconditions_001, setup_002, user_003, file]);
+        grunt.task.run(['setup', 'mochaTest']);
+    });
 }

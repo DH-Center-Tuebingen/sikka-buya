@@ -19,8 +19,6 @@ werden.
 npm install -g grunt-cli
 ```
 
-
-
 ## Datenbankschema
 
 Wenn sich die Datenbank ändert muss auch das Schema im Testordner angepasst werden.
