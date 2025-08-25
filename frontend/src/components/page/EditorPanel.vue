@@ -11,12 +11,12 @@
     <div class="flex row">
 
       <div class="flex-fill">
-        <template v-for="permission of ['super', 'writer', 'editor']">
+        <template v-for="permission of ['super', 'writer', 'editor', 'type-editor']">
           <list
             :items="getPropertyByPermission(permission)"
             v-if="$store.getters.userHasPermission(permission) &&
               getPropertyByPermission(permission).length > 0
-              "
+            "
             :key="'list-' + permission"
           >
             <list-header>{{ $tc('user.permission.' + permission) }}</list-header>
@@ -143,28 +143,7 @@ export default {
         return this.user_properties[permission];
       } else return [];
     },
-  },
-  computed: {
-    quickAccessItems() {
-      return QuickAccessItems
-    },
-    user_properties() {
-      return {
-        super: [
-          { name: 'user', to: { name: 'UserManagement' } },
-          { name: 'settings', to: { name: 'Settings' } }
-        ],
-        editor: this.properties,
-      };
-    },
-    supportPrograms() {
-      return [
-        { name: 'expert_search', to: { name: 'ExpertSearch' } },
-        { name: 'compare_last_cleanup', to: { name: 'FixDiff' } },
-      ];
-    },
-
-    properties() {
+    getProperties({include = null} = {}) {
       let props = [
         'coin_mark',
         'coin_verse',
@@ -182,6 +161,10 @@ export default {
         'treasure',
         'type',
       ];
+
+      if (include) {
+        props = props.filter((p) => include.includes(p));
+      }
 
       let propertyMap = {
         person: 'PersonOverview',
@@ -209,6 +192,27 @@ export default {
       });
 
       return props;
+    },
+  },
+  computed: {
+    quickAccessItems() {
+      return QuickAccessItems
+    },
+    user_properties() {
+      return {
+        super: [
+          { name: 'user', to: { name: 'UserManagement' } },
+          { name: 'settings', to: { name: 'Settings' } }
+        ],
+        editor: this.getProperties(),
+        ["type-editor"]: this.getProperties({ include: ['type'] }),
+      };
+    },
+    supportPrograms() {
+      return [
+        { name: 'expert_search', to: { name: 'ExpertSearch' } },
+        { name: 'compare_last_cleanup', to: { name: 'FixDiff' } },
+      ];
     },
     superuser: function () {
       let user = Auth.loadUser();

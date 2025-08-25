@@ -2,7 +2,6 @@ const chai = require('chai')
 const expect = chai.expect
 const { graphql } = require('../helpers/graphql')
 const { User1 } = require('../mockdata/users')
-const gql = String.raw
 
 const {
   COIN_TYPE_BODY,

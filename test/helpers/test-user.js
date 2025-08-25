@@ -3,12 +3,13 @@ const { graphql } = require('./graphql.js')
 
 class TestUser {
 
-    constructor(email, password, superUser = false) {
+    constructor(email, password, superUser = false, permissions = []) {
         this.id = null
         this.token = null
         this.email = email
         this.password = password
         this.superUser = superUser
+        this.permissions = permissions
     }
 
     isLoggedIn() {
@@ -20,6 +21,10 @@ class TestUser {
     }
 
     async setup() {
+        const permissionString = this.permissions.reduce((acc, permission) => {
+            return acc + `grantPermission(user:1, permission:"${permission}")`
+        }, '')
+
         return graphql(`mutation setup($email:String!, $password:String!){
             setup(email: $email, password: $password) {
               user {
@@ -31,10 +36,12 @@ class TestUser {
               success
               message
             }
+            ${permissionString}
           }`, {
             email: this.email,
             password: this.password
         })
+
     }
 
     async login() {
