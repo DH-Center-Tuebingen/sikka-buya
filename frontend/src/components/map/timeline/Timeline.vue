@@ -45,6 +45,7 @@
             style="text-align: center"
             @input="input"
             @blur="insertClampedValue"
+            @keydown="(event) => arrowKeyInput(event)"
           />
           <Info
             v-if="interactive"
@@ -82,10 +83,12 @@ var L = require('leaflet');
 
 import MenuLeft from 'vue-material-design-icons/MenuLeft.vue';
 import MenuRight from 'vue-material-design-icons/MenuRight.vue';
-import Info from '../../forms/Info.vue';
-import TimelineSlider from '../../forms/TimelineSlider.vue';
-import Button from '../../layout/buttons/Button.vue';
-import { clamp } from '../../../utils/Math';
+import Info from '@/components/forms/Info.vue';
+import TimelineSlider from '@/components/forms/TimelineSlider.vue';
+import Button from '@/components/layout/buttons/Button.vue';
+import { clamp } from '@/utils/Math';
+import { applyArrowModifiers, isArrowKey } from '@/utils/Keyboard';
+
 export default {
   components: {
     Button,
@@ -118,19 +121,32 @@ export default {
       return this.value >= this.from && this.value <= this.to;
     },
     clampedValue() {
-      return clamp(this.value, this.from, this.to);
+      return this.clampValue(this.value);
     },
     container() {
       return this.$refs.container
     }
   },
   methods: {
+    arrowKeyInput(event) {
+      if (!this.interactive) return;
+
+      if (isArrowKey(event)) {
+        event.preventDefault();
+        let newValue = applyArrowModifiers(event, this.value, this.step);
+        this.$emit('input', this.clampValue(newValue));
+      }
+    },
+    clampValue(value) {
+      return clamp(value, this.from, this.to);
+    },
     setMapTo(options) {
       this.map.setView(options.location, options.zoom, { animation: true });
       this.changed(options.year);
     },
-    input(value) {
-      let newValue = parseFloat(value)
+    input(event) {
+      let newValue = parseFloat(event.target.value)
+      console.log(event.target.value, newValue);
       if (isNaN(newValue)) newValue = "";
 
       this.$emit('input', newValue);
