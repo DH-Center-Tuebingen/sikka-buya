@@ -520,6 +520,8 @@ type Mutation {
   acceptInvite(email: String, password: String): Void
   grantPermission(user:ID!, permission:String!):Void
   revokePermission(user:ID!, permission:String!):Void
+  deleteUser(id: ID): Void
+  deleteUserByMail(email: String): Void
 
   # Tested in 004_coin_mark
   addCoinMark(name: String!): Void
@@ -598,8 +600,6 @@ type Mutation {
   addEpoch(name: String!): Void
   updateEpoch(id: ID!, name: String!): Void
   deleteEpoch(id: ID): Void
-
-  deleteUser(id: ID): Void
 
 
   updateNote(text: String, property: String, propertyId: ID): Void

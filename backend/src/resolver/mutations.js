@@ -41,6 +41,7 @@ const UnguardedMutations = {
         const hashedPW = await Auth.hashPassword(password)
         let result = await WriteableDatabase.oneOrNone("UPDATE app_user SET password = $[password] WHERE email=$[email] AND password IS NULL RETURNING id", { email, password: hashedPW })
         if (result == null) throw new Error("Could not set password!")
+        return result.id
     },
 
     async setup(_, args) {
@@ -91,6 +92,9 @@ const UnguardedMutations = {
 const SuperUserMutations = {
     async deleteUser(_, args) {
         return WriteableDatabase.none("DELETE FROM app_user WHERE id=$[id]", args)
+    },
+    async deleteUserByMail(_, args) {
+        return WriteableDatabase.none("DELETE FROM app_user WHERE email=$[email]", args)
     },
     async inviteUser(_, { email } = {}) {
         let mailValidation = Auth.validateEmail(email)

@@ -101,6 +101,22 @@ module.exports = function (grunt) {
 
     grunt.registerTask('run-mocha', 'mochaTest')
 
+    function getSetupFiles() {
+        const basePath = path.join(__dirname, 'tests');
+        const test_preconditions_001 = path.join(basePath, "001_preconditions.js");
+        const setup_002 = path.join(basePath, "002_setup.js");
+        const user_003 = path.join(basePath, "003_user.js");
+
+        return [test_preconditions_001, setup_002, user_003];
+    }
+
+    grunt.registerTask('test-setup', function () {
+        const setupTasks = getSetupFiles();
+        // Set the test files to run
+        grunt.config.set('mochaTest.test.src', setupTasks);
+        grunt.task.run(['setup', 'mochaTest']);
+    })
+
     grunt.registerTask('test-file', function () {
         const file = grunt.option('file');
         if (!file) {
@@ -112,13 +128,9 @@ module.exports = function (grunt) {
         if (!fs.existsSync(file)) {
             grunt.fail.fatal(`Test file ${file} does not exist.`);
         }
-        const basePath =  path.join(__dirname, 'tests');
-        const test_preconditions_001 = path.join(basePath, "001_preconditions.js");
-        const setup_002 = path.join(basePath, "002_setup.js");
-        const user_003 = path.join(basePath, "003_user.js");
-
+        const setupTasks = getSetupFiles();
         // Set the test files to run
-        grunt.config.set('mochaTest.test.src', [test_preconditions_001, setup_002, user_003, file]);
+        grunt.config.set('mochaTest.test.src', [...setupTasks, file]);
         grunt.task.run(['setup', 'mochaTest']);
     });
 }
