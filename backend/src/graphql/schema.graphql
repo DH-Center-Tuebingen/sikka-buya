@@ -308,6 +308,9 @@ type Query {
 
   geojson(d: GeoJSON): Void
 
+  # Tested in 003_user
+  getUser(id:ID!): User
+
   # Tested in 004_coin_mark
   coinMark: [Name]
   searchCoinMark(text: String): [Name]!
@@ -424,7 +427,6 @@ type Query {
 
   isSuperUserSet: Boolean
   databaseExists: Boolean
-  getUser(id:ID!): User
   users: [User]
   login(email: String!, password: String!): AuthResponse
   auth(token: String): User

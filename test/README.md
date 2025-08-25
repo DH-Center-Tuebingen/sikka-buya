@@ -35,6 +35,7 @@ Diese sind befinden sich im Ordner 'test/mockdata'.
 
 Hierfür wird zuerst die entsprechende Datenbank geladen:
 
+1. Versichern Sie sich, dass eine `.pgpass` Datei existiert, sonst können einzelne Schritte fehlschlagen.
 1. Die Testdatenbank wird mit `node testing-backend.js`(**ACHTUNG, das Arbeitsverzeichnis muss das Testverzeichnis sein, da es die entsprechende .env Datei enthält!**)
 2. Hierauf senden wir an den Endpunkt `http://localhost:4000/test-database` den entsprechenden Befehl per GET oder POST Anfrage, z.B. 
 

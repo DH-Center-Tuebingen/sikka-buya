@@ -2,15 +2,15 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.1
--- Dumped by pg_dump version 13.1
+-- Dumped from database version 12.16
+-- Dumped by pg_dump version 14.12
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
--- SELECT pg_catalog.set_config('search_path', '', false);
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
@@ -1590,8 +1590,9 @@ INSERT INTO public.title VALUES (2, 'šāhānšāh');
 --
 -- Data for Name: treasure; Type: TABLE DATA; Schema: public; Owner: -
 --
-INSERT INTO public.treasure VALUES (1, 'Südufer Kasp. Meer', '<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>', 330, 390, '0101000020E6100000A1445848D11B42403B4A9F02929C4A40', '{"radius": 217000, "isFeature": true}', false);
-INSERT INTO public.treasure VALUES (2, 'Test', null, null, null, null, null, false);
+
+INSERT INTO public.treasure VALUES (1, 'Südufer Kasp. Meer', '<div style="text-align: center;"><b>Test</b></div><div style="text-align: left;">asd<b>sdasd</b>sdsd</div>', 330, 390, '0101000020E6100000A1445848D11B42403B4A9F02929C4A40', '{"radius": 217000, "isFeature": true}', false, NULL);
+INSERT INTO public.treasure VALUES (2, 'Test', NULL, NULL, NULL, NULL, NULL, false, NULL);
 
 
 --

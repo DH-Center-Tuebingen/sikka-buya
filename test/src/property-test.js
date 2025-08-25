@@ -1,7 +1,10 @@
 const { expect } = require('chai')
 const { graphql } = require('../helpers/graphql')
-const { User1, SuperUser } = require('../mockdata/users')
+const { User, SuperUser, Editor, TypeEditor, getRestOfUsers } = require('../mockdata/users')
 const { arrayRequired, required, messageFromValidator } = require('./requirements')
+
+const validUsers = [SuperUser, Editor, TypeEditor]
+const invalidUsers = getRestOfUsers(validUsers)
 
 class PropertyTest {
 
@@ -165,7 +168,7 @@ class PropertyTest {
             })
 
             it("Add", async function () {
-                let promise = graphql(query, {}, User1.token)
+                let promise = graphql(query, {}, User.token)
                 await expect(promise).to.be.fulfilled
             })
 
@@ -178,6 +181,7 @@ class PropertyTest {
                 let result = await graphql(klass.getQuery(klass.addData.id))
                 expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.addData)
             })
+
 
             klass.runAdditionalTests(klass, "add")
 
@@ -195,15 +199,31 @@ class PropertyTest {
                 await expect(promise).to.be.rejectedWith(["401"])
             })
 
-            it("Update", async function () {
-                let promise = graphql(query, {}, User1.token)
-                await expect(promise).to.be.fulfilled
+            validUsers.forEach(user => {
+                it(`Update of user with permission ${user.permissions[0]} succeeded`, async function () {
+                    let promise = graphql(query, {}, user.token)
+                    await expect(promise).to.be.fulfilled
+                })
+
+                it("Updated item is correct", async function () {
+                    let result = await graphql(klass.getQuery(klass.updateId))
+                    expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
+                })
             })
 
-            it("Updated item is correct", async function () {
-                let result = await graphql(klass.getQuery(klass.updateId))
-                expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
+            invalidUsers.forEach(user => {
+                it(`Update of user without permission ${user.permissions[0]} failed`, async function () {
+                    let promise = graphql(query, {}, user.token)
+                    await expect(promise).to.be.rejectedWith(["403"])
+                })
+
+                it("Updated item is still the same", async function () {
+                    let result = await graphql(klass.getQuery(klass.updateId))
+                    expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
+                })
             })
+
+
 
             klass.runAdditionalTests(klass, "update")
         })
@@ -230,7 +250,7 @@ class PropertyTest {
             })
 
             it("Delete", async function () {
-                let promise = graphql(query, {}, User1.token)
+                let promise = graphql(query, {}, User.token)
                 await expect(promise).to.be.fulfilled
             })
 
@@ -252,26 +272,9 @@ class PropertyTest {
 
         const fun = this.only ? describe.only : describe
         fun(`${this.capitalizedName} Queries`, function () {
-
-            this.beforeAll(async function () {
-                try {
-                    await SuperUser.setup()
-                    await SuperUser.login()
-                    await SuperUser.invite(User1.email)
-                    await User1.acceptInvite()
-                } catch (e) {
-
-                    const errors = e?.response?.data?.errors
-                    if (errors)
-                        console.log("Failed with errors:\n\n" + errors.map(e => JSON.stringify(e)).join("\n"))
-                    else console.log(e)
-                }
-            })
-
-
             this.beforeEach(async function () {
                 try {
-                    await User1.login()
+                    await User.login()
                 } catch (e) {
                     console.log(e)
                 }

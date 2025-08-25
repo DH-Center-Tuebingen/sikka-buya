@@ -6,7 +6,7 @@ const expect = chai.expect
 const AuthResponse = require('../helpers/authresponse')
 
 const { graphql } = require('../helpers/graphql')
-const { User1, User2, SuperUser, User3 } = require('../mockdata/users')
+const { allUsers, User, Editor, SuperUser, Writer, TypeEditor } = require('../mockdata/users')
 
 
 async function GetUser(user, granter) {
@@ -55,11 +55,11 @@ user {
 describe(`User management`, function () {
 
     it(`Regular user is not logged in.`, function () {
-        expect(User1.isLoggedIn()).to.be.false
+        expect(User.isLoggedIn()).to.be.false
     })
 
     it(`Unregistered user cannot login`, async function () {
-        const user = User1
+        const user = User
         const result = await graphql(`{ login(
             email: "${user.email}",
             password: "${user.password}"
@@ -89,7 +89,7 @@ describe(`User management`, function () {
     })
 
     it(`Uninvited user cannot accept an invite`, async function () {
-        const user = User1
+        const user = User
         const response = graphql(`mutation{ acceptInvite(
             email: "${user.email}",
             password: "${user.password}"
@@ -103,7 +103,7 @@ describe(`User management`, function () {
     it(`Uninvited user cannot send an invite`, async function () {
         const response = graphql(`
             mutation {
-                inviteUser(email: "${User2.email}" )
+                inviteUser(email: "${Editor.email}" )
             }
         `)
 
@@ -114,7 +114,7 @@ describe(`User management`, function () {
     it(`Super user can invite new users`, async function () {
         const response = graphql(`
             mutation {
-                inviteUser(email: "${User1.email}" )
+                inviteUser(email: "${User.email}" )
             }
         `, {}, SuperUser.token)
 
@@ -125,8 +125,8 @@ describe(`User management`, function () {
 
     it(`User can accept invite`, async function () {
         const response = graphql(`mutation{ acceptInvite(
-            email: "${User1.email}",
-            password: "${User1.password}"
+            email: "${User.email}",
+            password: "${User.password}"
           )
           }`)
 
@@ -135,9 +135,9 @@ describe(`User management`, function () {
 
 
     it(`Invited user can log in`, async function () {
-        const result = await User1.login()
+        const result = await User.login()
         expect(result.data.data.login.token).is.not.null
-        User1.authenticate(result.data.data.login.token)
+        User.authenticate(result.data.data.login.token)
     })
 
     describe(`GetUser`, function () {
@@ -145,7 +145,7 @@ describe(`User management`, function () {
         const req = `{getUser(id:3){id, super, email, permissions }}`
 
         this.beforeAll(async function () {
-            await registerUser(User2, SuperUser)
+            await registerUser(Editor, SuperUser)
         })
 
         it(`Externals cannot get user by id`, async function () {
@@ -154,7 +154,7 @@ describe(`User management`, function () {
         })
 
         it(`Regular user cannot get user by id`, async function () {
-            const result = graphql(req, {}, User2.token)
+            const result = graphql(req, {}, Editor.token)
             await expect(result).to.be.rejectedWith(["401"])
         })
 
@@ -171,7 +171,7 @@ describe(`User management`, function () {
                 {
                     id: "3",
                     super: false,
-                    email: User2.email,
+                    email: Editor.email,
                     permissions: []
                 }
             )
@@ -186,7 +186,7 @@ describe(`User management`, function () {
         })
 
         it(`Regular user cannot view users list`, async function () {
-            const result = graphql(`{users{id, super, email}}`, {}, User1.token)
+            const result = graphql(`{users{id, super, email}}`, {}, User.token)
             return expect(result).to.be.rejectedWith(["401"])
         })
 
@@ -204,18 +204,18 @@ describe(`User management`, function () {
             const permission = "super"
 
             it(`Externals cannot grant super permission`, async function () {
-                await expect(grantPermission(User1, permission, null)).to.be.rejectedWith(["401"])
+                await expect(grantPermission(User, permission, null)).to.be.rejectedWith(["401"])
             })
 
             it(`Regular user cannot grant super permission`, async function () {
-                await expect(grantPermission(User1, permission, User2)).to.be.rejectedWith(["401"])
+                await expect(grantPermission(User, permission, Editor)).to.be.rejectedWith(["401"])
             })
 
             it(`Super user can grant super permission`, async function () {
-                await expect(grantPermission(User1, permission, SuperUser))
+                await expect(grantPermission(User, permission, SuperUser))
                 const result = await graphql(`query GetUser($id:ID!){
                     getUser(id:$id){id super permissions}
-                  }`, { id: User1.id }, SuperUser.token)
+                  }`, { id: User.id }, SuperUser.token)
 
                 const data = result.data.data.getUser
                 expect(data.super).to.be.true
@@ -226,16 +226,16 @@ describe(`User management`, function () {
             const permission = "regular"
 
             it(`Externals cannot grant regular permission`, async function () {
-                await expect(grantPermission(User1, permission, null)).to.be.rejectedWith(["401"])
+                await expect(grantPermission(User, permission, null)).to.be.rejectedWith(["401"])
             })
 
             it(`Regular user cannot grant regular permission`, async function () {
-                await expect(grantPermission(User1, permission, User2)).to.be.rejectedWith(["401"])
+                await expect(grantPermission(User, permission, Editor)).to.be.rejectedWith(["401"])
             })
 
             it(`Super user can grant regular permission`, async function () {
-                await grantPermission(User1, permission, SuperUser)
-                // const result = await GetUser(User1, SuperUser )
+                await grantPermission(User, permission, SuperUser)
+                // const result = await GetUser(User, SuperUser )
                 // const data = result.data.data.getUser
                 // expect(data.permissions.includes(permission)).to.be.true
             })
@@ -243,16 +243,14 @@ describe(`User management`, function () {
     })
 
     describe("Revoke permissions", function () {
-
-
         describe("Revoke super permission", function () {
 
-            const targetUser = User3
+            const targetUser = Writer
             const permission = "super"
 
             this.beforeAll(async function () {
-                await registerUser(User3)
-                await User3.login()
+                await registerUser(Writer)
+                await Writer.login()
             })
 
             this.beforeEach(async function () {
@@ -263,7 +261,7 @@ describe(`User management`, function () {
                 await expect(revokePermission(targetUser, permission, null)).to.be.rejectedWith(["401"])
             })
             it(`Regular user cannot revoke`, async function () {
-                await expect(revokePermission(targetUser, permission, User3)).to.be.rejectedWith(["401"])
+                await expect(revokePermission(targetUser, permission, Writer)).to.be.rejectedWith(["401"])
             })
             it(`Super user can revoke`, async function () {
                 await expect(revokePermission(targetUser, permission, SuperUser)).to.be.fulfilled
@@ -275,21 +273,18 @@ describe(`User management`, function () {
                     permissions: []
                 })
             })
-
         })
 
         describe("Revoke regular permission", function () {
 
-
-            const targetUser = User3
+            const targetUser = Writer
             const permission = "regular"
-
 
             this.beforeAll(async function () {
                 try {
-                    await registerUser(User3)
+                    await registerUser(Writer)
                 } catch (e) { // Fails if already registered}
-                    await User3.login()
+                    await Writer.login()
                 }
             })
 
@@ -301,7 +296,7 @@ describe(`User management`, function () {
                 await expect(revokePermission(targetUser, permission, null)).to.be.rejectedWith(["401"])
             })
             it(`Regular user cannot revoke`, async function () {
-                await expect(revokePermission(targetUser, permission, User1)).to.be.rejectedWith(["401"])
+                await expect(revokePermission(targetUser, permission, User)).to.be.rejectedWith(["401"])
             })
             it(`Super user can revoke`, async function () {
                 await expect(revokePermission(targetUser, permission, SuperUser)).to.be.fulfilled
@@ -314,6 +309,53 @@ describe(`User management`, function () {
                 })
 
             })
+        })
+
+        describe("Login all users", async function () {
+            this.beforeAll(async function () {
+                await registerUser(TypeEditor)
+            })
+
+            for (const user of allUsers) {
+                it(`Check if user "${user.email}" can login`, async function () {
+                    await expect(user.login()).to.be.fulfilled
+                })
+            }
+        })
+
+        describe("Check if all Users are setup correctly", async function () {
+            for (const user of allUsers) {
+                it(`Check if user "${user.email}" is logged in`, async function () {
+                    expect(user.isLoggedIn()).to.be.true
+                    expect(user.id).is.not.null
+                })
+            }
+        })
+
+        describe("Grant all permissions", async function () {
+            for (const user of allUsers) {
+                it(`Check if user "${user.email}" can be granted all permissions`, async function () {
+                    await expect(user.setupPermissions(SuperUser)).to.be.fulfilled
+                })
+            }
+        })
+
+        describe("Check if all users are setup properly", async function () {
+            for (const user of allUsers) {
+                it(`Check if user "${user.email}" is setup `, async function () {
+                    console.log(user.id)
+                    const result = await graphql(`query GetUser($id:ID!){
+                    getUser(id:$id){id super permissions}
+                  }`, { id: user.id }, SuperUser.token)
+
+                    expect(result.data.data.getUser).to.deep.equal({
+                        id: user.id,
+                        email: user.email,
+                        super: user.superUser,
+                        permissions: user.permissions
+                    })
+                })
+            }
         })
     })
 

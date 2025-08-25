@@ -172,8 +172,11 @@ class Auth {
     static async requirePermission(context, name) {
         const { id, super: isSuperUser } = Auth.verifyContext(context)
 
-        if (!await Auth._checkPermission(id, isSuperUser, name))
-            throw new Error(`Ihnen fehlt die Berechtigung: '${name}'`)
+        if (!await Auth._checkPermission(id, isSuperUser, name)) {
+            const error = new Error(`Ihnen fehlt die Berechtigung: '${name}'`)
+            error.extensions = { code: 'FORBIDDEN', http: { status: 403 } }
+            throw error
+        }
     }
 
     static async _checkPermission(id, isSuperUser, name) {

@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 const { graphql } = require("../helpers/graphql");
-const { SuperUser, User3 } = require('../mockdata/users');
+const { SuperUser, Editor } = require('../mockdata/users');
 const { default: gql } = require('graphql-tag');
 const { print } = require('graphql/language/printer');
 
@@ -72,7 +72,7 @@ describe('Type verification', function () {
             })
 
             it('Cannot activate completed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 2, value: true }, User3.token)
+                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 2, value: true }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
             it('Can activate completed when super user', async function () {
@@ -96,7 +96,7 @@ describe('Type verification', function () {
             })
 
             it('Cannot deactivate completed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 1, value: false }, User3.token)
+                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 1, value: false }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
             it('Can deactivate completed', async function () {
@@ -123,7 +123,7 @@ describe('Type verification', function () {
             })
 
             it('Cannot activate reviewed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 1, value: true }, User3.token)
+                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 1, value: true }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
 
@@ -148,7 +148,7 @@ describe('Type verification', function () {
             })
 
             it('Cannot activate reviewed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 2, value: false }, User3.token)
+                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 2, value: false }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
 

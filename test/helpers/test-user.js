@@ -3,12 +3,16 @@ const { graphql } = require('./graphql.js')
 
 class TestUser {
 
-    constructor(email, password, superUser = false, permissions = []) {
+    constructor(email, password, permissions = []) {
         this.id = null
         this.token = null
         this.email = email
         this.password = password
-        this.superUser = superUser
+
+        this.superUser = permissions.includes("super")
+        if (this.superUser) {
+            permissions = permissions.filter(p => p !== "super")
+        }
         this.permissions = permissions
     }
 
@@ -21,27 +25,33 @@ class TestUser {
     }
 
     async setup() {
+        return graphql(`mutation setup($email:String!, $password:String!){
+                setup(email: $email, password: $password) {
+                    user {
+                        id
+                        email
+                        super
+                    }
+                    token
+                    success
+                    message
+                }
+            }`, {
+            email: this.email,
+            password: this.password
+        })
+    }
+
+    async setupPermissions(granter = this) {
+        if(this.permissions.length === 0) return
+
         const permissionString = this.permissions.reduce((acc, permission) => {
             return acc + `grantPermission(user:1, permission:"${permission}")`
         }, '')
 
-        return graphql(`mutation setup($email:String!, $password:String!){
-            setup(email: $email, password: $password) {
-              user {
-                id
-                email
-                super
-              }
-              token
-              success
-              message
-            }
+        return graphql(`mutation GrantPermissions {
             ${permissionString}
-          }`, {
-            email: this.email,
-            password: this.password
-        })
-
+        }`, {}, granter?.token)
     }
 
     async login() {
@@ -85,6 +95,10 @@ class TestUser {
               }
             }
           }`, { email, password }, null, debug)
+    }
+
+    static async checkPermissions() {
+
     }
 }
 
