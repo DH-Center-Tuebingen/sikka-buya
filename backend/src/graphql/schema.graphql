@@ -310,6 +310,7 @@ type Query {
 
   # Tested in 003_user
   getUser(id:ID!): User
+  getUserByMail(email:String!): User
 
   # Tested in 004_coin_mark
   coinMark: [Name]

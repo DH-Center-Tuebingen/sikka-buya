@@ -16,6 +16,10 @@ class TestUser {
         this.permissions = permissions
     }
 
+    get super() {
+        return this.superUser
+    }
+
     isLoggedIn() {
         return this.token != null
     }
@@ -42,11 +46,17 @@ class TestUser {
         })
     }
 
-    async setupPermissions(granter = this) {
+    async setupPermissions(granter = this, permissions = []) {
+
+        if(!this.id){
+            throw new Error("User ID is required")
+        }
+
+        this.permissions = [...new Set([...this.permissions, ...permissions])]
         if(this.permissions.length === 0) return
 
         const permissionString = this.permissions.reduce((acc, permission) => {
-            return acc + `grantPermission(user:1, permission:"${permission}")`
+            return acc + `grantPermission(user:${this.id}, permission:"${permission}")`
         }, '')
 
         return graphql(`mutation GrantPermissions {
@@ -95,10 +105,6 @@ class TestUser {
               }
             }
           }`, { email, password }, null, debug)
-    }
-
-    static async checkPermissions() {
-
     }
 }
 

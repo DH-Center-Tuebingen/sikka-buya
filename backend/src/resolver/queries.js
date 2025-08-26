@@ -31,6 +31,10 @@ const SuperUserQueries = {
     getUser: async function (_, { id } = {}) {
         Argument.require(id)
         return User.byId(id)
+    },
+    getUserByMail: async function (_, { email } = {}) {
+        Argument.require(email)
+        return User.byMail(email)
     }
 }
 

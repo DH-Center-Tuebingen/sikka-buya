@@ -22,7 +22,11 @@ module.exports = function (grunt) {
                 reporterOption: {
                     //Increase if your output gets truncated.
                     maxDiffSize: 1000000
-                }
+                },
+                // Add this to see full stack traces
+                fullTrace: true,
+                // Use spec reporter for better error visibility
+                reporter: 'spec',
             },
             test: {
                 src: ["./tests/**/*.js"]
