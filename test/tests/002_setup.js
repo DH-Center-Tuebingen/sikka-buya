@@ -8,6 +8,7 @@ chai.use(chaiPromise)
 const { graphql } = require('../helpers/graphql');
 const path = require('path');
 const { SuperUser, User } = require('../mockdata/users');
+const pgPromise = require('pg-promise');
 
 
 

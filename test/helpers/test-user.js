@@ -90,6 +90,17 @@ class TestUser {
     }
 
 
+    get permissionName() {
+        let permissions = [... this.permissions]
+        if(this.super)
+            permissions.push("super")
+
+        if(permissions.length == 0)
+            return "'no permission'"
+
+        return this.permissions.join(", ")
+    }
+
     static async login(email, password, debug = false) {
         return await graphql(`query Login($email: String!, $password:String!){ login(
             email: $email,

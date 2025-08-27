@@ -107,11 +107,12 @@ module.exports = function (grunt) {
 
     function getSetupFiles() {
         const basePath = path.join(__dirname, 'tests');
+        const hooks = path.join(basePath, "_hooks.js");
         const test_preconditions_001 = path.join(basePath, "001_preconditions.js");
         const setup_002 = path.join(basePath, "002_setup.js");
         const user_003 = path.join(basePath, "003_user.js");
 
-        return [test_preconditions_001, setup_002, user_003];
+        return [hooks, test_preconditions_001, setup_002, user_003];
     }
 
     grunt.registerTask('test-setup', function () {
@@ -122,19 +123,28 @@ module.exports = function (grunt) {
     })
 
     grunt.registerTask('test-file', function () {
-        const file = grunt.option('file');
+        // Accept --file option OR environment variable TEST_FILE for shells that support path
+        // auto-completion (e.g. PowerShell). Also allow an alternative grunt option 'path'.
+        const optionFile = grunt.option('file');
+        const envFile = process.env.GRUNT_TEST_FILE;
+        const file = optionFile || envFile;
+
         if (!file) {
-            grunt.fail.fatal('Please specify a test file with --file=path/to/test.js');
+            grunt.fail.fatal('Please specify a test file via --file=path/to/test.js or set the GRUNT_TEST_FILE environment variable.');
         }
 
-        // Check if the file exists
+        // Resolve relative paths to absolute so existence checks are reliable
         const fs = require('fs');
-        if (!fs.existsSync(file)) {
-            grunt.fail.fatal(`Test file ${file} does not exist.`);
+        const path = require('path');
+        const resolved = path.isAbsolute(file) ? file : path.join(process.cwd(), file);
+
+        if (!fs.existsSync(resolved)) {
+            grunt.fail.fatal(`Test file ${file} does not exist (resolved to: ${resolved}).`);
         }
+
         const setupTasks = getSetupFiles();
-        // Set the test files to run
-        grunt.config.set('mochaTest.test.src', [...setupTasks, file]);
+        // Set the test files to run (use resolved absolute path)
+        grunt.config.set('mochaTest.test.src', [...setupTasks, resolved]);
         grunt.task.run(['setup', 'mochaTest']);
     });
 }

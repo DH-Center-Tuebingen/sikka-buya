@@ -1,14 +1,16 @@
 const { expect } = require('chai')
 const { graphql } = require('../helpers/graphql')
-const { User, SuperUser, Editor, TypeEditor, getRestOfUsers } = require('../mockdata/users')
+const { User, SuperUser, Editor, TypeEditor, getRestOfUsers, setupAllUsers } = require('../mockdata/users')
 const { arrayRequired, required, messageFromValidator } = require('./requirements')
+const { WriteableDatabase } = require('../../backend/src/utils/database')
 
-const validUsers = [SuperUser, Editor, TypeEditor]
+const validUsers = [SuperUser, Editor]
 const invalidUsers = getRestOfUsers(validUsers)
 
 class PropertyTest {
 
     constructor(name, {
+        database = null,
         GQL_BODY = null,
         listData = null,
         getData = null,
@@ -17,9 +19,15 @@ class PropertyTest {
         searchTextExact = null,
         addData = null,
         addInput = null,
-        updateId = null,
         updateInput = null,
         updateData = null,
+        deleteData = null,
+
+        // For some tests that require joined databases (e.g. material)
+        // we need custom behavior to reset the database state.
+        getOriginalEntry = null,
+        afterUpdate = null,
+        afterDelete = null
     } = {}, {
         only = false,
     } = {}) {
@@ -30,6 +38,7 @@ class PropertyTest {
         const missingConfigOptions = []
 
         const requiredOptions = {
+            database: required,
             GQL_BODY: required,
             listData: required,
             getData: required,
@@ -39,12 +48,9 @@ class PropertyTest {
             searchTextExact: required,
             addData: required,
             addInput: required,
-            updateId: required,
             updateInput: required,
             updateData: required,
-            deleteId: required,
             deleteData: required,
-            deletedListData: arrayRequired,
         }
 
         for (const [key, validator] of Object.entries(requiredOptions)) {
@@ -58,6 +64,11 @@ class PropertyTest {
                 this[key] = value
             }
         }
+
+        // Optional options
+        this.getOriginalEntry = getOriginalEntry
+        this.afterUpdate = afterUpdate
+        this.afterDelete = afterDelete
 
         if (missingConfigOptions.length > 0) {
             throw new Error(`Missing required options:\n${missingConfigOptions.join("\n ")}`)
@@ -83,6 +94,20 @@ class PropertyTest {
         return `{${this.name} ${this.GQL_BODY}}`
     }
 
+    get updateId() {
+        if (!this.updateData?.id) throw new Error("updateData must have an id property")
+        return this.updateData.id
+    }
+
+    get deleteId() {
+        if (!this.deleteData?.id) throw new Error("deleteData must have an id property")
+        return this.deleteData.id
+    }
+
+    get deletedListData() {
+        return this.listData.filter(item => item.id !== this.deleteId)
+    }
+
     get getQueryName() {
         return `get${this.capitalizedName}`
     }
@@ -91,6 +116,19 @@ class PropertyTest {
         return `{
             ${this.getQueryName}(id:${id}) ${this.GQL_BODY}
         }`
+    }
+
+    async _getOriginalEntry(id) {
+        let originalEntry
+        if (this.getOriginalEntry) {
+            originalEntry = await this.getOriginalEntry(WriteableDatabase, this, id)
+        } else {
+            originalEntry = await WriteableDatabase.one(`SELECT * FROM ${this.database} WHERE id=${id}`)
+        }
+
+        originalEntry.id = originalEntry.id.toString()
+
+        return originalEntry
     }
 
     access(klass) {
@@ -156,6 +194,20 @@ class PropertyTest {
             const queryName = `add${klass.capitalizedName}`
             const query = `mutation{${queryName}( ${klass.addInput} )}`
 
+            this.afterEach(async function () {
+                const { exists } = await WriteableDatabase.one(`SELECT EXISTS(SELECT 1 FROM ${klass.database} WHERE id=${klass.addData.id}) AS exists`)
+                if (exists) {
+                    try {
+                        await WriteableDatabase.tx(async t => {
+                            await t.none(`DELETE FROM ${klass.database} WHERE id=${klass.addData.id}`)
+                            //Reset counter to the last id value.
+                            await t.none(`ALTER SEQUENCE ${klass.database}_id_seq RESTART WITH ${klass.addData.id}`)
+                        })
+                    } catch (error) {
+                        console.error("DELETION ERROR occurred:", error)
+                    }
+                }
+            })
 
             it("Unauthorized Add Rejected", async function () {
                 let promise = graphql(query)
@@ -167,21 +219,35 @@ class PropertyTest {
                 expect(result.data.data[klass.name]).to.not.deep.include(klass.addData)
             })
 
-            it("Add", async function () {
-                let promise = graphql(query, {}, User.token)
-                await expect(promise).to.be.fulfilled
-            })
+            describe("Test Add for all users", async function () {
+                validUsers.forEach(user => {
+                    it(`Add of user with permission ${user.permissionName} succeeded`, async function () {
+                        let promise = graphql(query, {}, SuperUser.token)
+                        try {
+                            await promise
+                        } catch (error) {
+                            console.error("Error occurred:", error)
+                        }
+                        await expect(promise).to.be.fulfilled
+                        // Item was added
+                        let addedResult = await graphql(klass.listQuery)
+                        expect(addedResult.data.data[klass.name]).to.deep.include(klass.addData)
+                        // Added item is correct
+                        let compareResult = await graphql(klass.getQuery(klass.addData.id))
+                        expect(compareResult.data.data[klass.getQueryName]).to.deep.equal(klass.addData)
+                    })
+                })
 
-            it("Item was added", async function () {
-                let result = await graphql(klass.listQuery)
-                expect(result.data.data[klass.name]).to.deep.include(klass.addData)
+                invalidUsers.forEach(user => {
+                    it(`Add of user without permission ${user.permissionName} failed`, async function () {
+                        let promise = graphql(query, {}, user.token)
+                        await expect(promise).to.be.rejectedWith(["403"])
+                        // Item was not added
+                        let addedResult = await graphql(klass.listQuery)
+                        expect(addedResult.data.data[klass.name]).to.not.deep.include(klass.addData)
+                    })
+                })
             })
-
-            it("Added item is correct", async function () {
-                let result = await graphql(klass.getQuery(klass.addData.id))
-                expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.addData)
-            })
-
 
             klass.runAdditionalTests(klass, "add")
 
@@ -199,31 +265,40 @@ class PropertyTest {
                 await expect(promise).to.be.rejectedWith(["401"])
             })
 
-            validUsers.forEach(user => {
-                it(`Update of user with permission ${user.permissions[0]} succeeded`, async function () {
-                    let promise = graphql(query, {}, user.token)
-                    await expect(promise).to.be.fulfilled
+            describe("Test Update for all users", async function () {
+
+                let originalEntry = null
+                this.beforeAll(async function () {
+                    originalEntry = await klass._getOriginalEntry(klass.updateId)
                 })
 
-                it("Updated item is correct", async function () {
-                    let result = await graphql(klass.getQuery(klass.updateId))
-                    expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
+                this.afterEach("Testing update for all users", async function () {
+                    if (klass.afterUpdate)
+                        await klass.afterUpdate(WriteableDatabase, klass, originalEntry)
+                    else {
+                        await WriteableDatabase.none(`UPDATE ${klass.database} SET ${Object.keys(originalEntry).map((val, idx) => `${val}='${originalEntry[val]}'`).join(", ")} WHERE id=${klass.updateId}`)
+                    }
+                })
+
+                validUsers.forEach(user => {
+                    it(`Update of user with permission ${user.permissionName} succeeded`, async function () {
+                        let promise = graphql(query, {}, user.token)
+                        await expect(promise).to.be.fulfilled
+                        let result = await graphql(klass.getQuery(klass.updateId))
+                        expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
+                    })
+                })
+
+                invalidUsers.forEach(user => {
+                    it(`Update of user without permission ${user.permissionName} failed`, async function () {
+                        let promise = graphql(query, {}, user.token)
+                        await expect(promise).to.be.rejectedWith(["403"])
+                        let result = await graphql(klass.getQuery(klass.updateId))
+                        const updatedEntry = result.data.data[klass.getQueryName]
+                        expect(updatedEntry).to.deep.equal(originalEntry)
+                    })
                 })
             })
-
-            invalidUsers.forEach(user => {
-                it(`Update of user without permission ${user.permissions[0]} failed`, async function () {
-                    let promise = graphql(query, {}, user.token)
-                    await expect(promise).to.be.rejectedWith(["403"])
-                })
-
-                it("Updated item is still the same", async function () {
-                    let result = await graphql(klass.getQuery(klass.updateId))
-                    expect(result.data.data[klass.getQueryName]).to.deep.equal(klass.updateData)
-                })
-            })
-
-
 
             klass.runAdditionalTests(klass, "update")
         })
@@ -249,14 +324,43 @@ class PropertyTest {
                 expect(result.data.data[klass.name]).to.deep.include(klass.deleteData)
             })
 
-            it("Delete", async function () {
-                let promise = graphql(query, {}, User.token)
-                await expect(promise).to.be.fulfilled
-            })
+            describe("Test deletion for all users", async function () {
 
-            it("Item was deleted successfully", async function () {
-                let result = await graphql(klass.listQuery)
-                expect(result.data.data[klass.name]).to.deep.equal(klass.deletedListData)
+                let deletedEntry = null
+                this.beforeAll(async function () {
+                    deletedEntry = await klass._getOriginalEntry(klass.deleteId)
+                })
+
+                this.afterEach("Testing delete for all users", async function () {
+                    const { exists } = await WriteableDatabase.one(`SELECT EXISTS(SELECT 1 FROM ${klass.database} WHERE id=${klass.deleteId}) AS exists`)
+                    if (!exists) {
+                        if (klass.afterDelete) {
+                            await klass.afterDelete(WriteableDatabase, klass, deletedEntry)
+                        } else {
+                            await WriteableDatabase.none(`INSERT INTO ${klass.database} (${Object.keys(deletedEntry).join(", ")}) VALUES (${Object.values(deletedEntry).map(value => `'${value}'`).join(", ")})`)
+                        }
+                    }
+                })
+
+                for (const user of validUsers) {
+                    it(`Delete of user with permission ${user.permissionName} succeeded`, async function () {
+                        let promise = graphql(query, {}, user.token)
+                        await expect(promise).to.be.fulfilled
+                        // Item should still be deleted
+                        let result = await graphql(klass.listQuery)
+                        expect(result.data.data[klass.name]).to.deep.equal(klass.deletedListData)
+                    })
+                }
+
+                for (const invalidUser of invalidUsers) {
+                    it(`Delete of user without permission ${invalidUser.permissionName} failed`, async function () {
+                        let promise = graphql(query, {}, invalidUser.token)
+                        await expect(promise).to.be.rejectedWith(["403"])
+                        // Item should still be present
+                        let result = await graphql(klass.listQuery)
+                        expect(result.data.data[klass.name]).to.deep.equal(klass.listData)
+                    })
+                }
             })
 
             klass.runAdditionalTests(klass, "delete")
@@ -281,7 +385,7 @@ class PropertyTest {
 
             })
 
-            klass.tests.forEach(fun => fun(klass))
+            klass.tests.forEach(func => func(klass))
         })
     }
 }

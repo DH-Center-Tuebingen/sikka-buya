@@ -1,5 +1,7 @@
 const Auth = require('../auth')
 const { Database } = require('../utils/database')
+const { guardFunctionObject } = require("../utils/guard.js")
+
 
 
 //Abstract resolver base class
@@ -52,18 +54,18 @@ class BaseResolver {
         }
 
         const ref = this
-        resolvers.Mutation[`add${this.capitalizedName}`] = function (_, args, context) {
-            Auth.verifyContext(context)
+        let mutations = {}
+        mutations[`add${this.capitalizedName}`] = function (_, args, context) {
             return ref.add(_, args, ref.tableName)
         }
-        resolvers.Mutation[`update${this.capitalizedName}`] = function (_, args, context) {
-            Auth.verifyContext(context)
+        mutations[`update${this.capitalizedName}`] = function (_, args, context) {
             return ref.update(_, args, ref.tableName)
         }
-        resolvers.Mutation[`delete${this.capitalizedName}`] = function (_, args, context) {
-            Auth.verifyContext(context)
+        mutations[`delete${this.capitalizedName}`] = function (_, args, context) {
             return ref.delete(_, args, ref.tableName)
         }
+        // Only super and editors can edit resolvers.
+        resolvers.Mutation = guardFunctionObject(mutations, async (_, __, context) => await Auth.requirePermission(context, 'editor'))
 
         resolvers.Query[`${this.name}`] = function (_, args, context) { return ref.list(_, args, context, ref.tableName) }
         resolvers.Query[`get${this.capitalizedName}`] = function (_, args, context) { return ref.get(_, args, context, ref.tableName) }

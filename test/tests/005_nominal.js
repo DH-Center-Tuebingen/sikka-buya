@@ -11,6 +11,7 @@ const {
 const PropertyTest = require('../src/property-test')
 
 const nominalPropertyTest = new PropertyTest("nominal", {
+    database: "nominal",
     GQL_BODY: NOMINAL_GQL_BODY,
     listData: [MARK, TALER, ZLOTY, YEN, ADIE],
     getData: MARK,
@@ -21,12 +22,9 @@ const nominalPropertyTest = new PropertyTest("nominal", {
     addData: DOLLAR,
     addDataId: DOLLAR.id,
     addInput: `name: "${DOLLAR.name}"`,
-    updateId: YEN.id,
     updateData: YEN_UPDATED,
     updateInput: `name: "${YEN_UPDATED.name}"`,
-    deleteId: DOLLAR.id,
-    deleteData: DOLLAR,
-    deletedListData: [MARK, TALER, ZLOTY, YEN_UPDATED, ADIE],
+    deleteData: YEN,
 })
 
 nominalPropertyTest.run()

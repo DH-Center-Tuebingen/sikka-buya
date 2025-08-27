@@ -457,7 +457,6 @@ ALTER SEQUENCE public.migrations_id_seq OWNED BY public.migrations.id;
 CREATE TABLE public.mint (
     id integer NOT NULL,
     name character varying,
-    unsafe boolean,
     location public.geometry,
     uncertain boolean,
     uncertain_area public.geometry,
@@ -1819,6 +1818,14 @@ ALTER TABLE ONLY public.issuer_titles
 
 ALTER TABLE ONLY public.issuer_titles
     ADD CONSTRAINT it_title_fk FOREIGN KEY (title) REFERENCES public.title(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: material_color material_color_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.material_color
+    ADD CONSTRAINT material_color_fk FOREIGN KEY (material) REFERENCES public.material(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

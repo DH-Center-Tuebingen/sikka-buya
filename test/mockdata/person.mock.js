@@ -1,5 +1,5 @@
 const { FRENCH, GERMAN } = require('./dynasty.mock')
-const { CUTTER, DAULA, CALIPH } = require('./role.mock')
+const { CUTTER, CALIPH } = require('./role.mock')
 
 const UDERZO = {
     "id": "12",
@@ -402,8 +402,8 @@ const MONET = {
     "color": "#004433"
 }
 
-const MONET_UPDATED = {
-    "id": "26",
+const TURNER_UPDATED = {
+    "id": "16",
     "name": "Édouard Manet",
     "shortName": "Manet",
     "role": CALIPH,
@@ -411,12 +411,12 @@ const MONET_UPDATED = {
     "color": "#ffeeaa"
 }
 
-const MONET_UPDATED_INPUT = `data: {
-    name: "${MONET_UPDATED.name}"
-    shortName: "${MONET_UPDATED.shortName}"
-    role: ${MONET_UPDATED.role.id}
-    dynasty: ${MONET_UPDATED.dynasty.id}
-    color: "#ffeeaa"
+const TURNER_UPDATED_INPUT = `data: {
+    name: "${TURNER_UPDATED.name}"
+    shortName: "${TURNER_UPDATED.shortName}"
+    role: ${TURNER_UPDATED.role.id}
+    dynasty: ${TURNER_UPDATED.dynasty.id}
+    color: "${TURNER_UPDATED.color}"
 }`
 
 module.exports = {
@@ -439,8 +439,8 @@ module.exports = {
     MICHELANGELO,
     MONET,
     MONET_INPUT,
-    MONET_UPDATED,
-    MONET_UPDATED_INPUT,
+    TURNER_UPDATED,
+    TURNER_UPDATED_INPUT,
     PERSON_GQL_BODY,
     PLANKTON,
     POSEIDON,

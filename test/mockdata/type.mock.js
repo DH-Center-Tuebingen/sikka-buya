@@ -4,6 +4,7 @@ const { PI, U, A, E, EURO } = require('./coinmark.mock')
 const { ARABIC, KORAN30, KORAN9 } = require('./coinverse.mock')
 const { BLACK_GIANT, PEAR, OF_GERMANY, BULLDOZER, FRANCAIS, GENERAL, MERMAID, CREATURE_OF_THE_SEA, THE_GREAT } = require('./honorific.mock')
 const { GOLD, SILVER, PERLMUTT } = require('./material.mock')
+const { PARIS, BERLIN, ATLANTIS } = require('./mint.mock')
 const { MARK, TALER, ADIE } = require('./nominal.mock')
 const { KOHL,
     WESTERWELLE,
@@ -37,13 +38,7 @@ const GERMAN_TYPE = {
     "id": "1",
     "projectId": "GER1989",
     "treadwellId": "GD89",
-    "mint": {
-        "id": "1",
-        "name": "Berlin",
-        "location": { "type": "Point", "coordinates": [52.51968196, 13.376689258] },
-        "uncertain": false,
-        "uncertainArea": null
-    },
+    "mint": BERLIN,
     "mintAsOnCoin": "Börlin",
     "material": GOLD,
     "purity": 700,
@@ -112,13 +107,7 @@ const FRENCH_TYPE = {
     "id": "2",
     "projectId": "FRévô1789",
     "treadwellId": "FR1789",
-    "mint": {
-        "id": "2",
-        "name": "Paris",
-        "location": { "type": "Point", "coordinates": [48.863113497, 2.337794633] },
-        "uncertain": false,
-        "uncertainArea": null
-    },
+    "mint": PARIS,
     "mintAsOnCoin": "Paris",
     "material": SILVER,
     "purity": null,
@@ -203,13 +192,7 @@ const ATLANTIS_TYPE = {
     "id": "3",
     "projectId": "ẲTLxxx",
     "treadwellId": "Ẳx",
-    "mint": {
-        "id": "3",
-        "name": "Ǎtlantis",
-        "location": { "type": "Point", "coordinates": [40.450505694, 6.15439645] },
-        "uncertain": true,
-        "uncertainArea": { "type": "Polygon", "coordinates": [[[5.2734375, 41.697525911], [3.779296875, 40.838749138], [5.438232422, 39.300299186], [6.877441406, 39.283293869], [7.492675781, 40.513799155], [6.701660156, 41.557921578], [5.2734375, 41.697525911]]] }
-    },
+    "mint": ATLANTIS,
     "mintAsOnCoin": "Ẳtlảntis",
     "material": PERLMUTT,
     "purity": 900,
@@ -438,13 +421,7 @@ const ATLANTIS_TYPE_UPDATED = {
     "id": "3",
     "projectId": "ẲT",
     "treadwellId": "Ẳ",
-    "mint": {
-        "id": "1",
-        "name": "Berlin",
-        "location": { "type": "Point", "coordinates": [52.51968196, 13.376689258] },
-        "uncertain": false,
-        "uncertainArea": null
-    },
+    "mint": BERLIN,
     "mintAsOnCoin": "Ẳtl",
     "material": SILVER,
     "purity": 500,

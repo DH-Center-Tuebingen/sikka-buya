@@ -13,6 +13,7 @@ const PropertyTest = require('../src/property-test');
 
 
 new PropertyTest("dynasty", {
+    database: "dynasty",
     GQL_BODY: DYNASTY_GQL_BODY,
     listData: [ATLANT, BRIT, GERMAN, FRENCH, AUSTRIAN],
     getData: BRIT,
@@ -22,11 +23,7 @@ new PropertyTest("dynasty", {
     searchTextExact: "Öster",
     addData: BUYID,
     addInput: `name: "${BUYID.name}"`,
-    updateId: AUSTRIAN.id,
     updateData: AUSTRIAN_UPDATED_DATA,
     updateInput: `name: "${AUSTRIAN_UPDATED_DATA.name}"`,
-    deleteId: BUYID.id,
-    deleteData: BUYID,
-    deletedListData: [ATLANT, AUSTRIAN_UPDATED_DATA, BRIT, GERMAN, FRENCH],
-
+    deleteData: AUSTRIAN,
 }).run()

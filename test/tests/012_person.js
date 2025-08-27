@@ -27,8 +27,8 @@ const { UDERZO,
     CHURCHILL,
     MONET,
     MONET_INPUT,
-    MONET_UPDATED,
-    MONET_UPDATED_INPUT,
+    TURNER_UPDATED,
+    TURNER_UPDATED_INPUT,
     PERSON_GQL_BODY } = require('../mockdata/person.mock')
 const PropertyTest = require('../src/property-test')
 
@@ -61,6 +61,7 @@ const list = [
 ]
 
 const PersonTest = new PropertyTest("person", {
+    database: "person",
     GQL_BODY: PERSON_GQL_BODY,
     listData: list,
     getData: UDERZO,
@@ -70,12 +71,68 @@ const PersonTest = new PropertyTest("person", {
     searchTextExact: "François",
     addInput: MONET_INPUT,
     addData: MONET,
-    updateId: MONET.id,
-    updateInput: MONET_UPDATED_INPUT,
-    updateData: MONET_UPDATED,
-    deleteId: MONET.id,
-    deleteData: MONET_UPDATED,
-    deletedListData: list
+    updateInput: TURNER_UPDATED_INPUT,
+    updateData: TURNER_UPDATED,
+    deleteData: TURNER,
+    async getOriginalEntry(pgpDatabase, klass, id) {
+        const result = await pgpDatabase.one(`
+            SELECT person.*, pc.color as color, dyn.name as dynasty_name, dyn.id as dynasty_id, r.name as role_name, r.id as role_id FROM person
+            LEFT JOIN person_color pc ON pc.person = person.id
+            LEFT JOIN dynasty dyn ON dyn.id = person.dynasty
+            LEFT JOIN person_role r ON r.id = person.role
+            WHERE person.id = $1`, [id]
+        );
+
+        return {
+            id: result.id.toString(),
+            name: result.name,
+            shortName: result.short_name,
+            role: {
+                id: result.role_id.toString(),
+                name: result.role_name
+            },
+            dynasty: {
+                id: result.dynasty_id.toString(),
+                name: result.dynasty_name
+            },
+            color: result.color
+        };
+    },
+    async afterDelete(pgpDatabase, klass, originalEntry) {
+        await pgpDatabase.tx(async t => {
+
+            const insert= {
+                id: originalEntry.id,
+                name: originalEntry.name,
+                shortName: originalEntry.shortName,
+                role: originalEntry.role?.id,
+                dynasty: originalEntry.dynasty?.id
+            }
+
+            await t.none('INSERT INTO person(id, name, short_name, role, dynasty) VALUES($[id], $[name], $[shortName], $[role], $[dynasty])', insert);
+            await t.none('INSERT INTO person_color(person, color) VALUES($[person], $[color])', {
+                person: originalEntry.id,
+                color: originalEntry.color
+            });
+        });
+    },
+    async afterUpdate(pgpDatabase, klass, originalEntry) {
+        await pgpDatabase.tx(async t => {
+            const update = {
+                id: originalEntry.id,
+                name: originalEntry.name,
+                shortName: originalEntry.shortName,
+                role: originalEntry.role?.id,
+                dynasty: originalEntry.dynasty?.id
+            }
+
+            await t.none('UPDATE person SET name = $[name], short_name = $[shortName], role = $[role], dynasty = $[dynasty] WHERE id = $[id]', update);
+            await t.none('UPDATE person_color SET color = $[color] WHERE person = $[person]', {
+                person: originalEntry.id,
+                color: originalEntry.color
+            });
+        });
+    }
 })
 
 PersonTest.addTest("search", function () {
