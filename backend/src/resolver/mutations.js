@@ -237,7 +237,7 @@ const Mutations = Object.assign({},
     }),
     guard(WriterMutations, async (_, __, context) => await Auth.requirePermission(context, 'writer')),
     guard(EditorMutations, async (_, __, context) => await Auth.requirePermission(context, 'editor')),
-    guard(TypeEditorMutations, async (_, __, context) => await Auth.requireSomePermission(context, ['editor', 'type_editor'])),
+    guard(TypeEditorMutations, async (_, __, context) => await Auth.requireSomePermission(context, ['editor', 'type-editor'])),
     guard(Object.assign(
         SuperUserMutations,
         SettingsGQL.Mutations,

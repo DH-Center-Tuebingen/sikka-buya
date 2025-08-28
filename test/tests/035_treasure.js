@@ -1,6 +1,6 @@
 const { graphql } = require('../helpers/graphql')
 const chai = require('chai')
-const { User1 } = require('../mockdata/users')
+const { SuperUser } = require('../mockdata/users')
 const {
     CORUNA_DATA,
     LONDON_DATA,
@@ -24,10 +24,6 @@ const expect = chai.expect
 
 
 describe(`Treasure Queries`, function () {
-
-    this.beforeEach(async function () {
-        await User1.login()
-    })
 
     describe("List", function () {
 
@@ -94,7 +90,7 @@ describe(`Treasure Queries`, function () {
             const queryName = "addTreasure"
 
             let promise = graphql(`
-            mutation{${queryName}(data: ${LODZ_INPUT})})
+            mutation{${queryName}(data: ${LODZ_INPUT})}
             `)
 
             await expect(promise).to.be.rejectedWith(["401"])
@@ -106,7 +102,7 @@ describe(`Treasure Queries`, function () {
             const query = `
         mutation{${queryName}(data: ${LODZ_INPUT})}
         `
-            let promise = graphql(query, {}, User1.token)
+            let promise = graphql(query, {}, SuperUser.token)
             await expect(promise).to.be.fulfilled
         })
 
@@ -144,7 +140,7 @@ describe(`Treasure Queries`, function () {
         it("Update", async function () {
             const queryName = "updateTreasure"
             const query = `mutation{${queryName}(id: 1, data: ${UPDATED_LONDON_DATA_INPUT})}`
-            let promise = graphql(query, {}, User1.token)
+            let promise = graphql(query, {}, SuperUser.token)
             await expect(promise).to.be.fulfilled
         })
 
@@ -174,7 +170,7 @@ describe(`Treasure Queries`, function () {
 
         it("Delete", async function () {
             const queryName = "deleteTreasure"
-            let promise = graphql(`mutation{${queryName} (id:3)}`, {}, User1.token)
+            let promise = graphql(`mutation{${queryName} (id:3)}`, {}, SuperUser.token)
             await expect(promise).to.be.fulfilled
         })
 

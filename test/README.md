@@ -28,6 +28,47 @@ Hierfür wird eine 'nur-Schema' export mit pg_dump durchgeführt.
 pg_dump.exe -U postgres -d coins --ignore-table app_user --data-only -f coins_schema.sql
 ```
 
+## Api Tests
+
+Die Api tests basieren auf auf der aktuellen `schema.sql` der Hauptapplikkation und es werden die SQL-Dateien des `data` Ordners ausgeführt um die Datenbank zu befüllen.
+
+```bash
+npm run test:api
+```
+
+### Einzelne Tests ausführen
+
+Es gibt die Option einzelne Testdateien auszuführen, indem der grunt task `test-file` aufgerufen wird. Dieser erhäkt die entsprechende Datei über den Parameter `--file` oder über die Zuweisung einer Umgebungsvariable `GRUNT_TEST_FILE`, die den Vorteil bietet, dass hier die automatische Pfadvervollständigung unterstützt wird.
+
+```shell
+# Ausführung mit dem file parameter
+npx grunt test-file --file=.\tests\042_file-to-test.js
+
+# Ausführung über das setzen der env variablen
+## WINDOWS - Powershell
+$env:GRUNT_TEST_FILE=.\tests\042_file-to-test.js
+
+## LINUX
+export GRUNT_TEST_FILE=.\tests\042_file-to-test.js
+```
+
+## Ende-zu-Ende Tests (Cypress)
+
+Um zu gewährleisten, dass (v.a. die Dateneingabe) von dem Nutzerinterface adäquat ausgeführt wird, sind hier einige Ende-zu-Ende Tests mit Hilfe von
+Cypress implementiert worden. Damit die Tests ordnungsgemäß laufen, müssen die Frontend und Backend Prozesse aktiv sein.
+
+Hierfür werden folgende Skripte bereitgestellt:
+
+```bash
+# Cypress mit User-Interface ausführen (Prozesse werden automatisch gestartet)
+npm run cypress
+
+# Alle Cypress Tests werde im Terminal ausgeführt, ohne das User-Interface anzuzeigen.
+npm run cypress:run
+
+```
+
+
 ## Mockdata aktualisieren
 
 Wenn sich die Datenbank ändert, müssen die Migrationen auch auf die Testdaten angewandt werden.

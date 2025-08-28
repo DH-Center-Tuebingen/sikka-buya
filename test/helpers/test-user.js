@@ -10,10 +10,7 @@ class TestUser {
         this.password = password
 
         this.superUser = permissions.includes("super")
-        if (this.superUser) {
-            permissions = permissions.filter(p => p !== "super")
-        }
-        this.permissions = permissions
+        this.permissions = permissions.filter(p => p !== "super")
     }
 
     get super() {
@@ -98,7 +95,7 @@ class TestUser {
         if(permissions.length == 0)
             return "'no permission'"
 
-        return this.permissions.join(", ")
+        return permissions.join(", ")
     }
 
     static async login(email, password, debug = false) {

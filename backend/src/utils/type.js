@@ -280,8 +280,7 @@ class Type {
         return data
     }
 
-    static async addType(_, args, context, info) {
-
+    static async addType(args, context, info) {
         return WriteableDatabase.tx(async t => {
             const data = await this.preProcessUpsert(args.data, { skipFetch: true, transaction: t, context })
 

@@ -1,4 +1,3 @@
-const Auth = require("./auth.js")
 const BaseResolver = require("./resolver/base-resolver.js")
 const { WriteableDatabase, Database } = require("./utils/database.js")
 const SQLUtils = require("./utils/sql.js")

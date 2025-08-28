@@ -155,15 +155,11 @@ class Auth {
     }
 
     static async requireSomePermission(context, permissions) {
-        try {
-            const { id, super: isSuperUser } = Auth.verifyContext(context)
-            for (const permission of permissions) {
-                if (await Auth._checkPermission(id, isSuperUser, permission)) {
-                    return true
-                }
+        const { id, super: isSuperUser } = Auth.verifyContext(context)
+        for (const permission of permissions) {
+            if (await Auth._checkPermission(id, isSuperUser, permission)) {
+                return true
             }
-        } catch (e) {
-            console.error(e)
         }
 
         throw new Error(`You do not have the required permissions: ${permissions.join(", ")}`)
@@ -181,7 +177,7 @@ class Auth {
 
     static async _checkPermission(id, isSuperUser, name) {
 
-        try{
+        try {
             if (isSuperUser) return true
             else if (name === 'super') return false
             const result = await Database.oneOrNone(`SELECT * FROM app_user_privilege WHERE app_user=$[id] AND privilege=$[name]`, { id, name })
@@ -189,7 +185,7 @@ class Auth {
         } catch (e) {
             console.error(e)
             return false
-        } 
+        }
     }
 }
 

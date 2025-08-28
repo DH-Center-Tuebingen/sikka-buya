@@ -4,11 +4,11 @@
  * users permissions to the updated database.
  */
 
-const { grantPersmissionsToReadOnlyUser } = require('./create_read_only_user')
+const { grantPermissionsToReadOnlyUser } = require('./create_read_only_user')
 const { error, notice } = require('./modules/logging')
 
 async function main() {
-    await grantPersmissionsToReadOnlyUser()
+    await grantPermissionsToReadOnlyUser()
     return "Applied permissions successfully!"
 }
 

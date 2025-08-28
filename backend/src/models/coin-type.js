@@ -1,5 +1,7 @@
 
 const { Database, WriteableDatabase } = require('../utils/database')
+const Type = require("../utils/type")
+const Auth = require("../auth")
 
 class CoinType {
 
@@ -8,6 +10,8 @@ class CoinType {
   }
 
   static async delete(args, context, info) {
+    if (!args.id) throw new Error("No id provided!")
+
     const { super: isSuperUser } = Auth.verifyContext(context)
 
     if (!isSuperUser) {
@@ -26,7 +30,7 @@ class CoinType {
         LEFT JOIN type_completed ON type_completed.type = type.id
         LEFT JOIN type_reviewed ON type_reviewed.type = type.id
         WHERE id=$[id]
-        `, { id })
+        `, { id: args.id })
 
       if (completed || reviewed) {
 
