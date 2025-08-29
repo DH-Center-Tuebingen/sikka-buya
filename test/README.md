@@ -103,7 +103,7 @@ node ../backend/scripts/migrate.js
 pg_dump -d sikka-buya-test-database -U postgres --no-owner -f mockdata/minimal-filled-database.sql  --inserts --no-privileges
 ```
 
-6. Make sure the following line is commented out:
+6. Make sure the following line is commented out (see [1.0](#problem-1.0) for more details):
 ```sql
 ...
 SET standard_conforming_strings = on;
@@ -113,3 +113,7 @@ SET check_function_bodies = false;
 ```
 
 
+## Common Problems
+
+<h3 id="problem-1.0">[1.0] Cypress weird errors, database seems corrupted</h3>
+This error is commonly due to a 'incorrect' database file. E.g. when you update the `minimal-filled-database.sql` You must make sure that the line `SELECT pg_catalog.set_config('search_path', '', false)` is commented out. Otherwise the query makes all tables 'invisible' until it internally fixes the issue again.
