@@ -67,7 +67,7 @@
         'Offensichtliche Fälschung!',
         false,
         false,
-        'SP1964\nPerlmutt\nParis\n1 Złoty\nAbb. Spanische Flagge\nVenid españoles\nAl grito acudid.\nDios salve a la Reina\nDios salve al país.\nSpanischer Bulle\nMás allá\nFuerza y honor\nLa unión hace la fuerza\nBulle ohne Hörner\nDon Quijote de la Mancha\nVerrückte Kombination'
+        'SP1964\nPerlmutt\nParis\n1 Peseta\nAbb. Spanische Flagge\nVenid españoles\nAl grito acudid.\nDios salve a la Reina\nDios salve al país.\nSpanischer Bulle\nMás allá\nFuerza y honor\nLa unión hace la fuerza\nBulle ohne Hörner\nDon Quijote de la Mancha\nVerrückte Kombination'
     );
 
 INSERT INTO internal_notes_plain_text (type, text) VALUES (3, 'Offensichtliche Fälschung!');

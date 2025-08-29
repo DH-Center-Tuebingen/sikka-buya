@@ -102,9 +102,9 @@ const SuperUserMutations = {
         return await WriteableDatabase.none("INSERT INTO app_user (email) VALUES ($1)", email)
     },
     async grantPermission(_, { user, permission } = {}) {
-        if (permission === "super"){
+        if (permission === "super")
             WriteableDatabase.none("UPDATE app_user SET super=TRUE WHERE id=$1", user)
-        }else
+        else
             WriteableDatabase.none("INSERT INTO app_user_privilege (app_user, privilege) VALUES ($[user], $[permission])", { user, permission })
     },
     async revokePermission(_, { user, permission } = {}, context) {
