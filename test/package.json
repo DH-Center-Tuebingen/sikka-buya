@@ -1,6 +1,6 @@
 {
   "name": "sikka-buya-test",
-  "version": "0.3.46",
+  "version": "1.0.7",
   "description": "Testing suite for the sikka-buya project.",
   "main": "Gruntfile.js",
   "engines": {
