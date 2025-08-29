@@ -47,7 +47,6 @@ class CoinType {
     completed = true,
     id = null
   } = {}) {
-    console.log(`Setting type ${id} completed to ${completed}`)
     if (completed) {
       await WriteableDatabase.none("INSERT INTO type_completed (type) VALUES ($1) ON CONFLICT DO NOTHING", id)
     } else {
