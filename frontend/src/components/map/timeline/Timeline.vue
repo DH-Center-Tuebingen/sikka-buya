@@ -145,8 +145,6 @@ export default {
       this.changed(options.year);
     },
     input(event) {
-      let newValue = parseFloat(event.target.value)
-      console.log(event.target.value, newValue);
       if (isNaN(newValue)) newValue = "";
 
       this.$emit('input', newValue);
