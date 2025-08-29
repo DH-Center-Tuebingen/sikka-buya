@@ -1,7 +1,7 @@
 <template>
   <div class="page user-management-page">
     <back-header :to="{ name: 'Editor' }" />
-    <h1>{{ $t('test') }}</h1>
+    <h1>{{ $t('property.user') }}</h1>
     <section>
       <form submit.stop.prevent="">
         <h2>Add New User</h2>

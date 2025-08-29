@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 1.0.8
+
+### Fixes
+- Title of user settings
+
 ## Release 1.0.7
 
 ### Changes
@@ -7,8 +12,6 @@
 
 ### Fixes
 - Fixed timeline input field not working
-
-
 
 ## Release 1.0.6
 
