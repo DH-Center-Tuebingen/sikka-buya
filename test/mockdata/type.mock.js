@@ -4,7 +4,8 @@ const { PI, U, A, E, EURO } = require('./coinmark.mock')
 const { ARABIC, KORAN30, KORAN9 } = require('./coinverse.mock')
 const { BLACK_GIANT, PEAR, OF_GERMANY, BULLDOZER, FRANCAIS, GENERAL, MERMAID, CREATURE_OF_THE_SEA, THE_GREAT } = require('./honorific.mock')
 const { GOLD, SILVER, PERLMUTT } = require('./material.mock')
-const { MARK, TALER, ADIE } = require('./nominal.mock')
+const { PARIS, BERLIN, ATLANTIS } = require('./mint.mock')
+const { MARK, TALER, ADIE, PESETA } = require('./nominal.mock')
 const { KOHL,
     WESTERWELLE,
     MERKEL,
@@ -37,13 +38,7 @@ const GERMAN_TYPE = {
     "id": "1",
     "projectId": "GER1989",
     "treadwellId": "GD89",
-    "mint": {
-        "id": "1",
-        "name": "Berlin",
-        "location": { "type": "Point", "coordinates": [52.51968196, 13.376689258] },
-        "uncertain": false,
-        "uncertainArea": null
-    },
+    "mint": BERLIN,
     "mintAsOnCoin": "Börlin",
     "material": GOLD,
     "purity": 700,
@@ -112,13 +107,7 @@ const FRENCH_TYPE = {
     "id": "2",
     "projectId": "FRévô1789",
     "treadwellId": "FR1789",
-    "mint": {
-        "id": "2",
-        "name": "Paris",
-        "location": { "type": "Point", "coordinates": [48.863113497, 2.337794633] },
-        "uncertain": false,
-        "uncertainArea": null
-    },
+    "mint": PARIS,
     "mintAsOnCoin": "Paris",
     "material": SILVER,
     "purity": null,
@@ -178,7 +167,7 @@ const FRENCH_TYPE = {
     "cursiveScript": false,
     "coinMarks": [E, PI],
     "coinVerses": [KORAN9],
-    "literature": "<div style=\" text - align: center;\">Av: Nationalhymne</div><div style=\" text - align: center;\">Rev. revolutionärer Asusspruch</div>",
+    "literature": "<div style=\" text - align: center;\">Av: Nationalhymne</div><div style=\" text - align: center;\">Rev. revolutionärer Ausspruch</div>",
     "pieces": [
         "https://de.wikipedia.org/wiki/Paris"
     ],
@@ -188,28 +177,99 @@ const FRENCH_TYPE = {
     "internalNotes": null,
     "yearUncertain": true,
     "mintUncertain": true,
-    "plain_text": "FRévô1789\\nSilber\\nParis\\n1 Taler\\nAbb. Französische Flagge\\nContre nous de la tyrannie\\nLe jour de gloire est arrivé!\\nAllons enfants de la Patrie,\\nFlagge wehend\\nFranzösischer Hahn\\nFraternité\\nÉgalité\\nLiberté\\nHahn trägt Hose\\nAv: NationalhymneRev. revolutionärer Asusspruch\\nRevolutionsmünze mit König"
+    "plain_text": "FRévô1789\\nSilber\\nParis\\n1 Taler\\nAbb. Französische Flagge\\nContre nous de la tyrannie\\nLe jour de gloire est arrivé!\\nAllons enfants de la Patrie,\\nFlagge wehend\\nFranzösischer Hahn\\nFraternité\\nÉgalité\\nLiberté\\nHahn trägt Hose\\nAv: NationalhymneRev. revolutionärer Ausspruch\\nRevolutionsmünze mit König"
 }
 
 FRENCH_TYPE_WHEN_LOGGED_IN_DIFF = {
     "internalNotes": "<div style=\" text - align: center;\">Bitte Überprüfen!</div>",
-    "plain_text": "FRévô1789\\nSilber\\nParis\\n1 Taler\\nAbb. Französische Flagge\\nContre nous de la tyrannie\\nLe jour de gloire est arrivé!\\nAllons enfants de la Patrie,\\nFlagge wehend\\nFranzösischer Hahn\\nFraternité\\nÉgalité\\nLiberté\\nHahn trägt Hose\\nAv: NationalhymneRev. revolutionärer Asusspruch\\nRevolutionsmünze mit König\\nBitte Überprüfen!"
+    "plain_text": "FRévô1789\\nSilber\\nParis\\n1 Taler\\nAbb. Französische Flagge\\nContre nous de la tyrannie\\nLe jour de gloire est arrivé!\\nAllons enfants de la Patrie,\\nFlagge wehend\\nFranzösischer Hahn\\nFraternité\\nÉgalité\\nLiberté\\nHahn trägt Hose\\nAv: NationalhymneRev. revolutionärer Ausspruch\\nRevolutionsmünze mit König\\nBitte Überprüfen!"
+}
+
+// Spanish type is not referenced for deletion.
+const SPANISH_TYPE = {
+    "id": "3",
+    "projectId": "Spanish",
+    "treadwellId": "SP1964",
+    "mint": PARIS,
+    "mintAsOnCoin": "Paris",
+    "material": PERLMUTT,
+    "purity": null,
+    "nominal": PESETA,
+    "small": true,
+    "yearOfMint": "1964",
+    "donativ": true,
+    "procedure": "hammer",
+    "issuers": [
+        Object.assign({
+            "titles": [PROF, DR],
+            "honorifics": [BULLDOZER, FRANCAIS]
+        }, UDERZO),
+        Object.assign({
+            "titles": [MONSIEUR, KOENIG],
+            "honorifics": [BLACK_GIANT, PEAR]
+        }, GOSCINNY)
+    ],
+    "overlords": [
+        Object.assign({
+            "rank": 1,
+            "titles": [PROF, DR],
+            "honorifics": [THE_GREAT, MERMAID]
+        }, HOLLANDE),
+        Object.assign({
+            "rank": 2,
+            "titles": [MONSIEUR, KOENIGIN],
+            "honorifics": [GENERAL, CREATURE_OF_THE_SEA]
+        }, SARKOZY)
+    ],
+    "otherPersons": [
+        DUERER, ARIELLE
+    ],
+    "caliph": GOSCINNY,
+    "avers": {
+        "fieldText": "Abb. Spanische Flagge",
+        "innerInscript": "Venid españoles",
+        "intermediateInscript": "Al grito acudid.",
+        "outerInscript": "Dios salve a la Reina,,",
+        "misc": "Dios salve al país."
+    },
+    "reverse": {
+        "fieldText": "Spanischer Bulle",
+        "innerInscript": "Más allá",
+        "intermediateInscript": "Fuerza y honor",
+        "outerInscript": "La unión hace la fuerza",
+        "misc": "Bulle ohne Hörner"
+    },
+    "cursiveScript": false,
+    "coinMarks": [],
+    "coinVerses": [],
+    "literature": "Don Quijote de la Mancha",
+    "pieces": [
+        "https://de.wikipedia.org/wiki/Spanien",
+        "https://es.wikipedia.org/wiki/España"
+    ],
+    "specials": "Verrückte Kombination",
+    "excludeFromTypeCatalogue": false,
+    "excludeFromMapApp": false,
+    "internalNotes": null,
+    "yearUncertain": false,
+    "mintUncertain": false,
+    "plain_text": "SP1964\\nPerlmutt\\nParis\\n1 Złoty\\nAbb. Spanische Flagge\\nVenid españoles\\nAl grito acudid.\\nDios salve a la Reina\\nDios salve al país.\\nSpanischer Bulle\\nMás allá\\nFuerza y honor\\nLa unión hace la fuerza\\nBulle ohne Hörner\\nDon Quijote de la Mancha\\nVerrückte Kombination"
+}
+
+SPANISH_TYPE_WHEN_LOGGED_IN_DIFF = {
+    "internalNotes": "Offensichtliche Fälschung!",
+    "plain_text": "SP1964\\nPerlmutt\\nParis\\n1 Złoty\\nAbb. Spanische Flagge\\nVenid españoles\\nAl grito acudid.\\nDios salve a la Reina\\nDios salve al país.\\nSpanischer Bulle\\nMás allá\\nFuerza y honor\\nLa unión hace la fuerza\\nBulle ohne Hörner\\nDon Quijote de la Mancha\\nVerrückte Kombination\\nOffensichtliche Fälschung!",
 }
 
 const GERMAN_TYPE_WHEN_LOGGED_IN = Object.assign({}, GERMAN_TYPE, GERMAN_TYPE_WHEN_LOGGED_IN_DIFF)
 const FRENCH_TYPE_WHEN_LOGGED_IN = Object.assign({}, FRENCH_TYPE, FRENCH_TYPE_WHEN_LOGGED_IN_DIFF)
+const SPANISH_TYPE_WHEN_LOGGED_IN = Object.assign({}, SPANISH_TYPE, SPANISH_TYPE_WHEN_LOGGED_IN_DIFF)
 
 const ATLANTIS_TYPE = {
-    "id": "3",
+    "id": "4",
     "projectId": "ẲTLxxx",
     "treadwellId": "Ẳx",
-    "mint": {
-        "id": "3",
-        "name": "Ǎtlantis",
-        "location": { "type": "Point", "coordinates": [40.450505694, 6.15439645] },
-        "uncertain": true,
-        "uncertainArea": { "type": "Polygon", "coordinates": [[[5.2734375, 41.697525911], [3.779296875, 40.838749138], [5.438232422, 39.300299186], [6.877441406, 39.283293869], [7.492675781, 40.513799155], [6.701660156, 41.557921578], [5.2734375, 41.697525911]]] }
-    },
+    "mint": ATLANTIS,
     "mintAsOnCoin": "Ẳtlảntis",
     "material": PERLMUTT,
     "purity": 900,
@@ -362,7 +422,7 @@ const ATLANTIS_INPUT = `{
         mintUncertain: true,
       }`
 
-const ATLANTIS_INPUT_UPDATED = `{
+const FRENCH_INPUT_UPDATED = `{
         projectId: "ẲT",
         treadwellId: "Ẳ",
         mint: 1,
@@ -434,17 +494,11 @@ const ATLANTIS_INPUT_UPDATED = `{
       }`
 
 
-const ATLANTIS_TYPE_UPDATED = {
-    "id": "3",
+const FRENCH_TYPE_UPDATED = {
+    "id": "2",
     "projectId": "ẲT",
     "treadwellId": "Ẳ",
-    "mint": {
-        "id": "1",
-        "name": "Berlin",
-        "location": { "type": "Point", "coordinates": [52.51968196, 13.376689258] },
-        "uncertain": false,
-        "uncertainArea": null
-    },
+    "mint": BERLIN,
     "mintAsOnCoin": "Ẳtl",
     "material": SILVER,
     "purity": 500,
@@ -517,6 +571,10 @@ treadwellId
 mint {
   id
   name
+  province {
+    id
+    name
+  }
   location
   uncertain
   uncertainArea
@@ -648,8 +706,10 @@ module.exports = {
     FRENCH_TYPE,
     GERMAN_TYPE_WHEN_LOGGED_IN,
     FRENCH_TYPE_WHEN_LOGGED_IN,
+    SPANISH_TYPE,
+    SPANISH_TYPE_WHEN_LOGGED_IN,
     ATLANTIS_TYPE,
     ATLANTIS_INPUT,
-    ATLANTIS_INPUT_UPDATED,
-    ATLANTIS_TYPE_UPDATED,
+    FRENCH_INPUT_UPDATED,
+    FRENCH_TYPE_UPDATED,
 }

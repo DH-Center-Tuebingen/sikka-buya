@@ -28,6 +28,47 @@ Hierfür wird eine 'nur-Schema' export mit pg_dump durchgeführt.
 pg_dump.exe -U postgres -d coins --ignore-table app_user --data-only -f coins_schema.sql
 ```
 
+## Api Tests
+
+Die Api tests basieren auf auf der aktuellen `schema.sql` der Hauptapplikkation und es werden die SQL-Dateien des `data` Ordners ausgeführt um die Datenbank zu befüllen.
+
+```bash
+npm run test:api
+```
+
+### Einzelne Tests ausführen
+
+Es gibt die Option einzelne Testdateien auszuführen, indem der grunt task `test-file` aufgerufen wird. Dieser erhäkt die entsprechende Datei über den Parameter `--file` oder über die Zuweisung einer Umgebungsvariable `GRUNT_TEST_FILE`, die den Vorteil bietet, dass hier die automatische Pfadvervollständigung unterstützt wird.
+
+```shell
+# Ausführung mit dem file parameter
+npx grunt test-file --file=.\tests\042_file-to-test.js
+
+# Ausführung über das setzen der env variablen
+## WINDOWS - Powershell
+$env:GRUNT_TEST_FILE=.\tests\042_file-to-test.js
+
+## LINUX
+export GRUNT_TEST_FILE=.\tests\042_file-to-test.js
+```
+
+## Ende-zu-Ende Tests (Cypress)
+
+Um zu gewährleisten, dass (v.a. die Dateneingabe) von dem Nutzerinterface adäquat ausgeführt wird, sind hier einige Ende-zu-Ende Tests mit Hilfe von
+Cypress implementiert worden. Damit die Tests ordnungsgemäß laufen, müssen die Frontend und Backend Prozesse aktiv sein.
+
+Hierfür werden folgende Skripte bereitgestellt:
+
+```bash
+# Cypress mit User-Interface ausführen (Prozesse werden automatisch gestartet)
+npm run cypress
+
+# Alle Cypress Tests werde im Terminal ausgeführt, ohne das User-Interface anzuzeigen.
+npm run cypress:run
+
+```
+
+
 ## Mockdata aktualisieren
 
 Wenn sich die Datenbank ändert, müssen die Migrationen auch auf die Testdaten angewandt werden.
@@ -35,6 +76,7 @@ Diese sind befinden sich im Ordner 'test/mockdata'.
 
 Hierfür wird zuerst die entsprechende Datenbank geladen:
 
+1. Versichern Sie sich, dass eine `.pgpass` Datei existiert, sonst können einzelne Schritte fehlschlagen.
 1. Die Testdatenbank wird mit `node testing-backend.js`(**ACHTUNG, das Arbeitsverzeichnis muss das Testverzeichnis sein, da es die entsprechende .env Datei enthält!**)
 2. Hierauf senden wir an den Endpunkt `http://localhost:4000/test-database` den entsprechenden Befehl per GET oder POST Anfrage, z.B. 
 
@@ -61,7 +103,7 @@ node ../backend/scripts/migrate.js
 pg_dump -d sikka-buya-test-database -U postgres --no-owner -f mockdata/minimal-filled-database.sql  --inserts --no-privileges
 ```
 
-6. Make sure the following line is commented out:
+6. Make sure the following line is commented out (see [1.0](#problem-1.0) for more details):
 ```sql
 ...
 SET standard_conforming_strings = on;
@@ -71,3 +113,7 @@ SET check_function_bodies = false;
 ```
 
 
+## Common Problems
+
+<h3 id="problem-1.0">[1.0] Cypress weird errors, database seems corrupted</h3>
+This error is commonly due to a 'incorrect' database file. E.g. when you update the `minimal-filled-database.sql` You must make sure that the line `SELECT pg_catalog.set_config('search_path', '', false)` is commented out. Otherwise the query makes all tables 'invisible' until it internally fixes the issue again.

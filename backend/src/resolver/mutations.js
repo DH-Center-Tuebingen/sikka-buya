@@ -41,6 +41,7 @@ const UnguardedMutations = {
         const hashedPW = await Auth.hashPassword(password)
         let result = await WriteableDatabase.oneOrNone("UPDATE app_user SET password = $[password] WHERE email=$[email] AND password IS NULL RETURNING id", { email, password: hashedPW })
         if (result == null) throw new Error("Could not set password!")
+        return result.id
     },
 
     async setup(_, args) {
@@ -92,15 +93,18 @@ const SuperUserMutations = {
     async deleteUser(_, args) {
         return WriteableDatabase.none("DELETE FROM app_user WHERE id=$[id]", args)
     },
+    async deleteUserByMail(_, args) {
+        return WriteableDatabase.none("DELETE FROM app_user WHERE email=$[email]", args)
+    },
     async inviteUser(_, { email } = {}) {
         let mailValidation = Auth.validateEmail(email)
         if (!mailValidation.ok) throw new Error(mailValidation.error)
         return await WriteableDatabase.none("INSERT INTO app_user (email) VALUES ($1)", email)
     },
     async grantPermission(_, { user, permission } = {}) {
-        if (permission === "super")
+        if (permission === "super"){
             WriteableDatabase.none("UPDATE app_user SET super=TRUE WHERE id=$1", user)
-        else
+        }else
             WriteableDatabase.none("INSERT INTO app_user_privilege (app_user, privilege) VALUES ($[user], $[permission])", { user, permission })
     },
     async revokePermission(_, { user, permission } = {}, context) {
@@ -233,7 +237,7 @@ const Mutations = Object.assign({},
     }),
     guard(WriterMutations, async (_, __, context) => await Auth.requirePermission(context, 'writer')),
     guard(EditorMutations, async (_, __, context) => await Auth.requirePermission(context, 'editor')),
-    guard(TypeEditorMutations, async (_, __, context) => await Auth.requireSomePermission(context, ['editor', 'type_editor'])),
+    guard(TypeEditorMutations, async (_, __, context) => await Auth.requireSomePermission(context, ['editor', 'type-editor'])),
     guard(Object.assign(
         SuperUserMutations,
         SettingsGQL.Mutations,

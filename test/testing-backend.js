@@ -81,13 +81,13 @@ async function main() {
                     status = 400
                     message = "Parameter 'method' missing"
                 } else {
-                    console.log(`Apply Method: ${method}`)
                     switch (method) {
                         case "RecreateTestDatabase":
                             await recreateTestDatabase()
                             break;
                         case "ResetDatabase":
-                            await resetTestDatabase()
+                            // Will be resetted anyways.
+                            // await resetTestDatabase()
                             break;
                         case "MountMinimalDatabase":
                             file = joinPath(__dirname, "mockdata", "minimal-filled-database.sql")

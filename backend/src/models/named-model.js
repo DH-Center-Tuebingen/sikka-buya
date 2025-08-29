@@ -2,8 +2,9 @@ const { Database, WriteableDatabase } = require("../utils/database");
 const Model = require("./model");
 
 class NamedModel extends Model {
-    constructor(tableName) {
+    constructor(tableName, supportsTimestamps = false) {
         super(tableName)
+        this.supportsTimestamps = supportsTimestamps
     }
 
     get tableName() {
@@ -27,11 +28,19 @@ class NamedModel extends Model {
     }
 
     async add(name, transaction = WriteableDatabase) {
-        return transaction.one(`INSERT INTO ${this.tableName} (name) VALUES ($1) RETURNING id`, [name])
+        if (this.supportsTimestamps) {
+            return transaction.one(`INSERT INTO ${this.tableName} (name, created_at, updated_at) VALUES ($1, NOW(), NOW()) RETURNING id`, [name])
+        } else {
+            return transaction.one(`INSERT INTO ${this.tableName} (name) VALUES ($1) RETURNING id`, [name])
+        }
     }
 
     async update(id, name, transaction = WriteableDatabase) {
-        return transaction.none(`UPDATE ${this.tableName} SET name = $1 WHERE id = $2`, [name, id])
+        if (this.supportsTimestamps) {
+            return transaction.none(`UPDATE ${this.tableName} SET name = $1, updated_at = NOW() WHERE id = $2`, [name, id])
+        } else {
+            return transaction.none(`UPDATE ${this.tableName} SET name = $1 WHERE id = $2`, [name, id])
+        }   
     }
 
     async delete(id, transaction = WriteableDatabase) {

@@ -79,7 +79,7 @@ async function createReadOnlyUser() {
             VALID UNTIL 'infinity'`,
                 { username, password })
 
-            await grantPersmissionsToReadOnlyUser(t)
+            await grantPermissionsToReadOnlyUser(t)
 
         }).then(() => resolve("Success")).catch((e) => {
             reject(`Could not create Role ${username}: ${e}`)
@@ -87,7 +87,7 @@ async function createReadOnlyUser() {
     })
 }
 
-async function grantPersmissionsToReadOnlyUser(t = null) {
+async function grantPermissionsToReadOnlyUser(t = null) {
     const { username, superUser, dbName } = requireEnv({ username: "DB_READ_ONLY_USER", superUser: "DB_USER", dbName: "DB_NAME" })
 
     async function applyPermissions(t) {
@@ -117,7 +117,7 @@ async function grantPersmissionsToReadOnlyUser(t = null) {
 }
 
 
-module.exports = { createReadOnlyUser, dropReadOnlyUser, hasReadOnlyUser, createWritableUser, grantPersmissionsToReadOnlyUser }
+module.exports = { createReadOnlyUser, dropReadOnlyUser, hasReadOnlyUser, createWritableUser, grantPermissionsToReadOnlyUser }
 
 
 async function main() {
