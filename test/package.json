@@ -1,6 +1,6 @@
 {
   "name": "sikka-buya-test",
-  "version": "0.3.46",
+  "version": "1.0.7",
   "description": "Testing suite for the sikka-buya project.",
   "main": "Gruntfile.js",
   "engines": {
@@ -17,7 +17,7 @@
     "cypress:run": "concurrently --success first --kill-others  -n  \"BACKEND,VUE,CYPRESS\"  -c \"magenta,cyan,blue\" \"npm run backend \"  \"cd .. && npm run frontend\" \"npm run cypress-run\"",
     "cypress:backend": "grunt backend",
     "cypress-run": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && npx cypress run --browser electron",
-    "cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open",
+    "cypress-app": "wait-on http://localhost:4000 && wait-on http://localhost:8080 && cypress open --e2e --browser electron",
     "utils:migrate": "node ../backend/scripts/migrate.js"
   },
   "devDependencies": {

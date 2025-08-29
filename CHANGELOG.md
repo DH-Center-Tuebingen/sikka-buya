@@ -1,5 +1,15 @@
 # Changelog
 
+## Release 1.0.7
+
+### Changes
+- Added timeline modifiers to arrow keys (now also working on number input)
+
+### Fixes
+- Fixed timeline input field not working
+
+
+
 ## Release 1.0.6
 
 ### Changed

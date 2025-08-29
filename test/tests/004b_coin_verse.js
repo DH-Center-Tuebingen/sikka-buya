@@ -10,6 +10,7 @@ const { ARABIC,
     TEST, } = require('../mockdata/coinverse.mock')
 
 new PropertyTest("coinVerse", {
+    database: "coin_verse",
     GQL_BODY: COINVERSE_GQL_BODY,
     listData: [KORAN30, KORAN9, SWEDISH, ARABIC],
     getData: ARABIC,
@@ -19,12 +20,9 @@ new PropertyTest("coinVerse", {
     searchTextExact: "små",
     addData: TEST,
     addInput: `name: "test"`,
-    updateId: 4,
     updateInput: `name: "changed"`,
     updateData: { id: "4", name: "changed" },
-    deleteId: 4,
-    deleteData: { id: "4", name: "changed" },
-    deletedListData: [KORAN30, KORAN9, TEST, ARABIC],
+    deleteData: SWEDISH,
 }).run()
 
 

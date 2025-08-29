@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 const { graphql } = require("../helpers/graphql");
-const { SuperUser, User3 } = require('../mockdata/users');
+const { SuperUser, Editor } = require('../mockdata/users');
 const { default: gql } = require('graphql-tag');
 const { print } = require('graphql/language/printer');
 
@@ -72,13 +72,13 @@ describe('Type verification', function () {
             })
 
             it('Cannot activate completed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 2, value: true }, User3.token)
+                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 2, value: true }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
             it('Can activate completed when super user', async function () {
-                const result = await graphql(SET_TYPE_COMPLETE_MUTATION, { id: 2, value: true }, SuperUser.token)
-                const success = result.data.data.setTypeComplete
-                return expect(success).to.be.true
+                    const result = await graphql(SET_TYPE_COMPLETE_MUTATION, { id: 2, value: true }, SuperUser.token)
+                    const success = result.data.data.setTypeComplete
+                    return expect(success).to.be.true
             })
 
             it('After activation completed list is correct', async function () {
@@ -90,16 +90,16 @@ describe('Type verification', function () {
 
         describe('Deactivate', function () {
 
-            it('Cannot activate completed when not logged in', async function () {
+            it('Cannot deactivate completed when not logged in', async function () {
                 const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 1, value: false })
                 return expect(promise).to.be.rejectedWith(['401'])
             })
 
-            it('Cannot activate completed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 1, value: false }, User3.token)
+            it('Cannot deactivate completed when not logged in as super user', async function () {
+                const promise = graphql(SET_TYPE_COMPLETE_MUTATION, { id: 1, value: false }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
-            it('Can activate completed', async function () {
+            it('Can deactivate completed', async function () {
                 const result = await graphql(SET_TYPE_COMPLETE_MUTATION, { id: 1, value: false }, SuperUser.token)
                 const success = result.data.data.setTypeComplete
                 return expect(success).to.be.false
@@ -110,9 +110,7 @@ describe('Type verification', function () {
                 expect(result.data.data.modGetTypes.types[0].completed).to.be.true
                 expect(result.data.data.modGetTypes.types[1].completed).to.be.false
             })
-
         })
-
     })
 
     describe('Reviewed', function () {
@@ -125,7 +123,7 @@ describe('Type verification', function () {
             })
 
             it('Cannot activate reviewed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 1, value: true }, User3.token)
+                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 1, value: true }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
 
@@ -150,7 +148,7 @@ describe('Type verification', function () {
             })
 
             it('Cannot activate reviewed when not logged in as super user', async function () {
-                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 2, value: false }, User3.token)
+                const promise = graphql(SET_TYPE_REVIEWED_MUTATION, { id: 2, value: false }, Editor.token)
                 return expect(promise).to.be.rejectedWith(['401'])
             })
 

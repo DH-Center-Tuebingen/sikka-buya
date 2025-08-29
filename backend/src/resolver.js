@@ -1,17 +1,8 @@
-const Auth = require("./auth.js")
+const BaseResolver = require("./resolver/base-resolver.js")
 const { WriteableDatabase, Database } = require("./utils/database.js")
 const SQLUtils = require("./utils/sql.js")
 
-class Resolver {
-
-    constructor(name, { tableName = null } = {}) {
-        this.name = name
-        this.tableName = tableName ? tableName : this.name
-    }
-
-    get capitalizedName() {
-        return this.name[0].toUpperCase() + this.name.substr(1)
-    }
+class Resolver extends BaseResolver{
 
     get mutations() {
         return this.resolvers.Mutation
@@ -19,32 +10,6 @@ class Resolver {
 
     get queries() {
         return this.resolvers.Query
-    }
-
-    get resolvers() {
-        const resolvers = {
-            Query: {},
-            Mutation: {}
-        }
-
-        const ref = this
-        resolvers.Mutation[`add${this.capitalizedName}`] = function (_, args, context) {
-            Auth.verifyContext(context)
-            return ref.add(_, args, ref.tableName)
-        }
-        resolvers.Mutation[`update${this.capitalizedName}`] = function (_, args, context) {
-            Auth.verifyContext(context)
-            return ref.update(_, args, ref.tableName)
-        }
-        resolvers.Mutation[`delete${this.capitalizedName}`] = function (_, args, context) {
-            Auth.verifyContext(context)
-            return ref.delete(_, args, ref.tableName)
-        }
-
-        resolvers.Query[`${this.name}`] = function (_, args, context) { return ref.list(_, args, context, ref.tableName) }
-        resolvers.Query[`get${this.capitalizedName}`] = function (_, args, context) { return ref.get(_, args, context, ref.tableName) }
-        resolvers.Query[`search${this.capitalizedName}`] = function (_, args, context) { return ref.search(_, args, context, ref.tableName) }
-        return resolvers
     }
 
     async add(_, args, tableName) {

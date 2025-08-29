@@ -19,6 +19,20 @@ const EURO = {
     "name": "€"
 }
 
+const UPDATE_EURO = {
+    "id": "5",
+    "name": "EUR+"
+}
+
+const TALER = {
+    "id": "6",
+    "name": "TALER"
+}
+
+const NEW = {
+    "id": "7",
+    "name": "NEW"
+}
 
 const COINMARK_GQL_BODY = `{
     id,
@@ -31,5 +45,8 @@ module.exports = {
     U,
     PI,
     EURO,
+    UPDATE_EURO,
+    NEW,
+    TALER,
     COINMARK_GQL_BODY,
 }

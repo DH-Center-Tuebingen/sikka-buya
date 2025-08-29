@@ -3,12 +3,18 @@ const { graphql } = require('./graphql.js')
 
 class TestUser {
 
-    constructor(email, password, superUser = false) {
+    constructor(email, password, permissions = []) {
         this.id = null
         this.token = null
         this.email = email
         this.password = password
-        this.superUser = superUser
+
+        this.superUser = permissions.includes("super")
+        this.permissions = permissions.filter(p => p !== "super")
+    }
+
+    get super() {
+        return this.superUser
     }
 
     isLoggedIn() {
@@ -21,20 +27,38 @@ class TestUser {
 
     async setup() {
         return graphql(`mutation setup($email:String!, $password:String!){
-            setup(email: $email, password: $password) {
-              user {
-                id
-                email
-                super
-              }
-              token
-              success
-              message
-            }
-          }`, {
+                setup(email: $email, password: $password) {
+                    user {
+                        id
+                        email
+                        super
+                    }
+                    token
+                    success
+                    message
+                }
+            }`, {
             email: this.email,
             password: this.password
         })
+    }
+
+    async setupPermissions(granter = this, permissions = []) {
+
+        if(!this.id){
+            throw new Error("User ID is required")
+        }
+
+        this.permissions = [...new Set([...this.permissions, ...permissions])]
+        if(this.permissions.length === 0) return
+
+        const permissionString = this.permissions.reduce((acc, permission) => {
+            return acc + `grantPermission(user:${this.id}, permission:"${permission}")`
+        }, '')
+
+        return graphql(`mutation GrantPermissions {
+            ${permissionString}
+        }`, {}, granter?.token)
     }
 
     async login() {
@@ -62,6 +86,17 @@ class TestUser {
           }`, { email: this.email, password: this.password })
     }
 
+
+    get permissionName() {
+        let permissions = [... this.permissions]
+        if(this.super)
+            permissions.push("super")
+
+        if(permissions.length == 0)
+            return "'no permission'"
+
+        return permissions.join(", ")
+    }
 
     static async login(email, password, debug = false) {
         return await graphql(`query Login($email: String!, $password:String!){ login(

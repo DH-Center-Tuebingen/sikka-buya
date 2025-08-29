@@ -1,5 +1,5 @@
 const { join: joinPath } = require("path");
-const { createReadOnlyUser, hasReadOnlyUser, dropReadOnlyUser, grantPersmissionsToReadOnlyUser } = require('../../backend/scripts/create_read_only_user');
+const { createReadOnlyUser, hasReadOnlyUser, dropReadOnlyUser, grantPermissionsToReadOnlyUser } = require('../../backend/scripts/create_read_only_user');
 const { WriteableDatabase, QueryFile, QueryFileMap, getQueryFile, addQueryFile } = require('../../backend/src/utils/database');
 const { readdir } = require('fs').promises;
 
@@ -55,17 +55,19 @@ async function createTestDatabase() {
     console.log(`Created test database`)
 }
 
-async function recreateSchemaOnDatabase() {
+async function recreateSchemaOnDatabase({ silent = false } = {}) {
     await WriteableDatabase.tx(async t => {
         await t.none("DROP SCHEMA IF EXISTS public CASCADE")
         await t.none("CREATE SCHEMA IF NOT EXISTS public")
         await t.none("GRANT ALL ON SCHEMA public TO postgres")
         await t.none("GRANT ALL ON SCHEMA public TO public")
     })
-    console.log(`Reset schema`)
+    if(!silent) {
+        console.log(`Reset schema`)
+    }
 }
 
-async function resetTestDatabase(dataFile) {
+async function resetTestDatabase(dataFile, { silent = false } = {}) {
 
     const { default: Async } = await import('../../frontend/src/utils/Async.mjs')
 
@@ -85,7 +87,7 @@ async function resetTestDatabase(dataFile) {
                 console.log(e)
             }
             try {
-                await recreateSchemaOnDatabase()
+                await recreateSchemaOnDatabase({ silent })
             } catch (e) {
                 console.log("Could not reset schema", e)
             }
@@ -99,23 +101,31 @@ async function resetTestDatabase(dataFile) {
                 console.log("Apply data file: " + dataFile)
                 try {
                     await applySchemaFile(WriteableDatabase, dataFile)
-                    console.log(`Successfully applied data file!`)
+                    if(!silent) {
+                        console.log(`Successfully applied data file!`)
+                    }
                 } catch (e) {
                     console.log(`Could not apply data file: `, e)
                 }
             } else {
-                console.log("Apply schema file: " + schemaFile)
+                if(!silent) {
+                    console.log("Apply schema file: " + schemaFile)
+                }
                 try {
                     await applySchemaFile(WriteableDatabase, schemaFile)
-                    console.log(`Successfully applied schema file!`)
+                    if(!silent) {
+                        console.log(`Successfully applied schema file!`)
+                    }
                 } catch (e) {
                     console.log(`Could not apply schema file: `, e)
                 }
             }
 
             try {
-                await grantPersmissionsToReadOnlyUser()
-                console.log(`Grant permissions to read only user`)
+                await grantPermissionsToReadOnlyUser()
+                if(!silent) {
+                    console.log(`Grant permissions to read only user`)
+                }
             } catch (e) {
                 console.log(e)
             }
@@ -127,27 +137,37 @@ async function resetTestDatabase(dataFile) {
             throw new Error(`Could not reset database: ${e}`)
         }
 
-        console.log(`Successfully reset database!`)
+        if(!silent) {
+            console.log(`Successfully reset database!`)
+        }
     } else {
         throw new Error("Resetting is locked!")
     }
 }
 
-async function applyDummyData() {
-    /**
-   * Probably the connection times out due to the schema file being quite big. 
-   * Therefore we need to reconnect the db. 
-   * I'm not quite certain of this (SO) 
-   */
-    const sqlDummyDataPath = joinPath(__dirname, "..", "data")
-    const dummyFiles = await readdir(sqlDummyDataPath)
-    console.log(`Data files will be applied: ${dummyFiles.join(", ")}`)
-    for (const file of dummyFiles) {
-        const absFilePath = joinPath(sqlDummyDataPath, file)
-        console.log(`Apply SQL file: ${file} / ${absFilePath}`)
-        await applySchemaFile(WriteableDatabase, absFilePath)
+async function applyDataFromPath(path, { silent = false } = {}) {
+    const sqlDataPath = joinPath(__dirname, ...path)
+    const dataFiles = await readdir(sqlDataPath, { withFileTypes: true })
+    if (!silent) {
+        console.log(`Data files will be applied: ${dataFiles.map(dirent => dirent.name).join(", ")}`)
     }
-    console.log(`Dummy data applied!`)
+    for (const dirent of dataFiles) {
+        if (dirent.isFile() || dirent.isSymbolicLink()) {
+            const absFilePath = joinPath(sqlDataPath, dirent.name)
+            if (!silent) {
+                console.log(`Apply SQL file: ${dirent.name} / ${absFilePath}`)
+            }
+            await applySchemaFile(WriteableDatabase, absFilePath)
+        }
+    }
+}
+
+async function applyDummyData({ silent = false } = {}) {
+    await applyDataFromPath(["..", "data"], { silent })
+}
+
+async function applyDummySetup({ silent = false } = {}) {
+    await applyDataFromPath(["..", "data", "setup"], { silent })
 }
 
 async function applySchemaFile(db, file) {
@@ -174,13 +194,10 @@ async function applySchemaFile(db, file) {
     return true
 }
 
-async function setupTestDatabase() {
-    return new Promise((resolve, reject) => {
-        resetTestDatabase().then(db => {
-            applyDummyData(db).then(resolve).catch(reject)
-        }).catch(reject)
-    })
+async function setupTestDatabase({ silent = false } = {}) {
+    await resetTestDatabase(null, { silent })
+    await applyDummyData({ silent })
 }
 
 
-module.exports = { applyDummyData, resetTestDatabase, setupTestDatabase, recreateTestDatabase, createTestDatabaseIfNecessary }
+module.exports = { applyDummyData, applyDummySetup, resetTestDatabase, setupTestDatabase, recreateTestDatabase, createTestDatabaseIfNecessary }

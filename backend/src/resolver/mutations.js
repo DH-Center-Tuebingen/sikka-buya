@@ -20,6 +20,7 @@ const SettingsGQL = require('./klasses/SettingsGQL')
 const TreasureGQL = require('./klasses/TreasureGQL')
 
 const Frontend = require('../frontend')
+const CoinTypeGQL = require('./klasses/CoinTypeGQL')
 /**
  * Most mutations require the user to be logged in to
  * manipulate the database.
@@ -40,6 +41,7 @@ const UnguardedMutations = {
         const hashedPW = await Auth.hashPassword(password)
         let result = await WriteableDatabase.oneOrNone("UPDATE app_user SET password = $[password] WHERE email=$[email] AND password IS NULL RETURNING id", { email, password: hashedPW })
         if (result == null) throw new Error("Could not set password!")
+        return result.id
     },
 
     async setup(_, args) {
@@ -91,6 +93,9 @@ const SuperUserMutations = {
     async deleteUser(_, args) {
         return WriteableDatabase.none("DELETE FROM app_user WHERE id=$[id]", args)
     },
+    async deleteUserByMail(_, args) {
+        return WriteableDatabase.none("DELETE FROM app_user WHERE email=$[email]", args)
+    },
     async inviteUser(_, { email } = {}) {
         let mailValidation = Auth.validateEmail(email)
         if (!mailValidation.ok) throw new Error(mailValidation.error)
@@ -112,28 +117,7 @@ const SuperUserMutations = {
         } else
             WriteableDatabase.none("DELETE FROM app_user_privilege WHERE app_user=$[user] AND privilege=$[permission]", { user, permission })
     },
-    async setTypeComplete(_, {
-        completed = true,
-        id = null
-    } = {}) {
-        if (completed) {
-            await WriteableDatabase.none("INSERT INTO type_completed (type) VALUES ($1) ON CONFLICT DO NOTHING", id)
-        } else {
-            await WriteableDatabase.none("DELETE FROM type_completed WHERE type=$1", id)
-        }
-        return completed
-    },
-    async setTypeReviewed(_, {
-        reviewed = true,
-        id = null,
-    } = {}) {
-        if (reviewed) {
-            await WriteableDatabase.none("INSERT INTO type_reviewed (type) VALUES ($1) ON CONFLICT DO NOTHING", id)
-        } else {
-            await WriteableDatabase.none("DELETE FROM type_reviewed WHERE type=$1", id)
-        }
-        return reviewed
-    }
+    ...CoinTypeGQL.SuperMutations,
 }
 
 
@@ -193,11 +177,6 @@ const EditorMutations = {
     async changePersonExplorerOrder(_, args) {
         return WriteableDatabase.none("INSERT INTO person_explorer_custom_sorting (person, position) VALUES ($[person], $[position]) ON CONFLICT (person) DO UPDATE SET position=$[position]", args)
     },
-    async updateCoinType(_, args, context) {
-        if (!args.id) throw new Error("No id provided!")
-
-        return Type.updateType(args.id, args.data, context)
-    },
     async updateNote(_, args) {
         let { text, property, propertyId: property_id } = args
         await WriteableDatabase.none(`
@@ -208,41 +187,14 @@ const EditorMutations = {
             WHERE note.property=$[property] AND note.property_id=$[property_id];
             `, { text, property, property_id })
     },
-    async addCoinType(_, args, context, info) {
-        return Type.addType(_, args, context, info)
-    },
-    async deleteCoinType(_, args, context, info) {
-        const { super: isSuperUser } = Auth.verifyContext(context)
-
-        if (!isSuperUser) {
-            const { completed, reviewed } = await WriteableDatabase.oneOrNone(`
-        SELECT 
-            CASE WHEN type_completed.type is null
-            then False
-            else True 
-            END as completed,
-
-            CASE WHEN type_reviewed.type is null
-            then False
-            else True
-            END as reviewed
-        FROM type 
-        LEFT JOIN type_completed ON type_completed.type = type.id
-        LEFT JOIN type_reviewed ON type_reviewed.type = type.id
-        WHERE id=$[id]
-        `, { id })
-
-            if (completed || reviewed) {
-
-                throw new Error("error.type.delete.only_super_can_delete_completed_or_reviewed_types")
-            }
-        }
-
-        return Type.deleteType(args.id)
-    },
+  
     async updateMaterialColor(_, args) {
         return WriteableDatabase.none(`INSERT INTO material_color (material, color) VALUES ($[id], $[color]) ON CONFLICT (material) DO UPDATE SET color=$[color]`, args)
     },
+}
+
+const TypeEditorMutations = {
+    ...CoinTypeGQL.Mutations,
 }
 
 const WriterMutations = {
@@ -285,6 +237,7 @@ const Mutations = Object.assign({},
     }),
     guard(WriterMutations, async (_, __, context) => await Auth.requirePermission(context, 'writer')),
     guard(EditorMutations, async (_, __, context) => await Auth.requirePermission(context, 'editor')),
+    guard(TypeEditorMutations, async (_, __, context) => await Auth.requireSomePermission(context, ['editor', 'type-editor'])),
     guard(Object.assign(
         SuperUserMutations,
         SettingsGQL.Mutations,

@@ -4,7 +4,7 @@ const { GERMANY_REGION,
     ATLANTIS_REGION,
     CONSTANTINOPLE } = require("./mintregion.mock")
 const { COIN_TYPE_BODY, GERMAN_TYPE, FRENCH_TYPE } = require('./type.mock')
-const { MARK, ZLOTY, ADIE } = require("../mockdata/nominal.mock")
+const { MARK, PESETA, ADIE } = require("../mockdata/nominal.mock")
 const { STONE_AGE, BRONZE_AGE, IRON_AGE } = require('./epoch.mock')
 
 const GERMAN_TREASURE_ITEM = {
@@ -31,7 +31,7 @@ const GERMAN_TWO_TREASURE_ITEM = {
     fragment: false,
     material: SILVER,
     mintRegion: ATLANTIS_REGION,
-    nominal: ZLOTY,
+    nominal: PESETA,
     weight: 200,
     year: 1,
     epoch: STONE_AGE,
@@ -48,7 +48,7 @@ const NEU_BERLIN_TREASURE_ITEM = {
     fragment: true,
     material: COPPER,
     mintRegion: GERMANY_REGION,
-    nominal: ZLOTY,
+    nominal: PESETA,
     epoch: IRON_AGE,
     weight: 3,
     year: -200,
@@ -64,7 +64,7 @@ const NEU_BERLIN_TREASURE_ITEM_INPUT = `{
     fragment: true,
     material: ${COPPER.id},
     mintRegion: ${GERMANY_REGION.id},
-    nominal: ${ZLOTY.id},
+    nominal: ${PESETA.id},
     epoch: ${IRON_AGE.id},
     weight: 3,
     year: -200,
@@ -133,7 +133,7 @@ const ATLANTIS_TWO_TREAURE_ITEM = {
     weight: 20.5,
     year: 2011,
     material: COPPER,
-    nominal: ZLOTY,
+    nominal: PESETA,
     mintRegion: ATLANTIS_REGION,
     coinType: FRENCH_TYPE,
     epoch: BRONZE_AGE,
@@ -149,7 +149,7 @@ const FRENCH_TREASURE_ITEM = {
     fragment: true,
     material: COPPER,
     mintRegion: GERMANY_REGION,
-    nominal: ZLOTY,
+    nominal: PESETA,
     weight: 3,
     year: -200,
     uncertainYear: "xyz",

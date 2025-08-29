@@ -28,7 +28,10 @@ function graphql(query, variables = {}, authToken = null, debug = false) {
                 let errors = AxiosHelper.getErrors(result)
                 reject(errors.join("\n"))
             }
-        }).catch(reject)
+        }).catch((err)=>{
+            console.log(query, err?.response?.data?.errors)
+            reject(err)
+        })
     })
 }
 

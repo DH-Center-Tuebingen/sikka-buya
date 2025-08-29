@@ -45,15 +45,16 @@
         <div
           v-for="user in users"
           class="user"
+          :style="{ gridTemplateColumns: `3fr repeat(${permissions.length}, 40px) 5fr 40px` }"
           :key="`user-id-${user.id}`"
         >
           <span class="email">{{ user.email }}</span>
 
           <toggle
             v-for="permission in permissions"
-            :key="`toggle-${permission.name}`"
-            :value="user[permission.name.toLowerCase()]"
-            @input="() => togglePermission(user, permission.name.toLowerCase())"
+            :key="`toggle-${permission.key}`"
+            :value="user[permission.key]"
+            @input="() => togglePermission(user, permission.key)"
           >
             <template v-slot:active>
               <Icon
@@ -71,39 +72,6 @@
             </template>
           </toggle>
 
-          <!-- <toggle
-            :value="user.cms"
-            @input="() => togglePermission(user, 'cms')"
-          >
-            <template v-slot:active>
-              <Newspaper />
-            </template>
-            <template v-slot:inactive>
-              <Newspaper />
-            </template>
-          </toggle>
-          <toggle
-            :value="user.editor"
-            @input="() => togglePermission(user, 'editor')"
-          >
-            <template v-slot:active>
-              <ListBox />
-            </template>
-            <template v-slot:inactive>
-              <ListBox />
-            </template>
-          </toggle>
-          <toggle
-            :value="user.super"
-            @input="() => togglePermission(user, 'super')"
-          >
-            <template v-slot:active>
-              <QueenIcon />
-            </template>
-            <template v-slot:inactive>
-              <PawnIcon />
-            </template>
-          </toggle> -->
           <copy-field :value="getInvitePath(user.email)" />
 
           <dynamic-delete-button @delete="deleteUser(user.id)" />
@@ -125,11 +93,11 @@ import QueenIcon from 'vue-material-design-icons/ChessQueen.vue';
 import PawnIcon from 'vue-material-design-icons/ChessPawn.vue';
 
 import IconMixin from '../mixins/icon-mixin';
-import { mdiFountainPenTip, mdiDatabaseOutline, mdiCrown } from '@mdi/js';
+import { mdiFountainPenTip, mdiDatabaseOutline, mdiCrown, mdiCircleDouble } from '@mdi/js';
 
 import Newspaper from 'vue-material-design-icons/Newspaper.vue';
 import ListBox from 'vue-material-design-icons/ListBox.vue';
-import { EditorDescription, SuperDescription, WriterDescription } from '../../texts/user-descriptions';
+import { EditorDescription, SuperDescription, WriterDescription, TypeEditorDescription } from '../../texts/user-descriptions';
 
 export default {
   components: {
@@ -150,9 +118,10 @@ export default {
       inviteEmail: '',
       users: [],
       permissions: [
-        { name: 'Writer', icon: mdiFountainPenTip, description: WriterDescription },
-        { name: 'Editor', icon: mdiDatabaseOutline, description: EditorDescription },
-        { name: 'Super', icon: mdiCrown, description: SuperDescription },
+        { name: 'Writer', key: 'writer', icon: mdiFountainPenTip, description: WriterDescription },
+        { name: 'Type Editor', key: 'type-editor', icon: mdiCircleDouble, description: TypeEditorDescription },
+        { name: 'Editor', key: 'editor', icon: mdiDatabaseOutline, description: EditorDescription },
+        { name: 'Super', key: 'super', icon: mdiCrown, description: SuperDescription },
       ]
     };
   },
@@ -191,6 +160,7 @@ export default {
             email: user.email,
             id: user.id,
             super: user.super,
+            ["type-editor"]: user.permissions.includes('type-editor'),
             editor: user.permissions.includes('editor'),
             writer: user.permissions.includes('writer'),
             permissions: user.permissions,
@@ -262,7 +232,6 @@ form>* {
 
 .user {
   display: grid;
-  grid-template-columns: 3fr 40px 40px 40px 5fr 40px;
   gap: $padding;
   align-items: center;
   margin: $padding 0;

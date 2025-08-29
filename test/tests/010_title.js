@@ -5,6 +5,7 @@ const PropertyTest = require('../src/property-test');
 
 
 new PropertyTest("title", {
+    database: "title",
     GQL_BODY: TITLE_GQL_BODY,
     listData: [DR, KOENIG, KOENIGIN, MONSIEUR, PROF, SIR, TIER],
     getData: MONSIEUR,
@@ -14,11 +15,8 @@ new PropertyTest("title", {
     searchTextExact: "Kö",
     addData: LADY,
     addInput: `name:"${LADY.name}"`,
-    updateId: SIR.id,
     updateData: SIR_UPDATED,
     updateInput: `name: "${SIR_UPDATED.name}"`,
-    deleteId: LADY.id,
-    deleteData: LADY,
-    deletedListData: [DR, KOENIG, KOENIGIN, MONSIEUR, PROF, SIR_UPDATED, TIER],
+    deleteData: SIR,
 }).run()
 

@@ -7,9 +7,9 @@ const TALER = {
     "name": "1 Taler"
 }
 
-const ZLOTY = {
+const PESETA = {
     "id": "4",
-    "name": "1 Złoty"
+    "name": "1 Peseta"
 }
 
 const ADIE = {
@@ -44,5 +44,5 @@ module.exports = {
     TALER,
     YEN,
     YEN_UPDATED,
-    ZLOTY,
+    PESETA,
 }

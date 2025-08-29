@@ -10,6 +10,7 @@ const {
 const PropertyTest = require('../src/property-test');
 
 new PropertyTest("role", {
+    database: "person_role",
     GQL_BODY: ROLE_GQL_BODY,
     listData: [CALIPH, CUTTER, DAULA],
     getData: CUTTER,
@@ -19,12 +20,9 @@ new PropertyTest("role", {
     searchTextExact: "Dā",
     addData: ROLE_ADD_DATA,
     addInput: ROLE_ADD_INPUT,
-    updateId: DAULA.id,
     updateData: DAULA_UPDATE_DATA,
     updateInput: `name: "${DAULA_UPDATE_DATA.name}"`,
-    deleteId: ROLE_ADD_DATA.id,
-    deleteData: ROLE_ADD_DATA,
-    deletedListData: [CALIPH, CUTTER, DAULA_UPDATE_DATA],
+    deleteData: DAULA,
 }).run()
 
 

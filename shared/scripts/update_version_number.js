@@ -15,25 +15,41 @@ const { writeFile } = require('fs/promises');
 const { join } = require("path");
 
 
+const relativeRoot = join("..", "..")
+
+let mode = "increment-minor"
+let updateTag = false
+let updateTagOnly = false
+let version = null
 
 async function main() {
 
-
     const args = process.argv.slice(2)
-    let mode = "increment-minor"
-    let version = null
-
     if (args.length > 0) {
-        const [key, val] = args[0].split("=")
-        if (key === "-v" || key === "--version") {
-            version = val.split(".")
-            mode = "set"
-        }
+        args.forEach(arg => {
+            const [key, val] = arg.split("=")
+            if (key === "-v" || key === "--version") {
+                version = val.split(".")
+                mode = "set"
+            }
+
+            if (key === "--tag" || key === "-t") {
+                updateTag = true
+            }
+
+            if (key === "--tag-only" || key === "-to") {
+                updateTagOnly = true
+            }
+        })
     }
 
-    const relativeRoot = join("..", "..")
+    if (!updateTagOnly) await updatePackageJsonVersion(relativeRoot, version, mode)
+    if (updateTag || updateTagOnly) await updateGitTag(version)
+}
+
+async function updatePackageJsonVersion() {
     const targetFile = "package.json"
-    const locations = ["frontend", "backend"]
+    const locations = ["frontend", "backend", "test"]
     let masterLocation = "."
 
     switch (mode) {
@@ -55,7 +71,9 @@ async function main() {
         console.log(`Updated file "${file}" to version ${version}.`)
         await writeFile(file, JSON.stringify(packageJson, null, 4))
     }
+}
 
+async function updateGitTag(version) {
     await execute(`git add ${join(__dirname, relativeRoot)}`)
     await execute(`git commit -m "Upgraded version to ${version}."`)
     await execute(`git push`)

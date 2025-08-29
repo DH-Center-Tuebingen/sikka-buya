@@ -32,12 +32,15 @@
         @input="(event) => onValueChange(event)"
         @focus="(event) => $emit('focus', event)"
         @blur="(event) => $emit('blur', event)"
+        @keydown.prevent="(event) => onKeyDown(event)"
       />
     </label>
   </div>
 </template>
 
 <script>
+import { applyArrowModifiers, isArrowKey, getModifierFactor } from '@/utils/Keyboard';
+
 export default {
   props: {
     value: {
@@ -71,14 +74,24 @@ export default {
     focus() {
       this.$refs.slider.focus()
     },
+    onKeyDown(event) {
+      if (this.interactive) {
+
+        if (isArrowKey(event)) {
+          event.preventDefault();
+          const newValue = applyArrowModifiers(event, this.value, this.step);
+          this.applyValue(newValue);
+        }
+      }
+    },
     onValueChange(event) {
       if (this.interactive) {
         this.applyValue(event.target.value);
       }
     },
-    onWheel(event){
-      if(this.interactive) {
-        const modifier = event.ctrlKey ? 100 : event.shiftKey ? 10 : 1;
+    onWheel(event) {
+      if (this.interactive) {
+        const modifier = getModifierFactor(event);
         let value = this.value - this.step * modifier * Math.sign(event.deltaY);
         this.applyValue(value)
       }
@@ -139,17 +152,17 @@ $caretWidth: 5px;
   }
 
   input[type='range'] {
-  appearance: none;
+    appearance: none;
     -webkit-appearance: none;
   }
 
   input[type='range']::-webkit-slider-runnable-track {
-  appearance: none;
+    appearance: none;
     -webkit-appearance: none;
   }
 
   input[type='range']::-webkit-slider-thumb {
-  appearance: none;
+    appearance: none;
     -webkit-appearance: none;
 
     height: 1px;

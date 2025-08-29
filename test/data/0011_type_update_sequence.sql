@@ -1,0 +1,1 @@
+ALTER SEQUENCE public.type_id_seq RESTART WITH 4;

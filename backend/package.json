@@ -1,54 +1,54 @@
 {
-    "name": "backend",
-    "version": "1.0.5",
-    "description": "Backend for the coin collection.",
-    "private": true,
-    "main": "index.js",
-    "engines": {
-        "node": "16.x"
-    },
-    "scripts": {
-        "pm2": "pm2 start node --name sikka-buya  -- index.js",
-        "serve": "node index.js",
-        "dev": "nodemon index.js --ext js,graphql",
-        "init": "yarn install && npm run setup",
-        "setup": "node ./scripts/setup.js",
-        "migrate": "node ./scripts/migrate.js",
-        "update-schema": "node ./scripts/database_backup.js --mode=backend-schema",
-        "db:backup": "node ./scripts/database_backup.js",
-        "db:export:data": "node ./scripts/database_backup.js --mode=data",
-        "db:export:schema": "node ./scripts/database_backup.js --mode=schema"
-    },
-    "author": "Severin Opel",
-    "license": "MIT",
-    "dependencies": {
-        "@graphql-toolkit/common": "^0.10.7",
-        "@graphql-toolkit/core": "^0.10.7",
-        "@graphql-toolkit/file-loading": "^0.10.7",
-        "@graphql-tools/load-files": "^7.0.0",
-        "bcrypt": "^5.0.1",
-        "chalk": "^4.x.x",
-        "cli-progress": "^3.9.1",
-        "colors": "^1.4.0",
-        "commander": "^8.1.0",
-        "cors": "^2.8.5",
-        "dotenv": "^8.2.0",
-        "email-validator": "^2.0.4",
-        "express": "^4.17.1",
-        "express-graphql": "^0.12.0",
-        "graphql": "^15.4.0",
-        "graphql-fields": "^2.0.3",
-        "graphql-tools": "^8.3.20",
-        "graphql-upload": "^16.0.2",
-        "graphql-yoga": "^3.9.1",
-        "jsdom": "^18.1.1",
-        "jsonwebtoken": "^8.5.1",
-        "lodash": "^4.17.21",
-        "pg": "^8.5.1",
-        "pg-promise": "10.11.1"
-    },
-    "devDependencies": {
-        "htmldiff-js": "^1.0.5",
-        "nodemon": "^2.0.7"
-    }
+  "name": "backend",
+  "version": "1.0.7",
+  "description": "Backend for the coin collection.",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "16.x"
+  },
+  "scripts": {
+    "pm2": "pm2 start node --name sikka-buya  -- index.js",
+    "serve": "node index.js",
+    "dev": "nodemon index.js --ext js,graphql",
+    "init": "yarn install && npm run setup",
+    "setup": "node ./scripts/setup.js",
+    "migrate": "node ./scripts/migrate.js",
+    "update-schema": "node ./scripts/database_backup.js --mode=backend-schema",
+    "db:backup": "node ./scripts/database_backup.js",
+    "db:export:data": "node ./scripts/database_backup.js --mode=data",
+    "db:export:schema": "node ./scripts/database_backup.js --mode=schema"
+  },
+  "author": "Severin Opel",
+  "license": "MIT",
+  "dependencies": {
+    "@graphql-toolkit/common": "^0.10.7",
+    "@graphql-toolkit/core": "^0.10.7",
+    "@graphql-toolkit/file-loading": "^0.10.7",
+    "@graphql-tools/load-files": "^7.0.0",
+    "bcrypt": "^5.0.1",
+    "chalk": "^4.x.x",
+    "cli-progress": "^3.9.1",
+    "colors": "^1.4.0",
+    "commander": "^8.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "email-validator": "^2.0.4",
+    "express": "^4.17.1",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.4.0",
+    "graphql-fields": "^2.0.3",
+    "graphql-tools": "^8.3.20",
+    "graphql-upload": "^16.0.2",
+    "graphql-yoga": "^3.9.1",
+    "jsdom": "^18.1.1",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "pg": "^8.5.1",
+    "pg-promise": "10.11.1"
+  },
+  "devDependencies": {
+    "htmldiff-js": "^1.0.5",
+    "nodemon": "^2.0.7"
+  }
 }
