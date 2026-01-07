@@ -11,7 +11,8 @@
       :mode="imageClass"
     />
     <article>
-      <header><arrow-right class="ugly" />
+      <header>
+<arrow-right class="ugly" />
         <slot />
       </header>
 
@@ -43,17 +44,6 @@ export default {
       }
     }
   },
-  mounted() {
-    if (!this.noImage) {
-      if (!this.identity) throw new Error(`Missing prop 'identity' for CardLink. If you don't want to use an image, set prop 'noImage' to true.`)
-    }
-  },
-  methods: {
-    clicked() {
-      if (!this.disabled)
-        this.$router.push(this.to)
-    }
-  },
   computed: {
     className() {
       const imgClass = this.img ? 'card-link-image' : ''
@@ -64,6 +54,17 @@ export default {
     },
     directionClass() {
       return this.direction === "row" ? "row" : "column"
+    }
+  },
+  mounted() {
+    if (!this.noImage) {
+      if (!this.identity) throw new Error(`Missing prop 'identity' for CardLink. If you don't want to use an image, set prop 'noImage' to true.`)
+    }
+  },
+  methods: {
+    clicked() {
+      if (!this.disabled)
+        this.$router.push(this.to)
     }
   },
 };

@@ -13,10 +13,16 @@
 import CMSView from '../../cms/CMSView.vue';
 
 export default {
+    components: { CMSView },
     props: {
-        include: Array,
-        group: String
-    },
-    components: { CMSView }
+        include: {
+            type: Array,
+            default: () => []
+        },
+        group: {
+            type: String,
+            required: true,
+        }
+    }
 };
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="editor">
     <div class="content-wrapper">
-      <router-view> </router-view>
+      <router-view />
     </div>
   </div>
 </template>
@@ -10,12 +10,6 @@
 import Auth from '../../../utils/Auth';
 export default {
   name: 'EditorPage',
-  created: function () {
-    let user = Auth.loadUser();
-    if (user) {
-      this.$data.user = user;
-    }
-  },
   data: function () {
     return {
       user: {
@@ -23,6 +17,12 @@ export default {
         id: 0,
       },
     };
+  },
+  created: function () {
+    let user = Auth.loadUser();
+    if (user) {
+      this.$data.user = user;
+    }
   },
   methods: {
     logout: function () {

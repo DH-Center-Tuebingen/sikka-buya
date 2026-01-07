@@ -5,8 +5,8 @@
         <locale :path="title" />
       </h1>
       <CMSView
-        :createText="`cms.create_text`"
-        :editText="`cms.edit-text`"
+        :create-text="`cms.create_text`"
+        :edit-text="`cms.edit-text`"
         :group="`card-link-page-${sanitize(title)}-description`"
         class="description"
       />

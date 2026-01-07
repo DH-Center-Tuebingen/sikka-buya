@@ -7,17 +7,17 @@
       type="hidden"
       class="data-select-id"
       :value="idValue"
-    />
+    >
     <input
-      class="name-field"
       ref="nameField"
+      v-model="value[attribute]"
+      class="name-field"
+      :placeholder="placeholder"
+      :required="required"
       @input="input"
       @focus="activateList"
       @blur="hideList"
-      :placeholder="placeholder"
-      v-model="value[attribute]"
-      :required="required"
-    />
+    >
 
     <Button
       v-if="!disableRemoveButton"
@@ -29,8 +29,8 @@
 
 
     <div
-      class="debug-id"
       v-if="debug"
+      class="debug-id"
     >
       ({{ idValue }})
     </div>
@@ -40,20 +40,20 @@
       class="indicator"
     >
       <Alert
-        :size="iconSize"
         v-if="invalid"
+        :size="iconSize"
         class="alert"
       />
       <Check
-        :size="iconSize"
         v-else
+        :size="iconSize"
         class="check"
       />
     </div>
 
     <ul
-      :class="'search-box ' + (listVisible ? 'visible' : 'hidden')"
       ref="scrollable"
+      :class="'search-box ' + (listVisible ? 'visible' : 'hidden')"
       @mousedown.stop.prevent
       @mouseup.stop.prevent
     >
@@ -88,7 +88,9 @@
     <div
       v-if="error"
       class="error non-selectable"
-    >{{ error }}</div>
+    >
+{{ error }}
+</div>
   </div>
 </template>
 
@@ -103,16 +105,6 @@ import Close from 'vue-material-design-icons/Close';
 export default {
   name: 'DataSelectField',
   components: { Alert, Check, Close },
-  data: function () {
-    return {
-      listVisible: false,
-      hideTimeout: null,
-      searchResults: [],
-      loading: false,
-      internal_error: '',
-      iconSize: 18
-    };
-  },
   props: {
     debug: {
       type: Boolean,
@@ -188,6 +180,16 @@ export default {
       type: Boolean,
       default: false,
     },
+  },
+  data: function () {
+    return {
+      listVisible: false,
+      hideTimeout: null,
+      searchResults: [],
+      loading: false,
+      internal_error: '',
+      iconSize: 18
+    };
   },
   computed: {
     invalid: function () {

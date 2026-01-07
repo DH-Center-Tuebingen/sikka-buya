@@ -223,3 +223,16 @@ export const useMaterialConfig = () => {
     otherPersonOption.additionalParameters.exclude = ["caliph"];
     return applyDefaultValues(materialConfig);
 }
+
+
+export const getFilterConfigNameMap = (filterConfig = null) => {
+    if (!filterConfig) {
+        filterConfig = useFilterConfig();
+    }
+    return Object.values(filterConfig).reduce((acc, filters) => {
+        filters.forEach((filter) => {
+            acc[filter.name] = filter;
+        });
+        return acc;
+    }, {});
+}

@@ -1,5 +1,8 @@
 <template>
-  <simplebar class="scroll" data-simplebar-auto-hide="false">
+  <simplebar
+class="scroll"
+data-simplebar-auto-hide="false"
+>
     <slot />
   </simplebar>
 </template>

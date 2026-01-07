@@ -2,10 +2,16 @@
   <div class="person-view">
     <catalog-property>
       <template #label>
-        <locale path="typeview.issuer" :count="2" />
+        <locale
+path="typeview.issuer"
+:count="2"
+/>
       </template>
       <div>
-        <person-list :value="issuers" :class="multipleIssuersClass" />
+        <person-list
+:value="issuers"
+:class="multipleIssuersClass"
+/>
       </div>
     </catalog-property>
     <catalog-property>
@@ -13,12 +19,18 @@
         <locale path="typeview.overlord_info" />
       </template>
       <template #label>
-        <locale path="typeview.overlords" :count="2" />
+        <locale
+path="typeview.overlords"
+:count="2"
+/>
       </template>
       <person-list :value="overlords" />
     </catalog-property>
 
-    <div class="caliph-group" :class="{ 'col-2': hasPerson(heir) }">
+    <div
+class="caliph-group"
+:class="{ 'col-2': hasPerson(heir) }"
+>
       <catalog-property>
         <template #label>
           <locale path="typeview.caliph" />
@@ -26,7 +38,10 @@
         <person-list :value="caliph" />
       </catalog-property>
 
-      <catalog-property v-if="hasPerson(heir)" class="heir-grid">
+      <catalog-property
+v-if="hasPerson(heir)"
+class="heir-grid"
+>
         <template #label>
           <locale path="typeview.heir" />
         </template>
@@ -48,6 +63,11 @@ export default {
     caliph: Object,
     heir: Object,
   },
+  computed: {
+    multipleIssuersClass() {
+      return this.issuers.length > 1 ? 'issuer-grid' : null;
+    },
+  },
   methods: {
     dynamicHeading(singular, plural, array) {
       return array?.length == 1 ? singular : plural;
@@ -57,11 +77,6 @@ export default {
         persons == null ||
         (persons.length != null && persons.length === 0)
       );
-    },
-  },
-  computed: {
-    multipleIssuersClass() {
-      return this.issuers.length > 1 ? 'issuer-grid' : null;
     },
   },
 };

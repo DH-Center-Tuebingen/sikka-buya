@@ -1,9 +1,11 @@
 <template>
     <div class="treasure-table">
+        <!-- eslint-disable vue/no-v-html -->
         <div
             v-if="item.description != ''"
             v-html="item.description"
         />
+        <!-- eslint-enable vue/no-v-html -->
         <table>
             <thead>
                 <tr>
@@ -46,12 +48,12 @@
 </template>
 
 <script>
-import { Icon } from 'leaflet';
 import Sort from '../../utils/Sorter';
 import Locale from '../cms/Locale.vue';
 import TableSortButton from '../layout/table/TableSortButton.vue'
 
 export default {
+    components: { TableSortButton, Locale },
     props: {
         item: Object
     },
@@ -60,18 +62,6 @@ export default {
             sortBy: "mint",
             desc: false
         };
-    },
-    methods: {
-        sortingChanged({ name, desc }) {
-            this.sortBy = name;
-            this.desc = desc;
-        },
-        getWeight(value) {
-            if (value.weight) {
-                return value.weight + "g";
-            }
-            return "-";
-        }
     },
     computed: {
         items() {
@@ -97,7 +87,18 @@ export default {
             } else throw new Error("Unknown sort by: " + this.sortBy);
         }
     },
-    components: { TableSortButton, Locale, Icon }
+    methods: {
+        sortingChanged({ name, desc }) {
+            this.sortBy = name;
+            this.desc = desc;
+        },
+        getWeight(value) {
+            if (value.weight) {
+                return value.weight + "g";
+            }
+            return "-";
+        }
+    }
 }
 </script>
 
@@ -114,7 +115,10 @@ export default {
 }
 </style>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 h3 {
     margin-top: 0;
 }

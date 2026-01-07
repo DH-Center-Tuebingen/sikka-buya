@@ -1,22 +1,22 @@
 <template>
   <div
+    class="copy-field"
     @click="interact"
     @hover.stop.prevent
-    class="copy-field"
   >
     <div
       class="overlay"
       :class="{
-        show: this.showOverlay,
+        show: showOverlay,
       }"
     >
-      <span class="text"><Locale path="events.copied"/></span>
+      <span class="text"><Locale path="events.copied" /></span>
     </div>
     <input
       ref="input"
       :value="value"
       readonly
-    />
+    >
     <CopyIcon :size="IconSize.Tiny" />
   </div>
 </template>

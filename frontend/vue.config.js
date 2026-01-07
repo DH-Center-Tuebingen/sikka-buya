@@ -2,7 +2,9 @@ const path = require("path")
 
 module.exports = {
     devServer: {
-        progress: false // disable progress logging in console. => it massively pollutes the CI logs
+        client: {
+            progress: false // disable progress logging in console. => it massively pollutes the CI logs
+        }
     },
     configureWebpack: {
         devtool: 'source-map',
@@ -19,9 +21,10 @@ module.exports = {
         loaderOptions: {
             sass: {
                 additionalData: `
+                @use "sass:color";
                 @use "sass:math";
-        @import "@/scss/_import.scss";
-        `
+                @use "@/scss/_import.scss" as *;
+                `
             }
         }
     }

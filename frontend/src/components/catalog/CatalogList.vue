@@ -1,8 +1,13 @@
 <template>
   <div class="catalog-list">
-    <div class="property-label">{{ label }}</div>
+    <div class="property-label">
+{{ label }}
+</div>
     <ul>
-      <li v-for="(item, idx) of items" v-bind:key="`${item}-${idx}`">
+      <li
+v-for="(item, idx) of items"
+:key="`${item}-${idx}`"
+>
         {{ item }}
       </li>
     </ul>

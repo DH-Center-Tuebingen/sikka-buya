@@ -2,28 +2,28 @@
   <div class="material-form">
     <PropertyFormWrapper
       property="material"
-      @submit="property_form_mixin_submit"
-      @cancel="property_form_mixin_cancel"
       :loading="property_form_mixin_loading"
       :title="property_form_mixin_title"
       :error="property_form_mixin_error"
       :disabled="property_form_mixin_disabled"
       :dirty="property_form_mixin_dirty"
-      :overwriteRoute="overwriteRoute"
+      :overwrite-route="overwriteRoute"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
     >
       <input
         id="material-id"
         v-model="material.id"
         type="hidden"
-      />
+      >
       <input
-        type="text"
         id="material-name"
         v-model="material.name"
+        type="text"
         :placeholder="$tc('attribute.name')"
         autofocus
         required
-      />
+      >
 
       <ColorInput
         v-if="material.id >= 0"
@@ -45,11 +45,15 @@ export default {
   mixins: [
     propertyFormMixinFunc({ variable: "material", property: "material" }),
   ],
-  name: 'MaterialForm',
   data: function () {
     return {
       material: { id: -1, name: '', color: null },
     };
+  },
+  computed: {
+    overwriteRoute() {
+      return { name: "MaterialOverview" }
+    }
   },
   methods: {
     getProperty: async function (id) {
@@ -58,11 +62,6 @@ export default {
     updateProperty: async function () {
       await new Query("Material").update(this.material)
     },
-  },
-  computed: {
-    overwriteRoute() {
-      return { name: "MaterialOverview" }
-    }
   }
 };
 </script>

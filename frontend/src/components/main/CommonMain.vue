@@ -1,7 +1,7 @@
 <template>
   <main>
     <navigation />
-    <router-view></router-view>
+    <router-view />
     <page-footer />
   </main>
 </template>
@@ -10,8 +10,8 @@
 import Navigation from '../Navigation.vue';
 import PageFooter from '../page/PageFooter.vue';
 export default {
-  components: { Navigation, PageFooter },
   name: 'CommonMain',
+  components: { Navigation, PageFooter },
 };
 </script>
 

@@ -1,7 +1,10 @@
 <template>
-  <div class="notice" :class="computedType">
+  <div
+class="notice"
+:class="computedType"
+>
     <div class="icon">
-      <InfoIcon v-if="!type"></InfoIcon>
+      <InfoIcon v-if="!type" />
     </div>
     <div class="content">
       <slot />
@@ -43,7 +46,7 @@ export default {
   &.info {
     $offset: 5px;
     $spread: 5px;
-    $color: lighten(saturate($blue, 50%), 15%);
+    $color: color.adjust($blue, $saturation: 50%, $lightness: 15%);
     box-shadow: $offset $offset 15px $color,
       -1 * $offset -1 * $offset 15px $color, -1 * $offset $offset 15px $color,
       $offset -1 * $offset 15px $color;

@@ -2,18 +2,18 @@
     <div class="list-view">
         <header>
             <h2>
-                <Locale :path="`cms.group.${this.group}`" />
+                <Locale :path="`cms.group.${group}`" />
             </h2>
-            <Button
+            <ButtonVue
                 v-if="$store.getters.writer"
-                @click="() => cms_mixin_createAndVisit(this.group, { include: this.include })"
+                @click="() => cms_mixin_createAndVisit(group, { include: include })"
             >
                 <Icon
                     type="mdi"
                     :path="icons.add"
                     :size="16"
                 /> Neuer Eintrag
-            </Button>
+            </ButtonVue>
         </header>
         <div class="list">
             <CMSListItem
@@ -22,7 +22,7 @@
                 :value="page"
                 :group="group"
                 :include="include"
-                :showTime="showTime"
+                :show-time="showTime"
                 @deleted="update"
             />
         </div>
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import Button from '../../layout/buttons/Button.vue';
+import ButtonVue from '../../layout/buttons/Button.vue';
 import CMSListItem from '../../cms/CMSListItem.vue';
 import Locale from '../../cms/Locale.vue';
 
@@ -39,15 +39,22 @@ import IconMixin from "../../mixins/icon-mixin"
 
 import { mdiPlus } from "@mdi/js"
 
-
-
 export default {
-    components: { Button, CMSListItem, Locale },
+    components: { ButtonVue, CMSListItem, Locale },
     mixins: [CMSMixin, IconMixin({ add: mdiPlus })],
     props: {
-        showTime: { type: Boolean, default: true },
-        include: Array,
-        group: String
+        showTime: {
+            type: Boolean,
+            default: true
+        },
+        include: {
+            type: Array,
+            default: () => []
+        },
+        group: {
+            type: String,
+            required: true,
+        }
     },
     data() {
         return {
@@ -68,7 +75,10 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 header {
     display: flex;
     align-items: center;
@@ -85,4 +95,5 @@ button {
     >* {
         margin-top: $padding;
     }
-}</style>
+}
+</style>

@@ -34,8 +34,6 @@
 
 <script>
 //Components
-import ActionsDrawer from '../interactive/ActionsDrawer.vue';
-import AsyncButton from '../layout/buttons/AsyncButton.vue';
 import CMSStatusIndicator from '../page/cms/CMSStatusIndicator.vue';
 import HollowButton from '../layout/buttons/HollowButton.vue';
 import Locale from '../cms/Locale.vue';
@@ -48,23 +46,21 @@ import iconMixin from '../mixins/icon-mixin';
 import { mdiClockOutline, mdiClockRemoveOutline } from '@mdi/js';
 
 export default {
-    mixins: [time, iconMixin({ clock: mdiClockOutline, removeClock: mdiClockRemoveOutline })],
     components: {
-        ActionsDrawer,
-        AsyncButton,
         CMSStatusIndicator,
         Locale,
         HollowButton
+    },
+    mixins: [time, iconMixin({ clock: mdiClockOutline, removeClock: mdiClockRemoveOutline })],
+    props: {
+        autoSave: Boolean,
+        saving: { required: true, type: Boolean },
+        dirty: { required: true, type: Boolean }
     },
     data() {
         return {
             schedule: false,
         }
-    },
-    props: {
-        autoSave: Boolean,
-        saving: { required: true, type: Boolean },
-        dirty: { required: true, type: Boolean }
     },
     computed: {
         pending() {
@@ -83,7 +79,10 @@ export default {
 }
 </style>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 .button {
     background-color: transparent;
     border-radius: 0;

@@ -14,19 +14,16 @@
       :path="dirty ? icons.exclamation : icons.check"
       :size="size"
     />
-
-  </div>
+</div>
 </template>
 
 <script>
 import iconMixin from '../../mixins/icon-mixin';
-import LoadingSpinner from '../../misc/LoadingSpinner.vue';
 
 import { mdiCheckBold, mdiExclamationThick, mdiLoading } from "@mdi/js"
 
 export default {
   mixins: [iconMixin({ check: mdiCheckBold, exclamation: mdiExclamationThick, loading: mdiLoading })],
-  components: { LoadingSpinner },
   props: {
     size: {
       type: Number,

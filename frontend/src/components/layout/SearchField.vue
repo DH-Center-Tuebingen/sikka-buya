@@ -4,12 +4,12 @@
     :class="{ active, 'input-search': isInputSearch }"
   >
     <input
+      ref="searchField"
       type="search"
       :placeholder="$t('message.input_to_filter')"
-      @input="input"
       :value="value"
-      ref="searchField"
-    />
+      @input="input"
+    >
     <div
       v-if="isInputSearch"
       class="search-indicator"
@@ -20,8 +20,8 @@
         :size="LoadingSpinnerSize.Small"
       />
       <Magnify
-        :size="iconSize"
         v-else
+        :size="iconSize"
       />
     </div>
     <async-button
@@ -45,16 +45,6 @@ export default {
     LoadingSpinner,
     AsyncButton,
   },
-  data: function () {
-    return {
-      timeout: null,
-      delay: 750,
-      pending: false,
-      pendingI: 0,
-      i: 0,
-      iconSize: 16
-    };
-  },
   props: {
     value: { type: String, required: true },
     asyncSearch: {
@@ -67,6 +57,25 @@ export default {
       validator(value) {
         return ['button', 'input'].indexOf(value) != -1;
       },
+    },
+  },
+  data: function () {
+    return {
+      timeout: null,
+      delay: 750,
+      pending: false,
+      pendingI: 0,
+      i: 0,
+      iconSize: 16
+    };
+  },
+
+  computed: {
+    active: function () {
+      return this.value && this.value != '';
+    },
+    isInputSearch: function () {
+      return this.mode == 'input';
     },
   },
   methods: {
@@ -110,15 +119,6 @@ export default {
           this.search(this.value);
         }
       }
-    },
-  },
-
-  computed: {
-    active: function () {
-      return this.value && this.value != '';
-    },
-    isInputSearch: function () {
-      return this.mode == 'input';
     },
   },
 };

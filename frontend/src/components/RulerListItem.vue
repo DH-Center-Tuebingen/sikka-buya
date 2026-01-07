@@ -1,12 +1,12 @@
 <template>
     <MultiSelectListItem
-        @checkbox-selected="() => $emit('selection-changed', item)"
-        @click.native="() => $emit('selection-changed', item)"
         :style="css"
         :selected="selected"
         :class="{ ['ruler-unavailable']: unavailable }"
+        @checkbox-selected="() => $emit('selection-changed', item)"
+        @click.native="() => $emit('selection-changed', item)"
     >
-        <template v-slot:before>
+        <template #before>
             <ListColorIndicator
                 :color="item.color"
                 default-color="white"

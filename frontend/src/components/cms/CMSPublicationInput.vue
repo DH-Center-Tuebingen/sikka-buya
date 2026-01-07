@@ -10,8 +10,7 @@
             <span style="display: flex; gap: .5em;">{{
                 time_mixin_formatDate(value)
             }}</span>
-
-        </template>
+</template>
 
         <Icon
             :path="(interactive) ? icons.removeClock : icons.clock"
@@ -19,9 +18,7 @@
             type="mdi"
             @click.native="() => toggleInteractive()"
         />
-
-
-    </div>
+</div>
 </template>
 
 <script>
@@ -34,15 +31,15 @@ import { mdiClockEditOutline, mdiClockRemoveOutline } from '@mdi/js';
 
 export default {
     mixins: [time, iconMixin({ clock: mdiClockEditOutline, removeClock: mdiClockRemoveOutline })],
-    data() {
-        return {
-            interactive: false,
-        }
-    },
     props: {
         value: {
             type: Number,
             required: true,
+        }
+    },
+    data() {
+        return {
+            interactive: false,
         }
     },
     methods: {

@@ -9,10 +9,17 @@
       </div>
     </header>
 
-    <div v-if="!collapsed" class="list-filter-container-content">
+    <div
+v-if="!collapsed"
+class="list-filter-container-content"
+>
       <slot />
     </div>
-    <div v-if="filtered" class="message" @click="$emit('clearFilters')">
+    <div
+v-if="filtered"
+class="message"
+@click="$emit('clearFilters')"
+>
       <AlertCircleOutline /> {{ $t('general.filter_active') }}
     </div>
   </div>

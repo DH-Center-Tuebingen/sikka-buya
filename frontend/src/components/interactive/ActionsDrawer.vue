@@ -11,15 +11,15 @@
             />
         </div>
         <div
+            v-if="open"
             class="actions-list"
             :class="alignClass"
-            v-if="open"
         >
             <div
-                class="action"
                 v-for="action in actions"
-                @click="() => select(action.name)"
                 :key="action.name"
+                class="action"
+                @click="() => select(action.name)"
             >
                 <Locale :path="action.label" />
             </div>
@@ -39,17 +39,6 @@ export default {
     mixins: [
         iconMixin({ mdiDotsVertical })
     ],
-    data() {
-        return {
-            open: false
-        };
-    },
-    mounted() {
-        this.$root.$on("global-click", this.close);
-    },
-    beforeDestroy() {
-        this.$root.$off("global-click", this.close);
-    },
     props: {
         actions: {
             type: Array,
@@ -61,6 +50,22 @@ export default {
             validator: (val) => ["left", "center", "right"].includes(val)
         }
     },
+    data() {
+        return {
+            open: false
+        };
+    },
+    computed: {
+        alignClass() {
+            return `actions-list-${this.align}`;
+        }
+    },
+    mounted() {
+        this.$root.$on("global-click", this.close);
+    },
+    beforeDestroy() {
+        this.$root.$off("global-click", this.close);
+    },
     methods: {
         select(action) {
             this.$emit("select", action);
@@ -70,11 +75,6 @@ export default {
             if (!this.$el.contains(event.target)) {
                 this.open = false;
             }
-        }
-    },
-    computed: {
-        alignClass() {
-            return `actions-list-${this.align}`;
         }
     },
 };

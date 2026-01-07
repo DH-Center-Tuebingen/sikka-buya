@@ -3,17 +3,15 @@
         class="cms-list-item"
         :class="klasses"
     >
-
         <header v-if="$store.getters.loggedIn">
-
-            <CMSPublicationStatus :pageTimestamp="value.publishedTimestamp" />
+            <CMSPublicationStatus :page-timestamp="value.publishedTimestamp" />
             <span class="date">
                 {{ time_mixin_formatDate(value.publishedTimestamp) || "-" }}
             </span>
             <div
                 style="position: relative;"
-                @mouseenter="() => this.showInfo = true"
-                @mouseleave="() => this.showInfo = false"
+                @mouseenter="() => showInfo = true"
+                @mouseleave="() => showInfo = false"
             >
                 <Icon
                     type="mdi"
@@ -22,28 +20,35 @@
                 />
                 <tooltip v-if="showInfo">
                     <table>
-                        <tr>
-                            <td>
-                                <Locale path="time.created" />
-                            </td>
-                            <td>{{ new Date(value.createdTimestamp).toLocaleDateString("de-DE") }} {{ new
-                                Date(value.createdTimestamp).toLocaleTimeString("de-DE") }}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <Locale path="time.last_modified" />
-                            </td>
-                            <td>{{ new Date(value.lastModifiedTimestamp).toLocaleDateString("de-DE") }} {{ new
-                                Date(value.lastModifiedTimestamp).toLocaleTimeString("de-DE") }}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <Locale path="time.published" />
-                            </td>
-                            <td>{{ new Date(value.publishedTimestamp).toLocaleDateString("de-DE") }} {{ new
-                                Date(value.publishedTimestamp).toLocaleTimeString("de-DE") }}</td>
-                        </tr>
-
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <Locale path="time.created" />
+                                </td>
+                                <td>
+                                    {{ new Date(value.createdTimestamp).toLocaleDateString("de-DE") }} {{ new
+                                        Date(value.createdTimestamp).toLocaleTimeString("de-DE") }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <Locale path="time.last_modified" />
+                                </td>
+                                <td>
+                                    {{ new Date(value.lastModifiedTimestamp).toLocaleDateString("de-DE") }} {{ new
+                                        Date(value.lastModifiedTimestamp).toLocaleTimeString("de-DE") }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <Locale path="time.published" />
+                                </td>
+                                <td>
+                                    {{ new Date(value.publishedTimestamp).toLocaleDateString("de-DE") }} {{ new
+                                        Date(value.publishedTimestamp).toLocaleTimeString("de-DE") }}
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </tooltip>
             </div>
@@ -56,22 +61,24 @@
                 ]"
                 @select="executeAction"
             />
-
-
-
-
         </header>
         <article>
             <div class="titles">
-                <h3 v-if="isPresent('title')">{{ value.title }}</h3>
-                <h4 v-if="isPresent('subtitle')">{{ value.subtitle }}</h4>
+                <h3 v-if="isPresent('title')">
+                    {{ value.title }}
+                </h3>
+                <h4 v-if="isPresent('subtitle')">
+                    {{ value.subtitle }}
+                </h4>
             </div>
 
             <div class="body">
+                <!-- eslint-disable vue/no-v-html -->
                 <div
                     v-if="isPresent('body')"
                     v-html="value.body"
-                ></div>
+                />
+                <!-- eslint-enable vue/no-v-html -->
             </div>
         </article>
     </div>
@@ -81,7 +88,6 @@
 
 // Components
 import ActionsDrawer from "../interactive/ActionsDrawer.vue";
-import Button from '../layout/buttons/Button.vue';
 import CMSPublicationStatus from './CMSPublicationStatus.vue';
 import Locale from "./Locale.vue";
 import Tooltip from "../forms/Tooltip"
@@ -96,24 +102,33 @@ import CMSConfig from "../../../cms.config";
 import { mdiInformationOutline } from '@mdi/js';
 
 export default {
-    mixins: [TimeMixin, CMSMixin, IconMixin({ info: mdiInformationOutline })],
     components: {
         ActionsDrawer,
-        Button,
         CMSPublicationStatus,
         Locale,
         Tooltip,
+    },
+    mixins: [TimeMixin, CMSMixin, IconMixin({ info: mdiInformationOutline })],
+    props: {
+        showTime: { type: Boolean, default: true },
+        value: { type: Object, required: true },
+        group: { type: String, required: true },
+        include: { type: Array, default: () => [] }
     },
     data() {
         return {
             showInfo: false
         }
     },
-    props: {
-        showTime: { type: Boolean, default: true },
-        value: { type: Object, required: true },
-        group: { type: String, required: true },
-        include: { type: Array, default: () => [] }
+    computed: {
+        klasses() {
+            const publishedClass = this.cms_mixin_getPublishedState(this.value.publishedTimestamp)
+
+            return {
+                editable: this.$store.getters.editor,
+                [publishedClass]: true
+            }
+        }
     },
     methods: {
         executeAction(action) {
@@ -144,21 +159,14 @@ export default {
                 this.$emit("deleted")
             }
         }
-    },
-    computed: {
-        klasses() {
-            const publishedClass = this.cms_mixin_getPublishedState(this.value.publishedTimestamp)
-
-            return {
-                editable: this.$store.getters.editor,
-                [publishedClass]: true
-            }
-        }
     }
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 header {
     display: flex;
     align-items: center;

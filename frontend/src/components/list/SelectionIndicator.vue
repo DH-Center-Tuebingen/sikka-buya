@@ -1,9 +1,18 @@
 <template>
-  <div :class="{ active: hasSelection }" class="selection-indicator">
-    <span class="count" v-if="hasSelection">
+  <div
+:class="{ active: hasSelection }"
+class="selection-indicator"
+>
+    <span
+v-if="hasSelection"
+class="count"
+>
       {{ selected }}
     </span>
-    <div class="selection-visualizer" :style="{ height }"></div>
+    <div
+class="selection-visualizer"
+:style="{ height }"
+/>
   </div>
 </template>
 

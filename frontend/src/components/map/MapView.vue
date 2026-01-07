@@ -40,16 +40,6 @@ export default {
       required: true,
     },
   },
-  watch: {
-    boundaries: function (newVal) {
-      if (newVal && newVal.length === 4) {
-        this.map.setMaxBounds(L.latLngBounds(L.latLng(newVal[0], newVal[1]), L.latLng(newVal[2], newVal[3])));
-      } else {
-        this.map.setMaxBounds(null);
-      }
-
-    },
-  },
   data: function () {
     return {
       map: null,
@@ -59,6 +49,16 @@ export default {
   computed: {
     L() {
       return L;
+    },
+  },
+  watch: {
+    boundaries: function (newVal) {
+      if (newVal && newVal.length === 4) {
+        this.map.setMaxBounds(L.latLngBounds(L.latLng(newVal[0], newVal[1]), L.latLng(newVal[2], newVal[3])));
+      } else {
+        this.map.setMaxBounds(null);
+      }
+
     },
   },
   mounted: function () {

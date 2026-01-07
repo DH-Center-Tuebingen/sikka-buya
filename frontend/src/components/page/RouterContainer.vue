@@ -8,8 +8,8 @@
 <script>
 import Breadcrumbs from '../navigation/Breadcrumbs.vue';
 export default {
-  components: { Breadcrumbs },
   name: 'RouterContainer',
+  components: { Breadcrumbs },
 };
 </script>
 

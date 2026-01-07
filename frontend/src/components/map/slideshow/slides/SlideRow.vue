@@ -1,10 +1,13 @@
 <template>
     <div class="slide-row">
         <div class="icon">
-            <component :is="icon" :size="14" />
+            <component
+:is="icon"
+:size="14"
+/>
         </div>
         <div class="text">
-            {{ text  }}
+            {{ text }}
         </div>
     </div>
 </template>

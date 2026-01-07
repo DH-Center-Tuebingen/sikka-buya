@@ -2,27 +2,27 @@
   <div class="dynasty-form">
     <PropertyFormWrapper
       property="province"
-      @submit="property_form_mixin_submit"
-      @cancel="property_form_mixin_cancel"
       :loading="property_form_mixin_loading"
       :title="property_form_mixin_title"
       :error="property_form_mixin_error"
       :disabled="property_form_mixin_disabled"
       :dirty="property_form_mixin_dirty"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
     >
       <input
         id="province-id"
         v-model="province.id"
         type="hidden"
-      />
+      >
       <input
         id="province-name"
-        type="text"
         v-model="province.name"
+        type="text"
         :placeholder="$tc('attribute.name')"
         autofocus
         required
-      />
+      >
     </PropertyFormWrapper>
   </div>
 </template>

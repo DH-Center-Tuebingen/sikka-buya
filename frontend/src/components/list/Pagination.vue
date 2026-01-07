@@ -10,9 +10,12 @@
       />
     </header>
     <div class="pagination-container">
-      <info v-if="pageInfo.total === 0" :alwaysShow="true"
-        >Keine Ergebnisse gefunden</info
-      >
+      <info
+v-if="pageInfo.total === 0"
+:always-show="true"
+>
+Keine Ergebnisse gefunden
+</info>
       <slot />
     </div>
   </div>

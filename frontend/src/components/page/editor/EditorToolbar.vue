@@ -1,5 +1,8 @@
 <template>
-  <div class="editor-toolbar" v-if="$store.state.user">
+  <div
+v-if="$store.state.user"
+class="editor-toolbar"
+>
     <header>
       <ShieldAccountIcon />
       Kurator Bereich

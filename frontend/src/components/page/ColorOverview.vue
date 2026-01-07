@@ -1,6 +1,6 @@
 <template>
   <overview
-    :property="this.property"
+    :property="property"
     :parameters="['color']"
   >
     <template #list-item-before="prop">
@@ -12,11 +12,10 @@
 </template>
 
 <script>
-import ListItemCell from '../layout/list/ListItemCell.vue';
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Overview from './Overview.vue';
 export default {
-  components: { Overview, ListColorIndicator, ListItemCell },
+  components: { Overview, ListColorIndicator },
   props: {
     property: {
       type: String,

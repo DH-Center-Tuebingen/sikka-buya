@@ -3,8 +3,7 @@
         <Box>
             <template #header>
                 <h2>Server Offline</h2>
-
-            </template>
+</template>
             <p>Der Server ist derzeit nicht erreichbar. Versuchen Sie es später erneut</p>
             <p>Currently the server appears to be offline. Please try again later</p>
         </Box>

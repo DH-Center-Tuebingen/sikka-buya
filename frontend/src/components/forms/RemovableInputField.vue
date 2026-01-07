@@ -1,8 +1,15 @@
 <template>
   <div class="removable-input">
-    <input type="text" :value="value" @input="input" />
+    <input
+type="text"
+:value="value"
+@input="input"
+>
     <div class="button remove-button">
-      <Close @click="remove" :size="16" />
+      <Close
+:size="16"
+@click="remove"
+/>
     </div>
   </div>
 </template>

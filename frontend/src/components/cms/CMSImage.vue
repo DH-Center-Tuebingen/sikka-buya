@@ -15,7 +15,7 @@
         v-if="imageURI"
         :src="imageURI"
         alt=""
-      />
+      >
       <image-icon
         v-else
         :size="IconSize.Big"
@@ -29,7 +29,7 @@
           type="file"
           accept=".png,.jpg,.jpeg,image/*"
           @input="uploadFile"
-        />
+        >
         <upload-icon :size="IconSize.Normal" />
       </label>
     </div>
@@ -37,7 +37,7 @@
       v-else-if="imageURI"
       :src="imageURI"
       :draggable="false"
-    />
+    >
   </div>
 </template>
 
@@ -46,11 +46,10 @@ import ImageIcon from 'vue-material-design-icons/Image';
 import UploadIcon from 'vue-material-design-icons/Upload';
 
 import Query from '../../database/query';
-import Button from '../layout/buttons/Button.vue';
 import LoadingSpinner from '../misc/LoadingSpinner.vue';
 
 export default {
-  components: { ImageIcon, LoadingSpinner, Button, UploadIcon },
+  components: { ImageIcon, LoadingSpinner, UploadIcon },
   props: {
     identity: {
       required: true,
@@ -72,13 +71,13 @@ export default {
       hover: true,
     };
   },
-  created() {
-    this.load();
-  },
   computed: {
     fullIdentity() {
       return `cms[$]images[$]${this.identity}`;
     },
+  },
+  created() {
+    this.load();
   },
   methods: {
     load: async function () {

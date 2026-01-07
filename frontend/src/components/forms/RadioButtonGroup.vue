@@ -1,21 +1,20 @@
 <template>
   <Row
-    class="radio-button-group button-group"
     :id="id"
+    class="radio-button-group button-group"
   >
     <Row
       v-for="(option, idx) in options"
-      v-bind:key="option.toString()"
+      :key="option.toString()"
       class="radio-button"
     >
-
-      <input
+<input
+        :id="option"
         type="radio"
         :checked="value == option"
         :name="id"
-        :id="option"
         @click="change"
-      />
+      >
       <label
         v-if="useTlabels"
         :for="option"
@@ -30,8 +29,7 @@
         :for="option.toString()"
         tabindex="0"
       ><span>{{ labels[idx] }}</span></label>
-
-    </Row>
+</Row>
   </Row>
 </template>
 
@@ -39,8 +37,8 @@
 import Locale from '../cms/Locale.vue';
 import Row from '../layout/Row.vue';
 export default {
-  components: { Row, Locale },
   name: 'ButtonGroup',
+  components: { Row, Locale },
   props: {
     value: {
       type: String,
@@ -69,6 +67,11 @@ export default {
       active: null,
     };
   },
+  computed: {
+    useTlabels() {
+      return this.tlabels && this.tlabels.length > 0;
+    },
+  },
   mounted() {
     const activeOption = this.options.indexOf(this.value);
     if (activeOption != -1) this.active = this.options[activeOption];
@@ -81,11 +84,6 @@ export default {
       }
 
       this.$emit('input', value);
-    },
-  },
-  computed: {
-    useTlabels() {
-      return this.tlabels && this.tlabels.length > 0;
     },
   },
 };

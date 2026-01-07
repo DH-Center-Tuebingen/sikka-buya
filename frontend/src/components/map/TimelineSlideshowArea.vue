@@ -46,19 +46,17 @@
                             :size="headerIconSize"
                         />
                     </template>
-
-
                 </ButtonVue>
 
                 <popup-activator
-                    :targetWidth="280"
-                    :noShadow="true"
+                    :target-width="280"
+                    :no-shadow="true"
                 >
-                    <template v-slot="{ active }">
+                    <template #default="{ active }">
                         <ButtonVue
                             class="map-button"
                             :active="active"
-                            :noStop="true"
+                            :no-stop="true"
                         >
                             <Icon
                                 type="mdi"
@@ -66,10 +64,9 @@
                                 :size="headerIconSize"
                             />
                         </ButtonVue>
-
                     </template>
 
-                    <template v-slot:popup>
+                    <template #popup>
                         <h3>
                             <Locale path="map.share_view" />
                         </h3>
@@ -80,26 +77,24 @@
 
 
                 <slot name="left" />
-
-
             </template>
 
             <template #2>
                 <slot name="right" />
                 <template v-if="allowToggle">
                     <ButtonVue
+                        v-if="timelineActive"
                         class="map-button"
                         :active="timelineActive"
                         @click="toggleTimeline"
-                        v-if="timelineActive"
                     >
                         <Locale path="map.timeline.deactivate" />
                     </ButtonVue>
                     <ButtonVue
+                        v-else
                         class="map-button"
                         :active="timelineActive"
                         @click="toggleTimeline"
-                        v-else
                     >
                         <Locale path="map.timeline.active" />
                     </ButtonVue>
@@ -108,29 +103,28 @@
         </Grid>
         <Drawer :active="slideshow.active">
             <Slideshow
-                class="ui-element"
-                :storagePrefix="timelineName"
                 ref="slideshow"
+                class="ui-element"
+                :storage-prefix="timelineName"
             />
         </Drawer>
         <Drawer :active="timelineActive">
             <Timeline
+                ref="timeline"
                 class="ui-element"
-                @input="timelineUpdated"
-                @change="timelineChanged"
                 :value="timelineValue"
                 :from="timelineFrom"
                 :to="timelineTo"
                 :interactive="timelineInteractive"
                 :create-marks="timelineCreateMarks"
-                ref="timeline"
+                @input="timelineUpdated"
+                @change="timelineChanged"
             >
-
                 <template #background>
                     <canvas
                         id="timeline-canvas"
                         ref="timelineCanvas"
-                    > </canvas>
+                    />
                     <!-- <slot name="background" /> -->
                 </template>
             </Timeline>
@@ -163,6 +157,13 @@ const slideshow = slideshowSettings.load();
 
 export default {
     components: { Drawer, Grid, ButtonVue, Locale, PopupActivator, CopyField, Slideshow, Timeline },
+    mixins: [icons({
+        "bookmark": mdiBookmark,
+        "bookmarkOutline": mdiBookmarkOutline,
+        "play": mdiPlay,
+        "pause": mdiPause,
+        "share": mdiShareVariant
+    })],
     props: {
         /**
          * Whether the timeline is active or not.
@@ -210,14 +211,6 @@ export default {
             default: true,
         },
     },
-    mixins: [icons({
-        "bookmark": mdiBookmark,
-        "bookmarkOutline": mdiBookmarkOutline,
-        "play": mdiPlay,
-        "pause": mdiPause,
-        "share": mdiShareVariant
-    })],
-
     data() {
         return {
             slideshow,
@@ -225,6 +218,11 @@ export default {
             playInterval: null,
             timelineChart: null,
             timelineResizeTimeout: null,
+        }
+    },
+    computed: {
+        playing() {
+            return this.playInterval != null;
         }
     },
     watch: {
@@ -240,11 +238,6 @@ export default {
         timelineTo() {
             this.timelineChart.update({ timeline: { from: this.timelineFrom, to: this.timelineTo } })
         },
-    },
-    computed: {
-        playing() {
-            return this.playInterval != null;
-        }
     },
     mounted() {
         this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timelineFrom, to: this.timelineTo });
@@ -317,7 +310,10 @@ export default {
 }
 </style>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 .timeline-slideshow-area {
     flex: 1;
     margin: $padding;
@@ -331,7 +327,7 @@ export default {
 #timeline-canvas {
     width: 100%;
     height: 100%;
-} 
+}
 
 .timeline {
     height: 100px;

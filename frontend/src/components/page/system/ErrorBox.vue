@@ -1,16 +1,15 @@
 <template>
   <div
+    v-if="show"
     class="global error-box"
     :class="type"
-    v-if="show"
   >
     <Icon
       :path="iconPath"
       type="mdi"
       :size="IconSize.Normal"
     />
-    <slot>
-    </slot>
+    <slot />
     <!-- <div
       class="button transparent-button interactive"
       @click.stop.prevent="() => (message = '')"

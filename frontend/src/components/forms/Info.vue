@@ -36,6 +36,14 @@ export default {
       trigger_show: false,
     };
   },
+  computed: {
+    visible() {
+      return this.alwaysShow || this.trigger_show;
+    },
+    hidden() {
+      return !this.visible;
+    },
+  },
   watch: {
     trigger: function () {
       this.show();
@@ -52,14 +60,6 @@ export default {
     },
     hide: function () {
       this.trigger_show = false;
-    },
-  },
-  computed: {
-    visible() {
-      return this.alwaysShow || this.trigger_show;
-    },
-    hidden() {
-      return !this.visible;
     },
   },
 };

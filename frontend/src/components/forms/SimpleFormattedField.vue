@@ -1,21 +1,22 @@
 <template>
   <div
     class="simple-formatted-field"
-    @mouseenter="() => (this.active = true)"
-    @mouseleave="() => (this.active = false)"
+    @mouseenter="() => (active = true)"
+    @mouseleave="() => (active = false)"
   >
     <Row
+      v-if="active"
       class="toolbar"
       style="margin-bottom: 10px"
-      v-if="this.active"
-    ><template v-if="allowLinks">
+    >
+<template v-if="allowLinks">
         <button
           type="button"
           @click.prevent="link"
         >
           <LinkIcon :size="iconSize" />
         </button>
-        <div class="spacer"></div>
+        <div class="spacer" />
       </template>
       <button
         type="button"
@@ -35,7 +36,7 @@
       >
         <FormatAlignRight :size="iconSize" />
       </button>
-      <div class="spacer"></div>
+      <div class="spacer" />
       <button
         type="button"
         @click.prevent="formatRightToLeft"
@@ -54,7 +55,7 @@
       >
         <TextLeftToRight :size="iconSize" />
       </button>
-      <div class="spacer"></div>
+      <div class="spacer" />
       <button
         type="button"
         @click.prevent="toggleBold"
@@ -73,9 +74,9 @@
       ref="field"
       class="formatted-text-area"
       spellcheck="true"
-      @input="input"
       contenteditable
-    ></div>
+      @input="input"
+    />
     <dynamic-delete-button @delete="setContent()" />
   </div>
 </template>
@@ -100,6 +101,7 @@ import DynamicDeleteButton from '../layout/DynamicDeleteButton.vue';
 import CopyAndPasteMixin from '../mixins/copy-and-paste';
 
 export default {
+  name: 'SimpleFormattedField',
   components: {
     DynamicDeleteButton,
     FormatAlignCenter,
@@ -113,7 +115,6 @@ export default {
     TextLeftToRight,
     TextRightToLeft,
   },
-  name: 'SimpleFormattedField',
   mixins: [CopyAndPasteMixin],
   props: {
     allowLinks: Boolean

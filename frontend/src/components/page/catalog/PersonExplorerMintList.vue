@@ -3,9 +3,9 @@
     <h6>Prägeort(e)</h6>
 
     <div
-      class="mint-row"
       v-for="yearObject of validYearObjects"
       :key="getKey(yearObject)"
+      class="mint-row"
     >
       <span class="year-title">{{ yearObject.value }}:</span>
 
@@ -24,7 +24,10 @@
         @change="(mint) => changed(yearObject.value, mint, true)"
       />
     </div>
-    <span v-if="!hasActive" class="hint">Wählen Sie einen Prägeort!</span>
+    <span
+v-if="!hasActive"
+class="hint"
+>Wählen Sie einen Prägeort!</span>
   </div>
 </template>
 
@@ -38,6 +41,21 @@ export default {
   props: {
     yearObjectArray: { type: Array, required: true },
     activeYears: { type: Object, required: true },
+  },
+  computed: {
+    validYearObjects() {
+      return this.yearObjectArray.filter((obj) => {
+        if (!obj) console.error('Invalid yearObjectArray: ', obj);
+        return !!obj;
+      });
+    },
+    hasActive() {
+      for (let yearObject of Object.values(this.activeYears)) {
+        for (let key of ['activeOverlordsMints', 'activeIssuerMints'])
+          if (Object.keys(yearObject[key]).length > 0) return true;
+      }
+      return false;
+    },
   },
   methods: {
     toggleActive(obj) {
@@ -71,25 +89,10 @@ export default {
       return `mint-of-year-${yearObject?.value}`;
     },
   },
-  computed: {
-    validYearObjects() {
-      return this.yearObjectArray.filter((obj) => {
-        if (!obj) console.error('Invalid yearObjectArray: ', obj);
-        return !!obj;
-      });
-    },
-    hasActive() {
-      for (let yearObject of Object.values(this.activeYears)) {
-        for (let key of ['activeOverlordsMints', 'activeIssuerMints'])
-          if (Object.keys(yearObject[key]).length > 0) return true;
-      }
-      return false;
-    },
-  },
 };
 </script>
 
-<style lang="scss" >
+<style lang="scss">
 .person-explorer-mint-list {
   button {
     margin: 3px;

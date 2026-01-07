@@ -1,3 +1,7 @@
+@use 'sass:color';
+@use 'sass:math';
+@use 'base_mixins';
+
 $sans-serif: "Arimo";
 $arabic: "Amiri";
 $font: $sans-serif, $arabic, sans-serif;
@@ -30,13 +34,13 @@ $bright-purple: hsl(300, 41%, 60%);
 
 $orange: #ff531f;
 $yellow: #c7a417;
-$dark-yellow: darken($yellow, 10%);
+$dark-yellow: color.adjust($color: $yellow, $lightness: -10%);
 $green: #48ac48;
 $light-green: rgb(94, 170, 94);
 $dark-green: #6b996b;
 
 $red: #da4133;
-$dark-red: darken($red, 10%);
+$dark-red: color.adjust($color: $red, $lightness: -10%);
 
 $primary-color: $green;
 $dark-primary-color: $dark-green;
@@ -72,5 +76,5 @@ $strong-shadow: $shadow-offset $shadow-spread $strong-shadow-color;
   overflow: hidden;
 
   background-color: $white;
-  @include box-padding($large-padding);
+  @include base_mixins.box-padding($large-padding);
 }

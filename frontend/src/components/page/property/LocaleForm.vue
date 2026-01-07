@@ -5,15 +5,15 @@
         <div class="grid">
             <strong>{{ lang }}</strong>
             <input
-                type="text"
                 v-model="path"
-            />
+                type="text"
+            >
 
             <Locale path="general.singular" />
             <InputWithReset
+                v-model="singular"
                 type="text"
                 name="singular"
-                v-model="singular"
                 placeholder="singular"
                 icon="revert"
                 @reset="reset('singular')"
@@ -21,22 +21,24 @@
 
             <Locale path="general.plural" />
             <InputWithReset
+                v-model="plural"
                 type="text"
                 name="plural"
                 icon="revert"
-                v-model="plural"
                 @reset="reset('plural')"
             />
-
-        </div>
-        <Button
-            @click="submit"
+</div>
+        <ButtonVue
             :disabled="!prevent_navigation_mixin_isDirty"
-        >Anwenden</Button>
+            @click="submit"
+        >
+Anwenden
+</ButtonVue>
     </div>
 </template>
 
 <script>
+import ButtonVue from '../../layout/buttons/Button.vue';
 import Query from '../../../database/query';
 import I18n from '../../../i18n/i18n';
 import Locale from '../../cms/Locale.vue';
@@ -45,10 +47,15 @@ import preventNavigationMixin from '../../mixins/prevent-navigation-mixin';
 
 export default {
     components: {
+        ButtonVue,
         InputWithReset,
         Locale
     },
     mixins: [preventNavigationMixin],
+    beforeRouteUpdate(to, from, next) {
+        this.init(to);
+        next();
+    },
     data() {
         return {
             path: '',
@@ -59,16 +66,10 @@ export default {
             submitting: false,
         };
     },
-    mounted() {
-        this.init();
-        addEventListener('keydown', this.submitWithEnter);
-    },
-    beforeDestroy() {
-        removeEventListener('keydown', this.submitWithEnter);
-    },
-    beforeRouteUpdate(to, from, next) {
-        this.init(to);
-        next();
+    computed: {
+        lang() {
+            return this.$route.params.lang;
+        }
     },
     watch: {
         path() {
@@ -82,6 +83,13 @@ export default {
             if (this.plural === this.initialPlural) this.prevent_navigation_mixin_setClean()
             else this.prevent_navigation_mixin_setDirty()
         }
+    },
+    mounted() {
+        this.init();
+        addEventListener('keydown', this.submitWithEnter);
+    },
+    beforeDestroy() {
+        removeEventListener('keydown', this.submitWithEnter);
     },
     methods: {
         init(route = null) {
@@ -137,11 +145,6 @@ export default {
 
             return false;
         },
-    },
-    computed: {
-        lang() {
-            return this.$route.params.lang;
-        }
     },
 };
 </script>

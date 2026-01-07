@@ -30,13 +30,11 @@
 <script>
 
 import EarthIcon from "vue-material-design-icons/Earth"
-import EarthCloseIcon from "vue-material-design-icons/EarthRemove"
 import Tooltip from '../forms/Tooltip.vue';
 
 export default {
     components: {
         EarthIcon,
-        EarthCloseIcon,
         Tooltip
     },
     props: {

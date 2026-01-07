@@ -8,14 +8,14 @@
 
         <span>Email</span>
         <input
-          type="email"
           v-model="inviteEmail"
-        />
+          type="email"
+        >
         <input
           type="submit"
           value="Invite"
           @click.prevent="inviteUser"
-        />
+        >
       </form>
     </section>
     <section class="permissions-descriptions">
@@ -38,15 +38,17 @@
     <section>
       <h2>Registered Users</h2>
       <div
-        class="error"
         v-if="listError"
-      >{{ listError }}</div>
+        class="error"
+      >
+{{ listError }}
+</div>
       <div class="user-list">
         <div
           v-for="user in users"
+          :key="`user-id-${user.id}`"
           class="user"
           :style="{ gridTemplateColumns: `3fr repeat(${permissions.length}, 40px) 5fr 40px` }"
-          :key="`user-id-${user.id}`"
         >
           <span class="email">{{ user.email }}</span>
 
@@ -56,14 +58,14 @@
             :value="user[permission.key]"
             @input="() => togglePermission(user, permission.key)"
           >
-            <template v-slot:active>
+            <template #active>
               <Icon
                 :path="permission.icon"
                 :size="24"
                 :viewbox="'0 0 24 24'"
               />
             </template>
-            <template v-slot:inactive>
+            <template #inactive>
               <Icon
                 :path="permission.icon"
                 :size="24" 
@@ -83,20 +85,14 @@
 
 <script>
 import Query from '../../database/query';
-import ErrorMessage from '../ErrorMessage.vue';
 import CopyField from '../forms/CopyField.vue';
 import BackHeader from '../layout/BackHeader.vue';
 import Toggle from '../layout/buttons/Toggle.vue';
 import DynamicDeleteButton from '../layout/DynamicDeleteButton.vue';
 
-import QueenIcon from 'vue-material-design-icons/ChessQueen.vue';
-import PawnIcon from 'vue-material-design-icons/ChessPawn.vue';
-
 import IconMixin from '../mixins/icon-mixin';
 import { mdiFountainPenTip, mdiDatabaseOutline, mdiCrown, mdiCircleDouble } from '@mdi/js';
 
-import Newspaper from 'vue-material-design-icons/Newspaper.vue';
-import ListBox from 'vue-material-design-icons/ListBox.vue';
 import { EditorDescription, SuperDescription, WriterDescription, TypeEditorDescription } from '../../texts/user-descriptions';
 
 export default {
@@ -104,12 +100,7 @@ export default {
     BackHeader,
     CopyField,
     DynamicDeleteButton,
-    ErrorMessage,
-    QueenIcon,
-    PawnIcon,
     Toggle,
-    Newspaper,
-    ListBox,
   },
   mixins: [IconMixin({ mdiFountainPenTip, mdiDatabaseOutline, mdiCrown })],
   data: function () {

@@ -1,7 +1,10 @@
 <template>
     <div class="hotkeyed">
-        <slot></slot>
-        <span class="combination-indicator" v-if="combination">({{ combination }})</span>
+        <slot />
+        <span
+v-if="combination"
+class="combination-indicator"
+>({{ combination }})</span>
     </div>
 </template>
 

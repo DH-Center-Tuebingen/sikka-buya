@@ -10,7 +10,7 @@
                 type="mdi"
             />
             <Locale :path="(hasFilters) ? 'message.listed_filters_are_active' : 'message.no_filter_active'" />
-            <Button
+            <ButtonVue
                 v-if="hasFilters"
                 class="reset-filters-button"
                 :style="{ marginLeft: 'auto' }"
@@ -23,17 +23,19 @@
                 />{{
                     $t('message.reset_all_filters')
                 }}
-            </Button>
+            </ButtonVue>
         </header>
         <div
-            class="active-filter-list"
             v-if="hasFilters"
+            class="active-filter-list"
         >
             <FilterButton
                 v-for="filter in activeFilters"
                 :key="`active-filter-button-${filter.key}`"
                 @click.native="() => $emit('resetFilter', filter.key)"
-            >{{ $tc("property." + $utils.snakeCase(filter.key)) }}</FilterButton>
+            >
+                {{ $tc("property." + $utils.snakeCase(filter.key)) }}
+            </FilterButton>
         </div>
     </div>
 </template>
@@ -41,12 +43,13 @@
 <script>
 import { mdiFilter, mdiFilterOff, mdiFilterOutline } from '@mdi/js';
 
+import ButtonVue from '../../../layout/buttons/Button.vue';
 import FilterButton from './FilterButton.vue';
 import icons from '../../../mixins/icon-mixin.js';
 import Locale from '../../../cms/Locale.vue';
 export default {
+    components: { FilterButton, Locale, ButtonVue },
     mixins: [icons({ filter: mdiFilter, noFilter: mdiFilterOutline, filterOff: mdiFilterOff })],
-    components: { FilterButton, Locale },
     props: {
         activeFilters: {
             type: Array,
@@ -62,7 +65,10 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 .filter-control {
     border-radius: $border-radius;
     color: $light-gray;

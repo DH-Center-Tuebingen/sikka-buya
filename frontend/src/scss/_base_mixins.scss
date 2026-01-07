@@ -1,0 +1,8 @@
+/**
+Base Mixins can be used inside the 'variables.scss' file.
+They are independent of variables. otherwise there would be a circular dependency.
+**/
+
+@mixin box-padding($size) {
+  padding: $size 1.5 * $size;
+}

@@ -1,15 +1,18 @@
 <template>
   <div class="selectable-list-header">
-    <selection-indicator :selected="selected" :total="total" />
+    <selection-indicator
+:selected="selected"
+:total="total"
+/>
     <h4><slot /></h4>
-    <div class="fill"></div>
+    <div class="fill" />
 
     <list-selection-tools
+      :all-selected="allSelected"
+      :none-selected="noneSelected"
+      :hide-select-all-button="hideSelectAllButton"
       @select-all="$emit('select-all')"
       @unselect-all="$emit('unselect-all')"
-      :allSelected="allSelected"
-      :noneSelected="noneSelected"
-      :hideSelectAllButton="hideSelectAllButton"
     />
   </div>
 </template>

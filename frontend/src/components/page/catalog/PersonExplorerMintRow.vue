@@ -31,7 +31,6 @@ export default {
     tree: Object,
     selectedIssuerMints: Array,
   },
-  methods: {},
   computed: {
     issuerMints() {
       let issuerTree = this.tree.issuerTree;
@@ -56,5 +55,6 @@ export default {
       return list;
     },
   },
+  methods: {},
 };
 </script>

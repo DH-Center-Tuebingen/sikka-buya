@@ -4,22 +4,20 @@
     :class="{ selected }"
   >
     <div class="row">
-
-      <slot name="before" />
+<slot name="before" />
       <div
-        class="checkbox"
         v-if="!noCheckbox"
+        class="checkbox"
       >
         <label @click.stop="checkboxClicked">
           <div
             class="box"
             :class="{ active: selected, disabled: checkboxDisabled }"
-          ></div>
+          />
         </label>
       </div>
       <slot />
-
-    </div>
+</div>
     <div>
       <slot name="beneath" />
     </div>

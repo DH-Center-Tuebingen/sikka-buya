@@ -7,7 +7,7 @@
       :class="{ ['disable-input']: disable }"
       @click.prevent="click"
     >
-      <slot></slot>
+      <slot />
     </router-link>
     <div
       v-else
@@ -15,7 +15,7 @@
       :class="{ ['disable-input']: disable }"
       @click.prevent="click"
     >
-      <slot></slot>
+      <slot />
     </div>
   </div>
 </template>

@@ -2,13 +2,11 @@
     <div class="page">
         <section class="content-wrapper">
             <CMSView 
-                :group="group"
                 :id="id"
+                :group="group"
             />
-
-        </section>
+</section>
     </div>
-
 </template>
 
 <script>
@@ -24,6 +22,7 @@ export default {
         id: {
             type: Number,
             required: false,
+            default: null,
         }
     },
 };

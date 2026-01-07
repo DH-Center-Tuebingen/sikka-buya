@@ -1,5 +1,8 @@
 <template>
-  <router-link class="big-navication-button button" :to="to">
+  <router-link
+class="big-navication-button button"
+:to="to"
+>
     <div class="content">
       <slot />
     </div>
@@ -12,14 +15,14 @@
 import ArrowRight from 'vue-material-design-icons/ArrowRight.vue';
 
 export default {
+  components: {
+    ArrowRight,
+  },
   props: {
     to: {
       type: Object || String,
       required: true,
     },
-  },
-  components: {
-    ArrowRight,
   },
 };
 </script>

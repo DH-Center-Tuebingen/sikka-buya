@@ -2,31 +2,36 @@
   <div class="active-list">
     <data-select-field
       :value="value"
-      @input="(val) => $emit('input', val)"
-      @select="(val) => $emit('select', val)"
-      @dynamic-change="() => $emit('dynamic-change')"
       :error="error"
-      :queryBody="queryBody"
-      :additionalParameters="additionalParameters"
+      :query-body="queryBody"
+      :additional-parameters="additionalParameters"
       :table="table"
       :attribute="attribute"
       :required="required"
       :text="text"
-      :displayTextCallback="displayTextCallback"
+      :display-text-callback="displayTextCallback"
       :query="query"
-      :queryCommand="queryCommand"
+      :query-command="queryCommand"
       :msg="msg"
       :tooltip="tooltip"
       :placeholder="placeholder"
       :unselectable="true"
-      :disableRemoveButton="disableRemoveButton"
+      :disable-remove-button="disableRemoveButton"
+      @input="(val) => $emit('input', val)"
+      @select="(val) => $emit('select', val)"
+      @dynamic-change="() => $emit('dynamic-change')"
     />
     <template v-for="(el, idx) of items">
-      <span v-if="idx > 0" class="item-connection-indicator" :key="'ici-' + idx"
-        >AND</span
-      >
+      <span
+v-if="idx > 0"
+:key="'ici-' + idx"
+class="item-connection-indicator"
+>AND</span>
 
-      <button :key="`active-${el.id}`" @click="() => $emit('remove', el)">
+      <button
+:key="`active-${el.id}`"
+@click="() => $emit('remove', el)"
+>
         {{ el[attribute] }} <CloseThickIcon :size="10" />
       </button>
     </template>

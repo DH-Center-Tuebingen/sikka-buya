@@ -1,26 +1,25 @@
 <template>
     <PropertyFormWrapper
         property="treasure"
-        @submit="property_form_mixin_submit"
-        @cancel="property_form_mixin_cancel"
-        :overwriteRoute="{ name: 'TreasureOverview' }"
+        :overwrite-route="{ name: 'TreasureOverview' }"
         :loading="property_form_mixin_loading"
         :title="property_form_mixin_title"
         :error="property_form_mixin_error"
         :disabled="property_form_mixin_disabled"
         :dirty="property_form_mixin_dirty"
         class="treasure-form"
+        @submit="property_form_mixin_submit"
+        @cancel="property_form_mixin_cancel"
     >
-
         <LabeledInputContainer>
             <template #label>
                 <Locale path="general.name" />
             </template>
 
             <input
-                type="text"
-                v-model="value.name"
                 id="treasure-name-input"
+                v-model="value.name"
+                type="text"
             >
         </LabeledInputContainer>
 
@@ -29,8 +28,8 @@
                 <Locale path="general.color" />
             </template>
             <ColorInput
-                v-model="value.color"
                 id="treasure-color-input"
+                v-model="value.color"
             />
         </LabeledInputContainer>
 
@@ -40,11 +39,10 @@
             </template>
 
             <SimpleFormattedField
-                :allowLinks="true"
-                ref="descriptionField"
                 id="treasure-description-input"
-            >
-            </SimpleFormattedField>
+                ref="descriptionField"
+                :allow-links="true"
+            />
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -54,14 +52,13 @@
 
             <div class="coin-range">
                 <RangeInput
-                    v-model="value.timespan"
                     id="treasure-timespan-input"
+                    v-model="value.timespan"
                 />
-                <Button @click="getCoinRangeFromItems">
+                <ButtonVue @click="getCoinRangeFromItems">
                     <Locale path="form.range_from_items" />
-                </Button>
+                </ButtonVue>
             </div>
-
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -69,11 +66,11 @@
                 <Locale path="general.treasure_spot" />
             </template>
             <LocationInput
-                :interactive="true"
-                :allowCircle="true"
-                :value="value.location"
-                ref="locationInput"
                 id="treasure-location-input"
+                ref="locationInput"
+                :interactive="true"
+                :allow-circle="true"
+                :value="value.location"
                 @update="updateLocation"
             />
         </LabeledInputContainer>
@@ -84,28 +81,27 @@
             </template>
             <div class="tools">
                 <Toggle v-model="autoComplete">
-                    <Locale path="general.auto-complete"></Locale>
+                    <Locale path="general.auto-complete" />
                 </Toggle>
                 <FileUploadButton
                     :loading="importing"
-                    @input="importItems"
                     accept=".csv"
+                    @input="importItems"
                 >
-                    <Locale path="general.import"></Locale>
+                    <Locale path="general.import" />
                 </FileUploadButton>
-                <Button @click="exportItems">
-                    <Locale path="general.export"></Locale>
-                </Button>
+                <ButtonVue @click="exportItems">
+                    <Locale path="general.export" />
+                </ButtonVue>
             </div>
 
             <ErrorMessage :error="importErrors" />
 
             <div class="list-shadow">
                 <form-list
-                    @add="addItem"
                     id="treasure-item-list"
+                    @add="addItem"
                 >
-
                     <TreasureItemForm
                         v-for="(item, index) in value.items"
                         :key="index"
@@ -122,12 +118,11 @@
 
 <script>
 import { Treasure, TreasureItem } from '../../../models/property/treasure';
+import ButtonVue from "@/components/layout/buttons/Button.vue"
 import ErrorMessage from "@/components/ErrorMessage"
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
 import FormList from "@/components/forms/FormList"
 import LabeledInputContainer from "@/components/LabeledInputContainer"
-import List from "@/components/layout/List"
-import LoadingSpinner from "@/components/misc/LoadingSpinner"
 import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
@@ -143,14 +138,12 @@ import ColorInput from '../../forms/ColorInput.vue';
 const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
 
 export default {
-    mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure", overwriteCancelRoute: { name: "TreasureOverview" }})],
     components: {
+        ButtonVue,
         ErrorMessage,
         FileUploadButton,
         FormList,
         LabeledInputContainer,
-        List,
-        LoadingSpinner,
         Locale,
         LocationInput,
         PropertyFormWrapper,
@@ -160,6 +153,7 @@ export default {
         TreasureItemForm,
         ColorInput
     },
+    mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure", overwriteCancelRoute: { name: "TreasureOverview" } })],
     data() {
         return {
             value: {
@@ -271,7 +265,7 @@ export default {
 </script>
 
 
-<style lang="scss" >
+<style lang="scss">
 .treasure-form {
 
     .list-shadow {

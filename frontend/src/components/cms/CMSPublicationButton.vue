@@ -2,8 +2,8 @@
     <HollowButton
         class="cms-publication-button"
         :class="{ published, scheduled: schedule, pending }"
-        @click.native="handleClick"
         :interactive="interactive"
+        @click.native="handleClick"
     >
         <Icon
             type="mdi"
@@ -39,6 +39,10 @@ import { isNumberOrNull } from '../../utils/Validators'
 import Publication from '../../models/publication';
 
 export default {
+    components: {
+        HollowButton,
+        Locale
+    },
     mixins: [iconMixin({
         clock: mdiClockOutline,
         publish: mdiPublish,
@@ -56,20 +60,6 @@ export default {
             type: Number,
             validator: isNumberOrNull
         },
-    },
-    components: {
-        HollowButton,
-        Locale
-    },
-    methods: {
-        handleClick() {
-            const ts = this.publishedTimestamp
-            const lastPublishedTimestamp = this.lastPublishedTimestamp
-
-            if (!this.interactive) return
-            else if (this.published && ts == lastPublishedTimestamp) this.$emit('unpublish')
-            else this.$emit('publish')
-        }
     },
     computed: {
         icon() {
@@ -97,11 +87,24 @@ export default {
         interactive() {
             return !this.pending
         }
+    },
+    methods: {
+        handleClick() {
+            const ts = this.publishedTimestamp
+            const lastPublishedTimestamp = this.lastPublishedTimestamp
+
+            if (!this.interactive) return
+            else if (this.published && ts == lastPublishedTimestamp) this.$emit('unpublish')
+            else this.$emit('publish')
+        }
     }
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 .cms-publication-button {
     color: $blue;
 

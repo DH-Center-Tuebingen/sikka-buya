@@ -1,5 +1,5 @@
 <template>
-  <div :class="`overview ${this.property}-page`">
+  <div :class="`overview ${property}-page`">
     <BackHeader :to="{ name: 'Editor' }" />
     <header>
       <h1>
@@ -9,7 +9,7 @@
         />
       </h1>
 
-      <Button
+      <ButtonVue
         id="create-button"
         @click="create"
       >
@@ -19,37 +19,40 @@
           type="mdi"
         />
         <locale path="form.create" />
-      </Button>
+      </ButtonVue>
     </header>
 
     <SearchField
       v-model="textFilter"
-      :asyncSearch="search"
+      :async-search="search"
     />
     <List
-      @remove="remove"
       :error="listError"
       :loading="loading"
       :items="items"
-      :filteredItems="items"
+      :filtered-items="items"
+      @remove="remove"
     >
       <ListItem
         v-for="item of items"
-        v-bind:key="item.id"
-        :disable="deleteButtonActive"
         :id="item.id"
+        :key="item.id"
+        :disable="deleteButtonActive"
       >
-
-        <slot
+<slot
           name="list-item-before"
           :item="item"
         />
-        <ListItemCell :to="getEditRoute(item)">{{ item.name }}</ListItemCell>
-        <Button
+        <ListItemCell :to="getEditRoute(item)">
+{{ item.name }}
+</ListItemCell>
+        <ButtonVue
           v-for="tool in tools"
           :key="'tool-' + tool"
           @click="() => $emit('tool', tool, { id: item.id })"
-        >{{ $t('editor.' + tool) }}</Button>
+        >
+{{ $t('editor.' + tool) }}
+</ButtonVue>
         <DynamicDeleteButton
           @delete="deleteButtonRemove(item.id)"
           @open="deleteButtonEnable()"
@@ -66,14 +69,13 @@ import List from '../layout/List.vue';
 import Query from '../../database/query.js';
 import BackHeader from '../layout/BackHeader.vue';
 import SearchField from '../layout/SearchField.vue';
-import ListItemIdField from '../layout/list/ListItemIdField.vue';
 
 import ListItemCell from '../layout/list/ListItemCell.vue';
 import ListItem from '../layout/ListItem.vue';
 import { camelCase, snakeCase } from 'change-case';
 
 import DeleteButtonMixin from '../mixins/deletebutton';
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 import Locale from '../cms/Locale.vue';
 
 import IconMixin from "@/components/mixins/icon-mixin"
@@ -85,16 +87,12 @@ export default {
     List,
     BackHeader,
     SearchField,
-    ListItemIdField,
     ListItem,
     ListItemCell,
-    Button,
+    ButtonVue,
     Locale
   },
   mixins: [DeleteButtonMixin, IconMixin({ add: mdiPlus })],
-  created: function () {
-    this.list();
-  },
   props: {
     query: String,
     createPage: String,
@@ -106,6 +104,15 @@ export default {
       required: true,
     },
   },
+  data: function () {
+    return {
+      loading: true,
+      items: [],
+      textFilter: '',
+      searchId: 0,
+      listError: '',
+    };
+  },
   computed: {
     fixedPropertyName: function () {
       return this.propertyName ? this.propertyName : this.property;
@@ -115,14 +122,8 @@ export default {
     },
 
   },
-  data: function () {
-    return {
-      loading: true,
-      items: [],
-      textFilter: '',
-      searchId: 0,
-      listError: '',
-    };
+  created: function () {
+    this.list();
   },
   methods: {
     getEditRoute: function (item) {

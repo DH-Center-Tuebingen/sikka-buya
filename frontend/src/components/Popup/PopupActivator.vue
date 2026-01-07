@@ -4,19 +4,19 @@
       class="popup-target"
       @click.stop.prevent="() => (active = !active)"
     >
-      <slot v-bind:active="active">
+      <slot :active="active">
         <!-- Popup activator / button / text -->
       </slot>
     </div>
     <popup
       :active="active"
-      :targetWidth="targetWidth"
-      :noShadow="noShadow"
+      :target-width="targetWidth"
+      :no-shadow="noShadow"
       @close="closePopup()"
     >
       <slot
         name="popup"
-        v-bind:active="active"
+        :active="active"
       >
         <!-- Popup content -->
       </slot>

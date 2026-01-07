@@ -7,21 +7,21 @@
         class="name"
         :placeholder="$tc('attribute.name')"
         :value="person"
+        :query-command="queryCommand"
         @input="personChanged"
-        :queryCommand="queryCommand"
-      ></DataSelectField>
+      />
       <List
         :title="$tc('property.title')"
-        @add="addTitle"
         :length="titlesLength"
         class="titled-person-title-list"
+        @add="addTitle"
       >
         <ListItem
-          class="list-item"
-          v-for="(title, title_index) in this.titles"
+          v-for="(title, title_index) in titles"
           :key="`title-${title_index}`"
-          @remove="removeTitle(title_index)"
+          class="list-item"
           :object="title"
+          @remove="removeTitle(title_index)"
         >
           <DataSelectField
             table="Title"
@@ -36,16 +36,16 @@
 
       <List
         :title="$tc('property.honorific')"
-        @add="addHonorific"
         :length="honorificsLength"
         class="titled-person-honorific-list"
+        @add="addHonorific"
       >
         <ListItem
-          class="list-item"
           v-for="(honorific, honorific_index) in honorifics"
           :key="`honorific-${honorific_index}`"
-          @remove="removeHonorific(honorific_index)"
+          class="list-item"
           :object="honorific"
+          @remove="removeHonorific(honorific_index)"
         >
           <DataSelectField
             table="honorific"
@@ -85,11 +85,6 @@ export default {
       },
     },
   },
-  created: function () {
-    this.titles.forEach((element) => {
-      element.key = this.buildKey('title');
-    });
-  },
   data: function () {
     return {
       listKey: 0,
@@ -113,6 +108,11 @@ export default {
     honorificsLength: function () {
       return this.honorifics.length;
     },
+  },
+  created: function () {
+    this.titles.forEach((element) => {
+      element.key = this.buildKey('title');
+    });
   },
   methods: {
     buildKey: function (name) {

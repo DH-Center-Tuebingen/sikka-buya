@@ -2,27 +2,27 @@
   <div class="title-form">
     <PropertyFormWrapper
       property="title"
-      @submit="property_form_mixin_submit"
-      @cancel="property_form_mixin_cancel"
       :loading="property_form_mixin_loading"
       :title="property_form_mixin_title"
       :error="property_form_mixin_error"
       :disabled="property_form_mixin_disabled"
       :dirty="property_form_mixin_dirty"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
     >
       <input
         id="title-id"
         v-model="title.id"
         type="hidden"
-      />
+      >
       <input
-        type="text"
         id="title-name"
         v-model="title.name"
+        type="text"
         :placeholder="$tc('attribute.name')"
         autofocus
         required
-      />
+      >
     </PropertyFormWrapper>
   </div>
 </template>

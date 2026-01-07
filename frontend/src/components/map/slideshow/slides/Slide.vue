@@ -4,12 +4,15 @@
     @click.stop.prevent="() => $emit('select')"
   >
     <div
-      class="number-indicator"
       v-if="number"
+      class="number-indicator"
     >
       {{ number }}
     </div>
-    <div class="slide-row-grid" v-if="useSimple">
+    <div
+v-if="useSimple"
+class="slide-row-grid"
+>
       <SlideRow
         v-for="(row, index) in getRows()"
         :key="`slide-row-${index}`"
@@ -18,31 +21,28 @@
         :style="getGridColumns(row.columns)"
       />
     </div>
-    <div class="slide-body" v-else>
+    <div
+v-else
+class="slide-body"
+>
       {{ options.year ? options.year : "-" }}
     </div>
   </div>
 </template>
 
 <script>
-import DotsVerticalIcon from 'vue-material-design-icons/DotsVertical.vue';
-import PlusIcon from 'vue-material-design-icons/Plus.vue';
-import PopupActivator from '../../../Popup/PopupActivator.vue';
 import SlideRow from './SlideRow.vue';
 
 export default {
+  components: {
+    SlideRow
+  },
   props: {
     useSimple: Boolean,
     name: [String, Number],
     number: Number,
     options: Object,
     display: Object,
-  },
-  components: {
-    DotsVerticalIcon,
-    PlusIcon,
-    PopupActivator,
-    SlideRow
   },
   methods: {
     getRows() {

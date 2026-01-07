@@ -2,7 +2,7 @@
   <div class="multi-data-select">
     <div class="content">
       <div class="active-list">
-        <div class="data-select-wrapper placeholder"></div>
+        <div class="data-select-wrapper placeholder" />
 
         <template v-for="(el, index) of active">
           <button
@@ -20,46 +20,46 @@
     </div>
 
     <div
+      v-if="mode"
       class="mode-indicator"
       :class="{ interactive: allowModeChange }"
-      v-if="mode"
       @click="changeMode"
     >
       <Locale :path="`general.${mode.toLowerCase()}`" />
     </div>
 
     <div
+      ref="dataSelectWrapper"
       class="data-select-wrapper"
       @click="showDataSelect"
-      ref="dataSelectWrapper"
     >
       <div class="icon">
         <PlusIcon :size="18" />
       </div>
 
       <data-select-field
+        ref="dataSelect"
         :value="value"
-        @blur="hideDataSelect"
-        @input="(val) => $emit('input', val)"
-        @select="select"
-        @dynamic-change="() => $emit('dynamic-change')"
         :error="error"
-        :queryBody="queryBody"
-        :additionalParameters="additionalParameters"
+        :query-body="queryBody"
+        :additional-parameters="additionalParameters"
         :table="table"
         :attribute="attribute"
         :required="required"
         :text="text"
-        :displayTextCallback="displayTextCallback"
+        :display-text-callback="displayTextCallback"
         :query="query"
-        :queryCommand="queryCommand"
+        :query-command="queryCommand"
         :msg="msg"
         :tooltip="tooltip"
         :placeholder="placeholder"
         :unselectable="true"
-        :disableRemoveButton="disableRemoveButton"
+        :disable-remove-button="disableRemoveButton"
         :style="dataSelectStyles"
-        ref="dataSelect"
+        @blur="hideDataSelect"
+        @input="(val) => $emit('input', val)"
+        @select="select"
+        @dynamic-change="() => $emit('dynamic-change')"
       />
     </div>
   </div>
@@ -69,7 +69,6 @@
 import DataSelectField from './DataSelectField.vue';
 import CloseThickIcon from 'vue-material-design-icons/CloseThick.vue';
 import PlusIcon from 'vue-material-design-icons/Plus.vue';
-import MultiDataSelectAddButton from './MultiDataSelectAddButton.vue';
 import Locale from '../cms/Locale.vue';
 
 export default {
@@ -77,7 +76,6 @@ export default {
     CloseThickIcon,
     PlusIcon,
     DataSelectField,
-    MultiDataSelectAddButton,
     Locale
   },
   props: {
@@ -128,6 +126,19 @@ export default {
       dataSelectVisible: false,
     };
   },
+  computed: {
+    dataSelectStyles() {
+      let style = {
+        display: 'none',
+      };
+
+      if (this.dataSelectVisible) {
+        delete style.display;
+      }
+
+      return style;
+    },
+  },
   created() {
     this.resetValue();
   },
@@ -152,19 +163,6 @@ export default {
     hideDataSelect() {
       this.dataSelectVisible = false;
       this.$refs.dataSelectWrapper.classList.remove('active');
-    },
-  },
-  computed: {
-    dataSelectStyles() {
-      let style = {
-        display: 'none',
-      };
-
-      if (this.dataSelectVisible) {
-        delete style.display;
-      }
-
-      return style;
     },
   },
 };

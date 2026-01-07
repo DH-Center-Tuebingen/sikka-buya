@@ -4,13 +4,15 @@
     :class="classes"
     @click.stop.prevent="toggle"
   >
-    <Tooltip v-if="tooltip">aaaa {{ tooltip }}</Tooltip>
-    <slot v-if="!$slots.active && !$slots.inactive"></slot>
+    <Tooltip v-if="tooltip">
+aaaa {{ tooltip }}
+</Tooltip>
+    <slot v-if="!$slots.active && !$slots.inactive" />
     <template v-if="value">
-      <slot name="active"></slot>
+      <slot name="active" />
     </template>
     <template v-else>
-      <slot name="inactive"></slot>
+      <slot name="inactive" />
     </template>
   </div>
 </template>
@@ -20,6 +22,7 @@ import Tooltip from '../../forms/Tooltip.vue';
 
 export default {
   name: "Toggle",
+  components: { Tooltip },
   props: {
     readonly: Boolean,
     value: {
@@ -28,16 +31,6 @@ export default {
     },
     tooltip: String
   },
-  methods: {
-    toggle: function () {
-      this.$emit("input", !this.value);
-    },
-    stop(event) {
-      event.stopPropagation();
-      event.preventDefault();
-    },
-  },
-  components: { Tooltip },
   computed: {
     classes() {
       return {
@@ -45,6 +38,15 @@ export default {
         "button": !this.readonly,
         ["toggle-button"]: !this.readonly
       };
+    },
+  },
+  methods: {
+    toggle: function () {
+      this.$emit("input", !this.value);
+    },
+    stop(event) {
+      event.stopPropagation();
+      event.preventDefault();
     },
   }
 };

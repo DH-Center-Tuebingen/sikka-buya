@@ -1,7 +1,7 @@
 <template>
     <span
-        class="tooltip"
         ref="tooltip"
+        class="tooltip"
     >
         <slot />
     </span>

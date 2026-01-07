@@ -1,12 +1,21 @@
 <template>
   <div class="segmented-row">
-    <div class="segment left" v-if="this.$slots.left">
+    <div
+v-if="$slots.left"
+class="segment left"
+>
       <slot name="left" />
     </div>
-    <div class="segment center" v-if="this.$slots.center">
+    <div
+v-if="$slots.center"
+class="segment center"
+>
       <slot name="center" />
     </div>
-    <div class="segment right" v-if="this.$slots.right">
+    <div
+v-if="$slots.right"
+class="segment right"
+>
       <slot name="right" />
     </div>
   </div>

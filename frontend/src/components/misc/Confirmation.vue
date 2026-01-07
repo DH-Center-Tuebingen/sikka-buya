@@ -5,8 +5,16 @@
       <slot />
     </div>
     <footer>
-      <div class="ok button big-button" @click="$emit('result', true)">Ok</div>
-      <div class="cancel button big-button" @click="$emit('result', false)">
+      <div
+class="ok button big-button"
+@click="$emit('result', true)"
+>
+Ok
+</div>
+      <div
+class="cancel button big-button"
+@click="$emit('result', false)"
+>
         Abbrechen
       </div>
     </footer>
@@ -15,7 +23,7 @@
 
 <script>
 export default {
-  name: 'confirmation',
+  name: 'Confirmation',
 };
 </script>
 <style lang="scss" scoped>

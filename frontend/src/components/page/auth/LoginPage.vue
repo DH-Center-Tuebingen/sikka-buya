@@ -11,8 +11,8 @@
 import LoginForm from '../../auth/LoginForm.vue';
 
 export default {
-  components: { LoginForm },
   name: 'LoginPage',
+  components: { LoginForm },
   methods: {
     toEditorPage: function () {
       this.$router.push({ name: 'Editor' });

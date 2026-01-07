@@ -4,10 +4,10 @@
       :value="$store.state.editmode"
       @input="() => $store.commit('toggleEditMode')"
     >
-      <template v-slot:active>
+      <template #active>
         ON
       </template>
-      <template v-slot:inactive>
+      <template #inactive>
         OFF
       </template>
     </toggle>
@@ -15,26 +15,30 @@
     <span>
       <locale
         v-for="permission of $store.getters.permissions"
-        :path="'user.permission.' + permission"
         :key="'permission-' + permission"
+        :path="'user.permission.' + permission"
       />
     </span>
 
     <div class="toolbox">
-      <Button
+      <ButtonVue
         :to="{ name: 'Editor' }"
         class="editor-button borderless"
-      ><account-icon :size="IconSize.Normal" /></Button>
-      <Button
+      >
+<account-icon :size="IconSize.Normal" />
+</ButtonVue>
+      <ButtonVue
         class="logout-button borderless"
         @click="logout"
-      ><logout-variant-icon :size="IconSize.Normal" /></Button>
+      >
+<logout-variant-icon :size="IconSize.Normal" />
+</ButtonVue>
     </div>
   </div>
 </template>
 
 <script>
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 import Toggle from '../layout/buttons/Toggle.vue';
 import Locale from '../cms/Locale.vue';
 
@@ -45,7 +49,7 @@ import AccountIcon from 'vue-material-design-icons/Account.vue';
 import LogoutVariantIcon from 'vue-material-design-icons/LogoutVariant.vue';
 
 export default {
-  components: { Button, AccountIcon, Locale, LogoutVariantIcon, Toggle },
+  components: { ButtonVue, AccountIcon, Locale, LogoutVariantIcon, Toggle },
   mixins: [AuthMixin],
   computed: {
     // permissions() {

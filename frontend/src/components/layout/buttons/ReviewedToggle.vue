@@ -1,7 +1,14 @@
 <template>
-  <toggle :value="value" @input="$emit('input', $event)">
-    <template v-slot:active><Check /></template>
-    <template v-slot:inactive><TextBoxSearch /></template>
+  <toggle
+:value="value"
+@input="$emit('input', $event)"
+>
+    <template #active>
+<Check />
+</template>
+    <template #inactive>
+<TextBoxSearch />
+</template>
   </toggle>
 </template>
 

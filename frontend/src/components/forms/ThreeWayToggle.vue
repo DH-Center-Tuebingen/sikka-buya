@@ -1,26 +1,37 @@
 <template>
   <div class="three-way-toggle">
-    <Button @click="select(false)" class="no" :class="isActive(false)">
+    <ButtonVue
+class="no"
+:class="isActive(false)"
+@click="select(false)"
+>
       <Close />
-    </Button>
-    <Button @click="select(null)" :class="isActive(null)">
+    </ButtonVue>
+    <ButtonVue
+:class="isActive(null)"
+@click="select(null)"
+>
       <SlashForward />
-    </Button>
-    <Button @click="select(true)" class="yes" :class="isActive(true)">
+    </ButtonVue>
+    <ButtonVue
+class="yes"
+:class="isActive(true)"
+@click="select(true)"
+>
       <Check />
-    </Button>
+    </ButtonVue>
   </div>
 </template>
 
 <script>
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 
 import Check from 'vue-material-design-icons/Check.vue';
 import Close from 'vue-material-design-icons/Close.vue';
 import SlashForward from 'vue-material-design-icons/SlashForward.vue';
 
 export default {
-  components: { Button, Check, Close, SlashForward },
+  components: { ButtonVue, Check, Close, SlashForward },
   props: {
     invert: Boolean,
     value: {

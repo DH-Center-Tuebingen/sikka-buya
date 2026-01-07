@@ -1,6 +1,6 @@
 <template>
   <div class="flex row">
-    <slot></slot>
+    <slot />
   </div>
 </template>
 

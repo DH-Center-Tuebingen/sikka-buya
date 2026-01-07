@@ -22,14 +22,14 @@
 
     <template #footer>
       <segmented-row>
-        <template v-slot:right>
+        <template #right>
           <div>
             <async-button
+              id="submit-button"
               ref="loginBtn"
-              @click="buttonLogin"
               class="colored big-button"
               :pending="buttonDisabled"
-              id="submit-button"
+              @click="buttonLogin"
             >
               Anmelden
             </async-button>
@@ -51,9 +51,9 @@ import SegmentedRow from '../layout/SegmentedRow.vue';
 import AuthMixin from '../mixins/auth';
 
 export default {
+  name: 'LoginForm',
   components: { Box, UserForm, AsyncButton, ErrorMessage, SegmentedRow },
   mixins: [AuthMixin],
-  name: 'LoginForm',
   data: function () {
     return {
       email: '',

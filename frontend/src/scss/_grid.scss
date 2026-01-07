@@ -1,3 +1,5 @@
+@use "mixins";
+
 .force-grid {
     display: grid !important;
 }
@@ -14,7 +16,7 @@
     grid-template-columns: 1fr 1fr;
 }
 
-@include media-tablet {
+@include mixins.media-tablet {
     .grid-d-2 {
         grid-template-columns: 1fr;
 

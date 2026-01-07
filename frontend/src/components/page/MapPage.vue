@@ -5,15 +5,14 @@
     </transition>
     <div class="map-view-container">
       <map-view
+        ref="map"
         class="mapview"
         :location="mapSettings.location"
         :zoom="mapSettings.zoom"
         :boundaries="boundaries"
-        ref="map"
         @ready="mapChanged"
         @moved="mapMoved"
-      >
-      </map-view>
+      />
 
       <router-view
         :map="map"

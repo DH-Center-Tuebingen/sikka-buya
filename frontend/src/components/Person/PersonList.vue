@@ -29,6 +29,11 @@ export default {
       default: () => ['name'],
     }
   },
+  computed: {
+    missingText() {
+      return StringUtils.missingText;
+    },
+  },
   methods: {
     cascadeName(person) {
       let name = null
@@ -42,11 +47,6 @@ export default {
       }
       return name
     }
-  },
-  computed: {
-    missingText() {
-      return StringUtils.missingText;
-    },
   },
 };
 </script>

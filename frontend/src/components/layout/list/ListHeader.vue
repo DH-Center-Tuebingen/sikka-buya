@@ -1,7 +1,7 @@
 <template>
   <list-item class="list-item-header disable-input">
-    <h4><slot /></h4
-  ></list-item>
+    <h4><slot /></h4>
+</list-item>
 </template>
 
 <script>

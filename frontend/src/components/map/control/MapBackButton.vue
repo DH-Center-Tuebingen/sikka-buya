@@ -1,6 +1,6 @@
 <template>
   <nav>
-    <Button
+    <ButtonVue
       id="back-button"
       class="map-button"
       :to="{ name: 'Home' }"
@@ -10,16 +10,16 @@
         class="flip"
       />
       <Locale path="routes.home" />
-    </Button>
+    </ButtonVue>
   </nav>
 </template>
 
 <script>
 import Locale from '../../cms/Locale.vue';
 import ExitToApp from 'vue-material-design-icons/ExitToApp.vue';
-import Button from '../../layout/buttons/Button.vue';
+import ButtonVue from '../../layout/buttons/Button.vue';
 
-export default { components: { ExitToApp, Locale, Button } };
+export default { components: { ExitToApp, Locale, ButtonVue } };
 </script>
 
 <style></style>

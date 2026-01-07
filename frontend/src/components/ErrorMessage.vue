@@ -1,50 +1,59 @@
 <template>
-  <div class="error-message" v-if="error">
-    <AlertCircle v-if="icon" class="icon" />
-    <p
-      v-for="(error, idx) in errorMessages"
-      :key="'error-' + idx"
-      class="error"
+    <div
+        v-if="errorMessages && errorMessages.length > 0"
+        class="error-message"
     >
-      {{ error }}
-    </p>
-  </div>
+        <AlertCircle
+            v-if="icon"
+            class="icon"
+        />
+        <p
+            v-for="(err, idx) in errorMessages"
+            :key="'error-' + idx"
+            class="error"
+        >
+            {{ err }}
+        </p>
+    </div>
 </template>
 
 <script>
 import AlertCircle from 'vue-material-design-icons/AlertCircle';
 export default {
-  components: { AlertCircle },
-  props: {
-    icon: {
-      type: Boolean,
-      default: false,
+    components: { AlertCircle },
+    props: {
+        icon: {
+            type: Boolean,
+            default: false,
+        },
+        error: {
+            required: true,
+            type: [String, Array],
+        },
     },
-    error: {
-      required: true,
-      type: [String, Array],
+    computed: {
+        errorMessages() {
+            return Array.isArray(this.error) ? this.error : [this.error];
+        },
     },
-  },
-  computed: {
-    errorMessages() {
-      return Array.isArray(this.error) ? this.error : [this.error];
-    },
-  },
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+    lang="scss"
+    scoped
+>
 .error-message {
-  // display: flex;
-  // align-items: center;
-  // padding: $padding;
-  // background-color: $red;
-  // border: 1px solid $red-dark;
-  // color: $white;
-  // border-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: $padding;
+    background-color: $red;
+    border: 1px solid $dark-red;
+    color: $white;
+    border-radius: 5px;
 }
 
 .icon {
-  margin-right: $padding;
+    margin-right: $padding;
 }
 </style>

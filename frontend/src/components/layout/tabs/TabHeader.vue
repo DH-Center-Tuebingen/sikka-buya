@@ -1,5 +1,8 @@
 <template>
-    <div class="tab-header" @click="$emit('select')">
+    <div
+class="tab-header"
+@click="$emit('select')"
+>
         <slot />
     </div>
 </template>

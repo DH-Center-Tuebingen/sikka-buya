@@ -1,15 +1,16 @@
 <template>
   <div class="map-nav">
-    <div></div>
+    <div />
     <div class="links">
       <!-- <div class="title">Maps</div> -->
 
       <router-link
         v-for="route of routes"
-        :to="{ name: route.routeName }"
         :key="route.routeName"
-        >{{ route.displayName }}</router-link
-      >
+        :to="{ name: route.routeName }"
+        >
+{{ route.displayName }}
+</router-link>
       <!-- <router-link :class="{active: isRouteActive}" :to="{ name: 'MaterialMap' }">Additional Maps</router-link> -->
 
       <!-- <router-link

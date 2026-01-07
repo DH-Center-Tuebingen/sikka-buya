@@ -1,6 +1,12 @@
 <template>
-  <div class="collapsible" :class="collapsibleClasses">
-    <header class="collapsible-header" @click="toggleCollapse">
+  <div
+class="collapsible"
+:class="collapsibleClasses"
+>
+    <header
+class="collapsible-header"
+@click="toggleCollapse"
+>
       <slot name="header" />
 
       <div class="icon">
@@ -9,7 +15,10 @@
       </div>
     </header>
 
-    <div v-if="!collapsed" class="collapsible-content">
+    <div
+v-if="!collapsed"
+class="collapsible-content"
+>
       <slot />
     </div>
   </div>
@@ -18,17 +27,20 @@
 <script>
 import ChevronUp from 'vue-material-design-icons/ChevronUp';
 import ChevronDown from 'vue-material-design-icons/ChevronDown';
-import AlertCircleOutline from 'vue-material-design-icons/AlertCircleOutline';
 
 export default {
   name: 'Collapsible',
   components: {
     ChevronUp,
     ChevronDown,
-    AlertCircleOutline,
   },
   props: {
     collapsed: Boolean,
+  },
+  computed: {
+    collapsibleClasses() {
+      return this.collapsed ? 'collapsed' : 'open';
+    },
   },
   methods: {
     toggleCollapse: function () {
@@ -41,15 +53,10 @@ export default {
       }
     },
   },
-  computed: {
-    collapsibleClasses() {
-      return this.collapsed ? 'collapsed' : 'open';
-    },
-  },
 };
 </script>
 
-<style lang="scss" >
+<style lang="scss">
 .collapsible header {
   h4 {
     margin: $small-padding 0 !important;

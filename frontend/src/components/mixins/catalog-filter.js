@@ -1,4 +1,4 @@
-import { FilterType, filterNameMap } from "../../config/catalog_filter";
+import { FilterType, getFilterConfigNameMap } from "../../config/catalog_filter";
 import URLParams from "../../utils/URLParams";
 import { camelCase } from "change-case";
 
@@ -50,6 +50,7 @@ export default function (storage, urlParamsConfig) {
 
                     if (filterNameMap[objectKey]) {
                         if (!data[objectKey]) {
+                            const filterNameMap = getFilterConfigNameMap()
                             switch (filterNameMap[objectKey].type) {
                                 case FilterType.text:
                                     data[objectKey] = URLParams.get(queryKey, "string")

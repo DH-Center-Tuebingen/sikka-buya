@@ -1,5 +1,7 @@
+@use "../variables";
+
 .leaflet-popup {
-    font-family: $font;
+    font-family: variables.$font;
     min-width: 250px;
 
     .body {
@@ -22,13 +24,13 @@
         }
 
         &:last-child {
-            padding-bottom: $padding * 2;
+            padding-bottom: variables.$padding * 2;
         }
     }
 
     .leaflet-popup-content-wrapper {
         padding: 0;
-        border-radius: $border-radius;
+        border-radius: variables.$border-radius;
     }
 
     .leaflet-popup-content {
@@ -36,7 +38,7 @@
         min-height: 34px;
 
         > *:not(hr) {
-            padding: $padding 2 * $padding $padding 2 * $padding;
+            padding: variables.$padding 2 * variables.$padding variables.$padding 2 * variables.$padding;
         }
 
         > :last-child {
@@ -45,11 +47,11 @@
     }
 
     a.leaflet-popup-close-button {
-        color: $gray;
+        color: variables.$gray;
         opacity: 1;
         font-size: 1.5em !important;
         padding: 4px !important;
-        font-family: $font;
+        font-family: variables.$font;
         // padding: 3px !important;
     }
 
@@ -82,11 +84,11 @@
     }
 
     .catalog-link {
-        color: $primary-color;
+        color: variables.$primary-color;
         padding: 3px 5px;
         font-size: 0.75rem;
         font-weight: bold;
-        border: 1px solid $primary-color;
+        border: 1px solid variables.$primary-color;
         border-radius: 5px;
     }
 
@@ -111,15 +113,15 @@
         // margin-top: calc(#{$padding * -2} - 2px);
         // margin-right: calc(#{$padding * -2} - 2px);
 
-        padding: $padding $padding * 2;
+        padding: variables.$padding variables.$padding * 2;
         padding-right: 34px;
 
-        border-top-right-radius: $border-radius;
-        border-top-left-radius: $border-radius;
+        border-top-right-radius: variables.$border-radius;
+        border-top-left-radius: variables.$border-radius;
         // min-width: 200px;
 
         .uncertain-info {
-            color: $black;
+            color: variables.$black;
             font-style: italic;
         }
     }

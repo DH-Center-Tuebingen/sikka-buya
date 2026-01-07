@@ -3,11 +3,11 @@
     <div class="stage">
       <timeline-slider
         :value="value"
-        @input="input"
         :min="min"
         :max="max"
-        :labeledValue="10"
+        :labeled-value="10"
         :subdivisions="2"
+        @input="input"
       />
     </div>
   </div>

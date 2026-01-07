@@ -1,6 +1,5 @@
 <template>
     <div class="treasure-item-form">
-
         <div class="box index-box">
             <span>
                 {{ index }}
@@ -13,10 +12,10 @@
                 </template>
 
                 <DataSelect
+                    v-model="value.mintRegion"
                     class="mint-region-data-select"
                     table="mint_region"
                     :debug="debug"
-                    v-model="value.mintRegion"
                 />
             </LabeledInputContainer>
 
@@ -26,9 +25,9 @@
                 </template>
 
                 <input
+                    v-model="value.mintAsOnCoin"
                     class="mint-as-on-coin-input"
                     type="text"
-                    v-model="value.mintAsOnCoin"
                 >
             </LabeledInputContainer>
 
@@ -39,10 +38,10 @@
                 </template>
 
                 <DataSelect
+                    v-model="value.epoch"
                     class="epoch-data-select"
                     table="epoch"
                     :debug="debug"
-                    v-model="value.epoch"
                 />
             </LabeledInputContainer>
 
@@ -134,22 +133,19 @@
             </LabeledInputContainer>
 
             <LabeledInputContainer>
-
                 <template #label>
                     <span>
                         <Locale path="property.weight" /> (g)
                     </span>
-
-
                 </template>
 
                 <input
+                    id=""
+                    v-model="value.weight"
                     class="weight-input"
                     type="number"
                     step="0.01"
                     name=""
-                    id=""
-                    v-model="value.weight"
                 >
             </LabeledInputContainer>
 
@@ -160,9 +156,10 @@
                     </template>
 
                     <DataSelect
+                        v-model="value.coinType"
                         table="coinType"
                         attribute="projectId"
-                        dataPath="coinType.types"
+                        data-path="coinType.types"
                         query="query search($text: String){
                 coinType(filters: {projectId:$text}) {
                     types{
@@ -184,41 +181,36 @@
                     }
                 }
             }"
-                        @select="(value, data) => this.$emit('typeChanged', data)"
-                        v-model="value.coinType"
                         class="coin-type-data-select"
-                    >
-
-                    </DataSelect>
+                        @select="(value, data) => $emit('typeChanged', data)"
+                    />
                 </LabeledInputContainer>
 
                 <LabeledInputContainer>
-
                     <template #label>
                         <Locale path="property.year_of_mint" />
                     </template>
 
                     <input
+                        id=""
+                        v-model="value.year"
                         class="year-input"
                         type="number"
                         name=""
-                        id=""
-                        v-model="value.year"
                     >
                 </LabeledInputContainer>
 
                 <LabeledInputContainer>
-
                     <template #label>
                         <Locale path="property.year_of_mint_uncertain" />
                     </template>
 
                     <input
+                        id=""
+                        v-model="value.uncertainYear"
                         class="year-uncertain-input"
                         type="text"
                         name=""
-                        id=""
-                        v-model="value.uncertainYear"
                     >
                 </LabeledInputContainer>
 
@@ -231,9 +223,9 @@
                     </template>
 
                     <DataSelect
+                        v-model="value.nominal"
                         table="nominal"
                         :debug="debug"
-                        v-model="value.nominal"
                         class="nominal-data-select"
                     />
                 </LabeledInputContainer>
@@ -243,26 +235,24 @@
                         <Locale path="property.material" />
                     </template>
                     <DataSelect
+                        v-model="value.material"
                         table="material"
                         :debug="debug"
-                        v-model="value.material"
                         class="material-data-select"
                     />
                 </LabeledInputContainer>
-
             </div>
 
             <LabeledInputContainer>
-
                 <template #label>
                     <Locale path="property.count" />
                 </template>
 
                 <input
-                    type="number"
-                    name=""
                     id=""
                     v-model="value.count"
+                    type="number"
+                    name=""
                     class="count-input"
                 >
             </LabeledInputContainer>
@@ -273,7 +263,6 @@
                 @delete="$emit('delete')"
             />
         </div>
-
     </div>
 </template>
 
@@ -288,10 +277,6 @@ import LabeledInputContainer from "@/components/LabeledInputContainer"
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked } from '@mdi/js';
 
 export default {
-    mixins: [IconMixin({
-        unchecked: mdiCheckboxBlankOutline,
-        checked: mdiCheckboxMarked
-    })],
     components: {
         DataSelect,
         DynamicDeleteButton,
@@ -299,6 +284,10 @@ export default {
         Locale,
         Toggle,
     },
+    mixins: [IconMixin({
+        unchecked: mdiCheckboxBlankOutline,
+        checked: mdiCheckboxMarked
+    })],
     props: {
         index: {
             type: Number,
@@ -345,7 +334,10 @@ export default {
 </style>
 
 
-<style lang="scss" scoped>
+<style
+    lang="scss"
+    scoped
+>
 .treasure-item-form {
     display: flex;
 }

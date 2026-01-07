@@ -2,8 +2,7 @@
   <div
     class="color-indicator"
     :style="style"
-  >
-  </div>
+  />
 </template>
 
 <script>

@@ -1,27 +1,27 @@
 <template>
   <div
-    class="popup-anchor"
     v-if="active"
+    class="popup-anchor"
     :class="{ ['no-shadow']: noShadow }"
   >
     <div
-      class="popup-translator"
       ref="translator"
+      class="popup-translator"
       :style="{ width: targetWidth + 'px' }"
     >
       <div
-        class="popup"
         ref="popup"
+        class="popup"
         @click.stop
       >
         <slot />
-        <Button
+        <ButtonVue
           class="close-button"
-          :contentButton="true"
+          :content-button="true"
           @click.native.stop="close"
         >
           <CloseButton :size="16" />
-        </Button>
+        </ButtonVue>
       </div>
     </div>
   </div>
@@ -29,13 +29,13 @@
 
 <script>
 import CloseButton from 'vue-material-design-icons/Close.vue';
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 
 export default {
   name: 'Popup',
   components: {
     CloseButton,
-    Button,
+    ButtonVue,
   },
   props: {
     active: Boolean,

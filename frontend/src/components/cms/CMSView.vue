@@ -19,9 +19,9 @@
         </header>
 
         <Info
+            v-if="!exists"
             :always-show="true"
             type="warning"
-            v-if="!exists"
             style="margin-top: 1rem;"
         >
             <locale :path="'cms.message.page_not_found'" />
@@ -29,42 +29,37 @@
         <div v-else>
             <component
                 :is="headingTag"
-                class="cms-title"
                 v-if="isPresent('title')"
-            >{{ page.title }}</component>
+                class="cms-title"
+            >
+                {{ page.title }}
+            </component>
             <p
-                class="cms-subtitle"
                 v-if="isPresent('subtitle')"
-            >{{ page.subtitle }}</p>
-
+                class="cms-subtitle"
+            >
+                {{ page.subtitle }}
+            </p>
+            <!-- eslint-disable vue/no-v-html -->
             <p
                 v-if="isPresent('body')"
                 class="cms-body"
                 v-html="page.body"
-            ></p>
+            />
+            <!-- eslint-enable vue/no-v-html -->
         </div>
     </div>
 </template>
 
 <script>
-import Button from '../layout/buttons/Button.vue';
 import CMSPage from '../../models/CMSPage';
 import CMSMixin from '../mixins/cms-mixin';
 import Locale from './Locale.vue';
 import Info from '../forms/Info.vue';
 
 export default {
-    components: { Button, Info, Locale },
+    components: { Info, Locale },
     mixins: [CMSMixin],
-    mounted() {
-        this.init();
-    },
-    data() {
-        return {
-            page: new CMSPage(),
-            ready: false,
-        };
-    },
     props: {
         headingTag: {
             type: String,
@@ -82,6 +77,20 @@ export default {
         exclude: { type: Array, default: () => [] },
         createText: String,
         editText: String
+    },
+    data() {
+        return {
+            page: new CMSPage(),
+            ready: false,
+        };
+    },
+    computed: {
+        pageMissing() {
+            return (this.ready && this.page.id === null) && this.$store.getters.isEditableByWriter
+        }
+    },
+    mounted() {
+        this.init();
     },
     methods: {
         async init() {
@@ -104,16 +113,14 @@ export default {
         isExcluded(key) {
             return this.exclude.length > 0 ? this.exclude.includes(key) : false
         }
-    },
-    computed: {
-        pageMissing() {
-            return (this.ready && this.page.id === null) && this.$store.getters.isEditableByWriter
-        }
     }
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 header {
     display: flex;
     justify-content: flex-end;

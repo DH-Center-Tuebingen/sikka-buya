@@ -1,13 +1,23 @@
 <template>
   <div class="color-input">
-    <input type="text" :value="hexValue" @input="textInput" maxlength="6" />
+    <input
+type="text"
+:value="hexValue"
+maxlength="6"
+@input="textInput"
+>
     <label
       for="color"
       class="color-preview"
       :style="{ backgroundColor: fixedValue }"
     >
       <span v-if="value == null">Keine Farbe Ausgewählt</span>
-      <input id="color" :value="fixedValue" type="color" @input="input" />
+      <input
+id="color"
+:value="fixedValue"
+type="color"
+@input="input"
+>
     </label>
   </div>
 </template>
@@ -16,6 +26,16 @@
 export default {
   props: {
     value: String,
+  },
+  computed: {
+    hexValue() {
+      return this.value ? this.value.substr(1) : '';
+    },
+    fixedValue() {
+      return this.value
+        ? `#${this.value.substr(1, 6).padEnd(6, '0')}`
+        : '#eeeeee';
+    },
   },
   methods: {
     input(event) {
@@ -26,16 +46,6 @@ export default {
     },
     updateValue(value) {
       this.$emit('input', value);
-    },
-  },
-  computed: {
-    hexValue() {
-      return this.value ? this.value.substr(1) : '';
-    },
-    fixedValue() {
-      return this.value
-        ? `#${this.value.substr(1, 6).padEnd(6, '0')}`
-        : '#eeeeee';
     },
   },
 };

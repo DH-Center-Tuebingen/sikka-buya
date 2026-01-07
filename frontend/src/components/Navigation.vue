@@ -1,18 +1,30 @@
 <template>
-  <header class="navigation" :class="{ minimized }">
+  <header
+class="navigation"
+:class="{ minimized }"
+>
     <div class="content-wrapper">
       <div class="brand">
-        <router-link :to="{ name: 'Home' }" v-if="!hideLogo">
-          <img src="/image/logos/sikka-buya-logo.svg" alt="" />
+        <router-link
+v-if="!hideLogo"
+:to="{ name: 'Home' }"
+>
+          <img
+src="/image/logos/sikka-buya-logo.svg"
+alt=""
+>
         </router-link>
       </div>
-      <div class="nav-menu" :class="{ active: active }">
+      <div
+class="nav-menu"
+:class="{ active: active }"
+>
         <nav>
           <ul>
             <li
-              class="button debug-fill"
-              id="debug-notification"
               v-if="$store.state.debug"
+              id="debug-notification"
+              class="button debug-fill"
               @click="() => $store.commit('disableDebugging')"
             >
               Entwickler Modus Aktiv!
@@ -22,7 +34,11 @@
               :key="`nav-item-${index}`" 
             >
               <router-link :to="item.target">
-                <Locale :path="item.name" :count="item.count" /></router-link>
+                <Locale
+:path="item.name"
+:count="item.count"
+/>
+</router-link>
             </li>
           </ul>
         </nav>
@@ -31,9 +47,12 @@
           <div class="languages">DE</div>
         </div> -->
 
-        <div class="nav-toggle" @click="toggleMenu()">
-          <Close v-if="active" />
-          <Menu v-else />
+        <div
+class="nav-toggle"
+@click="toggleMenu()"
+>
+          <CloseIcon v-if="active" />
+          <MenuIcon v-else />
         </div>
       </div>
     </div>
@@ -41,10 +60,8 @@
 </template>
 
 <script>
-import AccountShield from 'vue-material-design-icons/ShieldAccount';
-
-import Menu from 'vue-material-design-icons/Menu';
-import Close from 'vue-material-design-icons/Close';
+import MenuIcon from 'vue-material-design-icons/Menu';
+import CloseIcon from 'vue-material-design-icons/Close';
 
 import Auth from '../utils/Auth';
 import Locale from './cms/Locale.vue';
@@ -52,9 +69,8 @@ import Locale from './cms/Locale.vue';
 export default {
   name: 'Navigation',
   components: {
-    AccountShield,
-    Menu,
-    Close,
+    MenuIcon,
+    CloseIcon,
     Locale
 },
   props: {
@@ -81,19 +97,6 @@ export default {
       ],
     };
   },
-  methods: {
-    toggleMenu: function () {
-      this.active = !this.active;
-    },
-  },
-  mounted: function () {
-    this.minimized = this.$route.meta.smallNav ? true : false;
-  },
-  watch: {
-    $route(to, from) {
-      this.minimized = to.meta.smallNav ? true : false;
-    },
-  },
   computed: {
     version: function () {
       return this.$store.state.version;
@@ -109,6 +112,19 @@ export default {
     },
     loggedIn: function () {
       return this.$store.getters.loggedIn;
+    },
+  },
+  watch: {
+    $route(to, from) {
+      this.minimized = to.meta.smallNav ? true : false;
+    },
+  },
+  mounted: function () {
+    this.minimized = this.$route.meta.smallNav ? true : false;
+  },
+  methods: {
+    toggleMenu: function () {
+      this.active = !this.active;
     },
   },
 };
@@ -247,7 +263,7 @@ a {
     background-color: $primary-color;
 
     &:hover {
-      background-color: lighten($primary-color, 10);
+      background-color: color.adjust($color: $primary-color, $lightness: 10%);
     }
 
     padding: math.div($padding, 2) $padding;
@@ -273,7 +289,7 @@ a {
       color: $primary-color;
 
       &:hover {
-        color: darken($primary-color, 15%);
+        color: color.adjust($color: $primary-color, $lightness: -15%);
         background-color: transparent;
       }
     }

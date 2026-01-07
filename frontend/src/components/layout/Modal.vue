@@ -1,7 +1,14 @@
 <template>
-  <div v-if="active" class="modal" @click="close">
-    <div class="modal-content" @click.stop="">
-      <slot></slot>
+  <div
+v-if="active"
+class="modal"
+@click="close"
+>
+    <div
+class="modal-content"
+@click.stop=""
+>
+      <slot />
     </div>
   </div>
 </template>

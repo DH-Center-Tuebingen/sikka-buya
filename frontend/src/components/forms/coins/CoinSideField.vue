@@ -8,7 +8,10 @@
         {{ prefix }}
         <Locale path="property.field_text" />
       </template>
-      <SimpleFormattedField class="field-text" ref="fieldTextField" />
+      <SimpleFormattedField
+ref="fieldTextField"
+class="field-text"
+/>
     </LabeledInputContainer>
 
     <LabeledInputContainer>
@@ -16,7 +19,10 @@
         {{ prefix }}
         <Locale path="property.inner_inscript" />
       </template>
-      <SimpleFormattedField class="inner-inscript" ref="innerInscriptField" />
+      <SimpleFormattedField
+ref="innerInscriptField"
+class="inner-inscript"
+/>
     </LabeledInputContainer>
 
     <LabeledInputContainer>
@@ -25,8 +31,8 @@
         <Locale path="property.intermediate_inscript" />
       </template>
       <SimpleFormattedField
-        class="intermediate-inscript"
         ref="intermediateInscriptField"
+        class="intermediate-inscript"
       />
     </LabeledInputContainer>
 
@@ -35,7 +41,10 @@
         {{ prefix }}
         <Locale path="property.outer_inscript" />
       </template>
-      <SimpleFormattedField class="outer-inscript" ref="outerInscriptField" />
+      <SimpleFormattedField
+ref="outerInscriptField"
+class="outer-inscript"
+/>
     </LabeledInputContainer>
 
     <LabeledInputContainer>
@@ -43,7 +52,10 @@
         {{ prefix }}
         <Locale path="property.misc" />
       </template>
-      <SimpleFormattedField class="misc" ref="miscField" />
+      <SimpleFormattedField
+ref="miscField"
+class="misc"
+/>
     </LabeledInputContainer>
   </div>
 </template>
@@ -56,11 +68,8 @@ import SimpleFormattedField from '../SimpleFormattedField.vue';
 import Locale from '../../cms/Locale.vue';
 
 export default {
-  components: { LabeledInputContainer, Heading, SimpleFormattedField, Locale },
   name: 'CoinSideField',
-  data: function () {
-    return {};
-  },
+  components: { LabeledInputContainer, Heading, SimpleFormattedField, Locale },
   props: {
     title: {
       type: String,
@@ -69,6 +78,9 @@ export default {
       type: String,
       default: '',
     },
+  },
+  data: function () {
+    return {};
   },
   methods: {
     setFieldContent({

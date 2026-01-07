@@ -4,8 +4,8 @@
         :class="{ closed: !active }"
     >
         <div
-            class="drawer-content"
             v-show="active"
+            class="drawer-content"
         >
             <slot>
                 <!-- Drawer content -->
@@ -16,11 +16,6 @@
 
 <script>
 export default {
-    mounted() {
-        this.$nextTick(() => {
-            this.$el.style.transition = `height ${this.transitionTime}ms`;
-        });
-    },
     props: {
         active: { type: Boolean, required: true },
         height: { type: Number, default: 100 },
@@ -29,6 +24,11 @@ export default {
             default: 300,
         },
 
+    },
+    mounted() {
+        this.$nextTick(() => {
+            this.$el.style.transition = `height ${this.transitionTime}ms`;
+        });
     },
 };
 </script>

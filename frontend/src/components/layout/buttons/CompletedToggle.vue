@@ -6,15 +6,14 @@
     :value="toggleValue"
     @input="clicked"
   >
-
-    <template v-slot:active>
+<template #active>
       <component
         :is="icon"
         :size="18"
         class="active"
       />
     </template>
-    <template v-slot:inactive>
+    <template #inactive>
       <component
         :is="icon"
         :size="18"
@@ -37,16 +36,16 @@ export default {
     value: Boolean,
     readonly: Boolean,
   },
-  methods: {
-    clicked(event) {
-      if (!this.readonly) this.$emit('input', event)
-    }
-  },
   computed: {
     toggleValue() {
       if (!this.value) return false;
       else return this.value;
     },
+  },
+  methods: {
+    clicked(event) {
+      if (!this.readonly) this.$emit('input', event)
+    }
   },
 };
 </script>

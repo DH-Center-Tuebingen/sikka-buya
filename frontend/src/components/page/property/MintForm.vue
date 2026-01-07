@@ -2,44 +2,44 @@
   <div class="mint-form">
     <PropertyFormWrapper
       property="mint"
-      @submit="property_form_mixin_submit"
-      @cancel="property_form_mixin_cancel"
       :loading="property_form_mixin_loading"
       :title="property_form_mixin_title"
       :error="property_form_mixin_error"
       :disabled="property_form_mixin_disabled"
       :dirty="property_form_mixin_dirty"
+      @submit="property_form_mixin_submit"
+      @cancel="property_form_mixin_cancel"
     >
       <input
         id="mint-id"
         v-model="mint.id"
         type="hidden"
-      />
+      >
       <label for="mint-name">Name</label>
       <input
-        type="text"
         id="mint-name"
         v-model="mint.name"
+        type="text"
         :placeholder="$tc('attribute.name')"
         autofocus
         required
-      />
+      >
 
-      <labeled-input-container :label="$tc('property.province')">
+      <LabeledInputContainer :label="$tc('property.province')">
         <DataSelectField
+          id="mint-province"
+          v-model="mint.province"
           table="Province"
           attribute="name"
-          v-model="mint.province"
-          id="mint-province"
         />
-      </labeled-input-container>
+      </LabeledInputContainer>
 
       <label for="location">Location</label>
       <location-input
         id="mint-location"
-        :only="['point']"
-        v-model="mint.location"
         ref="location"
+        v-model="mint.location"
+        :only="['point']"
         @update="(location) => $set(mint, 'location', location)"
       />
 
@@ -55,23 +55,23 @@
         <label for="location">Geschätzte Verortung</label>
         <location-input
           id="mint-uncertain-location-input"
+          ref="uncertainLocation"
+          v-model="mint.uncertainArea"
           :interactive="true"
           :only="['polygon']"
-          v-model="mint.uncertainArea"
-          ref="uncertainLocation"
           @update="(location) => $set(mint, 'uncertainArea', location)"
         />
       </div>
 
-      <labeled-input-container label="Notizen">
+      <LabeledInputContainer label="Notizen">
         <textarea
           id="mint-notes"
+          v-model="note"
           cols="30"
           rows="10"
           maxlength="1300"
-          v-model="note"
-        ></textarea>
-      </labeled-input-container>
+        />
+      </LabeledInputContainer>
     </PropertyFormWrapper>
   </div>
 </template>
@@ -89,6 +89,7 @@ import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 
 
 export default {
+  name: 'MintForm',
   components: {
     Checkbox,
     PropertyFormWrapper,
@@ -96,8 +97,52 @@ export default {
     DataSelectField,
     LabeledInputContainer,
   },
-  name: 'MintForm',
   mixins: [propertyFormMixinFunc({ property: 'mint' })],
+  data: function () {
+    return {
+      note: '',
+      mint: {
+        id: -1,
+        name: '',
+        uncertain: false,
+        province: {
+          id: null,
+          name: '',
+        },
+        location: {
+          type: 'point',
+          coordinates: null,
+        },
+        uncertainArea: {
+          type: 'feature',
+          properties: {},
+          geometry: {
+            type: 'polygon',
+            coordinates: [[]],
+          }
+        },
+      },
+    };
+  },
+  watch: {
+    note: function (newValue) {
+      this.property_form_mixin_setDirty();
+    },
+    'mint.uncertain'(newValue) {
+      if (newValue) {
+        this.$nextTick(() => {
+          // When the map is hidden, it will have the wrong size set
+          // therefore we need to make the ap aware of the visibility change
+          // by calling the following function.
+          //
+          // v-if would work as expected out of the box, but would result in other
+          // issues
+          if (this.$refs.uncertainLocation)
+            this.$refs.uncertainLocation.updateSize();
+        });
+      }
+    },
+  },
   methods: {
     getProperty: async function (id) {
       const result = await Query.raw(
@@ -195,51 +240,6 @@ export default {
       })
 
       return id;
-    },
-  },
-  data: function () {
-    return {
-      note: '',
-      mint: {
-        id: -1,
-        name: '',
-        uncertain: false,
-        province: {
-          id: null,
-          name: '',
-        },
-        location: {
-          type: 'point',
-          coordinates: null,
-        },
-        uncertainArea: {
-          type: 'feature',
-          properties: {},
-          geometry: {
-            type: 'polygon',
-            coordinates: [[]],
-          }
-        },
-      },
-    };
-  },
-  watch: {
-    note: function (newValue) {
-      this.property_form_mixin_setDirty();
-    },
-    'mint.uncertain'(newValue) {
-      if (newValue) {
-        this.$nextTick(() => {
-          // When the map is hidden, it will have the wrong size set
-          // therefore we need to make the ap aware of the visibility change
-          // by calling the following function.
-          //
-          // v-if would work as expected out of the box, but would result in other
-          // issues
-          if (this.$refs.uncertainLocation)
-            this.$refs.uncertainLocation.updateSize();
-        });
-      }
     },
   },
 };

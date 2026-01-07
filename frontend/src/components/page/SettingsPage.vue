@@ -5,7 +5,9 @@
                 <Locale path="routes.settings" />
             </h1>
 
-            <button @click="updateConfig">Update</button>
+            <button @click="updateConfig">
+Update
+</button>
             <!-- <div style="display: flex;">
                 <input
                     type="text"
@@ -27,27 +29,24 @@
                 ref="tree"
                 path=""
                 name=""
-                :activeElementPath="activePath"
+                :active-element-path="activePath"
                 :children="tree"
                 @requestActive="activate"
                 @requestAdd="requestAdd"
             />
         </section>
-
-    </div>
+</div>
 </template>
 
 <script>
 import Query from '../../database/query';
 import RouterTree from '../layout/tree/RouterTree.vue';
-import Breadcrumbs from "../navigation/Breadcrumbs.vue"
 
 import SettingsTemplate from "../../../settings.json";
 import Locale from '../cms/Locale.vue';
 
 export default {
     components: {
-        Breadcrumbs,
         RouterTree,
         Locale
     }, data() {

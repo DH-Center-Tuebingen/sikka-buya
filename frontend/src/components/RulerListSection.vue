@@ -1,7 +1,7 @@
 <template>
   <ul
-    class="ruler-list-section"
     v-if="Array.isArray(items) && items.length > 0"
+    class="ruler-list-section"
   >
     <RulerListItem
       v-for="item of unavailable"
@@ -20,8 +20,7 @@
       :css="styler(item)"
       @selection-changed="() => $emit('selection-changed', item)"
     />
-
-  </ul>
+</ul>
 </template>
 
 <script>
@@ -29,6 +28,10 @@
 import MultiSelectListMixin from './mixins/multi-select-list.js';
 import RulerListItem from './RulerListItem.vue';
 export default {
+  components: {
+    RulerListItem
+  },
+  mixins: [MultiSelectListMixin],
   props: {
     unavailable: {
       type: Array,
@@ -48,10 +51,6 @@ export default {
       default: () => { },
     },
   },
-  components: {
-    RulerListItem
-  },
-  mixins: [MultiSelectListMixin],
 };
 </script>
 

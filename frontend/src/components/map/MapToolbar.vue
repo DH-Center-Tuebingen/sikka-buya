@@ -7,28 +7,27 @@
         </div>
 
         <div class="toolbar toolbar-right">
-            <Button
+            <ButtonVue
                 v-if="filtersActive"
                 class="clear-filter-btn map-button"
                 @click="() => $emit('reset-filters')"
             >
                 <Locale path="general.reset_filter" />
-
-            </Button>
+</ButtonVue>
         </div>
     </div>
 </template>
 
 <script>
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 import Locale from '../cms/Locale.vue';
 import MapBackButton from './control/MapBackButton.vue';
 
 export default {
+    components: { ButtonVue, Locale, MapBackButton },
     props: {
         filtersActive: { type: Boolean, required: true }
-    },
-    components: { Button, Locale, MapBackButton }
+    }
 };
 </script>
 

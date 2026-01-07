@@ -1,9 +1,16 @@
 <template>
   <div class="list-item-cell">
-    <router-link v-if="to" :to="to" class="text">
+    <router-link
+v-if="to"
+:to="to"
+class="text"
+>
       <slot />
     </router-link>
-    <div class="text" v-else>
+    <div
+v-else
+class="text"
+>
       <slot />
     </div>
   </div>

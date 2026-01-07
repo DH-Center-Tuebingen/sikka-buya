@@ -1,28 +1,51 @@
 <template>
   <div class="pagination-control">
     <div class="left">
-      <input type="number" :value="count" @change="countChanged" min="1" />
+      <input
+type="number"
+:value="count"
+min="1"
+@change="countChanged"
+>
       <span><Locale path="ui.list.pagination.elements_per_page" /></span>
     </div>
     <div class="center">
       <span>
-        {{ this.fromItem }}
+        {{ fromItem }}
         ...
-        {{ this.toItem }}
-        ({{ this.total }})
+        {{ toItem }}
+        ({{ total }})
       </span>
     </div>
     <div class="right">
-      <button type="button" @click="changePage(0)">1</button>
-      <button type="button" @click="toLastPage"><ChevronLeft /></button>
+      <button
+type="button"
+@click="changePage(0)"
+>
+1
+</button>
+      <button
+type="button"
+@click="toLastPage"
+>
+<ChevronLeft />
+</button>
       <input
         class="page-input"
         type="text"
         :value="pageValue"
         @input="setPageEvt"
-      />
-      <button type="button" @click="toNextPage"><ChevronRight /></button>
-      <button type="button" @click="changePage(last)">
+      >
+      <button
+type="button"
+@click="toNextPage"
+>
+<ChevronRight />
+</button>
+      <button
+type="button"
+@click="changePage(last)"
+>
         {{ last + 1 }}
       </button>
     </div>
@@ -56,6 +79,18 @@ export default {
     count: {
       type: Number,
       required: true,
+    },
+  },
+  computed: {
+    fromItem() {
+      return Math.min(this.total, this.page * this.count + 1);
+    },
+    toItem() {
+      let page = (this.page + 1) * this.count;
+      return Math.min(this.total, page);
+    },
+    pageValue() {
+      return this.page + 1;
     },
   },
   methods: {
@@ -97,18 +132,6 @@ export default {
       if (this.page != next) {
         this.changed({ page: next });
       }
-    },
-  },
-  computed: {
-    fromItem() {
-      return Math.min(this.total, this.page * this.count + 1);
-    },
-    toItem() {
-      let page = (this.page + 1) * this.count;
-      return Math.min(this.total, page);
-    },
-    pageValue() {
-      return this.page + 1;
     },
   },
 };

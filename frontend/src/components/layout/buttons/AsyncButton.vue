@@ -1,20 +1,31 @@
 <template>
-  <Button :class="{ pending }" @click="clicked" class="async-button">
-    <div v-if="pending" class="spinner" :class="{ show: pending }">
+  <ButtonVue
+:class="{ pending }"
+class="async-button"
+@click="clicked"
+>
+    <div
+v-if="pending"
+class="spinner"
+:class="{ show: pending }"
+>
       <loading-spinner :size="LoadingSpinnerSize.Small" />
     </div>
-    <div class="text" :class="{ show: !pending }">
+    <div
+class="text"
+:class="{ show: !pending }"
+>
       <slot />
     </div>
-  </Button>
+  </ButtonVue>
 </template>
 
 <script>
 import LoadingSpinner from '../../misc/LoadingSpinner.vue';
-import Button from './Button.vue';
+import ButtonVue from './Button.vue';
 
 export default {
-  components: { Button, LoadingSpinner },
+  components: { ButtonVue, LoadingSpinner },
   props: {
     pending: Boolean,
   },
@@ -49,7 +60,7 @@ export default {
 }
 
 .button.pending {
-  background-color: desaturate($color: $primary-color, $amount: 15);
+  background-color: color.adjust($color: $primary-color, $saturation: -15%);
   box-shadow: inset 1px 2px 3px rgba($color: #000000, $alpha: 0.2);
   cursor: not-allowed;
 }

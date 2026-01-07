@@ -1,7 +1,9 @@
 <template>
   <div class="box">
     <header>
-      <h2 v-if="title">{{ title }}</h2>
+      <h2 v-if="title">
+{{ title }}
+</h2>
       <slot name="header" />
     </header>
     <div class="body">

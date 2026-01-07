@@ -3,9 +3,9 @@
     <header>
       <TabHeader
         v-for="(tab, index) in tabs"
-        v-bind:key="`tabheader-${tab}-${index}`"
-        @select="select(index)"
+        :key="`tabheader-${tab}-${index}`"
         :class="selected == index ? 'active' : ''"
+        @select="select(index)"
       >
         {{ tab }}
       </TabHeader>
@@ -20,8 +20,8 @@
 import TabBody from "./TabBody.vue";
 import TabHeader from "./TabHeader.vue";
 export default {
-  components: { TabHeader, TabBody },
   name: "Tabs",
+  components: { TabHeader, TabBody },
   props: {
     tabs: {
       type: Array,

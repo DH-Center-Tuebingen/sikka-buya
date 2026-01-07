@@ -58,11 +58,11 @@
 
         <div class="center-ui center-ui-top">
             <map-toolbar
-                :filtersActive="filtersActive"
+                :filters-active="filtersActive"
                 @reset-filters="resetFilters"
             />
         </div>
-        <div class="center-ui center-ui-center"></div>
+        <div class="center-ui center-ui-center" />
         <div
             class="center-ui center-ui-bottom"
             :class="{
@@ -70,28 +70,25 @@
                 'hide-transform-bottom': (selectedTreasures.length === 0)
             }"
         >
-
             <Timeline
+                ref="timeline"
                 class="ui-element"
                 :value="raw_timeline.value"
                 :from="timeline.from"
                 :to="timeline.to"
                 :interactive="false"
                 :create-marks="false"
-                ref="timeline"
             >
                 <template #background>
-
                     <canvas
-                        class="timeline-canvas"
                         ref="timelineCanvas"
-                    > </canvas>
+                        class="timeline-canvas"
+                    />
                     <canvas
                         id="highlight-canvas"
-                        class="timeline-canvas"
                         ref="highlightCanvas"
-                    >
-                    </canvas>
+                        class="timeline-canvas"
+                    />
                     <!-- <slot name="background" /> -->
                 </template>
 
@@ -117,18 +114,17 @@
 
                                 <template v-if="selectedTreasures.length > 1">
                                     (
-                                    <template
-                                        v-for="(treasure, index) of selectedTreasures"
-                                        style=""
-                                    >
+                                    <!-- TODO: Key is index -->
+                                    <template v-for="(treasure, index) of selectedTreasures">
                                         <span
                                             v-if="index > 0"
-                                            :key="`spacer-${index}`"
+                                            :key="`comma-of-${index}`"
                                         >, </span>
                                         <span
-                                            :key="index"
+                                            :key="`undefined-year-count-${index}`"
                                             :style="{ color: treasure.color }"
-                                        >{{ yearCountData.undefined.y[index] }}</span>
+                                        >{{ yearCountData.undefined.y[index]
+                                        }}</span>
                                     </template>
                                     )
                                 </template>
@@ -145,25 +141,21 @@
                         >
                             <radio-button-group
                                 id="chart-type"
+                                v-model="chartType"
                                 :tlabels="['property.time', 'property.weight']"
                                 :options="['time', 'weight']"
-                                v-model="chartType"
                                 @input="updateTimelineGraph"
-                            >
-
-                            </radio-button-group>
+                            />
                         </div>
                     </Row>
                 </template>
             </Timeline>
-
-
         </div>
 
         <Sidebar
+            ref="catalogSidebar"
             style="grid-column: 3;"
             side="right"
-            ref="catalogSidebar"
         >
             <template #title>
                 <Locale
@@ -191,16 +183,15 @@
 
                         <template #beneath>
                             <ScrollView
-                                class="treasure-description"
                                 v-if="isTreasureSelected(treasure.id)"
-                                v-html="treasure.description"
                                 :key="`list-item-description-${treasure.id}`"
+                                class="treasure-description"
                             >
-
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div v-html="treasure.description" />
                             </ScrollView>
                         </template>
                     </MultiSelectListItem>
-
                 </template>
             </MultiSelectList>
             <template #footer>
@@ -209,7 +200,6 @@
                     :class="{ hide: !(selectedTreasures.length > 0), collapsed: diagramMode === null }"
                     style="margin: 1em;margin-top: auto;"
                 >
-
                     <div
                         class="diagram-select-bar"
                         style="margin-top: .5rem;"
@@ -219,8 +209,8 @@
                             style="position: relative;"
                         >
                             <span
-                                class="diagram-select-placeholder"
                                 v-if="diagramMode === null"
+                                class="diagram-select-placeholder"
                             >
                                 {{ $t('label.diagram') }}
                             </span>
@@ -229,7 +219,6 @@
                                 :value="diagramMode"
                                 @input="updateDiagram"
                             >
-
                                 <option value="material">
                                     <Locale path="property.material" />
                                 </option>
@@ -241,7 +230,7 @@
                                 </option>
                             </select>
                         </div>
-                        <Button
+                        <ButtonVue
                             :disabled="diagramMode === null"
                             @click="() => diagramMode = null"
                         >
@@ -249,22 +238,20 @@
                                 type="mdi"
                                 :path="icons.mdiClose"
                                 :size="IconSize.Tiny"
-                            ></Icon>
-                        </Button>
+                            />
+                        </ButtonVue>
                     </div>
 
                     <canvas
-                        height="500"
                         ref="diagramCanvas"
-                    >
-
-                    </canvas>
+                        height="500"
+                    />
                 </div>
             </template>
         </Sidebar>
     </div>
-</template> 
-  
+</template>
+
 <script>
 // Mixins
 import map from './mixins/map';
@@ -275,11 +262,9 @@ import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
 import RadioButtonGroup from '../forms/RadioButtonGroup.vue';
 
 //Components
-import Button from '../layout/buttons/Button.vue';
-import LabeledInputContainer from '../LabeledInputContainer.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 import Sidebar from './Sidebar.vue';
 import Timeline from './timeline/Timeline.vue';
-import TreasureTable from "./TreasureTable.vue";
 import ScrollView from '../layout/ScrollView.vue';
 
 // Other
@@ -302,8 +287,6 @@ import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph, LineGraph 
 import ListColorIndicator from '../list/ListColorIndicator.vue';
 import Query from '../../database/query';
 
-import { cloneDeep } from 'lodash'
-import Info from '../forms/Info.vue';
 import Range from '../../models/timeline/range';
 import Color from '../../utils/Color';
 import Row from '../layout/Row.vue';
@@ -316,10 +299,8 @@ import { IconSize } from '../../config';
 
 
 export default {
-    name: 'TreasureMap',
     components: {
-        Button,
-        LabeledInputContainer,
+        ButtonVue,
         ListColorIndicator,
         Locale,
         MapToolbar,
@@ -327,33 +308,9 @@ export default {
         MultiSelectListItem,
         Sidebar,
         Timeline,
-        TreasureTable,
-        Info,
         ScrollView,
         Row,
         RadioButtonGroup
-    },
-    data: function () {
-        return {
-            chart: null,
-            diagramMode: null,
-            chartType: "time",
-            filters: {},
-            painter: null,
-            selectedTreasureIds: [],
-            selectedMintIds: [],
-            timelineChart: null,
-            treasures: [],
-            yearCountData: {},
-            mintRegions: [],
-            activeMintMap: {},
-            mintLocationMarkerGroup: null,
-            cachedWeightDataMap: {},
-            weightDataFrequency: 0.1,
-            graphOffset: 5,
-            unknownWeights: 0,
-            tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
-        };
     },
     mixins: [
         map,
@@ -416,9 +373,29 @@ export default {
             mdiClose,
         }),
     ],
+    data: function () {
+        return {
+            chart: null,
+            diagramMode: null,
+            chartType: "time",
+            filters: {},
+            painter: null,
+            selectedTreasureIds: [],
+            selectedMintIds: [],
+            timelineChart: null,
+            treasures: [],
+            yearCountData: {},
+            mintRegions: [],
+            activeMintMap: {},
+            mintLocationMarkerGroup: null,
+            cachedWeightDataMap: {},
+            weightDataFrequency: 0.1,
+            graphOffset: 5,
+            unknownWeights: 0,
+            tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
+        };
+    },
     computed: {
-
-
         hasUncertainYears() {
             // if(!this.yearCountData["undefined"]) return false
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
@@ -574,7 +551,7 @@ export default {
 
             return [...activeMints, ...interactiveMints]
         },
-        invertBackgroundIfNecessary(color){
+        invertBackgroundIfNecessary(color) {
             return Color.isBright(color)
         },
         getActiveMints() {
@@ -632,7 +609,7 @@ export default {
                 [124, 170, 216],
                 [207, 117, 52],
                 [76, 93, 137],
-            ]
+                ]
 
                 const pickedColors = {}
 
@@ -656,7 +633,7 @@ export default {
                         while (pickedColors[colorIdx]) {
                             colorIdx = (++colorIdx % colors.length)
                         }
-                        
+
                         pickedColors[colorIdx] = true
                         color = `rgb(${colors[(colorIdx)].join(",")})`
                     }
@@ -1204,8 +1181,11 @@ export default {
 };
 </script>
 
-  
-<style lang="scss" scoped>
+
+<style
+    lang="scss"
+    scoped
+>
 table {
     width: 100%;
     padding-right: 10px;
@@ -1290,13 +1270,13 @@ tr.selected {
 }
 
 .mint-count-text {
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
     padding: 2px;
     border-radius: 1px;
 }
 
 .mint-count-text.inverted {
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 
@@ -1327,4 +1307,3 @@ tr.selected {
     opacity: 0.5;
 }
 </style>
-  

@@ -1,6 +1,6 @@
 <template>
     <div class="page">
-        <loading-spinner :size="200"/>
+        <loading-spinner :size="200" />
     </div>
 </template>
 

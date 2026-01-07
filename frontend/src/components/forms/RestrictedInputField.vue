@@ -1,9 +1,18 @@
 <template>
   <div class="restricted-input">
-    <input type="text" :value="value" @input="validateInput" />
+    <input
+type="text"
+:value="value"
+@input="validateInput"
+>
     <div class="empty">
-      <Info :trigger="trigger" :time="3000" type="warning" class="info"
-        >Es sind nur Werte zwischen -999 und 999 erlaubt. Es kann auch 'x'
+      <Info
+:trigger="trigger"
+:time="3000"
+type="warning"
+class="info"
+>
+Es sind nur Werte zwischen -999 und 999 erlaubt. Es kann auch 'x'
         angegeben werden.
       </Info>
     </div>
@@ -13,8 +22,8 @@
 <script>
 import Info from './Info.vue';
 export default {
-  components: { Info },
   name: 'RestrictedInputField',
+  components: { Info },
   props: {
     value: String,
     pattern: {

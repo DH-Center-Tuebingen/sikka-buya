@@ -3,9 +3,9 @@
     <TreeItem
       v-for="twig in children"
       :key="twig.id"
-      @select="selected($event)"
       :twig="twig"
-      v-bind:class="{inline: twig.inline}"
+      :class="{inline: twig.inline}"
+      @select="selected($event)"
     />
   </div>
 </template>

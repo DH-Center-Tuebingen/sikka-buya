@@ -1,6 +1,8 @@
 <template>
   <div class="back-header">
-    <router-link :to="to"><ArrowLeft /><Locale path="navigation.back"/></router-link>
+    <router-link :to="to">
+<ArrowLeft /><Locale path="navigation.back" />
+</router-link>
   </div>
 </template>
 

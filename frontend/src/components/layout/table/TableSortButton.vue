@@ -11,17 +11,15 @@
                     :path="icons.desc"
                     type="mdi"
                     :size="iconSize"
-                ></Icon>
+                />
                 <Icon
                     v-else
                     :path="icons.asc"
                     type="mdi"
                     :size="iconSize"
-                ></Icon>
-
+                />
             </template>
         </div>
-
     </th>
 </template>
 
@@ -31,6 +29,7 @@ import iconMixin from '../../mixins/icon-mixin';
 import { mdiTriangle, mdiTriangleDown } from '@mdi/js';
 
 export default {
+    mixins: [iconMixin({ asc: mdiTriangle, desc: mdiTriangleDown })],
     props: {
         name: { type: String, required: true },
         current: String,
@@ -40,22 +39,24 @@ export default {
             iconSize: 8
         }
     },
+    computed: {
+        active() {
+            return this.name === this.current
+        }
+    },
     methods: {
         input() {
             let desc = (this.active) ? !this.desc : false
             this.$emit('input', { name: this.name, desc })
         }
     },
-    computed: {
-        active() {
-            return this.name === this.current
-        }
-    },
-    mixins: [iconMixin({ asc: mdiTriangle, desc: mdiTriangleDown })]
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 $border: 1px solid $light-gray;
 
 th {

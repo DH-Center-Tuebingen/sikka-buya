@@ -1,8 +1,17 @@
 <template>
   <div class="catalog-entry">
-    <notes v-if="hasInternalNotes" :html="type.internalNotes" />
-    <type-view v-if="!loading" :type="type" />
-    <div class="center-frame" v-else>
+    <notes
+v-if="hasInternalNotes"
+:html="type.internalNotes"
+/>
+    <type-view
+v-if="!loading"
+:type="type"
+/>
+    <div
+v-else
+class="center-frame"
+>
       <loading-spinner :size="LoadingSpinnerSize.Big" />
     </div>
   </div>
@@ -15,12 +24,12 @@ import LoadingSpinner from '../../misc/LoadingSpinner.vue';
 import TypeView from '../TypeView.vue';
 
 export default {
+  name: 'CatalogEntry',
   components: {
     TypeView,
     LoadingSpinner,
     Notes,
   },
-  name: 'CatalogEntry',
   data: function () {
     return {
       loading: true,

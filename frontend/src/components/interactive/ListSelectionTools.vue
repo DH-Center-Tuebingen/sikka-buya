@@ -2,16 +2,24 @@
   <div class="list-selection-tools">
     <div
       v-if="!hideSelectAllButton"
-      @click.prevent.stop="selectAll"
       :class="{ disabled: allSelected }"
+      @click.prevent.stop="selectAll"
     >
-      <Icon type="mdi" :path="icons.mdiSelectAll" :size="iconSize" />
+      <Icon
+type="mdi"
+:path="icons.mdiSelectAll"
+:size="iconSize"
+/>
     </div>
     <div
-      @click.prevent.stop="unselectAll"
       :class="{ disabled: noneSelected }"
+      @click.prevent.stop="unselectAll"
     >
-      <Icon type="mdi" :path="icons.mdiSelectOff" :size="iconSize" />
+      <Icon
+type="mdi"
+:path="icons.mdiSelectOff"
+:size="iconSize"
+/>
     </div>
   </div>
 </template>

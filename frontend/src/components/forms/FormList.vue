@@ -9,7 +9,7 @@
           v-if="title || $slots.title"
           class="title"
         >
-          <slot name="title"></slot>{{ title }} {{ length !== null ? `(${length})` : '' }}
+          <slot name="title" />{{ title }} {{ length !== null ? `(${length})` : '' }}
         </label>
         <button
           class="list-add-button-besides"
@@ -28,8 +28,7 @@
       <slot name="description" />{{ description }}
     </p>
     <div class="list-container">
-
-      <div
+<div
         class="list-scroll"
         :class="{ overflowX }"
       >

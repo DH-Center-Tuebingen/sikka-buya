@@ -4,41 +4,46 @@
       <Locale :path="`property.${property}`" />
     </h1>
     <LoadingSpinner
-      class="loading-spinner"
       v-show="loading"
+      class="loading-spinner"
     />
     <form
       v-show="!loading"
       @submit.prevent.stop="() => log('PREVENTED SUBMIT')"
     >
-      <slot></slot>
+      <slot />
       <div
         v-if="error"
         class="information error"
       >
         <template v-if="Array.isArray(error)">
-          <p v-for="[idx, err] of error.entries()" :key="'error-' + idx">{{ err }}</p>
+          <p
+v-for="[idx, err] of error.entries()"
+:key="'error-' + idx"
+>
+{{ err }}
+</p>
         </template>
         <span v-else>
           {{ error }}
         </span>
       </div>
       <Row class="button-bar">
-        <Button
+        <ButtonVue
           id="cancel-button"
           type="button"
           @click="cancel"
         >
           <Locale path="form.cancel" />
-        </Button>
-        <Button
+        </ButtonVue>
+        <ButtonVue
           id="submit-button"
           type="submit"
-          @click="submit"
           :disabled="disabled || !dirty"
+          @click="submit"
         >
           <Locale path="form.submit" />
-        </Button>
+        </ButtonVue>
       </Row>
     </form>
   </div>
@@ -47,11 +52,17 @@
 <script>
 import Locale from '../cms/Locale.vue';
 import Row from '../layout/Row.vue';
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 import LoadingSpinner from '../misc/LoadingSpinner.vue';
 
 export default {
   name: 'PropertyFormWrapper',
+  components: {
+    LoadingSpinner,
+    Row,
+    Locale,
+    ButtonVue
+  },
   props: {
     dirty: {
       type: Boolean,
@@ -72,12 +83,6 @@ export default {
       default: null,
 
     },
-  },
-  components: {
-    LoadingSpinner,
-    Row,
-    Locale,
-    Button
   },
   methods: {
     submit: function () {

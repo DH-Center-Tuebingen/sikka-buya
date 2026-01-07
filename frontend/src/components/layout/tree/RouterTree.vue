@@ -12,12 +12,11 @@
                         :label="key"
                         :path="getPath(key)"
 
-                        :value=value
+                        :value="value"
                         :active="activeElementPath === getPath(key)"
                         @apply="applyArraySettings(key, value)"
                         @click.native="() => settingsInputClicked(key, `input-${index}`)"
-                    >
-                    </SettingInput>
+                    />
                 </div>
                 <router-tree
                     v-else-if="value != null && (typeof value === 'object')"
@@ -25,21 +24,20 @@
                     :name="key"
                     :children="value"
                     :path="getPath(key)"
-                    :activeElementPath="activeElementPath"
+                    :active-element-path="activeElementPath"
                     @requestActive="requestActive"
                     @requestAdd="$emit('requestAdd', $event)"
-                ></router-tree>
+                />
                 <div v-else>
                     <SettingInput
                         :ref="`input-${index}`"
                         :path="getPath(key)"
                         :label="key"
-                        :value=value
+                        :value="value"
                         :active="activeElementPath === getPath(key)"
                         @apply="applySettings(key, value)"
                         @click.native="() => settingsInputClicked(key, `input-${index}`)"
-                    >
-                    </SettingInput>
+                    />
                 </div>
             </li>
         </ul>
@@ -50,15 +48,12 @@
 import Query from "../../../database/query"
 import RouterTree from "./RouterTree.vue";
 import SettingInput from "../../forms/SettingsInput.vue"
-import Sorter from "../../../utils/Sorter"
-import Button from "../buttons/Button.vue";
 
 export default {
     name: "RouterTree",
     components: {
         RouterTree,
         SettingInput,
-        Button
     },
     props: {
         name: {
@@ -79,6 +74,13 @@ export default {
             }
         }
 
+    },
+    computed: {
+        childrenList() {
+            let childs = Object.entries(this.children)
+            const arr = childs.sort(([a, _1], [b, _2]) => a.localeCompare(b))
+            return arr
+        }
     },
     methods: {
         settingsInputClicked(key, refName) {
@@ -126,13 +128,6 @@ export default {
                 }
             }
             return null
-        }
-    },
-    computed: {
-        childrenList() {
-            let childs = Object.entries(this.children)
-            const arr = childs.sort(([a, _1], [b, _2]) => a.localeCompare(b))
-            return arr
         }
     }
 };

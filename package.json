@@ -8,7 +8,7 @@
     "license": "MIT",
     "private": true,
     "engines": {
-        "node": "16.x"
+        "node": ">=23.0.0"
     },
     "scripts": {
         "frontend": "cd frontend && npm run serve",

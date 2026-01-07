@@ -10,8 +10,8 @@
           <select @input="xChanged">
             <option
               v-for="(value, index) of availableProperties"
-              :value="value.name"
               :key="index"
+              :value="value.name"
               :selected="value.name == x"
             >
               {{ $tc(value.locale) }}
@@ -32,8 +32,8 @@
           <select @input="yChanged">
             <option
               v-for="(value, index) of availableProperties"
-              :value="value.name"
               :key="index"
+              :value="value.name"
               :selected="value.name == y"
             >
               {{ $tc(value.locale) }}
@@ -54,17 +54,17 @@
     <div
       v-if="error"
       class="error"
-    ></div>
+    />
 
     <div
-      class="viewport"
       ref="viewport"
+      class="viewport"
       @scroll.passive="pinTableHeaders($event)"
     >
       <table ref="table">
         <thead :style="{ height: availablePropertiesMap[x].space }">
           <tr>
-            <td></td>
+            <td />
             <td
               v-for="(itemX, xIdx) of xValues"
               :key="'row-' + xIdx"
@@ -84,10 +84,12 @@
             <td
               :style="{ width: availablePropertiesMap[y].space }"
               :title="itemY"
-            >{{ itemY }}</td>
+            >
+{{ itemY }}
+</td>
             <td
               v-for="(itemX, xIdx) of xValues"
-              v-bind:key="'cell-' + yIdx + '-' + xIdx"
+              :key="'cell-' + yIdx + '-' + xIdx"
               class="color-box"
               :style="getColumnStyle(itemX, itemY)"
               :class="{ exists: getTypesFromMap(itemX, itemY).length != 0 }"
@@ -105,7 +107,6 @@
 <script>
 import gql from 'graphql-tag';
 import Query from '../../../database/query';
-import Slider from '../../forms/Slider.vue';
 import LabeledProperty from '../../display/LabeledProperty.vue';
 import RequestBuffer from '../../../models/request-buffer';
 import Color from '../../../utils/Color';
@@ -116,11 +117,49 @@ import Locale from '../../cms/Locale.vue';
 export default {
   components: {
     LabeledProperty,
-    Slider,
     Locale
   },
   mixins: [IconMixin({ mdiSwapHorizontal })],
-  name: 'YearMintTablePage',
+  data: function () {
+    return {
+      x: 'mint',
+      y: 'yearOfMint',
+      popupActive: false,
+      popup: null,
+      availableProperties: [],
+      availablePropertiesMap: {},
+      types: null,
+      error: '',
+      map: new Map(),
+      mapMax: 0,
+      densityMap: {},
+      plainValues: ['yearOfMint'],
+      nameObjects: ['mint', 'material', 'nominal'],
+      scale: 1,
+      pinXBuffer: null,
+      pinYBuffer: null,
+    };
+  },
+  computed: {
+    mints: function () {
+      return Object.keys(this.map).sort((a, b) => b < a);
+    },
+    sortedYears: function () {
+      return Array.from(this.years).sort();
+    },
+    xValues: function () {
+      return this.labelsFromType(this.x);
+    },
+    yValues: function () {
+      return this.labelsFromType(this.y);
+    },
+    tableHead: function () {
+      return this.$refs.table.querySelector('thead');
+    },
+    tableFirstColumn: function () {
+      return this.$refs.table.querySelectorAll('td:first-of-type');
+    },
+  },
   created: function () {
     this.fetchTypes();
 
@@ -147,26 +186,6 @@ export default {
       acc[cur.name] = cur;
       return acc;
     }, {});
-  },
-  data: function () {
-    return {
-      x: 'mint',
-      y: 'yearOfMint',
-      popupActive: false,
-      popup: null,
-      availableProperties: [],
-      availablePropertiesMap: {},
-      types: null,
-      error: '',
-      map: new Map(),
-      mapMax: 0,
-      densityMap: {},
-      plainValues: ['yearOfMint'],
-      nameObjects: ['mint', 'material', 'nominal'],
-      scale: 1,
-      pinXBuffer: null,
-      pinYBuffer: null,
-    };
   },
   methods: {
     swap() {
@@ -339,26 +358,6 @@ export default {
         });
         return Array.from(set).sort();
       } else return [];
-    },
-  },
-  computed: {
-    mints: function () {
-      return Object.keys(this.map).sort((a, b) => b < a);
-    },
-    sortedYears: function () {
-      return Array.from(this.years).sort();
-    },
-    xValues: function () {
-      return this.labelsFromType(this.x);
-    },
-    yValues: function () {
-      return this.labelsFromType(this.y);
-    },
-    tableHead: function () {
-      return this.$refs.table.querySelector('thead');
-    },
-    tableFirstColumn: function () {
-      return this.$refs.table.querySelectorAll('td:first-of-type');
     },
   },
 };

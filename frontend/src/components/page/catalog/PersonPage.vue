@@ -1,6 +1,6 @@
 <template>
   <div class="person-page page">
-    <h1><Locale :path="'routes.' + $route.name"/></h1>
+    <h1><Locale :path="'routes.' + $route.name" /></h1>
     <person-explorer />
   </div>
 </template>

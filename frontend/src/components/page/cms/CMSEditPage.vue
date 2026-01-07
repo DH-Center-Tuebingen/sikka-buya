@@ -1,18 +1,15 @@
 <template>
   <div class="page cms-edit-page">
     <section class="content-wrapper">
-
-      <h2>
-        <Locale :path="`cms.group.${this.group}`" />
+<h2>
+        <Locale :path="`cms.group.${group}`" />
       </h2>
       <div
-        class="tools"
         v-if="editmode"
+        class="tools"
       >
-
-
-        <CMSSaveButton
-          :autoSave="autoSave"
+<CMSSaveButton
+          :auto-save="autoSave"
           :saving="saving"
           :dirty="prevent_navigation_mixin_isDirty"
           @changeAutoSave="(val) => autoSave = val"
@@ -23,8 +20,8 @@
         <HollowButton
           class="auto-save-button"
           :class="{ active: autoSave }"
-          @click.native="() => autoSave = !autoSave"
           :interactive="true"
+          @click.native="() => autoSave = !autoSave"
         >
           <Icon
             type="mdi"
@@ -34,30 +31,29 @@
           <Locale :path="(autoSave) ? 'cms.disable-auto-save' : 'cms.enable-auto-save'" />
         </HollowButton>
 
-        <Spacer />
+        <SpacerVue />
 
         <CMSPublicationInput
+          ref="publicationInput"
           :value="parseInt(page.publishedTimestamp)"
           @reset="() => page.publishedTimestamp = lastPublishedTimestamp"
           @input="updatePublishedTimestamp"
-          ref="publicationInput"
         />
 
 
         <CMSPublicationStatus
-          :pageTimestamp="lastPublishedTimestamp"
-          :userTimestamp="page.publishedTimestamp"
+          :page-timestamp="lastPublishedTimestamp"
+          :user-timestamp="page.publishedTimestamp"
         />
 
         <CMSPublicationButton
-          :lastPublishedTimestamp="lastPublishedTimestamp"
-          :publishedTimestamp="page.publishedTimestamp"
+          :last-published-timestamp="lastPublishedTimestamp"
+          :published-timestamp="page.publishedTimestamp"
           :pending="publishing"
           @publish="publish"
           @unpublish="unpublish"
         />
-
-      </div>
+</div>
 
       <!-- <CMSEditToolbar
         v-if="editmode"
@@ -73,10 +69,10 @@
       /> -->
 
 
-      <template v-show="!loading">
+      <template v-if="!loading">
         <div
-          class="info grid col-3"
           v-if="showTime"
+          class="info grid col-3"
         >
           <div class="cell">
             <label for="">Erstellt am</label>
@@ -92,43 +88,43 @@
           </div>
         </div>
         <h1
+          v-show="isPresent('title')"
+          v-once
+          ref="title"
           :contenteditable="editmode"
+          data-property="title"
           @input="update"
           @paste="update"
-          data-property="title"
-          v-show="isPresent('title')"
-          ref="title"
-          v-once
         >
           {{ page.title }}
         </h1>
 
         <h2
           v-show="hasSubtitle"
+          v-once
+          ref="subtitle"
           :contenteditable="editmode"
-          @input="update"
-          @paste="update"
           class="subtitle"
           data-property="subtitle"
-          ref="subtitle"
-          v-once
+          @input="update"
+          @paste="update"
         >
           {{ page.subtitle }}
         </h2>
 
         <p
           v-show="!editmode"
-          name=""
           id=""
+          name=""
           cols="30"
           rows="10"
-        ></p>
+        />
         <SimpleFormattedField
-          ref="body"
-          :allowLinks="allowLinks"
-          @hook:mounted="() => selfInitialize('body')"
-          @input="(value) => this.updateFormattedField('body', value)"
           v-show="editmode"
+          ref="body"
+          :allow-links="allowLinks"
+          @hook:mounted="() => selfInitialize('body')"
+          @input="(value) => updateFormattedField('body', value)"
         />
 
         <!-- <section v-if="hasBlocks">
@@ -149,15 +145,12 @@
         </div>
       </section> -->
       </template>
-
-
-    </section>
+</section>
   </div>
 </template>
 
 <script>
 // Components
-import AsyncButton from '../../layout/buttons/AsyncButton.vue';
 import CMSPage from '../../../models/CMSPage';
 import CMSPublicationButton from '../../cms/CMSPublicationButton.vue';
 import CMSPublicationInput from '../../cms/CMSPublicationInput.vue';
@@ -166,7 +159,7 @@ import CMSSaveButton from '../../cms/CMSSaveButton.vue';
 import HollowButton from '../../layout/buttons/HollowButton.vue';
 import Locale from '../../cms/Locale.vue';
 import SimpleFormattedField from '../../forms/SimpleFormattedField.vue';
-import Spacer from '../../layout/Spacer.vue';
+import SpacerVue from '../../layout/Spacer.vue';
 
 // Mixins
 import LocalStorageMixin from '../../mixins/local-storage-mixin';
@@ -180,19 +173,16 @@ import CMSConfig from '../../../../cms.config';
 import Query from '../../../database/query';
 import { InputDelayer } from "../../../models/request-buffer"
 import { mdiPublish, mdiClock, mdiContentSaveOutline, mdiSync } from '@mdi/js';
-import InfoVue from '../../forms/Info.vue';
 
 export default {
   components: {
-    AsyncButton,
     CMSPublicationButton,
     CMSPublicationStatus,
     CMSSaveButton,
     HollowButton,
     Locale, CMSPublicationInput,
     SimpleFormattedField,
-    Spacer,
-    InfoVue,
+    SpacerVue,
   },
   mixins: [
     CopyAndPasteMixin,
@@ -204,18 +194,6 @@ export default {
     PreventNavigationMixin,
     TimeMixin,
   ],
-  mounted() {
-    this.load()
-
-    this.$nextTick(() => {
-      this.implementedContenteditableRefs.forEach(ref => {
-        this.initPastePlainText(ref)
-      })
-    })
-  },
-  beforeDestroy() {
-    [this.$refs["title"], this.$refs["subtitle"]].forEach(this.cleanupPastePlainText)
-  },
   props: {
     useBlocks: Boolean,
     single: Boolean,
@@ -252,6 +230,53 @@ export default {
         blocks: [],
       },
     };
+  },
+  computed: {
+    implementedContenteditableRefs() {
+      return this.implementedContenteditables.map(name => this.$refs[name])
+    },
+    implementedContenteditables() {
+      return ['title', 'subtitle']
+    },
+    implementedFields() {
+      return ['title', 'subtitle', 'body']
+    },
+    id() {
+      return this.$route.params.id;
+    },
+    showTime() {
+      return Boolean(CMSConfig?.[this.group]?.page?.showTime);
+    },
+    hasBody() {
+      return (
+        this.isPresent('body') && (this.editmode || this.page.subtitle != '')
+      );
+    },
+    hasSubtitle() {
+      return (
+        this.isPresent('subtitle') &&
+        (this.editmode || this.page.subtitle != '')
+      );
+    },
+    hasBlocks() {
+      return (
+        this.useBlocks &&
+        this.isPresent('blocks') &&
+        (this.editmode || (this.page.blocks && this.page.blocks.length > 0))
+      );
+    },
+  },
+  mounted() {
+    this.load()
+
+    this.$nextTick(() => {
+      this.implementedContenteditableRefs.forEach(ref => {
+        this.initPastePlainText(ref)
+      })
+    })
+  },
+  beforeDestroy() {
+    [this.$refs["title"], this.$refs["subtitle"]].forEach(this.cleanupPastePlainText)
   },
   methods: {
     updatePublishedTimestamp(ts) {
@@ -506,41 +531,6 @@ mutation CreatePageBlock($id: ID!, $group:String!, $position: Int!) {
 
       this.page.blocks.splice(i, 0, block);
       this.$forceUpdate();
-    },
-  },
-  computed: {
-    implementedContenteditableRefs() {
-      return this.implementedContenteditables.map(name => this.$refs[name])
-    },
-    implementedContenteditables() {
-      return ['title', 'subtitle']
-    },
-    implementedFields() {
-      return ['title', 'subtitle', 'body']
-    },
-    id() {
-      return this.$route.params.id;
-    },
-    showTime() {
-      return Boolean(CMSConfig?.[this.group]?.page?.showTime);
-    },
-    hasBody() {
-      return (
-        this.isPresent('body') && (this.editmode || this.page.subtitle != '')
-      );
-    },
-    hasSubtitle() {
-      return (
-        this.isPresent('subtitle') &&
-        (this.editmode || this.page.subtitle != '')
-      );
-    },
-    hasBlocks() {
-      return (
-        this.useBlocks &&
-        this.isPresent('blocks') &&
-        (this.editmode || (this.page.blocks && this.page.blocks.length > 0))
-      );
     },
   },
 };

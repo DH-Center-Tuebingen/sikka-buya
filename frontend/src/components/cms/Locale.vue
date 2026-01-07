@@ -24,12 +24,11 @@
 </template>
 
 <script>
-import Button from '../layout/buttons/Button.vue';
-import Toggle from '../layout/buttons/Toggle.vue';
 import LocaleIcon from './LocaleIcon.vue';
 
 
 export default {
+    components: {  LocaleIcon },
     props: {
         path: {
             required: true,
@@ -53,8 +52,7 @@ export default {
         lang() {
             return this.$root.$i18n.locale
         }
-    },
-    components: { Button, Toggle, LocaleIcon }
+    }
 };
 </script>
 

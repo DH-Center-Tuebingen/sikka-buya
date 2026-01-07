@@ -1,3 +1,5 @@
+@use "../mixins";
+
 .mint-location-div-marker {
     $radius: 30;
     $weight: 1;
@@ -5,7 +7,7 @@
     $fillColor: #ffffff;
     $fillOpacity: 1;
 
-    @include circle($radius * 1px);
+    @include mixins.circle($radius * 1px);
     background-color: rgba($color: $fillColor, $alpha: $fillOpacity);
     border: $weight * 1px solid $color;
     display: flex !important;

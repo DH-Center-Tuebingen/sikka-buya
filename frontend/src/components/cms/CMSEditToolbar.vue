@@ -22,13 +22,12 @@
                     <Locale path="time.last_modified" />:
                 </b> {{ time_mixin_formatDate(page.modifiedTimestamp) }}
             </span> -->
-
-        </div>
+</div>
 
         <AsyncButton
             v-if="!published"
-            @click="() => $emit('publish', true)"
             :loading="saving"
+            @click="() => $emit('publish', true)"
         >
             <Locale path="general.publish" />
         </AsyncButton>
@@ -42,8 +41,8 @@
             </div>
             <AsyncButton
                 v-else
-                @click="() => $emit('save')"
                 :loading="saving"
+                @click="() => $emit('save')"
             >
                 <Locale path="general.save" />
             </AsyncButton>
@@ -63,12 +62,10 @@
         <ActionsDrawer
             v-if="actions.length > 0"
             :actions="actions"
-            @select="(action) => $emit('action', action)"
             align="right"
+            @select="(action) => $emit('action', action)"
         />
-
-
-    </div>
+</div>
 </template>
 
 <script>
@@ -86,26 +83,19 @@ import iconMixin from '../mixins/icon-mixin';
 import { mdiClockOutline, mdiClockRemoveOutline } from '@mdi/js';
 
 export default {
-    mixins: [time, iconMixin({ clock: mdiClockOutline, removeClock: mdiClockRemoveOutline })],
     components: {
         ActionsDrawer,
         AsyncButton,
         CMSStatusIndicator,
         Locale,
     },
-
+    mixins: [time, iconMixin({ clock: mdiClockOutline, removeClock: mdiClockRemoveOutline })],
     props: {
         publishedTimestamp: Number,
         autoSave: Boolean,
         saving: { required: true, type: Boolean },
         dirty: { required: true, type: Boolean },
         page: { required: true, type: Object }
-    },
-    methods: {
-        updatePublished(event) {
-            const inputValue = event.currentTarget.value
-            this.$emit("updatePage", "publishedTimestamp", new Date(inputValue).getTime().toString())
-        }
     },
     computed: {
         canSave() {
@@ -124,6 +114,12 @@ export default {
                 autoSaveAction,
                 publishAction
             ].sort((a, b) => this.$tc(a.label).localeCompare(this.$tc(b.label)))
+        }
+    },
+    methods: {
+        updatePublished(event) {
+            const inputValue = event.currentTarget.value
+            this.$emit("updatePage", "publishedTimestamp", new Date(inputValue).getTime().toString())
         }
     }
 };

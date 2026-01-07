@@ -1,9 +1,9 @@
 <template>
   <div class="breadcrumbs">
     <span
-      class="crumb"
       v-for="match in matched"
       :key="match.name"
+      class="crumb"
     >
 
       <router-link :to="match">
@@ -17,6 +17,7 @@
 import Locale from '../cms/Locale.vue';
 
 export default {
+  components: { Locale },
   props: {
     before: { type: Array, defaultValue: [] }
   },
@@ -44,8 +45,7 @@ export default {
       }
       return parts;
     },
-  },
-  components: { Locale }
+  }
 };
 </script>
 

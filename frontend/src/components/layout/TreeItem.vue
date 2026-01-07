@@ -1,18 +1,30 @@
 <template>
-  <div class="tree-item" v-bind:class="{ leafItem: twig.leaf }">
+  <div
+class="tree-item"
+:class="{ leafItem: twig.leaf }"
+>
     <header
       :class="isCollapsible(twig) && collapsed ? 'collabsible' : ''"
       @click.stop="toggleCollapsed()"
     >
-      <PlusBoxOutline v-if="isCollapsible(twig) && collapsed" class="icon" />
-      <MinusBoxOutline v-if="isCollapsible(twig) && !collapsed" class="icon" />
+      <PlusBoxOutline
+v-if="isCollapsible(twig) && collapsed"
+class="icon"
+/>
+      <MinusBoxOutline
+v-if="isCollapsible(twig) && !collapsed"
+class="icon"
+/>
       {{ twig.name }}
     </header>
 
-    <div v-if="!collapsed" class="children">
+    <div
+v-if="!collapsed"
+class="children"
+>
       <component
+        :is="twig.leaf"
         v-if="twig.leaf && !twig.preventCollapse"
-        v-bind:is="twig.leaf"
         :data="twig.data"
         @click="selected(twig.data)"
       />

@@ -8,15 +8,19 @@
       :active="confirmVisible"
       @close="() => forceRedirect(false)"
     >
-      <confirmation @result="forceRedirect">Wollen Sie die Seite wirklich verlassen? Alle Änderungen gehen dabei
-        verloren!</confirmation>
+      <confirmation @result="forceRedirect">
+Wollen Sie die Seite wirklich verlassen? Alle Änderungen gehen dabei
+        verloren!
+</confirmation>
     </modal>
     <error-box :message="errorMessage" />
     <BackHeader :to="{ name: 'TypeOverview' }" />
 
     <Heading>{{ $tc('property.type') }}</Heading>
     <p>
-      <router-link :to="{ name: 'Catalog Entry', params: { id: coin.id } }">In Typenkatalog anzeigen</router-link>
+      <router-link :to="{ name: 'Catalog Entry', params: { id: coin.id } }">
+In Typenkatalog anzeigen
+</router-link>
     </p>
     <LoadingSpinner v-if="loading" />
     <div
@@ -28,7 +32,7 @@
         type="hidden"
         name=""
         :value="coin.id"
-      />
+      >
       <Row>
         <LabeledInputContainer>
           <template #label>
@@ -38,7 +42,7 @@
             id="type-project-id"
             v-model="coin.projectId"
             required
-          />
+          >
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -48,7 +52,7 @@
           <input
             id="type-treadwell-id"
             v-model="coin.treadwellId"
-          />
+          >
         </LabeledInputContainer>
       </Row>
 
@@ -59,9 +63,9 @@
           </template>
           <DataSelectField
             id="type-mint-field"
+            v-model="coin.mint"
             table="Mint"
             attribute="name"
-            v-model="coin.mint"
             @select="mintSelected"
           />
         </LabeledInputContainer>
@@ -114,9 +118,9 @@
           </template>
           <removable-input-field
             id="type-purity"
+            v-model="coin.purity"
             type="number"
             step="0.01"
-            v-model="coin.purity"
             table="Nominal"
             attribute="name"
           />
@@ -169,16 +173,16 @@
           </template>
           <RadioButtonGroup
             id="type-procedure"
+            v-model="coin.procedure"
             :labels="productionLabels"
             :options="productionOptions"
-            v-model="coin.procedure"
-          ></RadioButtonGroup>
+          />
         </LabeledInputContainer>
       </Row>
 
       <FormList
-        v-on:add="addIssuer"
         id="type-issuers-list"
+        @add="addIssuer"
       >
         <template #title>
           <Locale path="property.issuer" />
@@ -195,18 +199,18 @@
         <FormListItem
           v-for="(issuer, issuer_idx) in coin.issuers"
           :key="'issuer-wrapper-key-' + issuer.key"
-          v-on:remove="removeIssuer"
           :object="issuer"
+          @remove="removeIssuer"
         >
           <TitledPersonSelect
+            :key="`issuers-${issuer.key}`"
             name="isser"
             table="persons"
             attribute="name"
             :value="issuer"
-            :key="`issuers-${issuer.key}`"
+            query-command="searchPersonsWithoutRole"
             @input="issuerChanged($event, issuer_idx)"
-            queryCommand="searchPersonsWithoutRole"
-          ></TitledPersonSelect>
+          />
           <div
             v-if="issuer.error"
             class="error invalid-error"
@@ -217,8 +221,8 @@
       </FormList>
       <FormList
         id="type-overlord-list"
-        v-on:add="addOverlord"
         class="overlords needs-spacing"
+        @add="addOverlord"
       >
         <template #title>
           <Locale
@@ -238,17 +242,19 @@
         <FormListItem
           v-for="(overlord, index) of coin.overlords"
           :key="'overlord-key-' + overlord.key"
-          v-on:remove="removeOverlord"
           :object="overlord"
+          @remove="removeOverlord"
         >
-          <div class="overlord-rank">{{ overlord.rank }}</div>
+          <div class="overlord-rank">
+{{ overlord.rank }}
+</div>
           <TitledPersonSelect
+            :key="`overlord-${overlord.key}`"
             name="overlord"
             :value="overlord"
-            :key="`overlord-${overlord.key}`"
+            query-command="searchPersonsWithoutRole"
+            :query-body="['id', 'name']"
             @input="overlordChanged($event, index)"
-            queryCommand="searchPersonsWithoutRole"
-            :queryBody="['id', 'name']"
           />
           <div
             v-if="overlord.error"
@@ -271,15 +277,15 @@
           v-model="coin.caliph"
           attribute="name"
           table="person"
-          queryCommand="searchPersonsWithRole"
-          :queryBody="['id', { role: ['id', 'name'] }, 'name']"
-          :additionalParameters="{ include: ['caliph'] }"
+          query-command="searchPersonsWithRole"
+          :query-body="['id', { role: ['id', 'name'] }, 'name']"
+          :additional-parameters="{ include: ['caliph'] }"
         />
       </LabeledInputContainer>
       <FormList
         id="type-other-person-list"
         class="needs-spacing"
-        v-on:add="addOtherPerson"
+        @add="addOtherPerson"
       >
         <template #title>
           <Locale path="property.additional_persons" />
@@ -294,18 +300,18 @@
         <FormListItem
           v-for="(otherPerson, index) in coin.otherPersons"
           :key="'other-person-id-' + otherPerson.key"
-          v-on:remove="removeOtherPerson"
           :object="otherPerson"
+          @remove="removeOtherPerson"
         >
           <DataSelectField
             table="person"
             attribute="name"
             :value="otherPerson"
+            :display-text-callback="otherPersonsTextCallback"
+            query-command="searchPersonsWithRole"
+            :additional-parameters="{ exclude: ['caliph'] }"
+            :query-body="['id', { role: ['id', 'name'] }, 'name']"
             @input="otherPersonChanged($event, index)"
-            :displayTextCallback="otherPersonsTextCallback"
-            queryCommand="searchPersonsWithRole"
-            :additionalParameters="{ exclude: ['caliph'] }"
-            :queryBody="['id', { role: ['id', 'name'] }, 'name']"
           />
           <div
             v-if="otherPerson.error"
@@ -316,7 +322,7 @@
         </FormListItem>
       </FormList>
 
-      <hr />
+      <hr>
       <Section title="Voderseite">
         <CoinSideField
           id="type-avers"
@@ -329,7 +335,7 @@
         </CoinSideField>
       </Section>
 
-      <hr />
+      <hr>
       <Section title="Rückseite">
         <CoinSideField
           id="type-reverse"
@@ -342,12 +348,12 @@
         </CoinSideField>
       </Section>
 
-      <hr />
+      <hr>
 
       <LabeledInputContainer :label="$t('property.specialities_and_variants')">
         <SimpleFormattedField
-          ref="specialsField"
           id="type-specials"
+          ref="specialsField"
         />
       </LabeledInputContainer>
 
@@ -361,9 +367,9 @@
       </Checkbox>
 
       <FormList
-        @add="addCoinMark"
-        class="coin-mark-list"
         id="type-coin-mark-list"
+        class="coin-mark-list"
+        @add="addCoinMark"
       >
         <template #title>
           <Locale
@@ -384,10 +390,10 @@
           @remove="removeCoinMark(idx)"
         >
           <DataSelectField
+            v-model="coin.coinMarks[idx]"
             type="text"
             table="CoinMark"
             attribute="name"
-            v-model="coin.coinMarks[idx]"
           />
           <div
             v-if="coinmark.error"
@@ -399,10 +405,10 @@
       </FormList>
 
       <FormList
-        @add="addCoinVerse"
-        class="coin-verse-list"
-        id="type-coin-verse-list"
         v-if="coin.coinVerses"
+        id="type-coin-verse-list"
+        class="coin-verse-list"
+        @add="addCoinVerse"
       >
         <template #title>
           <Locale
@@ -423,10 +429,10 @@
           @remove="removeCoinVerse(idx)"
         >
           <DataSelectField
+            v-model="coin.coinVerses[idx]"
             type="text"
             table="CoinVerse"
             attribute="name"
-            v-model="coin.coinVerses[idx]"
           />
           <div
             v-if="coinverse.error"
@@ -438,9 +444,9 @@
       </FormList>
 
       <FormList
-        @add="addPiece"
-        class="pieces-list"
         id="type-pieces-list"
+        class="pieces-list"
+        @add="addPiece"
       >
         <template #title>
           <Locale
@@ -461,11 +467,11 @@
           @remove="removePiece(idx)"
         >
           <input
+            v-model="coin.pieces[idx].value"
             type="text"
             class="pieces-input"
-            v-model="coin.pieces[idx].value"
             @input="pieceChanged(piece)"
-          />
+          >
           <div
             v-if="piece.error"
             class="error invalid-error"
@@ -519,9 +525,9 @@
 
       <div class="submit-error-window">
         <div
-          class="error submit-error"
           v-for="err in errorMessages"
           :key="err.key"
+          class="error submit-error"
         >
           {{ err.message }}
         </div>
@@ -529,35 +535,37 @@
 
       <Row>
         <input
+          v-if="debug"
           type="file"
           @change="compareJSON"
-          v-if="debug"
-        />
+        >
         <button
+          v-if="debug"
           type="button"
           @click="applyJSON"
-          v-if="debug"
         >
           Apply {{ debug }}
         </button>
         <button
+          v-if="debug"
           type="button"
           @click="exportJSON"
-          v-if="debug"
-        >Export</button>
+        >
+Export
+</button>
         <button
-          type="button"
           id="type-main-cancel-button"
+          type="button"
           @click.stop.prevent="cancel"
         >
           {{ $t('form.cancel') }}
         </button>
         <button
-          @click.stop.prevent="submitForm"
           id="type-main-submit-button"
           class="submit-button"
           type="submit"
           :disabled="submitDisabled"
+          @click.stop.prevent="submitForm"
         >
           {{ $t('form.submit') }}
         </button>
@@ -616,6 +624,73 @@ export default {
     Row,
     SimpleFormattedField,
     TitledPersonSelect,
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.submitted) {
+      window.onbeforeunload = null;
+      next();
+    } else {
+      this.confirmVisible = true;
+    }
+
+    this.next = next;
+  },
+
+  data() {
+    return {
+      debug: false,
+      loaded: false,
+      coin: {
+        id: null,
+        projectId: '',
+        treadwellId: '',
+        mint: { id: null, name: '' },
+        mintAsOnCoin: '',
+        material: { id: null, name: '' },
+        nominal: { id: null, name: '' },
+        yearOfMint: '',
+        donativ: false,
+        procedure: 'pressed',
+        issuers: [],
+        overlords: [],
+        otherPersons: [],
+        caliph: { id: null, name: '', role: null },
+        avers: {
+          fieldText: '',
+          innerInscript: '',
+          intermediateInscript: '',
+          outerInscript: '',
+          misc: '',
+        },
+        reverse: {
+          fieldText: '',
+          innerInscript: '',
+          intermediateInscript: '',
+          outerInscript: '',
+          misc: '',
+        },
+        cursiveScript: false,
+        coinMarks: [],
+        coinVerses: [],
+        pieces: [],
+        purity: '',
+        small: false,
+        specials: '',
+        excludeFromTypeCatalogue: false,
+        excludeFromMapApp: false,
+        internalNotes: '',
+        yearUncertain: false,
+        mintUncertain: false,
+      },
+      errorMessages: [],
+      submitted: false,
+      errorMessage: '',
+      loading: true,
+      productionOptions: ['pressed', 'cast'],
+      key: 0,
+      backupInterval: null,
+      confirmVisible: false,
+    };
   },
   computed: {
     submitDisabled() {
@@ -759,73 +834,6 @@ export default {
       this.loading = false;
       this.loaded = true;
     }
-  },
-
-  data() {
-    return {
-      debug: false,
-      loaded: false,
-      coin: {
-        id: null,
-        projectId: '',
-        treadwellId: '',
-        mint: { id: null, name: '' },
-        mintAsOnCoin: '',
-        material: { id: null, name: '' },
-        nominal: { id: null, name: '' },
-        yearOfMint: '',
-        donativ: false,
-        procedure: 'pressed',
-        issuers: [],
-        overlords: [],
-        otherPersons: [],
-        caliph: { id: null, name: '', role: null },
-        avers: {
-          fieldText: '',
-          innerInscript: '',
-          intermediateInscript: '',
-          outerInscript: '',
-          misc: '',
-        },
-        reverse: {
-          fieldText: '',
-          innerInscript: '',
-          intermediateInscript: '',
-          outerInscript: '',
-          misc: '',
-        },
-        cursiveScript: false,
-        coinMarks: [],
-        coinVerses: [],
-        pieces: [],
-        purity: '',
-        small: false,
-        specials: '',
-        excludeFromTypeCatalogue: false,
-        excludeFromMapApp: false,
-        internalNotes: '',
-        yearUncertain: false,
-        mintUncertain: false,
-      },
-      errorMessages: [],
-      submitted: false,
-      errorMessage: '',
-      loading: true,
-      productionOptions: ['pressed', 'cast'],
-      key: 0,
-      backupInterval: null,
-      confirmVisible: false,
-    };
-  },
-  beforeRouteLeave(to, from, next) {
-    if (this.submitted) {
-      window.onbeforeunload = null;
-      next();
-    } else {
-      this.confirmVisible = true;
-    }
-
-    this.next = next;
   },
   methods: {
     compareJSON(event) {

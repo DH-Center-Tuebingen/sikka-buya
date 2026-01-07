@@ -7,9 +7,9 @@
             {{ label }}
         </span>
         <input
-            v-model="unsavedValue"
             v-if="active"
-        />
+            v-model="unsavedValue"
+        >
         <input
             :value="value"
             type="text"
@@ -17,8 +17,8 @@
         >
         <button
             v-if="active"
-            @click="reset"
             :disabled="!isDirty()"
+            @click="reset"
         >
             Reset
         </button>
@@ -32,7 +32,9 @@
             v-if="active"
             :disabled="!isDirty()"
             @click="clicked"
-        >Apply</button>
+        >
+Apply
+</button>
     </div>
 </template>
 
@@ -56,13 +58,13 @@ export default {
             unsavedValue: ""
         }
     },
-    mounted() {
-        this.unsavedValue = this.value
-    },
     watch: {
         value(value) {
             this.unsavedValue = value
         }
+    },
+    mounted() {
+        this.unsavedValue = this.value
     },
     methods: {
         async reload() {

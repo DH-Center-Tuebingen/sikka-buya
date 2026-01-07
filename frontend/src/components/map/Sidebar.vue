@@ -5,7 +5,7 @@
   >
     <header class="title underlined-header">
       <h3>
-        <slot name="title"></slot>{{ title }}
+        <slot name="title" />{{ title }}
       </h3>
       <div class="tools">
         <slot name="tools" />
@@ -33,14 +33,14 @@ export default {
       default: 'left',
     },
   },
-  methods: {
-    recalculate() {
-      this.$refs.scrollview.recalculate();
-    },
-  },
   computed: {
     getSideClass: function () {
       return this.side == 'left' ? 'side-bar-left' : 'side-bar-right';
+    },
+  },
+  methods: {
+    recalculate() {
+      this.$refs.scrollview.recalculate();
     },
   },
 };

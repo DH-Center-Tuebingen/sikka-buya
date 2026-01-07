@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 1.0.9
+- Reworked application to work with newer version of Node (>= 24)
+- Fixed minor bug of query params not being properly applied on catalog filters
+
 ## Release 1.0.8
 
 ### Fixes

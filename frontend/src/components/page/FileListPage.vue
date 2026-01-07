@@ -6,15 +6,17 @@
                     <Locale :path="`cms.${$route.name}`" />
                 </h1>
                 <FileUploadButton
-                    @change="uploadFile"
-                    :loading="uploading"
                     v-if="$store.getters.isEditableByWriter"
+                    :loading="uploading"
+                    @change="uploadFile"
                 >
                     <Locale path="general.add" />
                 </FileUploadButton>
             </div>
 
-            <p v-if="description">{{ description }}</p>
+            <p v-if="description">
+{{ description }}
+</p>
         </header>
 
         <ul class="unstyled">
@@ -23,8 +25,7 @@
                 :key="file.name"
                 :data-type="getType(file.name)"
             >
-
-                <a
+<a
                     :href="file.url"
                     target="_blank"
                 >
@@ -35,30 +36,25 @@
                 <ActionsDrawer
                     v-if="$store.getters.isEditableByWriter"
                     :actions="[{ name: 'delete', label: $tc('general.delete') }]"
-                    @select="(action) => executeAction(action, file)"
                     align="right"
+                    @select="(action) => executeAction(action, file)"
                 />
             </li>
         </ul>
-
-    </div>
+</div>
 </template>
 
 <script>
 import Locale from '@/components/cms/Locale.vue';
 import Query from '../../database/query';
-import { paramCase } from "change-case"
-import Button from '../layout/buttons/Button.vue';
+import { kebabCase } from "change-case"
 import FileUploadButton from '../layout/buttons/FileUploadButton.vue';
-import LoadingSpinner from '../misc/LoadingSpinner.vue';
 import ActionsDrawer from '../interactive/ActionsDrawer.vue';
 
 export default {
     components: {
         Locale,
-        Button,
         FileUploadButton,
-        LoadingSpinner,
         ActionsDrawer
     },
     props: {
@@ -80,7 +76,7 @@ export default {
     methods: {
         createIdentity(name) {
             name = name.split(".").slice(0, -1).join(".")
-            return ["cms", "files", paramCase(this.$route.name), name].join("[$]")
+            return ["cms", "files", kebabCase(this.$route.name), name].join("[$]")
         },
         executeAction: async function (action, file) {
             if (action === "delete") {
@@ -109,7 +105,7 @@ export default {
                     }
                 }
             `, {
-                group: paramCase(this.$route.name),
+                group: kebabCase(this.$route.name),
                 orderBy: this.orderBy
             }, true)
 

@@ -3,8 +3,8 @@
     <header>
       <div
         v-for="(tab, idx) of tabs"
-        :class="{ 'tab-header': true, active: active == idx }"
         :key="`tab-${idx}-${tab}`"
+        :class="{ 'tab-header': true, active: active == idx }"
         @click="changeTab(idx)"
       >
         {{ tab }}

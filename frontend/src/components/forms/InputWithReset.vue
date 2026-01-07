@@ -4,11 +4,11 @@
       :type="type"
       :value="value"
       @input="(event) => $emit('input', event.target.value)"
-    />
+    >
     <button @click="() => $emit('reset')">
       <RevertIcon
-        :size="iconSize"
         v-if="icon === 'revert'"
+        :size="iconSize"
       />
       <CloseIcon
         v-else
@@ -23,11 +23,6 @@ import CloseIcon from 'vue-material-design-icons/Close';
 import RevertIcon from 'vue-material-design-icons/Undo';
 export default {
   components: { CloseIcon, RevertIcon },
-  computed: {
-    iconSize() {
-      return 16;
-    },
-  },
   props: {
     value: {
       type: String,
@@ -41,6 +36,11 @@ export default {
       type: String,
       validator: (value) => ['close', 'revert'].includes(value),
     }
+  },
+  computed: {
+    iconSize() {
+      return 16;
+    },
   },
 };
 </script>

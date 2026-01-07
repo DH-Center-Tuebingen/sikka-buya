@@ -1,3 +1,8 @@
+@use 'sass:color';
+@use 'sass:math';
+
+@use 'variables';
+
 @mixin interactive() {
   cursor: pointer;
   user-select: none;
@@ -21,12 +26,12 @@
 }
 
 @mixin input {
-  padding: math.div($padding, 2) $padding;
-  color: $gray;
+  padding: math.div(variables.$padding, 2) variables.$padding;
+  color: variables.$gray;
   border: 1px solid rgb(204, 204, 204);
   border-radius: 3px;
   box-sizing: border-box;
-  background-color: $white;
+  background-color: variables.$white;
 
   transition: background-color 0.2s, color 0.2s;
 
@@ -39,27 +44,23 @@
   background-color: $backgroundColor;
 
   &:hover:not(.disable-input) {
-    color: lighten($foregroundColor, 5%);
-    background-color: lighten($backgroundColor, 5%);
+    color: color.adjust($foregroundColor, $lightness: 5%);
+    background-color: color.adjust($backgroundColor, $lightness: 5%);
   }
 
   &:active:not(.disable-input) {
-    color: darken($foregroundColor, 5%);
-    background-color: darken($backgroundColor, 5%);
+    color: color.adjust($color: $foregroundColor, $lightness: -5%);
+    background-color: color.adjust($color: $backgroundColor, $lightness: -5%);
   }
 }
 
 @mixin disabled_input {
-  border: 1px solid $border-color;
-  background-color: $border-color;
+  border: 1px solid variables.$border-color;
+  background-color: variables.$border-color;
   user-select: none;
   color: white;
   user-select: none;
   cursor: pointer;
-}
-
-@mixin box-padding($size) {
-  padding: $size 1.5 * $size;
 }
 
 @mixin media-min-desktop {
@@ -84,7 +85,7 @@
 
 @mixin linkStyle {
   font-weight: bold;
-  color: $primary-color;
+  color: variables.$primary-color;
   text-decoration: none;
 }
 

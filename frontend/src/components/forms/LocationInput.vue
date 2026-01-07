@@ -1,13 +1,13 @@
 <template>
   <!-- The tabindex is required to make the element focusable. -->
   <div
+    ref="root"
     tabindex="-1"
     class="location-input"
+    :class="{ focused, interactive }"
     @keydown="keydown($event)"
     @focus.capture="focus()"
     @blur.capture="unfocus($event)"
-    :class="{ focused, interactive }"
-    ref="root"
   >
     <div class="toolbar">
       <div class="input-wrapper">
@@ -17,10 +17,10 @@
           @change="typeChange"
         >
           <option
-            v-for="{ value, label } in labeledOptions"
-            :value="value"
-            :key="value"
-            :selected="value === selectedType"
+            v-for="{ value: optionValue, label } in labeledOptions"
+            :key="optionValue"
+            :value="optionValue"
+            :selected="optionValue === selectedType"
           >
             {{ label }}
           </option>
@@ -34,25 +34,25 @@
           type="range"
           :value="getRadius()"
           class="circle-slider"
-          @input="($event) => this.updateRadius(parseFloat($event.target.value))"
           min="1"
           max="1000000"
           step="1"
-        />
+          @input="($event) => updateRadius(parseFloat($event.target.value))"
+        >
         <input
           ref="input"
           class="location-input-field"
           type="text"
           :value="coordinateString"
           @input="resetInputText()"
-        />
-        <Button
+        >
+        <ButtonVue
           v-if="type === 'point'"
           class="ghost-btn"
           @click="pasteEvt"
         >
           <ContentPaste />
-        </Button>
+        </ButtonVue>
       </div>
 
       <button
@@ -65,8 +65,8 @@
     </div>
     <div class="map">
       <map-view
-        :use-boundaries="false"
         ref="mapview"
+        :use-boundaries="false"
         height="500px"
         :location="[29.99300228455108, 50.96557617187501]"
         :zoom="5"
@@ -86,19 +86,16 @@
 <script>
 import Close from 'vue-material-design-icons/Close.vue';
 import ContentPaste from 'vue-material-design-icons/ContentPaste.vue';
-import Button from '../layout/buttons/Button.vue';
+import ButtonVue from '../layout/buttons/Button.vue';
 import MapView from '../map/MapView.vue';
-
-import Locale from '../cms/Locale.vue';
 import { isValidGeoJson } from '../../utils/Validators';
 
 export default {
   name: 'LocationInput',
   components: {
-    Locale,
     MapView,
     Close,
-    Button,
+    ButtonVue,
     ContentPaste,
   },
   props: {
@@ -118,15 +115,6 @@ export default {
       default: false,
     }
   },
-  watch: {
-    value: {
-      handler(value) {
-        this.fixObject(value)
-
-      },
-      deep: true
-    },
-  },
   data: function () {
     return {
       polygonPointRadius: 8,
@@ -140,6 +128,82 @@ export default {
       historyLimit: 20,
       updateString: 0,
     };
+  },
+  computed: {
+    interactive() {
+      return this.options.length > 1
+    },
+    coordinates() {
+      return this.getCoordinates(this.value)
+    },
+    type() {
+      const type = this.value?.type
+      if (type) return type.toLowerCase();
+      else return "point"
+    },
+    properties() {
+      return this.value.properties || {}
+    },
+    options() {
+      if (this.only.length > 0) return this.only
+      else return this.availableTypes
+    },
+    labeledOptions() {
+      return this.options.map((val) => {
+        val = val.toLowerCase()
+        return {
+          value: val,
+          label: this.$tc(val, 1)
+        }
+      })
+    },
+    availableTypes() {
+      return ["point", "polygon", "circle"]
+    },
+    selectedType() {
+      if (this.type == null && this.options.length > 0) {
+        return this.options[0].value
+      } else {
+        return this.extendedType
+      }
+    },
+    extendedType() {
+      if (this.type === "feature" && this.properties.radius != null) {
+        return "circle"
+      } else {
+        return this.type
+      }
+    },
+    isPolygon() {
+      return this.type.toLowerCase() == 'polygon';
+    },
+    lat: function () {
+      if (this.coordinates == null || this.coordinates.length == 0) {
+        return '-';
+      } else {
+        return this.coordinates[0];
+      }
+    },
+    lng: function () {
+      if (this.coordinates == null || this.coordinates.length == 0) {
+        return '-';
+      } else {
+        return this.coordinates[1];
+      }
+    },
+    coordinateString: function () {
+      return this.coordinatesToString(this.value);
+    },
+
+  },
+  watch: {
+    value: {
+      handler(value) {
+        this.fixObject(value)
+
+      },
+      deep: true
+    },
   },
   /**
    * Child components are mounted before the parent component.
@@ -717,73 +781,6 @@ export default {
           return value.coordinates
       }
     }
-  },
-  computed: {
-    interactive() {
-      return this.options.length > 1
-    },
-    coordinates() {
-      return this.getCoordinates(this.value)
-    },
-    type() {
-      const type = this.value?.type
-      if (type) return type.toLowerCase();
-      else return "point"
-    },
-    properties() {
-      return this.value.properties || {}
-    },
-    options() {
-      if (this.only.length > 0) return this.only
-      else return this.availableTypes
-    },
-    labeledOptions() {
-      return this.options.map((val) => {
-        val = val.toLowerCase()
-        return {
-          value: val,
-          label: this.$tc(val, 1)
-        }
-      })
-    },
-    availableTypes() {
-      return ["point", "polygon", "circle"]
-    },
-    selectedType() {
-      if (this.type == null && this.options.length > 0) {
-        return this.options[0].value
-      } else {
-        return this.extendedType
-      }
-    },
-    extendedType() {
-      if (this.type === "feature" && this.properties.radius != null) {
-        return "circle"
-      } else {
-        return this.type
-      }
-    },
-    isPolygon() {
-      return this.type.toLowerCase() == 'polygon';
-    },
-    lat: function () {
-      if (this.coordinates == null || this.coordinates.length == 0) {
-        return '-';
-      } else {
-        return this.coordinates[0];
-      }
-    },
-    lng: function () {
-      if (this.coordinates == null || this.coordinates.length == 0) {
-        return '-';
-      } else {
-        return this.coordinates[1];
-      }
-    },
-    coordinateString: function () {
-      return this.coordinatesToString(this.value);
-    },
-
   },
 };
 </script>

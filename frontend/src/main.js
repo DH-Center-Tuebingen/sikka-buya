@@ -86,11 +86,11 @@ main().catch(console.error)
 
 function registerGlobalComponents() {
 
-  Vue.component('calendar-icon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CalendarBlank"))
-  Vue.component('check-icon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Check"))
-  Vue.component('check-emphasis-icon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CheckBold"))
-  Vue.component('ruler-icon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/AccountGroup"))
-  Vue.component('mint-icon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Home"))
-  Vue.component('location-icon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/MapMarker"))
+  Vue.component('CalendarIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CalendarBlank"))
+  Vue.component('CheckIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Check"))
+  Vue.component('CheckEmphasisIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CheckBold"))
+  Vue.component('RulerIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/AccountGroup"))
+  Vue.component('MintIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Home"))
+  Vue.component('LocationIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/MapMarker"))
 
 }

@@ -171,7 +171,7 @@ require-directory@^2.1.1:
 
 run-script-os@^1.1.6:
   version "1.1.6"
-  resolved "https://registry.yarnpkg.com/run-script-os/-/run-script-os-1.1.6.tgz#8b0177fb1b54c99a670f95c7fdc54f18b9c72347"
+  resolved "https://registry.npmjs.org/run-script-os/-/run-script-os-1.1.6.tgz"
   integrity sha512-ql6P2LzhBTTDfzKts+Qo4H94VUKpxKDFz6QxxwaUZN0mwvi7L3lpOI7BqPCq7lgDh3XLl0dpeXwfcVIitlrYrw==
 
 rxjs@^7.0.0, rxjs@^7.5.4:

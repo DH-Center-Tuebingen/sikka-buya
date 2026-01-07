@@ -1,21 +1,21 @@
 <template>
-    <Button class="filter-button">
+    <ButtonVue class="filter-button">
         <slot />
         <icon
             type="mdi"
             :path="icons.close"
             :size="14"
         />
-    </Button>
+    </ButtonVue>
 </template>
 
 <script>
 import { mdiClose } from '@mdi/js';
-import Button from '../../../layout/buttons/Button.vue';
+import ButtonVue from '../../../layout/buttons/Button.vue';
 import icons from '../../../mixins/icon-mixin.js';
 
 export default {
-    components: { Button },
+    components: { ButtonVue },
     mixins: [icons({ close: mdiClose })],
 };
 </script>

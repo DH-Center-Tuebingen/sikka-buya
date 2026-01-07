@@ -1,5 +1,8 @@
 <template>
-  <span class="overlord-separator" :class="{ appended }">als Oberherr:</span>
+  <span
+class="overlord-separator"
+:class="{ appended }"
+>als Oberherr:</span>
 </template>
 
 <script>

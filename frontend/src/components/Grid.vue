@@ -4,16 +4,15 @@
         :style="style"
     >
         <div
-            class="column"
             v-for="col of columns"
             :key="col"
+            class="column"
         >
             <slot
                 :name="col"
-            ></slot>
+            />
         </div>
-
-    </div>
+</div>
 </template>
 
 <script>

@@ -1,16 +1,46 @@
 <template>
-  <div class="dynamic-delete-button" :class="{ highlighted, active, removing }" @click.stop.prevent.capture
-    @mouseover.stop.prevent.capture @mouseenter.stop="highlight" @mouseleave.stop="cancel" @mousecancel.stop="cancel"
-    @mousedown.stop="activate" @mouseup.stop="executeOrCancel" @mousemove="updateTrashPosition" @touchcancel="cancel"
-    @touchend="executeOrCancel" @touchmove="updateTrashPosition" @touchstart="activate">
-    <div class="track" ref="track">
-      <DeleteEmpty v-if="removingPossible && !removing" class="icon empty-bin-icon" :size="iconSize" />
-      <Delete v-else class="icon bin-icon" :size="iconSize" />
+  <div
+class="dynamic-delete-button"
+:class="{ highlighted, active, removing }"
+@click.stop.prevent.capture
+    @mouseover.stop.prevent.capture
+@mouseenter.stop="highlight"
+@mouseleave.stop="cancel"
+@mousecancel.stop="cancel"
+    @mousedown.stop="activate"
+@mouseup.stop="executeOrCancel"
+@mousemove="updateTrashPosition"
+@touchcancel="cancel"
+    @touchend="executeOrCancel"
+@touchmove="updateTrashPosition"
+@touchstart="activate"
+>
+    <div
+ref="track"
+class="track"
+>
+      <DeleteEmpty
+v-if="removingPossible && !removing"
+class="icon empty-bin-icon"
+:size="iconSize"
+/>
+      <Delete
+v-else
+class="icon bin-icon"
+:size="iconSize"
+/>
 
       <span class="text">LÖSCHEN</span>
 
-      <div class="trash-track" ref="trashTrack">
-        <div class="trash" ref="trash" :class="{ hidden: !removingPossible }"></div>
+      <div
+ref="trashTrack"
+class="trash-track"
+>
+        <div
+ref="trash"
+class="trash"
+:class="{ hidden: !removingPossible }"
+/>
       </div>
     </div>
   </div>
@@ -166,7 +196,7 @@ svg {
   color: $red;
 
   .track {
-    background-color: darken($track-color, 5%);
+    background-color: color.adjust($color: $track-color, $lightness: -5%);
   }
 }
 

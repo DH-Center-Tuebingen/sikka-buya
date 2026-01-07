@@ -1,34 +1,34 @@
 <template>
-  <div
-    id="app"
-    :class="loggedInClass"
-    ref="app"
-  >
-    <LoadingPage v-if="loading" />
-    <template v-else>
-      <template v-if="offline">
-        <router-view></router-view>
-      </template>
-      <template v-else>
-        <user-hub v-if="$store.getters.loggedIn && !$route.meta.hideHub" />
+    <div
+        id="app"
+        ref="app"
+        :class="loggedInClass"
+    >
+        <LoadingPage v-if="loading" />
+        <template v-else>
+            <template v-if="offline">
+                <router-view />
+            </template>
+            <template v-else>
+                <user-hub v-if="$store.getters.loggedIn && !$route.meta.hideHub" />
 
-        <router-view></router-view>
+                <router-view />
 
-        <div
-          class="error-popup error"
-          :class="{ show: $store.getters.hasErrors }"
-        >
-          <div
-            class="error-message"
-            v-for="(error, idx) of $store.getters.errors"
-            :key="`error-${idx}`"
-          >
-            {{ error }}
-          </div>
-        </div>
-      </template>
-    </template>
-  </div>
+                <div
+                    class="error-popup error"
+                    :class="{ show: $store.getters.hasErrors }"
+                >
+                    <div
+                        v-for="(error, idx) of $store.getters.errors"
+                        :key="`error-${idx}`"
+                        class="error-message"
+                    >
+                        {{ error }}
+                    </div>
+                </div>
+            </template>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -40,684 +40,686 @@ import AuthMixin from './components/mixins/auth';
 import I18n from './i18n/i18n';
 
 export default {
-  components: { UserHub, LoadingPage },
-  mixins: [AuthMixin],
-  name: 'App',
-  data: function () {
-    return {
-      offline: false,
-      loading: true,
-      popupHandler: null,
-      language: 'de',
-    };
-  },
-  created: async function () {
-
-    try {
-      await I18n.load(this)
-      await this.authenticateIfAvailable();
-    } catch (e) {
-      this.offline = true;
-      this.$router.replace({ name: "Server Offline" });
-    } finally {
-      this.loading = false;
-    }
-
-    this.popupHandler = new PopupHandler(this);
-    this.popupHandler.init(document.body);
-  },
-  beforeDestroy: function () {
-    document.body.removeEventListener("click", this.globalClick)
-    this.popupHandler.cleanup();
-  },
-  mounted: function () {
-    /**
-     * Disables the default zoom behaviour of the browser.
-     */
-
-    this.$refs.app.addEventListener('wheel', (event) => {
-      if (event.ctrlKey) {
-        event.preventDefault();
-      }
-    });
-
-    /**
-     * Sets the debug mode, if in development mode.
-     *
-     * Debug mode can be enabled by calling 'setDebug()'
-     */
-    if (process.env.NODE_ENV === 'development') {
-      let store = this.$store;
-      if (window.debug) store.commit('setDebug');
-      window.setDebug = function () {
-        store.commit('setDebug');
-      };
-    }
-
-    document.body.addEventListener("click", this.globalClick)
-
-  },
-  methods: {
-    globalClick(event) {
-      this.$root.$emit("global-click", event)
+    name: 'App',
+    components: { UserHub, LoadingPage },
+    mixins: [AuthMixin],
+    data: function () {
+        return {
+            offline: false,
+            loading: true,
+            popupHandler: null,
+            language: 'de',
+        };
     },
-    goHome: function () {
-      if (this.$router.route != '/') this.$router.push('/');
+    computed: {
+        loggedInClass() {
+            return this.$store.getters.loggedIn ? 'logged-in' : '';
+        },
     },
-    closeLoginForm: function () {
-      this.$store.commit('closeLoginForm');
-      this.$store.commit('increment');
+    created: async function () {
+
+        try {
+            await I18n.load(this)
+            await this.authenticateIfAvailable();
+        } catch (e) {
+            this.offline = true;
+            if (this.$route.name !== "Server Offline") {
+                this.$router.replace({ name: "Server Offline" });
+            }
+        } finally {
+            this.loading = false;
+        }
+
+        this.popupHandler = new PopupHandler(this);
+        this.popupHandler.init(document.body);
     },
-  },
-  computed: {
-    loggedInClass() {
-      return this.$store.getters.loggedIn ? 'logged-in' : '';
+    beforeDestroy: function () {
+        document.body.removeEventListener("click", this.globalClick)
+        this.popupHandler.cleanup();
     },
-  },
+    mounted: function () {
+        /**
+         * Disables the default zoom behaviour of the browser.
+         */
+
+        this.$refs.app.addEventListener('wheel', (event) => {
+            if (event.ctrlKey) {
+                event.preventDefault();
+            }
+        });
+
+        /**
+         * Sets the debug mode, if in development mode.
+         *
+         * Debug mode can be enabled by calling 'setDebug()'
+         */
+        if (process.env.NODE_ENV === 'development') {
+            let store = this.$store;
+            if (window.debug) store.commit('setDebug');
+            window.setDebug = function () {
+                store.commit('setDebug');
+            };
+        }
+
+        document.body.addEventListener("click", this.globalClick)
+
+    },
+    methods: {
+        globalClick(event) {
+            this.$root.$emit("global-click", event)
+        },
+        goHome: function () {
+            if (this.$router.route != '/') this.$router.push('/');
+        },
+        closeLoginForm: function () {
+            this.$store.commit('closeLoginForm');
+            this.$store.commit('increment');
+        },
+    },
 };
 </script>
 
 <style lang="scss">
 html,
 body {
-  margin: 0;
-  min-height: 100%;
-  background-color: $background-color;
-  color: $text-color;
-  overflow-x: clip;
+    margin: 0;
+    min-height: 100%;
+    background-color: $background-color;
+    color: $text-color;
+    overflow-x: clip;
 }
 
 body {
-  font-family: $font;
-  font-size: $regular-font;
+    font-family: $font;
+    font-size: $regular-font;
 
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 ul.unstyled {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-
-  li {
-    margin: 0;
+    list-style: none;
     padding: 0;
-  }
+    margin: 0;
+
+    li {
+        margin: 0;
+        padding: 0;
+    }
 }
 
 p {
-  line-height: 1.5rem;
+    line-height: 1.5rem;
 }
 
 button,
 input {
-  font-family: $font;
-  font-size: $regular-font;
+    font-family: $font;
+    font-size: $regular-font;
 }
 
 input::placeholder {
-  color: $light-gray;
-  font-style: italic;
+    color: $light-gray;
+    font-style: italic;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .flex-fill {
-  flex: 1;
+    flex: 1;
 }
 
 
 input[type='color'] {
-  flex: unset !important;
-  display: block;
-  padding: 0;
-  min-width: 200px;
-  min-height: 40px;
+    flex: unset !important;
+    display: block;
+    padding: 0;
+    min-width: 200px;
+    min-height: 40px;
 }
 
 $debug-color: orangered !important;
 
 .debug {
-  color: $debug-color;
+    color: $debug-color;
 }
 
 .debug-fill {
-  color: $white !important;
-  background-color: $debug-color;
+    color: $white !important;
+    background-color: $debug-color;
 }
 
 .emph {
-  color: $primary-color;
-  font-weight: bold;
+    color: $primary-color;
+    font-weight: bold;
 }
 
 .spinner {
-  color: $primary-color;
+    color: $primary-color;
 }
 
 .content-wrapper {
-  width: 95%;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 100px;
-  box-sizing: border-box;
+    width: 95%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 100px;
+    box-sizing: border-box;
 
-  .content {
-    position: relative;
-  }
+    .content {
+        position: relative;
+    }
 }
 
 @media (max-width: 1080px) {
-  .content-wrapper {
-    padding: 0 $padding;
-  }
+    .content-wrapper {
+        padding: 0 $padding;
+    }
 }
 
 .centered {
-  text-align: center;
+    text-align: center;
 }
 
 .center {
-  align-self: center;
+    align-self: center;
 }
 
 .center-box {
-  height: calc(100vh - 60px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    height: calc(100vh - 60px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .padding-box {
-  padding: $padding;
+    padding: $padding;
 }
 
 @include allHeadings {
-  font-family: 'Arimo';
+    font-family: 'Arimo';
 }
 
 h1 {
-  font-weight: bold;
-  font-size: 2.5rem;
-  margin-top: 3rem;
-  margin-bottom: 1rem;
+    font-weight: bold;
+    font-size: 2.5rem;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
 }
 
 h2 {
-  font-size: 1.5rem;
-  // font-weight: bold;
-  margin-block-end: 1rem;
+    font-size: 1.5rem;
+    // font-weight: bold;
+    margin-block-end: 1rem;
 }
 
 h6 {
-  font-size: 1rem;
-  color: $gray;
+    font-size: 1rem;
+    color: $gray;
 
-  margin-block-start: 1.5rem;
-  margin-block-end: 1rem;
+    margin-block-start: 1.5rem;
+    margin-block-end: 1rem;
 }
 
 .subtitled {
 
 
-  text-align: left;
+    text-align: left;
 
-  .subtitle {
-    font-size: 0.641em;
-    color: currentColor;
-  }
+    .subtitle {
+        font-size: 0.641em;
+        color: currentColor;
+    }
 }
 
 .subtitle {
-  display: block;
-  color: $black;
-  border-color: $black !important;
-  font-size: $large-font;
-  text-transform: uppercase;
-  // font-weight: bold;
+    display: block;
+    color: $black;
+    border-color: $black !important;
+    font-size: $large-font;
+    text-transform: uppercase;
+    // font-weight: bold;
 }
 
 .mint-label {
-  color: $gray;
-  font-size: $regular-font;
-  font-weight: bold;
+    color: $gray;
+    font-size: $regular-font;
+    font-weight: bold;
 }
 
 .circle-marker {
-  transform-box: fill-box;
-  transform-origin: center;
+    transform-box: fill-box;
+    transform-origin: center;
 
-  transition: transform 0.3s, background-color 0.3s;
-  transform: scale(1);
+    transition: transform 0.3s, background-color 0.3s;
+    transform: scale(1);
 }
 
 
 .circle-marker.added,
 .circle-marker.removed {
-  pointer-events: none;
+    pointer-events: none;
 }
 
 .circle-marker.added {
-  animation: growing 1s 1;
+    animation: growing 1s 1;
 }
 
 .circle-marker.removed {
-  animation: shrinking 0.5s 1;
+    animation: shrinking 0.5s 1;
 }
 
 
 @keyframes growing {
-  0% {
-    transform: scale(1);
-  }
+    0% {
+        transform: scale(1);
+    }
 
-  50% {
-    transform: scale(2);
-  }
+    50% {
+        transform: scale(2);
+    }
 
-  100% {
-    transform: scale(1);
-  }
+    100% {
+        transform: scale(1);
+    }
 }
 
 @keyframes shrinking {
-  0% {
-    transform: scale(1);
-  }
+    0% {
+        transform: scale(1);
+    }
 
-  50% {
-    transform: scale(0.8);
-  }
+    50% {
+        transform: scale(0.8);
+    }
 
-  100% {
-    transform: scale(1);
-  }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .hero {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 section {
-  // margin-top: 5em;
+    // margin-top: 5em;
 
-  h3 {
-    font-size: 1.5em;
-    font-weight: bold;
-  }
+    h3 {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
 }
 
 hr {
-  border: solid 3px $light-gray;
-  border-radius: 2px;
-  margin: 2rem 20px;
+    border: solid 3px $light-gray;
+    border-radius: 2px;
+    margin: 2rem 20px;
 }
 
 .bling hr {
-  border-color: $light-gray;
-  border-style: dotted;
-  border-width: 5px;
-  border-bottom: none;
+    border-color: $light-gray;
+    border-style: dotted;
+    border-width: 5px;
+    border-bottom: none;
 
-  margin: $large-padding * 4 0;
+    margin: $large-padding * 4 0;
 }
 
 #app-name {
-  color: $primary-color;
-  margin-right: $padding;
-  text-transform: none;
-  font-weight: 800;
+    color: $primary-color;
+    margin-right: $padding;
+    text-transform: none;
+    font-weight: 800;
 
-  @include interactive();
+    @include interactive();
 }
 
 .property-group {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 #app-name:after {
-  content: '|';
-  color: white;
-  margin: 0 20px;
+    content: '|';
+    color: white;
+    margin: 0 20px;
 }
 
 select,
 input,
 button {
-  @include input;
-  box-sizing: border-box;
+    @include input;
+    box-sizing: border-box;
 }
 
 button[type='submit'] {
-  color: white;
-  background-color: $primary-color;
+    color: white;
+    background-color: $primary-color;
 
-  &:hover {
-    background-color: darken($color: $primary-color, $amount: 5);
-  }
+    &:hover {
+        background-color: color.adjust($color: $primary-color, $lightness: -5%);
+    }
 }
 
 .button,
 button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  @include input;
-  @include interactive();
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include input;
+    @include interactive();
 
-  border-radius: 3px;
+    border-radius: 3px;
 
-  >.material-design-icon:not(:last-child) {
-    width: 1.3em;
-    margin-right: $padding;
-  }
+    >.material-design-icon:not(:last-child) {
+        width: 1.3em;
+        margin-right: $padding;
+    }
 
-  .flip {
-    transform: scaleX(-1);
-  }
+    .flip {
+        transform: scaleX(-1);
+    }
 
-  &.rounded {
-    border-radius: 0.5em;
-  }
+    &.rounded {
+        border-radius: 0.5em;
+    }
 
-  &.small-button {
-    font-size: $small-font;
-    padding: 0 $small-padding * 2;
-  }
+    &.small-button {
+        font-size: $small-font;
+        padding: 0 $small-padding * 2;
+    }
 }
 
 .disabled {
-  pointer-events: none;
-  color: $light-gray;
+    pointer-events: none;
+    color: $light-gray;
 }
 
 button:disabled {
-  background-color: $light-gray;
+    background-color: $light-gray;
 }
 
 .button.small-button {
-  font-size: $small-font;
+    font-size: $small-font;
 }
 
 .button.ghost-btn {
-  position: absolute;
-  right: 0;
-  border: none;
-  border-radius: 0;
-  background-color: rgba($gray, 0);
-  color: $gray;
+    position: absolute;
+    right: 0;
+    border: none;
+    border-radius: 0;
+    background-color: rgba($gray, 0);
+    color: $gray;
 
-  &:hover {
-    background-color: rgba($gray, 0.5);
-  }
+    &:hover {
+        background-color: rgba($gray, 0.5);
+    }
 }
 
 .button-list,
 li {
-  &:not(:last-child-of-type)>.button {
-    border-bottom: none;
-  }
+    &:not(:last-child-of-type)>.button {
+        border-bottom: none;
+    }
 
-  >.button {
-    border-radius: 0;
-  }
+    >.button {
+        border-radius: 0;
+    }
 }
 
 .transparent-button {
-  background-color: transparent;
-  border: none;
+    background-color: transparent;
+    border: none;
 
-  &:hover {
-    background-color: rgba(#000000, 0.1);
-  }
+    &:hover {
+        background-color: rgba(#000000, 0.1);
+    }
 }
 
 .label,
 label {
-  color: $gray;
-  font-weight: bold;
-  font-size: $regular-font;
-  display: block;
+    color: $gray;
+    font-weight: bold;
+    font-size: $regular-font;
+    display: block;
 }
 
 label {
-  @include interactive();
+    @include interactive();
 }
 
 .button-bar {
-  display: flex;
+    display: flex;
 
-  >* {
-    flex: 1;
-  }
+    >* {
+        flex: 1;
+    }
 
-  >*:not(:last-child) {
-    margin-right: 10px;
-  }
+    >*:not(:last-child) {
+        margin-right: 10px;
+    }
 }
 
 .top-header {
-  // color: white;
-  // background-color: rgb(75, 75, 75);
+    // color: white;
+    // background-color: rgb(75, 75, 75);
 
-  .button-group {
-    input:checked+label {
-      background-color: transparent;
-      border-bottom: 2px solid white;
+    .button-group {
+        input:checked+label {
+            background-color: transparent;
+            border-bottom: 2px solid white;
 
-      border-top-right-radius: unset;
-      border-top-left-radius: unset;
-      border-bottom-right-radius: unset;
-      border-bottom-left-radius: unset;
+            border-top-right-radius: unset;
+            border-top-left-radius: unset;
+            border-bottom-right-radius: unset;
+            border-bottom-left-radius: unset;
+        }
+
+        label {
+            background-color: transparent;
+            border-radius: 0;
+            border: none;
+            padding: $padding;
+        }
     }
-
-    label {
-      background-color: transparent;
-      border-radius: 0;
-      border: none;
-      padding: $padding;
-    }
-  }
 }
 
 a {
-  @include linkStyle();
+    @include linkStyle();
 }
 
 .disabled-link {
-  color: $light-gray;
-  pointer-events: none;
+    color: $light-gray;
+    pointer-events: none;
 }
 
 .icon-button {
-  text-transform: capitalize;
-  display: flex;
-  align-items: center;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
 
-  background: none;
-  padding: 0;
-  border: none;
-  color: currentColor;
+    background: none;
+    padding: 0;
+    border: none;
+    color: currentColor;
 
-  :first-child:not(:last-child) {
-    margin-right: $padding;
-  }
+    :first-child:not(:last-child) {
+        margin-right: $padding;
+    }
 }
 
 .tooltip-container {
-  position: relative;
+    position: relative;
 }
 
 .div-icon-button {
-  cursor: pointer;
-  position: relative;
+    cursor: pointer;
+    position: relative;
 
-  &:hover {
-    background-color: $dark-white;
-  }
+    &:hover {
+        background-color: $dark-white;
+    }
 }
 
 .div-icon-button+.tooltip {
-  opacity: 0;
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  min-width: 150px;
-  transform: translate(-50%, -100%);
-  padding: $small-padding;
-  border-radius: $small-border-radius;
-  background-color: white;
-  transition: all $transition-time;
+    opacity: 0;
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    min-width: 150px;
+    transform: translate(-50%, -100%);
+    padding: $small-padding;
+    border-radius: $small-border-radius;
+    background-color: white;
+    transition: all $transition-time;
 }
 
 .div-icon-button:hover+.tooltip {
-  opacity: 1;
+    opacity: 1;
 }
 
 .div-icon {
-  background-color: $white;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    background-color: $white;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  font-weight: bold;
-  border-radius: 10px;
+    font-weight: bold;
+    border-radius: 10px;
 }
 
 .button-list {
-  >* {
-    margin-bottom: $padding;
-  }
+    >* {
+        margin-bottom: $padding;
+    }
 }
 
 .error {
-  font-weight: bold;
-  color: $red;
+    font-weight: bold;
+    color: $red;
 }
 
 .material-design-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .grid {
-  display: grid;
-  gap: $padding;
+    display: grid;
+    gap: $padding;
 }
 
 .col-1-2 {
-  grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 2fr;
 }
 
 @mixin grid-even-columns {
-  @for $i from 2 through 6 {
-    .col-#{$i} {
-      grid-template-columns: repeat($i, 1fr);
+    @for $i from 2 through 6 {
+        .col-#{$i} {
+            grid-template-columns: repeat($i, 1fr);
+        }
     }
-  }
 }
 
 @include grid-even-columns();
 
 .error-popup.show {
-  bottom: $padding;
-  transform: translateX(-50%) translateY(0);
+    bottom: $padding;
+    transform: translateX(-50%) translateY(0);
 }
 
 .error-popup {
-  position: fixed;
-  width: 720px;
-  bottom: 0;
+    position: fixed;
+    width: 720px;
+    bottom: 0;
 
-  left: 50%;
-  transform: translateX(-50%) translateY(100%);
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
 
-  z-index: 99999999999;
+    z-index: 99999999999;
 
-  transition: all $transition-time;
+    transition: all $transition-time;
 
-  >* {
-    margin-top: $big-padding;
-    margin-bottom: $big-padding;
+    >* {
+        margin-top: $big-padding;
+        margin-bottom: $big-padding;
 
-    &:first-child {
-      margin-top: 0;
+        &:first-child {
+            margin-top: 0;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
 }
 
 .error-message {
-  background-color: $red;
-  color: $white;
-  padding: $padding;
-  margin-top: $small-padding;
-  border-radius: $small-border-radius;
+    background-color: $red;
+    color: $white;
+    padding: $padding;
+    margin-top: $small-padding;
+    border-radius: $small-border-radius;
 }
 
 .hint {
-  // font-weight: bold;
-  font-style: italic;
-  color: $light-gray;
+    // font-weight: bold;
+    font-style: italic;
+    color: $light-gray;
 }
 
 .note {
-  display: block;
-  font-size: $small-font;
-  color: $primary-color;
-  font-style: italic;
+    display: block;
+    font-size: $small-font;
+    color: $primary-color;
+    font-style: italic;
 }
 
 .map-page .top-right-toobar {
-  margin: $padding;
-  display: inline-block;
+    margin: $padding;
+    display: inline-block;
 }
 
 .popup-content {
-  padding-bottom: 10px;
+    padding-bottom: 10px;
 }
 
 .grayedOut {
-  opacity: 0.3;
-  background-color: gray;
+    opacity: 0.3;
+    background-color: gray;
 }
 
 .unavailable {
-  color: gray;
+    color: gray;
 }
 
 .gray-heading {
-  color: $gray;
-  margin: 0;
+    color: $gray;
+    margin: 0;
 }
 
 .underlined-header {
-  padding: $padding $big-padding;
-  border-bottom: $border;
+    padding: $padding $big-padding;
+    border-bottom: $border;
 }
 
 .black {
-  color: $black;
+    color: $black;
 }
 
 
 .hideable-transform {
-  transform: translateY(0);
-  transition: transform 0.3s;
+    transform: translateY(0);
+    transition: transform 0.3s;
 }
 
 .hide-transform-bottom {
-  transform: translateY(100%) !important;
+    transform: translateY(100%) !important;
 }
 </style>

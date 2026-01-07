@@ -1,33 +1,38 @@
 <template>
-    <label class="button" :class="{disabled: loading}">
-        <Icon v-if="loading" type="mdi" size="22" :path="icons.loading" class="loading"/>
+    <label
+class="button"
+:class="{disabled: loading}"
+>
+        <Icon
+v-if="loading"
+type="mdi"
+size="22"
+:path="icons.loading"
+class="loading"
+/>
         <slot />
         <!-- <AsyncButton>
             <slot />
 
         </AsyncButton> -->
         <input
+            ref="input"
             type="file"
             :name="$props.name"
-            ref="input"
+            :accept="accept"
             @click="()=> $refs.input.value = ''"
             @change="change"
             @input="(event)=> $emit('input', event)"
-            :accept="accept"
         >
     </label>
 </template>
 
 <script>
 
-import AsyncButton from './AsyncButton.vue';
-import Button from './Button.vue';
 import iconMixin from '../../mixins/icon-mixin.js'
 import { mdiLoading } from '@mdi/js';
 
-
 export default {
-    components: { Button, AsyncButton },
     mixins: [iconMixin({loading: mdiLoading})],
     props: {
         name: {
@@ -36,7 +41,6 @@ export default {
         },
         loading: {
             type: Boolean,
-            default: false,
             required: true
         },
         accept: {

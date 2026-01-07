@@ -3,7 +3,7 @@
     "version": "1.0.8",
     "private": true,
     "engines": {
-        "node": "16.x"
+        "node": ">=24.0.0"
     },
     "scripts": {
         "serve": "vue-cli-service serve",
@@ -14,20 +14,20 @@
     },
     "dependencies": {
         "@jamescoyle/vue-icon": "^0.1.2",
-        "@mdi/js": "^7.2.96",
-        "@turf/convex": "^6.5.0",
-        "@turf/turf": "^6.5.0",
-        "axios": "^0.21.1",
+        "@mdi/js": "^7.4.47",
+        "@turf/convex": "^7.3.1",
+        "@turf/turf": "^7.3.1",
+        "axios": "^1.13.2",
         "capitalize": "^2.0.4",
-        "chai": "^4.3.4",
-        "change-case": "^4.1.2",
-        "chart.js": "^3.x.x",
-        "core-js": "^3.9.1",
-        "crc-32": "^1.2.0",
-        "dotenv": "^10.0.0",
+        "chai": "^6.2.2",
+        "change-case": "^5.4.4",
+        "chart.js": "^4.x.x",
+        "core-js": "^3.47.0",
+        "crc-32": "^1.2.2",
+        "dotenv": "^17.2.3",
         "global": "^4.4.0",
         "grunt": "^1.6.1",
-        "latinize": "^0.5.0",
+        "latinize": "^2.0.0",
         "leaflet": "^1.9.4",
         "leaflet-outline-connector": "^0.1.4",
         "leaflet-semirings": "^2.0.6",
@@ -35,58 +35,35 @@
         "leaflet.pattern": "^0.1.0",
         "lodash": "^4.17.21",
         "lodash.deburr": "^4.1.0",
-        "mocha": "^9.0.3",
-        "sass": "^1.54.0",
-        "sass-loader": "^10.1.1",
-        "showdown": "^1.9.1",
-        "simplebar": "^5.3.8",
-        "simplebar-vue": "^1.6.8",
-        "vue": "^2.6.11",
+        "mocha": "^11.7.5",
+        "sass": "^1.97.2",
+        "sass-loader": "^16.0.6",
+        "showdown": "^2.1.0",
+        "simplebar": "^6.3.3",
+        "simplebar-vue": "^2.4.2",
+        "vue": "^2.7.16",
         "vue-cli": "^2.9.6",
-        "vue-i18n": "^8.24.2",
-        "vue-material-design-icons": "^5.2.0",
+        "vue-eslint-parser": "^10.2.0",
+        "vue-i18n": "^8.28.2",
+        "vue-material-design-icons": "^5.3.1",
         "vue-router": "3.6.5",
         "vuex": "^3.6.2",
-        "yarn": "^1.22.19"
+        "yarn": "^1.22.22"
     },
     "devDependencies": {
-        "@cypress/vue": "^2.2.3",
-        "@cypress/webpack-dev-server": "^1.8.0",
-        "@vue/cli-plugin-babel": "^4.5.12",
-        "@vue/cli-plugin-eslint": "^4.5.12",
-        "@vue/cli-plugin-router": "^4.5.12",
-        "@vue/cli-service": "^4.5.12",
-        "@vue/runtime-dom": "^3.3.4",
-        "babel-eslint": "^10.1.0",
-        "cypress": "^9.2.1",
-        "eslint": "^6.7.2",
-        "eslint-plugin-vue": "^6.2.2",
-        "graphql": "^15.5.1",
+        "@babel/eslint-parser": "^7.28.5",
+        "@cypress/vue": "^2.2.4",
+        "@cypress/webpack-dev-server": "^1.8.4",
+        "@vue/cli-plugin-babel": "^5.0.9",
+        "@vue/cli-plugin-eslint": "~5.0.8",
+        "@vue/cli-plugin-router": "^5.0.9",
+        "@vue/cli-service": "^5.0.9",
+        "cypress": "^15.8.2",
+        "eslint": "^8.57.0",
+        "eslint-plugin-vue": "^10.6.2",
+        "graphql": "^16.12.0",
         "graphql-tag": "^2.12.6",
-        "vue-template-compiler": "^2.6.11"
-    },
-    "eslintConfig": {
-        "root": true,
-        "env": {
-            "node": true
-        },
-        "extends": [
-            "plugin:vue/essential",
-            "eslint:recommended"
-        ],
-        "parserOptions": {
-            "parser": "babel-eslint"
-        },
-        "rules": {
-            "no-unused-vars": "off",
-            "no-unreachable": "off",
-            "no-inner-declarations": "off",
-            "no-prototype-builtins": "off",
-            "no-useless-escape": "off",
-            "no-extra-semi": "off",
-            "vue/no-unused-components": "off",
-            "vue/no-v-for-template-key-on-child": "off"
-        }
+        "vue-template-compiler": "^2.7.16"
     },
     "browserslist": [
         "> 1%",
