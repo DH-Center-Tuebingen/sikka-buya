@@ -6,7 +6,7 @@
             </span>
         </div>
         <div class="fields">
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.mint_region')">
                 <template #label>
                     <Locale path="property.mint_region" />
                 </template>
@@ -19,7 +19,7 @@
                 />
             </LabeledInputContainer>
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.mintAsOnCoin')">
                 <template #label>
                     <Locale path="property.mintAsOnCoin" />
                 </template>
@@ -32,7 +32,7 @@
             </LabeledInputContainer>
 
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.epoch')">
                 <template #label>
                     <Locale path="property.epoch" />
                 </template>
@@ -45,7 +45,7 @@
                 />
             </LabeledInputContainer>
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.fragment')">
                 <template #label>
                     <Locale path="property.fragment" />
                 </template>
@@ -74,7 +74,7 @@
                 </Toggle>
             </LabeledInputContainer>
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.reconstructed')">
                 <template #label>
                     <Locale path="property.reconstructed" />
                 </template>
@@ -103,7 +103,7 @@
                 </Toggle>
             </LabeledInputContainer>
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.mint-region-uncertain')">
                 <template #label>
                     <Locale path="property.mint-region-uncertain" />
                 </template>
@@ -132,7 +132,7 @@
                 </Toggle>
             </LabeledInputContainer>
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.weight')">
                 <template #label>
                     <span>
                         <Locale path="property.weight" /> (g)
@@ -150,7 +150,7 @@
             </LabeledInputContainer>
 
             <div class="type-group">
-                <LabeledInputContainer>
+                <LabeledInputContainer :title="$t('property.type')">
                     <template #label>
                         <Locale path="property.type" />
                     </template>
@@ -186,7 +186,7 @@
                     />
                 </LabeledInputContainer>
 
-                <LabeledInputContainer>
+                <LabeledInputContainer :title="$t('property.year_of_mint')">
                     <template #label>
                         <Locale path="property.year_of_mint" />
                     </template>
@@ -200,7 +200,7 @@
                     >
                 </LabeledInputContainer>
 
-                <LabeledInputContainer>
+                <LabeledInputContainer :title="$t('property.year_of_mint_uncertain')">
                     <template #label>
                         <Locale path="property.year_of_mint_uncertain" />
                     </template>
@@ -217,7 +217,7 @@
 
 
 
-                <LabeledInputContainer>
+                <LabeledInputContainer :title="$t('property.nominal')">
                     <template #label>
                         <Locale path="property.nominal" />
                     </template>
@@ -230,7 +230,7 @@
                     />
                 </LabeledInputContainer>
 
-                <LabeledInputContainer>
+                <LabeledInputContainer :title="$t('property.material')">
                     <template #label>
                         <Locale path="property.material" />
                     </template>
@@ -243,7 +243,7 @@
                 </LabeledInputContainer>
             </div>
 
-            <LabeledInputContainer>
+            <LabeledInputContainer :title="$t('property.count')">
                 <template #label>
                     <Locale path="property.count" />
                 </template>
@@ -389,7 +389,7 @@ export default {
 
 
 .box {
-    min-width: 40px;
+    min-width: 20px;
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -402,6 +402,7 @@ export default {
 .index-box {
     font-size: .6rem;
     font-weight: bold;
+    margin-bottom: .3rem;
 
     span {
         padding: 3px 6px;

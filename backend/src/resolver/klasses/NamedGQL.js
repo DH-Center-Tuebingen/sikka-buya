@@ -3,9 +3,12 @@ const { Database, WriteableDatabase } = require("../../utils/database");
 
 
 class NamedGQL {
-  constructor(name) {
+  constructor(name, tableName = null) {
     this.name = name;
-    const namedModel = new NamedModel(name);
+
+    // The name must be transformed from camelCase to snake_case to get the table name
+    tableName = (tableName) ? tableName : name.replace(/([A-Z])/g, "_$1").toLowerCase();
+    const namedModel = new NamedModel(tableName);
 
     this.Queries = {};
     this.Queries[name] = async () => namedModel.list();

@@ -77,6 +77,22 @@ type TreasureItem {
   uncertainYear: String
   mintAsOnCoin: String
   reconstructed: Boolean
+
+  person: Person
+  issuingState: Name
+  historicalRegion: Name
+
+  singleFind: Boolean
+  reliableAttribution: Boolean
+  completeHoard: Boolean
+  ottomanPredominance: Boolean
+
+  authenticity: String
+  circumstances: String
+  subclassification: String
+
+  yearOfLoss: Range
+  yearOfMint: Range
 }
 
 input TreasureItemInput {
@@ -93,6 +109,23 @@ input TreasureItemInput {
   uncertainYear: String
   mintAsOnCoin: String
   reconstructed: Boolean
+
+  person: ID
+
+  issuingState: ID
+  historicalRegion: ID
+
+  singleFind: Boolean
+  reliableAttribution: Boolean
+  completeHoard: Boolean
+  ottomanPredominance: Boolean
+
+  authenticity: String
+  circumstances: String
+  subclassification: String
+
+  yearOfLoss: RangeInput
+  yearOfMint: RangeInput
 }
 
 type Treasure {
@@ -251,6 +284,7 @@ input PersonInput {
   id: ID
   name: String
   shortName: String
+  reign: RangeInput
   role: ID
   dynasty: ID
   color: String
@@ -380,6 +414,15 @@ type Query {
 
   
   # TODO: missing Tests ---------------------------------------------
+
+    historicalRegion: [Name]
+    searchHistoricalRegion(text: String): [Name]!
+    getHistoricalRegion(id: ID!): Name
+
+    issuingState: [Name]
+    searchIssuingState(text: String): [Name]!
+    getIssuingState(id: ID!): Name
+
 
   propertyByName(property: String!, name:String!): Name
 
@@ -602,6 +645,13 @@ type Mutation {
   updateEpoch(id: ID!, name: String!): Void
   deleteEpoch(id: ID): Void
 
+  addHistoricalRegion(name: String!): Void
+  updateHistoricalRegion(id: ID!, name: String!): Void
+  deleteHistoricalRegion(id: ID): Void
+
+  addIssuingState(name: String!): Void
+  updateIssuingState(id: ID!, name: String!): Void
+  deleteIssuingState(id: ID): Void
 
   updateNote(text: String, property: String, propertyId: ID): Void
   updateLang(
@@ -791,10 +841,16 @@ interface ITitled {
   honorifics: [Name]
 }
 
+type Range {
+    from: Int
+    to: Int
+}
+
 type Person implements IPerson {
   id: ID
   name: String
   shortName: String
+  reign: Range
   role: Name
   dynasty: Name
   color: String

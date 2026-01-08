@@ -19,78 +19,78 @@ export const app = { vue: null }
 async function main() {
 
 
-  /**Initializes the settings on the first page visit. */
-  if (Settings.init(window) > 0) {
-    console.warn("All default settings were created.")
-  }
+    /**Initializes the settings on the first page visit. */
+    if (Settings.init(window) > 0) {
+        console.warn("All default settings were created.")
+    }
 
-  Vue.config.productionTip = false
+    Vue.config.productionTip = false
 
-  Vue.prototype.$utils = {
-    capitalize: StringUtils.capitalize,
-    snakeCase,
-    camelCase,
-    pascalCase,
-    objectCombine: function (...args) {
-      if (!args.length || args.length < 2) throw new Error(`Function 'objectCombine' requires at least two arguments.`)
-      let obj = {}
+    Vue.prototype.$utils = {
+        capitalize: StringUtils.capitalize,
+        snakeCase,
+        camelCase,
+        pascalCase,
+        objectCombine: function (...args) {
+            if (!args.length || args.length < 2) throw new Error(`Function 'objectCombine' requires at least two arguments.`)
+            let obj = {}
 
-      do {
-        const nextObj = args.shift()
+            do {
+                const nextObj = args.shift()
 
-        if (nextObj == null) continue
-        for (const [nextKey, nextVal] of Object.entries(nextObj)) {
-          if (nextVal == null) continue
-          obj[nextKey] = nextVal
+                if (nextObj == null) continue
+                for (const [nextKey, nextVal] of Object.entries(nextObj)) {
+                    if (nextVal == null) continue
+                    obj[nextKey] = nextVal
+                }
+            } while (args.length > 0)
+
+            return obj
         }
-      } while (args.length > 0)
-
-      return obj
     }
-  }
 
-  Vue.use(mconfig, {
-    path: "project_settings",
-    template: SettingsTemplate.project_settings
-  })
+    Vue.use(mconfig, {
+        path: "project_settings",
+        template: SettingsTemplate.project_settings
+    })
 
-  Vue.prototype.$selection = Selection
-  Vue.prototype.$L = L
+    Vue.prototype.$selection = Selection
+    Vue.prototype.$L = L
 
-  Vue.mixin(ConfigMixin)
-  Vue.mixin({
-    methods: {
-      log(...args) {
-        console.log(...args)
-      },
-    }
-  })
+    Vue.mixin(ConfigMixin)
+    Vue.mixin({
+        methods: {
+            log(...args) {
+                console.log(...args)
+            },
+        }
+    })
 
-  registerGlobalComponents()
+    registerGlobalComponents()
 
-  I18n.init()
-
-
-  
+    I18n.init()
 
 
-  app.vue = new Vue({
-    router,
-    store,
-    i18n: new VueI18n(),
-    render: h => h(App)
-  }).$mount('#app')
+    window.router = router
+
+
+    app.vue = new Vue({
+        router,
+        store,
+        i18n: new VueI18n(),
+        render: h => h(App)
+    }).$mount('#app')
 }
 
 main().catch(console.error)
 
 function registerGlobalComponents() {
 
-  Vue.component('CalendarIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CalendarBlank"))
-  Vue.component('CheckIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Check"))
-  Vue.component('CheckEmphasisIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CheckBold"))
-  Vue.component('RulerIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/AccountGroup"))
-  Vue.component('MintIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Home"))
-  Vue.component('LocationIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/MapMarker"))
+    Vue.component('CalendarIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CalendarBlank"))
+    Vue.component('CheckIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Check"))
+    Vue.component('CheckEmphasisIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/CheckBold"))
+    Vue.component('RulerIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/AccountGroup"))
+    Vue.component('MintIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/Home"))
+    Vue.component('LocationIcon', () => import(/* webpackChunkName: "v-icon" */ "vue-material-design-icons/MapMarker"))
 
 }

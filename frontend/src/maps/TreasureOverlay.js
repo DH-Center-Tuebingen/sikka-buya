@@ -115,6 +115,21 @@ export default class TreasureOverlay extends Overlay {
                     }
                     reconstructed
                     mintAsOnCoin
+
+                    issuingState
+                    historicalRegion
+
+                    singleFind
+                    reliableAttribution
+                    completeHoard
+                    ottomanPredominance
+
+                    authenticity
+                    circumstances
+                    subclassification
+
+                    yearOfLoss {from to}
+                    yearOfMint {from to}
                 }
             }
         }`, {})

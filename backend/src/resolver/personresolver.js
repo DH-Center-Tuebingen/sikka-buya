@@ -12,14 +12,14 @@ class PersonResolver extends Resolver {
 
     async add(_, args) {
         args.data = transformPropertyToSnakeCase(args.data, "shortName")
-
+        args.data = SQLUtils.separateRange(args.data, "reign")
 
         return WriteableDatabase.tx(async t => {
             const result = await t.one(`
                 INSERT INTO person
-                (name, short_name, role, dynasty)
+                    (name, short_name, role, dynasty, reign_from, reign_to)
                 VALUES
-                ($[name], $[short_name], $[role], $[dynasty])
+                    ($[name], $[short_name], $[role], $[dynasty], $[reign_from], $[reign_to])
                 RETURNING id
             `, args.data)
             if (result.id && args.data.color != null) {
@@ -38,13 +38,15 @@ class PersonResolver extends Resolver {
         SQLUtils.removeNullProperty(args, "dynasty")
         SQLUtils.removeNullProperty(args, "role")
         args.data = transformPropertyToSnakeCase(args.data, "shortName")
+        args.data = SQLUtils.separateRange(args.data, "reign")
 
 
         return WriteableDatabase.tx(async t => {
             await t.none(`
                 UPDATE person
                SET
-                name=$[name], short_name=$[short_name], role=$[role], dynasty=$[dynasty]
+                name=$[name], short_name=$[short_name], role=$[role], dynasty=$[dynasty],
+                reign_from=$[reign_from], reign_to=$[reign_to]
                 WHERE id=$[id]
             `, {
                 id, ...args.data
@@ -64,7 +66,7 @@ class PersonResolver extends Resolver {
 
     async get(_, args) {
         let result = await Database.one(`
-        SELECT p.id, p.name, p.short_name,
+        SELECT p.id, p.name, p.short_name, p.reign_from, p.reign_to,
         r.id AS role_id, r.name AS role_name,
         d.id AS dynasty_id, d.name AS dynasty_name,
         c.color AS color

@@ -21,6 +21,8 @@ const MintRegionGQL = require('./klasses/MintRegionGQL.js')
 const { GeoJSON } = require('../models/geojson.js')
 const NamedGQL = require('./klasses/NamedGQL.js')
 const CoinTypeGQL = require('./klasses/CoinTypeGQL.js')
+const IssuingStateGQL = new NamedGQL("issuingState", 'state')
+const HistoricalRegionGQL = new NamedGQL("historicalRegion")
 
 
 
@@ -630,5 +632,7 @@ module.exports = Object.assign(Queries,
     SettingsGQL.Queries,
     TreasureGQL.Queries,
     MintRegionGQL.Queries,
-    CoinTypeGQL.Queries
+    CoinTypeGQL.Queries,
+    IssuingStateGQL.Queries,
+    HistoricalRegionGQL.Queries
 )

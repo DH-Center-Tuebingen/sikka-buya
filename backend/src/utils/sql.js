@@ -111,6 +111,55 @@ class SQLUtils {
         return obj
     }
 
+    /**
+     * Extracts a range from an object and stores it in a new property.
+     * By default it looks for properties named `${rangeName}_from` and `${rangeName}_to`.
+     * Otherwise the keys can be specified manually.
+     * 
+     * @param {object} obj - Object to extract the range from and to.
+     * @param {string} rangeName  - Name of the range property.
+     * @param {string|null} fromKey - Name of the 'from' key.
+     * @param {string|null} toKey - Name of the 'to' key.
+     * @returns 
+     */
+    static extractRange(obj, rangeName, fromKey = null, toKey = null) {
+        if(!fromKey) fromKey = rangeName + "_from"
+        if(!toKey) toKey = rangeName + "_to"
+
+        obj[rangeName] = {
+            from: obj[fromKey],
+            to: obj[toKey]
+        }
+
+        delete obj[fromKey]
+        delete obj[toKey]
+
+        return obj
+    }
+
+    /**
+     * Separates a range object into two properties.
+     * By default it creates properties named `${rangeName}_from` and `${rangeName}_to`.
+     * Otherwise the keys can be specified manually.
+     *
+     * @param {object} obj - Object to separate the range from.
+     * @param {string} rangeName - Name of the range property.
+     * @param {string|null} fromKey - Name of the 'from' key.
+     * @param {string|null} toKey - Name of the 'to' key.
+     * @returns
+     */
+    static separateRange(obj, rangeName, fromKey = null, toKey = null) {
+        if(!fromKey) fromKey = rangeName + "_from"
+        if(!toKey) toKey = rangeName + "_to"
+
+        if(obj[rangeName]) {
+            obj[fromKey] = obj[rangeName].from
+            obj[toKey] = obj[rangeName].to
+            delete obj[rangeName]
+        }
+
+        return obj
+    }
 
     /**
      * Performs an objectify on a list of elements.

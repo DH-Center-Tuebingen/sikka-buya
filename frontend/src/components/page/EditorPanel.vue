@@ -1,13 +1,13 @@
 <template>
-    <div>
+    <div class="editor-panel">
         <header>
             <h2>
                 <locale path="editor.administration" />
             </h2>
-</header>
+        </header>
 
         <div class="flex row">
-<div class="flex-fill">
+            <div class="flex-fill">
                 <template v-for="permission of ['super', 'writer', 'editor', 'type-editor']">
                     <list
                         v-if="$store.getters.userHasPermission(permission) &&
@@ -53,7 +53,7 @@
                     <Locale path="system.quick_access" />
                 </h4>
                 <div class="items">
-<router-link
+                    <router-link
                         v-for="(item, idx) of quickAccessItems"
                         :key="`quick-access-${idx}`"
                         :to="item.to"
@@ -84,9 +84,9 @@
                             {{ typesCount }}
                         </span>
                     </div>
-</div>
+                </div>
             </aside>
-</div>
+        </div>
     </div>
 </template>
 
@@ -162,19 +162,21 @@ export default {
         },
         getProperties({ include = null } = {}) {
             let props = [
-                'coin_mark',
-                'coin_verse',
-                'epoch',
-                'dynasty',
-                'honorific',
+                // 'coin_mark',
+                // 'coin_verse',
+                // 'epoch',
+                // 'dynasty',
+                // 'honorific',
                 'material',
-                'mint',
+                // 'mint',
                 'mint_region',
                 'nominal',
                 'person',
                 'province',
-                'role',
-                'title',
+                'historical_region',
+                'issuing_state',
+                // 'role',
+                // 'title',
                 'treasure',
                 'type',
             ];
@@ -214,7 +216,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+    lang="scss"
+    scoped
+>
 a {
     @include resetLinkStyle();
 }

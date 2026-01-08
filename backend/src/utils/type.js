@@ -395,7 +395,7 @@ class Type {
         for (let issuer of data.issuers.values()) {
             issuer.type = +type
             this.removeEmptyTitlesAndHonorifics(issuer)
-            let { id: issuer_id } = await t.one(pgp.helpers.insert(issuer, ["type", "person"], "issuer") + " RETURNING id")
+            let { id: issuer_id } = await t.one(pgp.helpers.insert(issuer, ["type", "person", "reign-from", "reign-to"], "issuer") + " RETURNING id")
 
             for (let title of issuer.titles.values()) {
                 await t.none("INSERT INTO issuer_titles(issuer, title) VALUES($1, $2)", [issuer_id, title])
@@ -952,6 +952,9 @@ class Type {
         SELECT i.id, i.type,p.id as person_id,
                 p.short_name as person_short_name,
                 p.name as person_name,
+                p.reign_from,
+                p.reign_to,
+                p.role as person_role,
                 c.color as person_color,
                 r.id as person_role_id,
                 r.name as person_role_name,

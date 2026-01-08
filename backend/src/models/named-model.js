@@ -16,6 +16,7 @@ class NamedModel extends Model {
     }
 
     async list(transaction = Database) {
+        console.log(`Listing all from table ${this.tableName}`);
         return transaction.manyOrNone(`SELECT id, name FROM ${this.tableName} ORDER BY name ASC`)
     }
 

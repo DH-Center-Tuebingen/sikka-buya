@@ -1,5 +1,5 @@
 const { Database } = require('../utils/database')
-const { transformPropertyToCamelCase, objectifyBulk } = require('../utils/sql')
+const { transformPropertyToCamelCase, objectifyBulk, extractRange } = require('../utils/sql')
 
 
 class Person {
@@ -11,14 +11,15 @@ class Person {
 
     static async get(t = Database, id) {
         let result = await t.one(`
-        SELECT p.id, p.name, p.short_name,
-        r.id AS role_id, r.name AS role_name,
-        d.id AS dynasty_id, d.name AS dynasty_name,
-        c.color AS color
+        SELECT 
+            p.id, p.name, p.short_name, p.reign_from, p.reign_to,
+            r.id AS role_id, r.name AS role_name,
+            d.id AS dynasty_id, d.name AS dynasty_name,
+            c.color AS color
         FROM person p
-        LEFT JOIN person_role r ON p.role = r.id
-        LEFT JOIN dynasty d ON p.dynasty = d.id
-        LEFT JOIN person_color c ON c.person = p.id
+            LEFT JOIN person_role r ON p.role = r.id
+            LEFT JOIN dynasty d ON p.dynasty = d.id
+            LEFT JOIN person_color c ON c.person = p.id
         WHERE p.id=$[id]
         ORDER BY name ASC
         `, {
@@ -29,6 +30,7 @@ class Person {
     }
 
     static decomposePersonResult(result) {
+        result = extractRange(result, "reign")
         result = objectifyBulk(result, this.objectifyConfigs)
         result = transformPropertyToCamelCase(result, "short_name")
         return result

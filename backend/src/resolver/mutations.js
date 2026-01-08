@@ -18,6 +18,8 @@ const MintRegionGQL = require('./klasses/MintRegionGQL')
 const PageGQL = require('./klasses/PageGQL')
 const SettingsGQL = require('./klasses/SettingsGQL')
 const TreasureGQL = require('./klasses/TreasureGQL')
+const IssuingStateGQL = new NamedGQL("issuingState", 'state')
+const HistoricalRegionGQL = new NamedGQL("historicalRegion")
 
 const Frontend = require('../frontend')
 const CoinTypeGQL = require('./klasses/CoinTypeGQL')
@@ -174,6 +176,8 @@ const EditorMutations = {
     ...TreasureGQL.Mutations,
     ...MintRegionGQL.Mutations,
     ...EpochGQL.Mutations,
+    ...IssuingStateGQL.Mutations,
+    ...HistoricalRegionGQL.Mutations,
     async changePersonExplorerOrder(_, args) {
         return WriteableDatabase.none("INSERT INTO person_explorer_custom_sorting (person, position) VALUES ($[person], $[position]) ON CONFLICT (person) DO UPDATE SET position=$[position]", args)
     },
@@ -187,7 +191,7 @@ const EditorMutations = {
             WHERE note.property=$[property] AND note.property_id=$[property_id];
             `, { text, property, property_id })
     },
-  
+
     async updateMaterialColor(_, args) {
         return WriteableDatabase.none(`INSERT INTO material_color (material, color) VALUES ($[id], $[color]) ON CONFLICT (material) DO UPDATE SET color=$[color]`, args)
     },

@@ -81,8 +81,12 @@ const property = {
         "Feld",
     frontside:
         "Avers",
+    historical_region:
+        "Historische Region | Historische Regionen",
     honorific:
         "Ehrenname | Ehrennamen",
+    issuing_state:
+        "Ausgebender Staat | Ausgebende Staaten",
     isolated_characters:
         "isolierter Buchstabe | isolierte Buchstaben",
     issuer:

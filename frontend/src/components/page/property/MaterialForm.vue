@@ -26,7 +26,6 @@
       >
 
       <ColorInput
-        v-if="material.id >= 0"
         id="material-color"
         v-model="material.color"
       />

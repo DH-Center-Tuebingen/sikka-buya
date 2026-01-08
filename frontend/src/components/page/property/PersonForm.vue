@@ -53,9 +53,15 @@
             />
 
             <label for="person-color">Farbe</label>
-            <color-input
+            <ColorInput
                 id="person-color"
                 v-model="person.color"
+            />
+
+            <label for="person-reign">Regierungszeit</label>
+            <RangeInput
+                id="person-reign"
+                v-model="person.reign"
             />
         </PropertyFormWrapper>
     </div>
@@ -66,12 +72,14 @@ import Query from '../../../database/query.js';
 import PropertyFormWrapper from '../PropertyFormWrapper.vue';
 import DataSelectField from '@/components/forms/DataSelectField.vue';
 import ColorInput from '@/components/forms/ColorInput.vue';
+import RangeInput from '@/components/forms/RangeInput.vue';
 
 import PropertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 
 export default {
     name: 'PersonForm',
     components: {
+        RangeInput,
         PropertyFormWrapper,
         DataSelectField,
         ColorInput,
@@ -85,6 +93,7 @@ export default {
                 id: -1,
                 name: '',
                 shortName: '',
+                reign: { from: null, to: null },
                 role: { id: null, name: '' },
                 dynasty: { id: null, name: '' },
                 color: '#000000',
@@ -94,22 +103,26 @@ export default {
     methods: {
         getProperty: async function (id) {
             const result = await Query.raw(`
-      query ($id : ID!){
-        getPerson(id: $id){
-          id
-          name
-          shortName
-          role {
-            id
-            name
-          }
-          dynasty {
-            id
-            name
-          }
-          color
-        }
-      }`, { id })
+            query ($id : ID!){
+                getPerson(id: $id){
+                id
+                name
+                shortName
+                role {
+                    id
+                    name
+                }
+                dynasty {
+                    id
+                    name
+                }
+                color
+                reign {
+                    from
+                    to
+                    }
+                }
+            }`, { id });
 
             let person = result.data.data.getPerson;
             if (person.color === null) person.color = '#ffffff';
@@ -126,44 +139,54 @@ export default {
                 role: this.person.role.id,
                 dynasty: this.person.dynasty.id,
                 color: this.person.color,
+                reign_from: this.person.reign.from,
+                reign_to: this.person.reign.to,
             };
+
+            console.log(variables.reign_from, variables.reign_to);
 
             if (this.person.id && this.person.id > 0) {
                 variables.id = this.person.id;
                 queryName = "updatePerson"
-                query = `mutation($id:ID!, $name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String)
-{
-      ${queryName} (
-        id: $id,
-        data: {
-          name: $name,
-          shortName: $shortName,
-          role: $role,
-          dynasty: $dynasty,
-          color: $color
-        }
-      )
-  }`;
+                query = `mutation($id:ID!, $name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String, $reign_from: Int, $reign_to: Int)
+                            {
+                                ${queryName} (
+                                    id: $id,
+                                    data: {
+                                    name: $name,
+                                    shortName: $shortName,
+                                    role: $role,
+                                    dynasty: $dynasty,
+                                    color: $color
+                                    reign: {
+                                        from: $reign_from,
+                                        to: $reign_to
+                                    }
+                                    }
+                                )
+                            }`;
             } else {
                 queryName = "addPerson"
-                query = `mutation($name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String)
-{
-      ${queryName} (
-        data: {
-          name: $name,
-          shortName: $shortName,
-          role: $role,
-          dynasty: $dynasty,
-          color: $color
-        }
-      )
-  }`;
+                query = `mutation($name: String,$shortName: String, $role:ID, $dynasty:ID, $color:String, $reign_from: Int, $reign_to: Int)
+                            {
+                                ${queryName} (
+                                    data: {
+                                    name: $name,
+                                    shortName: $shortName,
+                                    role: $role,
+                                    dynasty: $dynasty,
+                                    color: $color
+                                        reign: {
+                                            from: $reign_from,
+                                            to: $reign_to
+                                        }
+                                    }
+                                )
+                            }`;
             }
 
             const result = await Query.raw(query, variables)
             this.person = result.data.data[queryName]
-
-
         }
     },
 };

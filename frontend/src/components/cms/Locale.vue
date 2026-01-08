@@ -28,7 +28,7 @@ import LocaleIcon from './LocaleIcon.vue';
 
 
 export default {
-    components: {  LocaleIcon },
+    components: { LocaleIcon },
     props: {
         path: {
             required: true,
@@ -56,7 +56,10 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 a.locale-link {
     position: absolute;
     color: currentColor !important;

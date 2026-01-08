@@ -1,7 +1,15 @@
 <template>
     <div class="labeled-input-container">
-        <label>
-            <slot name="label" /> {{ label }} {{ warning }}
+        <label :title="title">
+            <slot name="label" />
+            <span v-if="label">
+                {{ label }}
+            </span>
+            <span
+                v-if="warning"
+                class="warning"
+                :title="warning"
+            >⚠️</span>
         </label>
         <slot />
     </div>
@@ -19,6 +27,10 @@ export default {
             type: String,
             default: ''
         },
+        title: {
+            type: String,
+            default: ''
+        },
     },
 };
 </script>
@@ -30,6 +42,9 @@ export default {
 >
 label {
     margin-bottom: $small-padding;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .labeled-input-container {

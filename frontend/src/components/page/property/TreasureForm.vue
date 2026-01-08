@@ -97,7 +97,12 @@
 
             <ErrorMessage :error="importErrors" />
 
-            <div class="list-shadow">
+            <OttomanTreasureItemTable v-model="value.items" />
+            <ButtonVue @click="addItem">
+                <Locale path="form.add_item" />
+            </ButtonVue>
+
+            <!-- <div class="list-shadow">
                 <form-list
                     id="treasure-item-list"
                     @add="addItem"
@@ -111,29 +116,32 @@
                         @delete="() => value.items.splice(index, 1)"
                     />
                 </form-list>
-            </div>
+            </div> -->
         </LabeledInputContainer>
     </PropertyFormWrapper>
 </template>
 
 <script>
-import { Treasure, TreasureItem } from '../../../models/property/treasure';
+// import { Treasure, TreasureItem } from '../../../models/property/treasure';
 import ButtonVue from "@/components/layout/buttons/Button.vue"
 import ErrorMessage from "@/components/ErrorMessage"
 import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
-import FormList from "@/components/forms/FormList"
+// import FormList from "@/components/forms/FormList"
 import LabeledInputContainer from "@/components/LabeledInputContainer"
 import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
-import TreasureItemForm from "./TreasureItemForm"
+// import TreasureItemForm from "./TreasureItemForm"
 import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
 import { TreasureItemsImporter, CsvExporter } from "@/models/importer"
 import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
 import ColorInput from '../../forms/ColorInput.vue';
+import OttomanTreasureItemTable from '@/components/Ottoman/OttomanTreasureItemTable.vue';
+
+import { OttomanTreasure, OttomanTreasureItem } from '@/components/Ottoman/ottoman-treasure-item';
 
 const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
 
@@ -142,7 +150,7 @@ export default {
         ButtonVue,
         ErrorMessage,
         FileUploadButton,
-        FormList,
+        // FormList,
         LabeledInputContainer,
         Locale,
         LocationInput,
@@ -150,8 +158,9 @@ export default {
         RangeInput,
         SimpleFormattedField,
         Toggle,
-        TreasureItemForm,
-        ColorInput
+        // TreasureItemForm,
+        ColorInput,
+        OttomanTreasureItemTable,
     },
     mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure", overwriteCancelRoute: { name: "TreasureOverview" } })],
     data() {
@@ -183,25 +192,27 @@ export default {
             this.$refs.locationInput.updateSize()
         },
         getProperty: async function (id) {
-            let treasure = await new Treasure().get(id)
+            console.log("Load treasure GET")
+            const ottomanTreasure = new OttomanTreasure()
+            let treasure = await ottomanTreasure.get(id)
             let location = treasure.location || defaultLocation
 
             treasure.location = location
             this.$refs.descriptionField.setContent(treasure.description)
 
             if (!treasure.items) treasure.items = []
-            treasure.items = treasure.items.map(item => new TreasureItem(item).forInput())
+            treasure.items = treasure.items.map(item => new OttomanTreasureItem(item).forInput())
             return treasure
         },
         updateProperty: async function () {
-            const treasure = new Treasure({
+            const treasure = new OttomanTreasure({
                 name: this.value.name,
                 color: this.value.color,
                 location: this.$refs.locationInput.getGeoJSON(),
                 description: this.$refs.descriptionField.getContent(),
                 timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
                 items: this.value.items.map(item => {
-                    let ti = TreasureItem.fromInputs(item)
+                    let ti = OttomanTreasureItem.fromInputs(item)
                     delete ti.id
                     return ti
                 })
@@ -238,7 +249,8 @@ export default {
             }
         },
         addItem() {
-            const item = new TreasureItem().forInput()
+            const item = new OttomanTreasureItem().forInput()
+            // const item = new TreasureItem().forInput()
             this.value.items.push(item)
         },
         async importItems(event) {

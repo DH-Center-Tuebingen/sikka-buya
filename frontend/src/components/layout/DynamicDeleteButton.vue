@@ -173,6 +173,7 @@ svg {
   position: absolute;
   right: 0;
   top: 50%;
+  z-index: 1;
 
   overflow: hidden;
   transform: translate(0, -50%);

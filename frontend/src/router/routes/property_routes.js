@@ -1,4 +1,4 @@
-import { camelCase } from 'lodash'
+import { pascalCase } from 'change-case'
 
 export default class PropertyRoute {
     constructor(name, component) {
@@ -20,7 +20,7 @@ export default class PropertyRoute {
     get createRoute() {
         return {
             path: `${this.name}/create`,
-            name: `Create${camelCase(this.name)}`,
+            name: `Create${pascalCase(this.name)}`,
             component: this.component
         }
     }
@@ -28,7 +28,7 @@ export default class PropertyRoute {
     get editRoute() {
         return {
             path: `${this.name}/:id`,
-            name: `Edit${camelCase(this.name)}`,
+            name: `Edit${pascalCase(this.name)}`,
             component: this.component
         }
     }

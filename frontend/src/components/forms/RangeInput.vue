@@ -1,15 +1,18 @@
 <template>
     <div class="range-input">
         <input
-            type="number"
+            class="from"
             :step="step"
             :value="value.from"
+            @beforeinput="validateNumber"
             @input="updateMin"
         >
+        <span>–</span>
         <input
-            type="number"
+            class="to"
             :step="step"
             :value="value.to"
+            @beforeinput="validateNumber"
             @input="updateMax"
         >
     </div>
@@ -29,30 +32,71 @@ export default {
     methods: {
         updateMin(event) {
             let value = this.value;
-            value.from = event.target.value;
+            value.from = Number(event.target.value) || null;
             this.$emit('input', value);
         },
         updateMax(event) {
             let value = this.value;
-            value.to = event.target.value;
+            value.to = Number(event.target.value) || null;
             this.$emit('input', value);
+        },
+        validateNumber(event) {
+            if (event.data === null || event.data.length && event.data.length === 0) {
+                return; // Allow deletions
+            }
+            const char = String.fromCharCode(event.data.charCodeAt(0));
+            if (!/[0-9]/.test(char)) {
+                event.preventDefault();
+            }
         }
     }
 };
 </script>
 
-<style lang='scss' scoped>
-
+<style
+    lang='scss'
+    scoped
+>
 .range-input {
     display: flex;
+    position: relative;
+
+
+    input {
+        min-width: 6ch;
+    }
+
+    .from {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right-width: 0;
+    }
+
+    .to {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left-width: 0;
+    }
+
+    span {
+        display: block;
+        background-color: $white;
+        border: 1px solid #ccc;
+        border-left-width: 0;
+        border-right-width: 0;
+        padding-left: $padding;
+        padding-right: $padding;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 input {
     width: 100%;
     border: 1px solid #ccc;
-    border-radius: 4px;
     padding: 4px;
-    margin: 0 4px;
+    border-radius: 4px;
     text-align: center;
 }
 </style>

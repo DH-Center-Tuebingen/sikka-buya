@@ -49,8 +49,12 @@ export default {
     padding: $padding;
     background-color: $red;
     border: 1px solid $dark-red;
-    color: $white;
     border-radius: 5px;
+
+    .error {
+        color: $white;
+        margin:0;
+    }
 }
 
 .icon {
