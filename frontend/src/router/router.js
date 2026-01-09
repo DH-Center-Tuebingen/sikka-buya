@@ -49,7 +49,8 @@ import PersonPage from "@/components/page/catalog/PersonPage.vue"
  * Editor Page
  */
 import EditorPage from "@/components/page/editor/EditorPage.vue"
-import LandingPage from "@/components/page/LandingPage.vue"
+// import LandingPage from "@/components/page/LandingPage.vue"
+import LandingPage from "@/components/Ottoman/OttomanLandingPage.vue"
 import ContactPage from "@/components/page/ContactPage.vue"
 import CreateTypePage from "@/components/page/CreateTypePage.vue"
 import InitialSetup from "@/components/page/InitialSetup.vue"
@@ -95,7 +96,6 @@ import Auth from "../utils/Auth.js"
 import MapPage from "@/components/page/MapPage.vue"
 import PoliticalMap from "@/components/map/PoliticalMap"
 import TreasureMap from "@/components/map/TreasureMap"
-import OttomanTreasureMap from "@/components/map/OttomanTreasureMap.vue"
 import MaterialMap from "@/components/map/MaterialMap"
 import PlaygroundPage from "@/components/map/Playground"
 
@@ -111,6 +111,10 @@ import SettingsTemplate from '../../settings.json'
 
 Vue.use(VueRouter)
 const mconfig = new ManagedConfig("project_settings", SettingsTemplate["project_settings"])
+
+
+// OTTOMAN SPECIFIC ROUTES
+import OttomanTreasureMap from "@/components/Ottoman/OttomanTreasureMap.vue"
 
 
 const routes = [

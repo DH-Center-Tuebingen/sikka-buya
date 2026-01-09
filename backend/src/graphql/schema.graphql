@@ -158,6 +158,12 @@ type TreasuresByMint {
   treasures: [TreasureCount]
 }
 
+type OttomanTreasuresByMint {
+  mint: MintRegion
+  totalCount: Int
+  treasures: [TreasureCount]
+}
+
 type CoinType {
   avers: CoinSideInformation
   caliph: Person
@@ -414,6 +420,7 @@ type Query {
 
   
   # TODO: missing Tests ---------------------------------------------
+
 
     historicalRegion: [Name]
     searchHistoricalRegion(text: String): [Name]!

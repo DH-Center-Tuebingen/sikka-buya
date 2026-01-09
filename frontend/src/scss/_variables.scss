@@ -27,8 +27,9 @@ $black: #111;
 $text-color: $black;
 $background-color: whitesmoke;
 
-$blue: #4873ac;
-$bright-blue: hsl(214, 60%, 60%);
+$blue: #3C38A5;
+$bright-blue: color.adjust($color: $blue, $lightness: 20%);
+$dark-blue: color.adjust($color: $blue, $lightness: -10%);
 
 $purple: #ac48ac;
 $bright-purple: hsl(300, 41%, 60%);
@@ -43,8 +44,8 @@ $dark-green: #6b996b;
 $red: #da4133;
 $dark-red: color.adjust($color: $red, $lightness: -10%);
 
-$primary-color: $green;
-$dark-primary-color: $dark-green;
+$primary-color: $blue;
+$dark-primary-color: $dark-blue;
 
 $big-font: 1.5rem;
 $large-font: 1.2rem;

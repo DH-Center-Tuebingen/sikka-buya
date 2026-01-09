@@ -5,29 +5,29 @@
                 <div>
                     <ul class="unstyled">
                         <li>
-<a href="https://uni-tuebingen.de/impressum/">
+                            <a href="https://uni-tuebingen.de/impressum/">
                                 <locale path="routes.impressum" />
                             </a>
-</li>
+                        </li>
                         <li>
-<a href="https://uni-tuebingen.de/datenschutzerklaerung/">
+                            <a href="https://uni-tuebingen.de/datenschutzerklaerung/">
                                 <locale path="routes.data_protection" />
                             </a>
-</li>
+                        </li>
                         <li>
                             <router-link :to="{ name: 'Contact' }">
                                 <locale path="routes.contact" />
                             </router-link>
                         </li>
                     </ul>
-</div>
+                </div>
                 <div>
                     <ul class="unstyled">
                         <li>
-<router-link :to="{ name: 'Login' }">
+                            <router-link :to="{ name: 'Login' }">
                                 <locale path="system.user_login" />
                             </router-link>
-</li>
+                        </li>
                         <li>
                             <i>
                                 Version {{ $store.state.version }}
@@ -37,21 +37,12 @@
                             <div>© 2024</div>
                         </li>
                     </ul>
-</div>
+                </div>
 
                 <div>
-                    <h4>
+                    <!-- <h4>
                         <locale path="general.cooperations" />:
-</h4>
-                    <a
-                        href="http://numid-verbund.de/"
-                        target="_blank"
-                    >
-                        <img
-                            class="supporter-logo"
-                            src="/image/logos/numid-logo.png"
-                            alt="Logo des Numid-Verbundes"
-                        ></a>
+                    </h4> -->
                 </div>
             </div>
         </div>

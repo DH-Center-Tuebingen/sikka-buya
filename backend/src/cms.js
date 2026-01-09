@@ -5,7 +5,7 @@ const { finished } = require('stream/promises')
 const Frontend = require('./frontend')
 
 
-const supportedExtensions = ["png", "jpg", "jpeg", "pdf"]
+const supportedExtensions = ["png", "jpg", "jpeg", "pdf", "webp"]
 class CMS {
 
     static get config() {

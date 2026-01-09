@@ -1238,19 +1238,6 @@ table {
     min-height: 100px;
 }
 
-.treasure-description {
-    margin: 0 1em;
-    padding: .5rem;
-    background-color: $white;
-    border: $border;
-    border-radius: $border-radius;
-
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-
-
 tr {
     cursor: pointer;
     user-select: none;

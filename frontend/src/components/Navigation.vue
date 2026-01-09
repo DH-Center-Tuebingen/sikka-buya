@@ -10,7 +10,7 @@ v-if="!hideLogo"
 :to="{ name: 'Home' }"
 >
           <img
-src="/image/logos/sikka-buya-logo.svg"
+src="/image/ottoman/cwt_condense_text_rendered.svg"
 alt=""
 >
         </router-link>

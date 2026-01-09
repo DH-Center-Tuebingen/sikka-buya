@@ -3,57 +3,23 @@
         <Sidebar>
             <template #title>
                 <Locale
-                    path="property.mint"
+                    path="general.filter"
                     :count="2"
                 />
             </template>
 
-
-
-            <MultiSelectList>
-                <MultiSelectListItem
-                    v-for="mint of getFilteredMints()"
-                    :key="`mint-list-item-${mint.id}`"
-                    :class="{
-                        'selected': selectedMintIds.includes(mint.id)
-                    }"
-                    :selected="selectedMintIds.includes(mint.id)"
-                    @checkbox-selected="() => addMintSelection([mint.id])"
-                    @click.native="selectMint(mint.id)"
-                >
-                    <span
-                        v-if="activeMintMap[mint.id]"
-                        style="overflow: clip;"
-                    >
-                        {{ mint.name }}
-                    </span>
-                    <span v-else>
-                        {{ mint.name }}
-                    </span>
-
-                    <div
-                        v-if="activeMintMap[mint.id]"
-                        style="margin-left: auto; margin-right: .5rem; display: flex;"
-                    >
-                        <span
-                            v-for="treasure of selectedTreasures"
-                            :key="`mint-list-num-${mint.id}-${treasure.id}`"
-                            class="mint-count-text-wrapper"
-                            :style="`color: ${treasure.color}; `"
-                        >
-                            <span
-                                v-if="activeMintMap?.[mint.id]?.treasures?.[treasure.id]"
-                                class="mint-count-text"
-                                :class="{
-                                    inverted: invertBackgroundIfNecessary(treasure.color),
-                                }"
-                            >
-                                {{ activeMintMap[mint.id].treasures[treasure.id].count }}
-                            </span>
-                        </span>
-                    </div>
-                </MultiSelectListItem>
-            </MultiSelectList>
+            <CatalogFilter
+                ref="catalogFilter"
+                :init-data="catalog_filter_mixin_initData"
+                :filter-config="filterConfig"
+                :force-all="true"
+                :page-info="pageInfo"
+                @loading="setLoading"
+                @update="dataUpdated"
+                @dynamic-change="recalculateCatalogSidebar"
+                @toggled="save"
+                @error="(e) => $store.commit('printError', e)"
+            />
         </Sidebar>
 
         <div class="center-ui center-ui-top">
@@ -63,94 +29,22 @@
             />
         </div>
         <div class="center-ui center-ui-center" />
-        <div
-            class="center-ui center-ui-bottom"
-            :class="{
-                'hideable-transform': true,
-                'hide-transform-bottom': (selectedTreasures.length === 0)
-            }"
-        >
-            <Timeline
-                ref="timeline"
-                class="ui-element"
-                :value="raw_timeline.value"
-                :from="timeline.from"
-                :to="timeline.to"
-                :interactive="false"
-                :create-marks="false"
+
+        <div class="bottom-center-ui center-ui-center">
+            <ScrollView
+                v-if="selectedTreasures.length === 1"
+                :key="`list-item-description-${selectedTreasures[0].id}`"
+                class="treasure-description"
+                style="margin-bottom: 40px;"
             >
-                <template #background>
-                    <canvas
-                        ref="timelineCanvas"
-                        class="timeline-canvas"
-                    />
-                    <canvas
-                        id="highlight-canvas"
-                        ref="highlightCanvas"
-                        class="timeline-canvas"
-                    />
-                    <!-- <slot name="background" /> -->
-                </template>
-
-
-                <template #footer>
-                    <Row>
-                        <div>
-                            <span>
-                                <Locale
-                                    v-if="chartType == 'time'"
-                                    path="label.timeline.uncertain_years"
-                                />
-                                <Locale
-                                    v-else
-                                    path="label.timeline.unknown_weight"
-                                />
-                                :
-                            </span>
-                            <template v-if="chartType === 'time' && yearCountData.undefined != undefined">
-                                <span style="margin-left: 1em;">
-                                    {{ yearCountData.undefined.y.reduce((acc, val) => acc + val, 0) || 0 }}
-                                </span>
-
-                                <template v-if="selectedTreasures.length > 1">
-                                    (
-                                    <!-- TODO: Key is index -->
-                                    <template v-for="(treasure, index) of selectedTreasures">
-                                        <span
-                                            v-if="index > 0"
-                                            :key="`comma-of-${index}`"
-                                        >, </span>
-                                        <span
-                                            :key="`undefined-year-count-${index}`"
-                                            :style="{ color: treasure.color }"
-                                        >{{ yearCountData.undefined.y[index]
-                                        }}</span>
-                                    </template>
-                                    )
-                                </template>
-                            </template>
-                            <span v-else-if="chartType === 'weight'">
-                                {{ unknownWeights }}
-                            </span>
-                            <span v-else>0</span>
-                        </div>
-
-                        <div
-                            class="button-group"
-                            style="justify-content: flex-end; display: flex;"
-                        >
-                            <radio-button-group
-                                id="chart-type"
-                                v-model="chartType"
-                                :tlabels="['property.time', 'property.weight']"
-                                :options="['time', 'weight']"
-                                @input="updateTimelineGraph"
-                            />
-                        </div>
-                    </Row>
-                </template>
-            </Timeline>
+                <h2 style="margin-top: 0;">
+                    {{ selectedTreasures[0].name }}
+                </h2>
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <div v-html="selectedTreasures[0].description" />
+            </ScrollView>
         </div>
+
 
         <Sidebar
             ref="catalogSidebar"
@@ -180,17 +74,6 @@
                             />
                         </template>
                         {{ treasure.name }}
-
-                        <template #beneath>
-                            <ScrollView
-                                v-if="isTreasureSelected(treasure.id)"
-                                :key="`list-item-description-${treasure.id}`"
-                                class="treasure-description"
-                            >
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div v-html="treasure.description" />
-                            </ScrollView>
-                        </template>
                     </MultiSelectListItem>
                 </template>
             </MultiSelectList>
@@ -253,114 +136,70 @@
 </template>
 
 <script>
+import Chart from "chart.js/auto"
+
 // Mixins
-import map from './mixins/map';
-import settingsMixin from './mixins/settings';
-import TimelineMixin from './mixins/timeline';
-import TimelineHighlightMixin from '../mixins/timeline-highlight-mixin';
-import MountedAndLoadedMixin from '../mixins/mounted-and-loaded';
-import RadioButtonGroup from '../forms/RadioButtonGroup.vue';
+import map from '@/components/map/mixins/map';
+import settingsMixin from '@/components/map/mixins/settings';
+import TimelineMixin from '@/components/map/mixins/timeline';
+import TimelineHighlightMixin from '@/components/mixins/timeline-highlight-mixin';
+import MountedAndLoadedMixin from '@/components/mixins/mounted-and-loaded';
+import CatalogFilterMixin from '@/components/mixins/catalog-filter';
 
 //Components
-import ButtonVue from '../layout/buttons/Button.vue';
-import Sidebar from './Sidebar.vue';
-import Timeline from './timeline/Timeline.vue';
-import ScrollView from '../layout/ScrollView.vue';
+import CatalogFilter from '@/components/page/catalog/CatalogFilter.vue';
+import ButtonVue from '@/components/layout/buttons/Button.vue';
+import Sidebar from '@/components/map/Sidebar.vue';
+import Timeline from '@/components/map/timeline/Timeline.vue';
+import RadioButtonGroup from '@/components/forms/RadioButtonGroup.vue';
+import ScrollView from '@/components/layout/ScrollView.vue';
 
 // Other
-import TreasureOverlay from '../../maps/TreasureOverlay';
-import Settings from '../../settings';
-import Locale from '../cms/Locale.vue';
-import MapToolbar from "./MapToolbar.vue"
-import MultiSelectList from '../MultiSelectList.vue';
-import MultiSelectListItem from '../MultiSelectListItem.vue';
-import Chart from "chart.js/auto"
-import { FrequencySampler } from "../../models/chart/sampler"
+import OttomanTreasureOverlay from './OttomanTreasureOverlay';
+import Settings from '@/settings';
+import Locale from '@/components/cms/Locale.vue';
+import MapToolbar from "@/components/map/MapToolbar.vue"
+import MultiSelectList from '@/components/MultiSelectList.vue';
+import MultiSelectListItem from '@/components/MultiSelectListItem.vue';
+import { FrequencySampler } from "@/models/chart/sampler"
 
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
 
 
-import LocaleStorageMixin from "../mixins/local-storage-mixin"
-import Sort from '../../utils/Sorter';
-import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph, LineGraph } from '../../models/timeline/TimelineChart';
-import ListColorIndicator from '../list/ListColorIndicator.vue';
-import Query from '../../database/query';
+import LocaleStorageMixin from "@/components/mixins/local-storage-mixin"
+import Sort from "@/utils/Sorter";
+import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph, LineGraph } from "@/models/timeline/TimelineChart";
+import ListColorIndicator from '@/components/list/ListColorIndicator.vue';
+import Query from "@/database/query";
 
-import Range from '../../models/timeline/range';
-import Color from '../../utils/Color';
-import Row from '../layout/Row.vue';
-import { fixPrecision } from "../../utils/Number"
+import Range from "@/models/timeline/range";
+import Color from "@/utils/Color";
+import Row from '@/components/layout/Row.vue';
+import { fixPrecision } from "@/utils/Number"
 
 
-import IconMixin from '../mixins/icon-mixin';
+import IconMixin from '@/components/mixins/icon-mixin';
 import { mdiClose } from '@mdi/js';
-import { IconSize } from '../../config';
+import { IconSize } from "@/config";
 
+import { ottomanFilterConfig } from './ottoman-filter'
 
 export default {
     components: {
         ButtonVue,
+        CatalogFilter,
         ListColorIndicator,
         Locale,
         MapToolbar,
         MultiSelectList,
         MultiSelectListItem,
         Sidebar,
-        Timeline,
         ScrollView,
-        Row,
-        RadioButtonGroup
     },
     mixins: [
         map,
-        TimelineHighlightMixin({
-            canvasRef: "highlightCanvas", timelineRef: "timeline", tooltipCallback: function (tooltip, value) {
 
-                if (this.chartType === "weight") {
-                    const data = this.cachedWeightDataMap[value]
-
-
-                    let tooltipText = `<b>${value.toLocaleString()}-${value.toLocaleString()}<span style="text-decoration: overline;">9</span></b>`
-                    if (Array.isArray(data)) {
-                        const treasures = []
-
-                        data.forEach((count, index) => {
-                            const treasure = this.selectedTreasures[index]
-                            if (count > 0) {
-                                treasures.push(`<span style="color: ${treasure.color}">${count}</span>`)
-                            }
-                        })
-
-                        tooltip.innerHTML = `${tooltipText}: ${treasures.join(", ")}`
-                    } else {
-                        tooltip.innerHTML = `${tooltipText}: ${data || 0}`
-                    }
-                }
-                else {
-                    const data = this.yearCountData[value]
-                    let htmlText = `<b>${value}`
-                    let countsHtml = []
-                    if (data) {
-                        data.y.forEach((count, index) => {
-                            const treasure = this.selectedTreasures[index]
-                            if (count > 0) {
-                                countsHtml.push(`<span style="color: ${treasure.color}">${count}</span>`)
-                            }
-                        })
-                    }
-
-                    if (countsHtml.length > 0) {
-                        htmlText += `</b>: ${countsHtml.join(", ")}`
-                    } else {
-                        htmlText += `</b>`
-                    }
-
-                    tooltip.innerHTML = htmlText
-                }
-            }
-        }),
-        TimelineMixin(),
         settingsMixin(overlaySettings),
         LocaleStorageMixin("treasure-map", [
             "selectedTreasureIds",
@@ -372,27 +211,28 @@ export default {
         IconMixin({
             mdiClose,
         }),
+        CatalogFilterMixin('ottoman_treasure_filters'),
     ],
     data: function () {
         return {
-            chart: null,
-            diagramMode: null,
-            chartType: "time",
-            filters: {},
-            painter: null,
-            selectedTreasureIds: [],
-            selectedMintIds: [],
-            timelineChart: null,
-            treasures: [],
-            yearCountData: {},
-            mintRegions: [],
             activeMintMap: {},
-            mintLocationMarkerGroup: null,
             cachedWeightDataMap: {},
-            weightDataFrequency: 0.1,
+            chart: null,
+            chartType: "time",
+            diagramMode: null,
+            filters: {},
             graphOffset: 5,
+            hideCanvasForTransition: false,
+            mintLocationMarkerGroup: null,
+            mintRegions: [],
+            painter: null,
+            pageInfo: { page: 0, count: 100000 },
+            selectedMintIds: [],
+            selectedTreasureIds: [],
+            treasures: [],
             unknownWeights: 0,
-            tickGraphOptions: { options: { longDash: 20, longDashThickness: 2 }, contextStyles: { strokeStyle: Color.Black } }
+            weightDataFrequency: 0.1,
+            yearCountData: {},
         };
     },
     computed: {
@@ -401,6 +241,7 @@ export default {
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
             return true
         },
+        filterConfig: () => ottomanFilterConfig,
         filtersActive() {
             return Object.values(this.filters).length > 0
         },
@@ -447,12 +288,11 @@ export default {
     },
     mounted: async function () {
 
-        this.timelineChart = new TimelineChart(this.$refs.timelineCanvas, { from: this.timeline.from, to: this.timeline.to });
 
         const result = await Query.raw(`{mintRegion { id name location }}`)
         this.mintRegions = result.data.data.mintRegion
 
-        this.overlay = new TreasureOverlay(this.featureGroup, settings, {
+        this.overlay = new OttomanTreasureOverlay(this.featureGroup, settings, {
             additionalData: {
                 mints: this.mintRegions
             },
@@ -514,8 +354,6 @@ export default {
         // this.mintLocationMarkerGroup = this.$L.featureGroup()
         // this.mintLocationMarkerGroup.addTo(this.map)
 
-        await this.initTimeline();
-        this.updateTimeline(true);
         window.addEventListener('resize', this.resizeCanvas);
         this.update()
 
@@ -534,6 +372,27 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
+        dataUpdated(data) {
+            this.catalog_filter_mixin_updateActive(this.$refs.catalogFilter, [
+                'excludeFromMapApp',
+                'mint',
+                'yearOfMint',
+            ]);
+
+            // this.drawTimeline()
+
+            // Note: OttomanTreasureOverlay fetches its own data via update() method
+            // Unlike MaterialMap which uses setData/repaint pattern
+            // The overlay is updated via the update() method called elsewhere
+
+            this.save();
+        },
+        recalculateCatalogSidebar() {
+            this.$refs.catalogSidebar?.recalculate();
+        },
+        save() {
+            this.catalog_filter_mixin_save(this.$refs.catalogFilter);
+        },
         getFilteredMints() {
             const mints = this.mints.filter(mint => mint.name !== "xxx")
             let activeMints = []
@@ -705,7 +564,6 @@ export default {
         },
 
         resizeCanvas() {
-            this.timelineChart.updateSize()
         },
         isActiveMint(mint) {
             return this.selectedTreasures.some(treasure => {
@@ -727,11 +585,7 @@ export default {
         },
         toggleTimeline() {
             this.timeline_mixin_toggleTimeline()
-            if (this.timelineActive) {
-                this.$nextTick(() => {
-                    this.updateTimelineGraph()
-                })
-            }
+
         },
         local_storage_mixin_loaded() {
             this.mounted_and_loaded_mixin_loaded("storage")
@@ -750,8 +604,6 @@ export default {
 
 
             this.updateActiveMintMap()
-            this.updateYearCount()
-            this.updateTimelineGraph()
             this.bringMintsToFront()
         },
 
@@ -759,332 +611,7 @@ export default {
             // this.mintLocationMarkerGroup.bringToFront()
 
         },
-        updateTimeline() {
-            console.warn("NOTHING TO DO", arguments)
-        },
-        updateTimelineGraph() {
 
-            let data = {
-                graphs: [],
-                timeline: null
-            }
-
-            if (this.chartType === "weight") {
-                const frequency = this.weightDataFrequency
-                this.timelineChart.unitBase = frequency
-
-                this.timeline_highlight_set({
-                    windowWidth: frequency,
-                    cursorWidth: frequency,
-                    unitBase: frequency,
-                    align: "left",
-                })
-
-                // this.timeline_highlight_graph.disable()
-                data = this.updateTimelineWeightGraph()
-            } else {
-                // this.timeline_highlight_graph.enable()
-                this.timelineChart.unitBase = 1
-
-                this.timeline_highlight_set({
-                    windowWidth: 1,
-                    cursorWidth: 1,
-                    unitBase: 1,
-                    align: "center",
-                })
-
-
-                data = this.updateTimelineTimeGraph()
-            }
-
-
-            if (data.timeline != null) {
-                this.timeline_highlight_setOverrideTimeline(data.timeline)
-            } else {
-                data.timeline = this.timeline
-                this.timeline_highlight_unsetOverrideTimeline()
-            }
-
-            this.timelineChart.update(data)
-        },
-        updateTimelineWeightGraph() {
-            const data = this.getWeightData()
-
-            let timeline = { from: 0, to: 0 }
-            let graphs = []
-
-            let allSamples = []
-
-            if (data.length === 1) {
-
-                const { data: treasureData, color: treasureColor } = data[0]
-                const frequency = this.weightDataFrequency
-                const { samples, max } = new FrequencySampler(treasureData, {
-                    frequency,
-                }).sample()
-
-                allSamples.push(...samples)
-
-                this.cachedWeightDataMap = samples.reduce((acc, obj) => {
-                    acc[obj.x.toString()] = obj.y
-                    return acc
-                }, {})
-
-                const weightGraph = new BarGraph(samples, {
-                    hlines: true,
-                    yOffset: this.graphOffset,
-                    frequency,
-                    yMax: max,
-                    unitBase: frequency,
-                    colors: [treasureColor],
-                    align: "left",
-                })
-
-                graphs.push(weightGraph)
-
-
-            } else if (data.length === 2) {
-
-                let colors = []
-                const maxs = []
-                let start = Infinity
-                let end = -Infinity
-                let allSampleObjects = []
-
-                for (const { data: treasureData, color: treasureColor } of Object.values(data)) {
-                    colors.push(treasureColor)
-
-                    const frequency = this.weightDataFrequency
-                    const { samples, max, start: treasure_start, end: treasure_end } = new FrequencySampler(treasureData, {
-                        frequency,
-                    }).sample()
-
-                    if (start > treasure_start) start = treasure_start
-                    if (end < treasure_end) end = treasure_end
-
-                    maxs.push(max)
-                    allSamples.push(...samples)
-
-
-                    let sampleObject = samples.reduce((acc, obj) => {
-                        acc[obj.x.toString()] = obj.y
-                        return acc
-                    }, {})
-                    allSampleObjects.push(sampleObject)
-                }
-
-                let mirrorData = []
-
-                for (let x = start; x <= end; x += this.weightDataFrequency) {
-
-                    x = fixPrecision(x)
-
-                    let y = []
-
-                    for (let i = 0; i < allSampleObjects.length; i++) {
-                        const sample = allSampleObjects[i]
-                        if (sample[x]) {
-                            y.push(sample[x])
-                        } else {
-                            y.push(0)
-                        }
-                    }
-
-                    mirrorData.push({ x, y })
-                }
-
-                this.cachedWeightDataMap = mirrorData.reduce((acc, obj) => {
-                    acc[obj.x.toString()] = obj.y
-                    return acc
-                }, {})
-
-                const weightGraph = new MirrorGraph(mirrorData, {
-                    hlines: true,
-                    offset: this.graphOffset,
-                    frequency: this.weightDataFrequency,
-                    unitBase: this.weightDataFrequency,
-                    topMax: maxs[0],
-                    bottomMax: maxs[1],
-                    colors,
-                    align: "left",
-                })
-                graphs.push(weightGraph)
-
-            }
-
-            allSamples = allSamples.sort((a, b) => a.x - b.x)
-            timeline = (allSamples.length > 0) ? { from: allSamples[0].x, to: allSamples[allSamples.length - 1].x } : { from: 0, to: 0 }
-
-            const tickGraph = new TickGraph(timeline.from, timeline.to, {
-                options: { ...this.tickGraphOptions.options, steps: [0.1, 0.5, 1, 2, 5, 10, 20, 50, 100] },
-                contextStyles: this.tickGraphOptions.contextStyles,
-            })
-
-
-            const nonZeroSamples = allSamples.filter(a => a.y > 0)
-            let nonZeroRanges = Range.fromPointArray(nonZeroSamples, { mergeDistance: this.weightDataFrequency })
-
-            const nonZeroGraph = new RangeGraph(nonZeroRanges, {
-                contextStyles: {
-                    fillStyle: Color.LightGray,
-                },
-                translate: 0.5 * this.weightDataFrequency
-            })
-
-            graphs.unshift(nonZeroGraph)
-            graphs.push(tickGraph)
-
-            return {
-                graphs,
-                timeline
-            }
-        },
-        getWeightData() {
-            let unknownWeights = 0
-            let weightData = this.selectedTreasures.map(treasure => {
-                let data = []
-                treasure.items.forEach(itemArr => {
-                    itemArr.items.forEach(item => {
-                        if (item.weight) {
-                            data.push({ x: item.weight, y: 1 })
-                        } else {
-                            unknownWeights++
-                        }
-                    })
-                })
-                return {
-                    color: treasure.color,
-                    data: data.sort((a, b) => a.x - b.x)
-                }
-            })
-
-            this.unknownWeights = unknownWeights
-            return weightData
-        },
-        updateTimelineTimeGraph() {
-            const data = Object.values(this.yearCountData).flat().filter(a => !isNaN(parseInt(a.x))).sort()
-
-            if (data.length === 0) {
-                return {
-                    graphs: [],
-                    timeline: null
-                }
-            }
-
-            let graph = null
-            if (this.selectedTreasureIds.length === 2) {
-                graph = this.updateMirrorGraph(data)
-            } else {
-                graph = this.updateBarGraph(data)
-            }
-
-            const nonZeroGraph = new RangeGraph(Range.fromPointArray(data), {
-                contextStyles: {
-                    fillStyle: Color.LightGray
-                }
-            })
-
-            const yearOffset = 2
-            let from = 300
-            let to = 470
-            if (data.length > 0) {
-                from = parseInt(data[0].x) - yearOffset
-                to = parseInt(data[data.length - 1].x) + yearOffset
-            }
-
-            this.timeline_mixin_set({
-                from,
-                to
-            })
-
-            const tickGraph = new TickGraph(from, to, this.tickGraphOptions)
-
-            return {
-                graphs: [nonZeroGraph, graph, tickGraph],
-                timeline: null
-            }
-        },
-        updateBarGraph(data) {
-
-            let yMax = Object.entries(this.yearCountData)
-                .filter(([key]) => key !== "undefined")
-                .map(([_, val]) => {
-                    return val
-                })
-                .reduce((max, current) => {
-                    let currentMax = current.y.reduce((acc, a) => acc + a, 0)
-                    return Math.max(max, currentMax)
-                }, -Infinity)
-
-            return new BarGraph(data, {
-                hlines: true, colors: this.yearCountColors, yMax, yOffset: 10, maxWidth: 10
-            })
-        },
-        updateMirrorGraph(data) {
-
-            let topMax = 0
-            let bottomMax = 0
-
-            data.forEach((obj) => {
-                topMax = Math.max(topMax, obj.y[0])
-                bottomMax = Math.max(bottomMax, obj.y[1])
-            })
-
-            return new MirrorGraph(data, {
-                topMax,
-                bottomMax,
-                offset: this.graphOffset,
-                colors: this.yearCountColors,
-                hlines: true
-            })
-        },
-        updateYearCount() {
-            let treasureData = {}
-            const colors = []
-            let yearSet = new Set()
-
-            this.selectedTreasures.forEach((mintObj, treasureIndex) => {
-                colors.push(mintObj.color)
-                let data = {}
-
-                mintObj.items.forEach((mintItem) => {
-
-                    mintItem.items.forEach(treasureItem => {
-                        const mint = treasureItem.mintRegion
-
-                        let year = parseInt(treasureItem.year)
-                        if (isNaN(year)) {
-                            year = "undefined"
-                        }
-
-                        yearSet.add(year)
-
-                        if (!data[year]) {
-                            data[year] = 0
-                        }
-
-                        const count = treasureItem.count || 1
-                        data[year] += count
-                    })
-
-
-                })
-
-                treasureData[treasureIndex] = data
-            })
-
-            let yearCountData = {}
-            yearSet.forEach(year => {
-                yearCountData[year] = { x: year, y: [] }
-                Object.entries(treasureData).forEach(([treasureIndex, data]) => {
-                    let y = (data[year] || 0)
-                    yearCountData[year].y.push(y)
-                })
-            })
-
-            this.yearCountColors = colors
-            this.yearCountData = yearCountData
-        },
         addMintSelection(mintIds = []) {
             let selectedMintIds = this.selectedMintIds.slice()
 
@@ -1211,16 +738,12 @@ table {
     display: flex;
     flex-direction: column;
     gap: $padding;
-    transition: all 0.1s ease-in;
+    transition: transform 0.5s ease-in;
     transform: translateY(0);
 
     &.hide {
         height: 0;
         transform: translateY(100px);
-    }
-
-    canvas {
-        transition: height 0.3s ease-in-out;
     }
 
     &.collapsed {
@@ -1238,7 +761,17 @@ table {
     min-height: 100px;
 }
 
+.bottom-center-ui {
+    min-width: 0;
+    max-width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
 .treasure-description {
+
+    width: 400px;
     margin: 0 1em;
     padding: .5rem;
     background-color: $white;
@@ -1246,7 +779,10 @@ table {
     border-radius: $border-radius;
 
     max-height: 300px;
+    max-width: 100%;
+    min-width: 0;
     overflow-y: auto;
+    overflow-x: auto;
 }
 
 

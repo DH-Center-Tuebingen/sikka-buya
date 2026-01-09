@@ -455,41 +455,40 @@ export default {
                         // We need to use an alias here to avoid conflicts with the other filters
                         return `${category}_${id}:get${queryName} (id: ${id}) ${queryBody}`
                     })}
-      }`, {}, true).then(
-                        (result) => {
-                            const obj = result.data.data
+      }`, {}, true).then((result) => {
+                        const obj = result.data.data
 
-                            const filterObjs = reload.reduce((acc, { id, category, type, arrayIndex } = {}) => {
+                        const filterObjs = reload.reduce((acc, { id, category, type, arrayIndex } = {}) => {
 
 
-                                const item = obj[`${category}_${id}`]
-                                item.id = parseInt(item.id)
-                                if (!acc[category]) acc[category] = []
-                                item.idx = acc[category].length
+                            const item = obj[`${category}_${id}`]
+                            item.id = parseInt(item.id)
+                            if (!acc[category]) acc[category] = []
+                            item.idx = acc[category].length
 
-                                switch (type) {
-                                    case FilterType.multiSelect: {
-                                        acc[category].push(item)
-                                        break;
-                                    }
-                                    case FilterType.multiSelect2D: {
-                                        while (acc[category].length <= arrayIndex) {
-                                            acc[category].push([])
-                                        }
-                                        acc[category][arrayIndex].push(item)
-                                        break;
-                                    }
-                                    default:
-                                        throw new Error(`Type not implemented for reloading names ${type}`)
+                            switch (type) {
+                                case FilterType.multiSelect: {
+                                    acc[category].push(item)
+                                    break;
                                 }
-                                return acc
-                            }, {})
-
-
-                            for (let [category, filterObj] of Object.entries(filterObjs)) {
-                                this.$set(this.filters, category, filterObj)
+                                case FilterType.multiSelect2D: {
+                                    while (acc[category].length <= arrayIndex) {
+                                        acc[category].push([])
+                                    }
+                                    acc[category][arrayIndex].push(item)
+                                    break;
+                                }
+                                default:
+                                    throw new Error(`Type not implemented for reloading names ${type}`)
                             }
+                            return acc
+                        }, {})
+
+
+                        for (let [category, filterObj] of Object.entries(filterObjs)) {
+                            this.$set(this.filters, category, filterObj)
                         }
+                    }
                     )
         },
         getFilters() {
