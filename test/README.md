@@ -30,7 +30,7 @@ pg_dump.exe -U postgres -d coins --ignore-table app_user --data-only -f coins_sc
 
 ## Api Tests
 
-Die Api tests basieren auf auf der aktuellen `schema.sql` der Hauptapplikkation und es werden die SQL-Dateien des `data` Ordners ausgeführt um die Datenbank zu befüllen.
+Die Api tests basieren auf auf der aktuellen `schema.sql` der Hauptapplikation und es werden die SQL-Dateien des `data` Ordners ausgeführt um die Datenbank zu befüllen.
 
 ```bash
 npm run test:api

@@ -25,6 +25,8 @@
                     <Locale path="form.submit" />
                 </ButtonVue>
             </Row>
+
+            <slot name="header" />
         </header>
 
         <LoadingSpinner
@@ -115,6 +117,11 @@ export default {
     scoped
 >
 header {
+    position: sticky;
+    top: 0;
+    /* At least 401 is required to be oer maps */
+    z-index: 401;
+    background-color: $dark-white;
     margin-bottom: $large-padding;
 
     h1 {

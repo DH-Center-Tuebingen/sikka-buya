@@ -66,7 +66,23 @@ export class Treasure {
                         "mintRegionUncertain",
                         "fragment",
                         "reconstructed",
-                        "mintAsOnCoin"
+                        "mintAsOnCoin",
+
+                        "person",
+                        "issuingState",
+                        "historicalRegion",
+
+                        "singleFind",
+                        "reliableAttribution",
+                        "completeHoard",
+                        "ottomanPredominance",
+
+                        "authenticity",
+                        "circumstances",
+                        "subclassification",
+
+                        { yearOfLoss: ["from", "to"] },
+                        { yearOfMint: ["from", "to"] },
                     ]
                 }
             ])
@@ -146,6 +162,23 @@ export class TreasureItem {
      * @param {number} [options.year=null] - The year of the coin.
      * @param {string} [options.mintAsOnCoin=null] - The mint as it is written on the coin.
      * @param {boolean} [options.reconstructed=false] - Whether the item is reconstructed.
+     * 
+     * // Ottoman specific fields
+     * @param {string} [options.person=null] - The person associated with the coin.
+     * @param {string} [options.issuingState=null] - The issuing state of the coin.
+     * @param {string} [options.historicalRegion=null] - The historical region of the coin.
+     * 
+     * @param {boolean} [options.singleFind=false] - Whether it is a single find.
+     * @param {boolean} [options.reliableAttribution=false] - Whether it has reliable attribution.
+     * @param {boolean} [options.completeHoard=false] - Whether it is a complete hoard.
+     * @param {boolean} [options.ottomanPredominance=false] - Whether it has Ottoman predominance.
+     * 
+     * @param {string} [options.authenticity=null] - The authenticity of the coin.
+     * @param {string} [options.circumstances=null] - The circumstances of the find.
+     * @param {string} [options.subclassification=null] - The subclassification of the coin.
+     * 
+     * @param {number} [options.yearOfLoss=null] - The year of loss.
+     * @param {number} [options.yearOfMint=null] - The year of mint.
      */
     constructor({
         coinType = null,
@@ -162,6 +195,23 @@ export class TreasureItem {
         year = null,
         mintAsOnCoin = null,
         reconstructed = false,
+
+
+        person = null,
+        issuingState = null,
+        historicalRegion = null,
+
+        singleFind = false,
+        reliableAttribution = false,
+        completeHoard = false,
+        ottomanPredominance = false,
+
+        authenticity = null,
+        circumstances = null,
+        subclassification = null,
+
+        yearOfLoss = null,
+        yearOfMint = null,
     } = {}
     ) {
         this.coinType = coinType
@@ -178,8 +228,24 @@ export class TreasureItem {
         this.year = year
         this.mintAsOnCoin = mintAsOnCoin
         this.reconstructed = reconstructed
-    }
+        // Ottoman
+        this.person = person
+        this.issuingState = issuingState
+        this.historicalRegion = historicalRegion
 
+        this.singleFind = singleFind
+        this.reliableAttribution = reliableAttribution
+        this.completeHoard = completeHoard
+        this.ottomanPredominance = ottomanPredominance
+
+        this.authenticity = authenticity
+        this.circumstances = circumstances
+        this.subclassification = subclassification
+
+        this.yearOfLoss = yearOfLoss
+        this.yearOfMint = yearOfMint
+
+    }
 
     forInput() {
         return Object.assign({}, this, {
@@ -188,6 +254,10 @@ export class TreasureItem {
             epoch: { id: this.epoch?.id || null, name: this.epoch?.name || "" },
             nominal: { id: this.nominal?.id || null, name: this.nominal?.name || "" },
             material: { id: this.material?.id || null, name: this.material?.name || "" },
+            // Ottoman
+            person: { id: this.person?.id || null, name: this.person?.name || "" },
+            issuingState: { id: this.issuingState?.id || null, name: this.issuingState?.name || "" },
+            historicalRegion: { id: this.historicalRegion?.id || null, name: this.historicalRegion?.name || "" },
         })
     }
 
@@ -201,6 +271,10 @@ export class TreasureItem {
             epoch: obj.epoch.hasOwnProperty("id") ? obj.epoch.id : obj.epoch,
             nominal: obj.nominal.hasOwnProperty("id") ? obj.nominal.id : obj.nominal,
             material: obj.material.hasOwnProperty("id") ? obj.material.id : obj.material,
+            // Ottoman
+            person: obj.person.hasOwnProperty("id") ? obj.person.id : obj.person,
+            issuingState: obj.issuingState.hasOwnProperty("id") ? obj.issuingState.id : obj.issuingState,
+            historicalRegion: obj.historicalRegion.hasOwnProperty("id") ? obj.historicalRegion.id : obj.historicalRegion,
         })
 
         return new TreasureItem(obj)

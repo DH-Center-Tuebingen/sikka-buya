@@ -241,7 +241,8 @@ const START_DATA = [
 
 
 
-const TREASURE_GQL_BODY = `{
+const getTreasureGqlBodyWithoutItems = function (additionalFields = "") {
+    return `{
     id
     name
     location
@@ -250,8 +251,12 @@ const TREASURE_GQL_BODY = `{
         to
     }
     description
-    items ${TREASURE_ITEM_GQL_BODY}
+    ${additionalFields}
 }`
+}
+
+const TREASURE_GQL_BODY = getTreasureGqlBodyWithoutItems(`items ${ TREASURE_ITEM_GQL_BODY }`)
+
 
 module.exports = {
     CORUNA_DATA,
@@ -260,6 +265,8 @@ module.exports = {
     LONDON_DATA,
     START_DATA,
     TREASURE_GQL_BODY,
+    TREASURE_GQL_BODY_NO_ITEMS,
+    TREASURE_ITEM_GQL_BODY,
     UPDATED_LONDON_DATA_INPUT,
     UPDATED_LONDON_DATA,
 }

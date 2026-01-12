@@ -24,11 +24,30 @@ class Treasure extends Table {
                 mintAsOnCoin = null,
                 uncertainYear = null,
                 weight = null,
-                year = null } = items[i]
+                year = null,
+
+                // Ottoman specific fields
+                person,
+                issuingState,
+                historicalRegion,
+
+                singleFind,
+                reliableAttribution,
+                completeHoard,
+                ottomanPredominance,
+
+                authenticity,
+                circumstances,
+                subclassification,
+
+                yearOfLoss,
+                yearOfMint,
+            } = items[i]
 
             if (reconstructed == null) reconstructed = false
             if (mintRegionUncertain == null) mintRegionUncertain = false
 
+            console.log(`Inserting treasure item for treasure: yearOfLoss: ${yearOfLoss ? JSON.stringify(yearOfLoss) : "null"} yearOfMint: ${yearOfMint ? JSON.stringify(yearOfMint) : "null"}`)
             await t.none(`INSERT INTO treasure_item (
                     coinType,
                     count,
@@ -43,7 +62,26 @@ class Treasure extends Table {
                     year,
                     reconstructed,
                     mint_region_uncertain,
-                    mint_as_on_coin
+                    mint_as_on_coin,
+
+                    person,
+                    issuing_state,
+                    historical_region,
+
+                    single_find,
+                    reliable_attribution,
+                    complete_hoard,
+                    ottoman_predominance,
+
+                    authenticity,
+                    circumstances,
+                    subclassification,
+
+                    year_of_loss_from,
+                    year_of_loss_to,
+                    year_of_mint_from,
+                    year_of_mint_to
+                    
                 ) VALUES (
                     $[coinType],
                     $[count],
@@ -58,7 +96,25 @@ class Treasure extends Table {
                     $[year],
                     $[reconstructed],
                     $[mintRegionUncertain],
-                    $[mintAsOnCoin]
+                    $[mintAsOnCoin],
+
+                    $[person],
+                    $[issuingState],
+                    $[historicalRegion],
+
+                    $[singleFind],
+                    $[reliableAttribution],
+                    $[completeHoard],
+                    $[ottomanPredominance],
+
+                    $[authenticity],
+                    $[circumstances],
+                    $[subclassification],
+
+                    $[yearOfLossFrom],
+                    $[yearOfLossTo],
+                    $[yearOfMintFrom],
+                    $[yearOfMintTo]
                 )`, {
                 coinType,
                 count,
@@ -73,7 +129,22 @@ class Treasure extends Table {
                 weight,
                 year,
                 reconstructed,
-                mintAsOnCoin
+                mintAsOnCoin,
+                // Ottoman specific fields
+                person,
+                issuingState,
+                historicalRegion,
+                singleFind,
+                reliableAttribution,
+                completeHoard,
+                ottomanPredominance,
+                authenticity,
+                circumstances,
+                subclassification,
+                yearOfLossFrom: yearOfLoss ? yearOfLoss.from : null,
+                yearOfLossTo: yearOfLoss ? yearOfLoss.to : null,
+                yearOfMintFrom: yearOfMint ? yearOfMint.from : null,
+                yearOfMintTo: yearOfMint ? yearOfMint.to : null,
             })
         }
     }
@@ -115,17 +186,20 @@ class Treasure extends Table {
         let { geometry, properties } = GeoJSON.separate(location)
         location = geometry
 
+        console.log(`Inserting treasure item for treasure ${id}:`)
         return WriteableDatabase.tx(async t => {
             await t.none(`DELETE FROM treasure_item WHERE treasure = $[id]`, { id })
-            await t.none(`UPDATE treasure SET 
-            name=$[name],
-            location=${location ? "ST_GeomFromGeoJSON($[location])" : null},
-            properties=$[properties],
-            earliest_year=$[earliestYear],
-            latest_year=$[latestYear],
-            description=$[description],
-            color=$[color]
-            WHERE id=$[id]`,
+            await t.none(`
+                UPDATE treasure SET 
+                    name=$[name],
+                    location=${location ? "ST_GeomFromGeoJSON($[location])" : null},
+                    properties=$[properties],
+                    earliest_year=$[earliestYear],
+                    latest_year=$[latestYear],
+                    description=$[description],
+                    color=$[color]
+                WHERE id=$[id]
+            `,
                 {
                     name,
                     location,
@@ -184,6 +258,25 @@ class Treasure extends Table {
                 t.reconstructed,
                 t.mint_region_uncertain,
                 t.mint_as_on_coin,
+
+                t.single_find,
+                t.reliable_attribution,
+                t.complete_hoard,
+                t.ottoman_predominance,
+                
+                t.authenticity,
+                t.subclassification,
+                t.circumstances,
+
+                t.person,
+                t.historical_region,
+                t.issuing_state,
+
+                t.year_of_loss_from,
+                t.year_of_loss_to,
+                t.year_of_mint_from,
+                t.year_of_mint_to,
+                
                 row_to_json(t) AS items_json
             FROM
                 treasure_item AS t`
@@ -211,28 +304,26 @@ class Treasure extends Table {
         await Database.tx(async t => {
 
             treasures = await t.manyOrNone(`
-            SELECT 
-                    treasure.id,
-                    treasure.color,
-                    treasure.name,
-                    treasure.earliest_year,
-                    treasure.latest_year,
-                    treasure.description,
-                    treasure.properties::jsonb AS properties,
-                    ST_AsGeoJSON(treasure.location) AS location,
-                    COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
-            FROM 
-                treasure
-                LEFT JOIN(
-                       ${this.treasureItemQuery}
-                    ) AS subquery ON subquery.treasure = treasure.id
-                ${WHERES.length > 0 ? `WHERE ${WHERES.join(" AND ")}` : ""}
+                SELECT 
+                        treasure.id,
+                        treasure.color,
+                        treasure.name,
+                        treasure.earliest_year,
+                        treasure.latest_year,
+                        treasure.description,
+                        treasure.properties::jsonb AS properties,
+                        ST_AsGeoJSON(treasure.location) AS location,
+                        COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
+                FROM 
+                    treasure
+                    LEFT JOIN(
+                        ${this.treasureItemQuery}
+                        ) AS subquery ON subquery.treasure = treasure.id
+                    ${WHERES.length > 0 ? `WHERE ${WHERES.join(" AND ")}` : ""}
 
-            GROUP BY treasure.id, treasure.name, treasure.location
-            ORDER BY unaccent(treasure.name)
-                    `)
-
-
+                GROUP BY treasure.id, treasure.name, treasure.location
+                ORDER BY unaccent(treasure.name)
+            `)
 
             treasures = treasures.map(treasure => {
                 treasure.timespan = { from: treasure.earliest_year, to: treasure.latest_year }
@@ -308,7 +399,25 @@ class TreasureItem {
             "mintRegion": "mint_region",
             "uncertainYear": "uncertain_year",
             "mintRegionUncertain": "mint_region_uncertain",
-            "mintAsOnCoin": "mint_as_on_coin"
+            "mintAsOnCoin": "mint_as_on_coin",
+            // Ottoman specific fields
+            "issuingState": "issuing_state",
+            "historicalRegion": "historical_region",
+            "singleFind": "single_find",
+            "reliableAttribution": "reliable_attribution",
+            "completeHoard": "complete_hoard",
+            "ottomanPredominance": "ottoman_predominance",
+            "yearOfLossFrom": "year_of_loss_from",
+            "yearOfLossTo": "year_of_loss_to",
+            "yearOfMintFrom": "year_of_mint_from",
+            "yearOfMintTo": "year_of_mint_to",
+        }
+    }
+
+    static get rangeFields() {
+        return {
+            yearOfLoss: { type: "range", columns: ["year_of_loss_from", "year_of_loss_to"] },
+            yearOfMint: { type: "range", columns: ["year_of_mint_from", "year_of_mint_to"] },
         }
     }
 
@@ -321,6 +430,7 @@ class TreasureItem {
 
     static filterFields(fields) {
         let set = new Set([
+            ...Object.keys(this.rangeFields),
             ...Object.keys(this.getters),
             ...Object.keys(this.mappings),
             ...Object.keys(this.nameMap)])
@@ -329,28 +439,35 @@ class TreasureItem {
     }
 
     static async build(transaction, items = [], fields, cache = {}) {
-
         // We filter the fields to only process those who are present and need processing
         const filteredFields = TreasureItem.filterFields(fields)
+        console.log("Building treasure items with fields:", filteredFields)
         for (let fieldIndex = 0; fieldIndex < filteredFields.length; fieldIndex++) {
             const field = filteredFields[fieldIndex]
 
             for (let itemIdx = 0; itemIdx < items.length; itemIdx++) {
                 const item = items[itemIdx]
 
-                const dbField = TreasureItem.getDbName(field)
-                const dbValue = item[dbField]
-
-                if (dbValue != null) {
-                    if (!cache[field])
-                        cache[field] = {}
-                    if (!cache[field][dbValue]) {
-                        let value = await TreasureItem.get(transaction, field, dbValue, fields)
-                        cache[field][dbValue] = TreasureItem.map(field, value)
+                if (TreasureItem.rangeFields[field]) {
+                    item[field] = {
+                        from: item[TreasureItem.rangeFields[field].columns[0]],
+                        to: item[TreasureItem.rangeFields[field].columns[1]],
                     }
-                }
+                } else {
+                    const dbField = TreasureItem.getDbName(field)
+                    const dbValue = item[dbField]
 
-                item[field] = (cache?.[field]?.[dbValue] == null) ? null : cache[field][dbValue]
+                    if (dbValue != null) {
+                        if (!cache[field])
+                            cache[field] = {}
+                        if (!cache[field][dbValue]) {
+                            let value = await TreasureItem.get(transaction, field, dbValue, fields)
+                            cache[field][dbValue] = TreasureItem.map(field, value)
+                        }
+                    }
+
+                    item[field] = (cache?.[field]?.[dbValue] == null) ? null : cache[field][dbValue]
+                }
             }
         }
         return items
@@ -359,6 +476,10 @@ class TreasureItem {
     static async get(transaction, name, value, fields = null) {
         if (TreasureItem.getters[name])
             value = await TreasureItem.getters[name](transaction, value, fields)
+
+        if (name === "person") {
+            console.log("Fetched person:", value)
+        }
         return value
     }
 
@@ -397,6 +518,11 @@ class TreasureItem {
     }
 
     static get getters() {
+
+        const PersonModel = new NamedModel("person")
+        const HistoricalRegionModel = new NamedModel("historical_region")
+        const IssuingStateModel = new NamedModel("mint_region")
+
         return {
             coinType: async (transaction, id, fields) => {
                 const { types } = await Type.getTypes(null, { filters: { id }, postProcessFields: fields.coinType, transaction })
@@ -406,6 +532,10 @@ class TreasureItem {
             mintRegion: async (transaction, id) => MintRegion.get(id, transaction),
             nominal: async (transaction, id) => Nominal.get(id, transaction),
             material: async (transaction, id) => Material.get(id, { transaction }),
+
+            person: async (transaction, id) => PersonModel.get(id, transaction),
+            historicalRegion: async (transaction, id) => HistoricalRegionModel.get(id, transaction),
+            issuingState: async (transaction, id) => IssuingStateModel.get(id, transaction),
         }
     }
 

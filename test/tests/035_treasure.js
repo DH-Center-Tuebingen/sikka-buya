@@ -22,7 +22,6 @@ const {
 
 const expect = chai.expect
 
-
 describe(`Treasure Queries`, function () {
 
     describe("List", function () {

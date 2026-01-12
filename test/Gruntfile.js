@@ -29,7 +29,10 @@ module.exports = function (grunt) {
                 reporter: 'spec',
             },
             test: {
-                src: ["./tests/**/*.js"]
+                src: [
+                    // "./tests/**/*.js", 
+                    "../plugins/**/api-tests/**/*.js",
+                ]
             }
         },
         watch: {

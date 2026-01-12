@@ -11,6 +11,12 @@
         @submit="property_form_mixin_submit"
         @cancel="property_form_mixin_cancel"
     >
+        <!-- <template #header>
+            <pre>
+                {{ value }}
+            </pre>
+        </template> -->
+
         <LabeledInputContainer>
             <template #label>
                 <Locale path="general.name" />

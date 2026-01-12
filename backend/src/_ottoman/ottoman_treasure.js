@@ -261,11 +261,11 @@ class Treasure extends Table {
                 t.reliable_attribution,
                 t.complete_hoard,
                 t.ottoman_predominance,
-                t.
+
                 t.authenticity,
                 t.subclassification,
                 t.circumstances,
-                t.
+
                 t.person,
                 t.historical_region,
                 t.issuing_state,
@@ -302,26 +302,26 @@ class Treasure extends Table {
         await Database.tx(async t => {
 
             treasures = await t.manyOrNone(`
-            SELECT 
-                    treasure.id,
-                    treasure.color,
-                    treasure.name,
-                    treasure.earliest_year,
-                    treasure.latest_year,
-                    treasure.description,
-                    treasure.properties::jsonb AS properties,
-                    ST_AsGeoJSON(treasure.location) AS location,
-                    COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
-            FROM 
-                treasure
-                LEFT JOIN(
-                       ${this.treasureItemQuery}
-                    ) AS subquery ON subquery.treasure = treasure.id
-                ${WHERES.length > 0 ? `WHERE ${WHERES.join(" AND ")}` : ""}
+                SELECT 
+                        treasure.id,
+                        treasure.color,
+                        treasure.name,
+                        treasure.earliest_year,
+                        treasure.latest_year,
+                        treasure.description,
+                        treasure.properties::jsonb AS properties,
+                        ST_AsGeoJSON(treasure.location) AS location,
+                        COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
+                FROM 
+                    treasure
+                    LEFT JOIN(
+                        ${this.treasureItemQuery}
+                        ) AS subquery ON subquery.treasure = treasure.id
+                    ${WHERES.length > 0 ? `WHERE ${WHERES.join(" AND ")}` : ""}
 
-            GROUP BY treasure.id, treasure.name, treasure.location
-            ORDER BY unaccent(treasure.name)
-                    `)
+                GROUP BY treasure.id, treasure.name, treasure.location
+                ORDER BY unaccent(treasure.name)
+            `)
 
 
 
@@ -434,7 +434,6 @@ class TreasureItem {
     }
 
     static async build(transaction, items = [], fields, cache = {}) {
-
         // We filter the fields to only process those who are present and need processing
         const filteredFields = TreasureItem.filterFields(fields)
         for (let fieldIndex = 0; fieldIndex < filteredFields.length; fieldIndex++) {

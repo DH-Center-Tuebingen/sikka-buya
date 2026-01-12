@@ -37,6 +37,8 @@ export default class Query {
         const getName = `get${this.capitalizedName}`
 
         function recursivelyBuildBody(p) {
+            console.log("Building body for", p) 
+
             for (let [index, object] of p.entries()) {
                 if (typeof (object) == "object") {
                     if (Array.isArray(object)) throw new Error("Invalid property type: array")

@@ -3,23 +3,23 @@
         <input
             class="from"
             :step="step"
-            :value="value.from"
+            :value="fromValue"
             @beforeinput="validateNumber"
-            @input="updateMin"
+            @input="updateFrom"
         >
         <span>–</span>
         <input
             class="to"
             :step="step"
-            :value="value.to"
+            :value="toValue"
             @beforeinput="validateNumber"
-            @input="updateMax"
+            @input="updateTo"
         >
     </div>
 </template>
 
 <script>
-export default {
+export default { 
     props: {
         value: {
             validator: (value) => value instanceof Object && value.hasOwnProperty("from") && value.hasOwnProperty("to")
@@ -29,14 +29,28 @@ export default {
             default: 1
         }
     },
+    computed: {
+        fromValue() {
+            return this.value?.from ? this.value.from : "";
+        },
+        toValue() {
+            return this.value?.to ? this.value.to : "";
+        }
+    },
     methods: {
-        updateMin(event) {
+        updateFrom(event) {
             let value = this.value;
+            if(!value) {
+                value = { from: null, to: null };
+            }
             value.from = Number(event.target.value) || null;
             this.$emit('input', value);
         },
-        updateMax(event) {
+        updateTo(event) {
             let value = this.value;
+            if(!value) {
+                value = { from: null, to: null };
+            }
             value.to = Number(event.target.value) || null;
             this.$emit('input', value);
         },
@@ -50,7 +64,7 @@ export default {
             }
         }
     }
-};
+}
 </script>
 
 <style
