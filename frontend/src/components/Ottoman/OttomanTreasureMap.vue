@@ -39,14 +39,20 @@
                 <h2 style="margin-top: 0;">
                     {{ selectedTreasures[0].name }}
                 </h2>
-                <!-- eslint-disable-next-line vue/no-v-html -->
-                <div v-html="selectedTreasures[0].description" />
+                <template v-if="hasDescription">
+                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <div v-html="selectedTreasures[0].description" />
+                </template>
+                <template v-else>
+                    <div class="placeholder-text">
+                        <Locale path="message.no_description_available" />
+                    </div>
+                </template>
             </ScrollView>
             <div v-else />
 
             <MapBaseLayerButton
                 v-model="selectedLayerIndex"
-                :layers="availableBaseLayerButtons"
                 style="justify-self: flex-end;"
             />
         </div>
@@ -264,6 +270,14 @@ export default {
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
             return true
         },
+        hasDescription(){
+            if(!this.selectedTreasures[0].description) return false
+
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(this.selectedTreasures[0].description, "text/html")
+            const text = doc.body.textContent || ""
+            return text.trim().length !== 0
+        },
         filterConfig: () => ottomanFilterConfig,
         filtersActive() {
             return Object.values(this.filters).length > 0
@@ -327,7 +341,7 @@ export default {
                 onSelectTreasure: (id) => {
                     this.selectedMintIds = []
 
-                    if(this.selectedTreasureIds.includes(id)) {
+                    if (this.selectedTreasureIds.includes(id)) {
                         this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
                     } else {
                         this.selectedTreasureIds = [id]
@@ -794,10 +808,12 @@ table {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    padding: $padding;
+    padding-bottom: 20px;
 }
 
 .treasure-description {
-
+    box-sizing: border-box;
     width: 400px;
     margin: 0 1em;
     padding: .5rem;

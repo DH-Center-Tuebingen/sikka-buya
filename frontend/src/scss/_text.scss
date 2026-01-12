@@ -1,0 +1,6 @@
+@use 'variables';
+
+.placeholder-text {
+    font-style: italic;
+    color: variables.$gray;
+}
