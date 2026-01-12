@@ -43,6 +43,13 @@
                 <!-- eslint-disable-next-line vue/no-v-html -->
                 <div v-html="selectedTreasures[0].description" />
             </ScrollView>
+            <div v-else />
+
+            <MapBaseLayerButton
+                v-model="selectedLayerIndex"
+                :layers="availableBaseLayerButtons"
+                style="justify-self: flex-end;"
+            />
         </div>
 
 
@@ -184,6 +191,7 @@ import { mdiClose } from '@mdi/js';
 import { IconSize } from "@/config";
 
 import { ottomanFilterConfig } from './ottoman-filter'
+import MapBaseLayerButton from "../map/control/MapBaseLayerButton.vue";
 
 export default {
     components: {
@@ -192,6 +200,7 @@ export default {
         ListColorIndicator,
         Locale,
         MapToolbar,
+        MapBaseLayerButton,
         MultiSelectList,
         MultiSelectListItem,
         Sidebar,
@@ -227,6 +236,7 @@ export default {
             mintRegions: [],
             painter: null,
             pageInfo: { page: 0, count: 100000 },
+            selectedLayerIndex: 0,
             selectedMintIds: [],
             selectedTreasureIds: [],
             treasures: [],
@@ -236,6 +246,20 @@ export default {
         };
     },
     computed: {
+        availableBaseLayerButtons() {
+            const layerNames = [
+                "modern",
+                "satellite",
+                "topo"
+            ]
+
+            return layerNames.map(name => {
+                return {
+                    name: name,
+                    image: `/image/ottoman/map-baselayer-previews/${name}.png`,
+                }
+            })
+        },
         hasUncertainYears() {
             // if(!this.yearCountData["undefined"]) return false
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
@@ -765,7 +789,7 @@ table {
     min-width: 0;
     max-width: 100%;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: flex-start;
 }
 
