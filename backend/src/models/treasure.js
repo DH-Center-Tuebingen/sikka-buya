@@ -441,7 +441,6 @@ class TreasureItem {
     static async build(transaction, items = [], fields, cache = {}) {
         // We filter the fields to only process those who are present and need processing
         const filteredFields = TreasureItem.filterFields(fields)
-        console.log("Building treasure items with fields:", filteredFields)
         for (let fieldIndex = 0; fieldIndex < filteredFields.length; fieldIndex++) {
             const field = filteredFields[fieldIndex]
 
@@ -477,9 +476,6 @@ class TreasureItem {
         if (TreasureItem.getters[name])
             value = await TreasureItem.getters[name](transaction, value, fields)
 
-        if (name === "person") {
-            console.log("Fetched person:", value)
-        }
         return value
     }
 

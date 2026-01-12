@@ -44,13 +44,11 @@ export default class OttomanTreasureOverlay extends Overlay {
         }
         const { mints = [] } = selections
 
-        console.log("Fetching Ottoman treasures with selections:", selections)
         try {
             if (mints.length > 0)
                 data.treasuresByMint = await this.fetchTreasuresByMints(mints)
 
             data.treasures = await this.fetchTreasures()
-    console.log("Fetched treasures:", data.treasures.length)
         } catch (e) {
             console.error(e)
         }
@@ -460,13 +458,12 @@ export default class OttomanTreasureOverlay extends Overlay {
 
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
         for (let treasure of selectedTreasures.values()) {
-            const color = treasure.color
+            const color = treasure.color || "#ffffff"
 
             const style = {
                 color,
                 weight: 3
             }
-
 
             let treasureGeometries = []
             let itemGeometries = []
@@ -575,7 +572,6 @@ export default class OttomanTreasureOverlay extends Overlay {
 
         const overlayContext = this
 
-        console.log("Updating mint location markers...", this.additionalData.mints)
         this.additionalData.mints.forEach(mint => {
             const geoJSON = new L.geoJSON(mint.location, {
                 pointToLayer(point) {
@@ -713,24 +709,19 @@ export default class OttomanTreasureOverlay extends Overlay {
 
             if (!markerOptions) markerOptions = {}
             marker = super.createCircle(latlng, feature, { selections, markerOptions })
-
             marker = this.extendBorder(marker, feature, () => super.createCircle(latlng, feature, { selections, markerOptions }))
+        }
 
-
-            const treasureId = feature?.properties?.treasureId || feature?.properties?.treasure?.id || null
-
-            if (treasureId) {
-                marker.on('click', () => { this.select(treasureId) })
-                marker.on('remove', () => marker.off())
-            }
-
+        const treasureId = feature?.properties?.treasureId || feature?.properties?.treasure?.id || feature?.properties?.treasure || null
+        if (treasureId) {
+            marker.on('click', () => { this.select(treasureId) })
+            marker.on('remove', () => marker.off())
         }
 
         return marker
     }
 
     select(treasureId) {
-        console.log("SELECTED")
         this.onSelectTreasure(treasureId)
     }
 

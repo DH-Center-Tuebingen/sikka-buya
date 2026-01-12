@@ -7,7 +7,6 @@
                     :count="2"
                 />
             </template>
-
             <CatalogFilter
                 ref="catalogFilter"
                 :init-data="catalog_filter_mixin_initData"
@@ -311,86 +310,94 @@ export default {
         // });
     },
     mounted: async function () {
+        try {
+            const result = await Query.raw(`{mintRegion { id name location }}`)
+            this.mintRegions = result.data.data.mintRegion
 
+            this.overlay = new OttomanTreasureOverlay(this.featureGroup, settings, {
+                additionalData: {
+                    mints: this.mintRegions
+                },
+                onDataTransformed: (data) => {
+                    this.treasures = data.treasures
+                },
+                onEnd: () => {
+                    this.mounted_and_loaded_mixin_loaded("data")
+                },
+                onSelectTreasure: (id) => {
+                    this.selectedMintIds = []
 
-        const result = await Query.raw(`{mintRegion { id name location }}`)
-        this.mintRegions = result.data.data.mintRegion
+                    if(this.selectedTreasureIds.includes(id)) {
+                        this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
+                    } else {
+                        this.selectedTreasureIds = [id]
+                    }
 
-        this.overlay = new OttomanTreasureOverlay(this.featureGroup, settings, {
-            additionalData: {
-                mints: this.mintRegions
-            },
-            onDataTransformed: (data) => {
-                this.treasures = data.treasures
-            },
-            onEnd: () => {
-                this.mounted_and_loaded_mixin_loaded("data")
-            },
-            onSelectTreasure: (id) => {
-                this.selectedMintIds = []
-                this.selectedTreasureIds = [id]
-                this.selectionChanged()
-            },
-            onSelectMint: (id) => {
+                    this.selectionChanged()
+                },
+                onSelectMint: (id) => {
 
-                this.selectedTreasureIds = []
-                if (this.selectedMintIds.includes(id)) {
-                    this.selectedMintIds.splice(this.selectedMintIds.indexOf(id), 1)
-                } else {
-                    this.selectedMintIds = [id]
+                    this.selectedTreasureIds = []
+                    if (this.selectedMintIds.includes(id)) {
+                        this.selectedMintIds.splice(this.selectedMintIds.indexOf(id), 1)
+                    } else {
+                        this.selectedMintIds = [id]
+                    }
+
+                    this.selectionChanged()
+                },
+                onBringToFront: () => {
+                    this.bringMintsToFront()
                 }
-
-                this.selectionChanged()
-            },
-            onBringToFront: () => {
-                this.bringMintsToFront()
-            }
-        })
+            })
 
 
-        const diagramCanvas = this.$refs.diagramCanvas
-        const diagramContext = diagramCanvas.getContext('2d')
-        this.chart = new Chart(diagramContext, {
-            type: 'pie',
-            data: {
-                labels: [],
-                datasets: [{
-                }]
-            },
-            options: {
-                borderWidth: 0,
-                aspectRatio: .7,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 10,
-                            boxHeight: 10,
-                            useBorderRadius: 4,
-                            sort: Sort.stringPropAlphabetically("text"),
-                        },
+            const diagramCanvas = this.$refs.diagramCanvas
+            const diagramContext = diagramCanvas.getContext('2d')
+            this.chart = new Chart(diagramContext, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                    }]
+                },
+                options: {
+                    borderWidth: 0,
+                    aspectRatio: .7,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                boxHeight: 10,
+                                useBorderRadius: 4,
+                                sort: Sort.stringPropAlphabetically("text"),
+                            },
 
+                        }
                     }
                 }
-            }
-        })
+            })
 
-        // this.mintLocationMarkerGroup = this.$L.featureGroup()
-        // this.mintLocationMarkerGroup.addTo(this.map)
+            // this.mintLocationMarkerGroup = this.$L.featureGroup()
+            // this.mintLocationMarkerGroup.addTo(this.map)
 
-        window.addEventListener('resize', this.resizeCanvas);
-        this.update()
+            window.addEventListener('resize', this.resizeCanvas);
+            this.update()
 
-        const hideMarkersThreshold = this.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)
-        this.map.on("zoomend", () => {
-            const zoom = this.map.getZoom()
-            this.overlay.hideMarkersOnSpecifiedZoomLevel(zoom, hideMarkersThreshold)
-        })
+            const hideMarkersThreshold = this.$mconfig.getInteger("map.hoards.marker_zoom_threshold", 0)
+            this.map.on("zoomend", () => {
+                const zoom = this.map.getZoom()
+                this.overlay.hideMarkersOnSpecifiedZoomLevel(zoom, hideMarkersThreshold)
+            })
 
-        //this is a hack to make sure the diagram is updated after the map is loaded
-        setTimeout(() => {
-            this.updateDiagram()
-        }, 1000)
+            //this is a hack to make sure the diagram is updated after the map is loaded
+            setTimeout(() => {
+                this.updateDiagram()
+            }, 1000)
+        } catch (error) {
+            console.error("Error in mounted hook:", error)
+        }
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeCanvas);
@@ -462,8 +469,6 @@ export default {
         removeInvalidIds() {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
         },
-
-
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
             const value = this.$refs.diagramSelect.value
@@ -538,10 +543,6 @@ export default {
                         },
                     }
 
-
-
-
-
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
@@ -586,7 +587,6 @@ export default {
                 this.chart.update()
             }
         },
-
         resizeCanvas() {
         },
         isActiveMint(mint) {
@@ -708,6 +708,8 @@ export default {
             return this.selectedTreasureIds.includes(id)
         },
         toggleTreasure(id) {
+            console.log("Setting treasure", id)
+
             if (this.isTreasureSelected(id)) {
                 this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
             } else {
@@ -717,6 +719,7 @@ export default {
             this.selectionChanged()
         },
         setTreasure(id) {
+            console.log("Setting treasure", id)
 
             this.selectedMintIds = []
 

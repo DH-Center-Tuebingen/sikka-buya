@@ -454,7 +454,7 @@ export default class TreasureOverlay extends Overlay {
     createTreasureMapObjects(treasures, selectedTreasureIds, { extendBorder = 20 } = {}) {
         const geoJSON = []
         const connections = []
-
+        
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color
