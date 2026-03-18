@@ -65,7 +65,17 @@ export default {
 
         },
         activeBaseLayer: function (newVal) {
-            this.baseLayer.setUrl(newVal.url);
+            if (!this.map) return;
+
+            this.map.removeLayer(this.baseLayer);
+            this.baseLayer = L.tileLayer(
+                newVal.url,
+                {
+                    maxZoom: 17,
+                    attribution:
+                        'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                }
+            ).addTo(this.map);
         }
     },
     mounted: function () {

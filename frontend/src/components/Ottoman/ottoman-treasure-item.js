@@ -23,6 +23,15 @@ export class OttomanTreasure {
         timespan = { from: null, to: null },
         items = [],
         color = null,
+
+        singleFind = null,
+        reliableAttribution = null,
+        completeHoard = null,
+        ottomanPredominance = null,
+        subclassification = null,
+        collection = null,
+        publication = null,
+
     } = {}) {
         this.id = id
         this.name = name
@@ -31,6 +40,13 @@ export class OttomanTreasure {
         this.timespan = timespan
         this.items = items
         this.color = color
+        this.singleFind = singleFind
+        this.reliableAttribution = reliableAttribution
+        this.completeHoard = completeHoard
+        this.ottomanPredominance = ottomanPredominance
+        this.subclassification = subclassification
+        this.collection = collection
+        this.publication = publication
     }
 
     async upsert() {
@@ -50,6 +66,15 @@ export class OttomanTreasure {
                 "location",
                 "description",
                 "color",
+                "singleFind",
+                "reliableAttribution",
+                "completeHoard",
+                "ottomanPredominance",
+                "subclassification",
+                "count",
+                "collection",
+                "publication",
+
                 { timespan: ["from", "to"] },
                 {
                     items: [
@@ -68,10 +93,7 @@ export class OttomanTreasure {
                         "reconstructed",
                         "mintAsOnCoin",
 
-                        "singleFind",
-                        "reliableAttribution",
-                        "completeHoard",
-                        "ottomanPredominance",
+                        "authenticity",
 
                         { person: ["id", "name"] },
                         { historicalRegion: ["id", "name"] },
@@ -80,9 +102,6 @@ export class OttomanTreasure {
                         { yearOfLoss: ["from", "to"] },
                         { yearOfMint: ["from", "to"] },
 
-                        "circumstances",
-                        "authenticity",
-                        "subclassification",
                     ]
                 }
             ])
@@ -99,39 +118,42 @@ export class OttomanTreasure {
         return location
     }
 
+    getMutationData() {
+        return {
+            name: this.name,
+            location: this.fixLocation(this.location),
+            description: this.description,
+            color: this.color,
+            timespan: this.timespan,
+            items: this.items,
+            singleFind: this.singleFind,
+            reliableAttribution: this.reliableAttribution,
+            completeHoard: this.completeHoard,
+            ottomanPredominance: this.ottomanPredominance,
+            subclassification: this.subclassification,
+            collection: this.collection,
+            publication: this.publication,
+        }
+    }
+
     async add() {
         await Query.raw(`
         mutation addTreasure($treasure: TreasureInput!) {
             addTreasure(data: $treasure)
         }
         `, {
-            treasure: {
-                name: this.name,
-                location: this.fixLocation(this.location),
-                description: this.description,
-                color: this.color,
-                timespan: this.timespan,
-                items: this.items
-            }
+            treasure: this.getMutationData()
         }, true)
     }
 
     async update(id) {
-        let location = this.fixLocation(this.location)
         await Query.raw(`
         mutation updateTreasure($id:ID!, $treasure: TreasureInput!) {
             updateTreasure(id:$id, data: $treasure)
         }
         `, {
             id,
-            treasure: {
-                name: this.name,
-                location,
-                description: this.description,
-                color: this.color,
-                timespan: this.timespan,
-                items: this.items
-            }
+            treasure: this.getMutationData()
         }, true)
     }
 
@@ -179,18 +201,13 @@ export class OttomanTreasureItem {
         mintAsOnCoin = null,
         reconstructed = false,
 
-        singleFind = false,
-        reliableAttribution = false,
-        completeHoard = false,
-        ottomanPredominance = false,
+        authenticity = null,
+
         person = { from: null, to: null },
         historicalRegion = { from: null, to: null },
         issuingState = { from: null, to: null },
         yearOfLoss = null,
         yearOfMint = null,
-        circumstances = null,
-        authenticity = null,
-        subclassification = null,
     } = {}
     ) {
         this.coinType = coinType
@@ -208,10 +225,7 @@ export class OttomanTreasureItem {
         this.mintAsOnCoin = mintAsOnCoin
         this.reconstructed = reconstructed
 
-        this.singleFind = singleFind
-        this.reliableAttribution = reliableAttribution
-        this.completeHoard = completeHoard
-        this.ottomanPredominance = ottomanPredominance
+        this.authenticity = authenticity
 
         this.person = person
         this.historicalRegion = historicalRegion
@@ -219,21 +233,13 @@ export class OttomanTreasureItem {
 
         this.yearOfLoss = yearOfLoss
         this.yearOfMint = yearOfMint
-        this.circumstances = circumstances
-        this.authenticity = authenticity
-        this.subclassification = subclassification
     }
 
     static rowDefinition() {
         return [
             { type: 'index', label: '#', attribute: null },
             { type: 'number', label: 'Quantity', attribute: 'count' },
-
-            { type: 'boolean', label: 'Single Find?', attribute: 'singleFind' },
-
-            { type: 'boolean', label: 'Reliable Attribution', attribute: 'reliableAttribution' },
-            { type: 'boolean', label: 'Complete Hoard', attribute: 'completeHoard' },
-            { type: 'boolean', label: 'Ottoman Predominance', attribute: 'ottomanPredominance' },
+            { type: 'text', label: 'Authenticity', attribute: 'authenticity' },
 
             { type: 'model', label: 'Coin Type', attribute: 'coinType' },
             { type: 'model', label: 'Material', attribute: 'material' },
@@ -245,11 +251,6 @@ export class OttomanTreasureItem {
 
             { type: 'range', label: 'Year Of Loss', attribute: 'yearOfLoss' },
             { type: 'range', label: 'Year Of Minting', attribute: 'yearOfMint' },
-
-            { type: 'text', label: 'Circumstances', attribute: 'circumstances' },
-            { type: 'text', label: 'Authenticity', attribute: 'authenticity' },
-            { type: 'text', label: 'Subclassification', attribute: 'subclassification' },
-
         ];
     }
 
@@ -261,7 +262,7 @@ export class OttomanTreasureItem {
             epoch: { id: this.epoch?.id || null, name: this.epoch?.name || "" },
             nominal: { id: this.nominal?.id || null, name: this.nominal?.name || "" },
             material: { id: this.material?.id || null, name: this.material?.name || "" },
-            
+
             person: { id: this.person?.id || null, name: this.person?.name || "" },
             historicalRegion: { id: this.historicalRegion?.id || null, name: this.historicalRegion?.name || "" },
             issuingState: { id: this.issuingState?.id || null, name: this.issuingState?.name || "" },

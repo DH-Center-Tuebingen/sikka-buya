@@ -23,6 +23,7 @@ const HistoricalRegionGQL = new NamedGQL("historicalRegion")
 
 const Frontend = require('../frontend')
 const CoinTypeGQL = require('./klasses/CoinTypeGQL')
+const { importResolver, importDestructor } = require('./_ottoman/import_resolver')
 /**
  * Most mutations require the user to be logged in to
  * manipulate the database.
@@ -202,9 +203,13 @@ const TypeEditorMutations = {
 }
 
 const WriterMutations = {
+    // Ottoman import resolver
+    importResolver,
+    importDestructor,
     ...PageGQL.Mutations,
     ...BlockGQL.Mutations,
     async uploadFile(_, { identity, file: filePromise }) {
+        console.log(filePromise)
         if (!identity) throw new Error("Identity field is required!")
         if (!filePromise) throw new Error("File field is required!")
 

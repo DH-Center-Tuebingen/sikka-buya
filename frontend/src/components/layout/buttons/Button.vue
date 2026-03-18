@@ -1,22 +1,22 @@
 <template>
-  <button
-    class="button"
-    :disabled="disabled"
-    :type="type"
-    :class="{ colored, multiline, 'content-button': contentButton, active: active, disabled }"
-    @click="clicked"
-  >
-    <!-- 
+    <button
+        class="button"
+        :disabled="disabled"
+        :type="type"
+        :class="{ colored, multiline, 'content-button': contentButton, active: active, disabled }"
+        @click="clicked"
+    >
+        <!-- 
       @slot Default slot to render the button contents.
      -->
-    <slot v-if="!to" />
-    <router-link
-      v-else
-      :to="to"
-    >
-      <slot />
-    </router-link>
-  </button>
+        <slot v-if="!to" />
+        <router-link
+            v-else
+            :to="to"
+        >
+            <slot />
+        </router-link>
+    </button>
 </template>
 
 <script>
@@ -27,190 +27,199 @@
  * An Exception would be if you want to submit a form.
  */
 export default {
-  props: {
-    /**
-     * Contentbutton doesn't use a filling, it just uses the
-     * buttons content. Most likely a single icon.
-     */
-    contentButton: Boolean,
-    /**
-     * Disables the button and the ability to push it.
-     */
-    disabled: Boolean,
-    /**
-     * Displays the button in the accent color.
-     */
-    colored: Boolean,
-    /**
-     * Displays multiple elements below each other.
-     */
-    multiline: Boolean,
-    /**
-     * You can just put the to in the button to get a navigation going.
-     */
-    to: Object,
-    /**
-     * Prevent the default stopPropagation
-     */
-    noStop: Boolean,
-    type: String,
-    active: Boolean
-  },
-  methods: {
-    /**
-     * Called when the button is clicked.
-     */
-    clicked: function (event) {
-
-      if (!this.noStop)
-        event.stopPropagation()
-
-      if (!this.disabled)
+    props: {
         /**
-         * Click event.
+         * Contentbutton doesn't use a filling, it just uses the
+         * buttons content. Most likely a single icon.
          */
-        this.$emit('click');
+        contentButton: Boolean,
+        /**
+         * Disables the button and the ability to push it.
+         */
+        disabled: Boolean,
+        /**
+         * Displays the button in the accent color.
+         */
+        colored: Boolean,
+        /**
+         * Displays multiple elements below each other.
+         */
+        multiline: Boolean,
+        /**
+         * Prevent the default stopPropagation
+         */
+        noStop: Boolean,
+        /**
+         * The type of the button, e.g. submit for forms.
+         */
+        type: String,
+        /**
+         * Active for using the button as a toggle.
+         */
+        active: Boolean,
+        /**
+         * You can just put the to in the button to get a navigation going.
+         */
+        to: Object,
     },
-  },
+    methods: {
+        /**
+         * Called when the button is clicked.
+         */
+        clicked: function (event) {
+
+            if (!this.noStop)
+                event.stopPropagation()
+
+            if (!this.disabled)
+                /**
+                 * Click event.
+                 */
+                this.$emit('click');
+        },
+    },
 };
 </script>
 
 <style lang="scss">
 .button {
-  box-sizing: border-box;
-  $disabled-color: $light-gray;
+    box-sizing: border-box;
+    $disabled-color: $light-gray;
 
-  svg {
-    display: block;
-  }
+    svg {
+        display: block;
+    }
 
-  >.icon:first-child,
-  >svg:first-child:not(:last-child) {
-    margin-right: .5em;
-  }
+    >.icon:first-child,
+    >svg:first-child:not(:last-child) {
+        margin-right: .5em;
+    }
 
-  &[disabled] {
-    color: $disabled-color;
-    border: 1px solid $disabled-color;
-
-    background-color: transparent;
-    cursor: not-allowed;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  &.row-button {
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-    border-top: $border;
-    border-bottom: $border;
-  }
-
-
-
-  &.map-button {
-    color: $white;
-    font-weight: 600;
-    font-size: 0.8rem;
-
-    $background-alpha: 0.4;
-
-    background-color: rgba($color: $white, $alpha: $background-alpha);
-    backdrop-filter: blur(1px) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
-    border: rgba($color: $white, $alpha: 0.8) 1px solid;
-    $text-shadow: 0 0 3px rgba($color: $black, $alpha: 0.8);
-    text-shadow: $text-shadow;
-
-    &.disabled,
     &[disabled] {
-      opacity: 0.5;
-      $disabled-color: white;
-      color: $disabled-color;
-      border: 1px solid $disabled-color;
+        color: $disabled-color;
+        border: 1px solid $disabled-color;
+
+        background-color: transparent;
+        cursor: not-allowed;
+        pointer-events: none;
+        user-select: none;
     }
 
-    &.active {
-      background-color: rgba($color: $primary-color, $alpha: $background-alpha);
+    &.row-button {
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-top: $border;
+        border-bottom: $border;
     }
 
-    >svg {
-      filter: drop-shadow($text-shadow);
 
-      &:not(:last-child) {
-        margin-right: $padding;
-      }
+
+    &.map-button {
+        color: $white;
+        font-weight: 600;
+        font-size: 0.8rem;
+
+        $background-alpha: 0.4;
+
+        background-color: rgba($color: $white, $alpha: $background-alpha);
+        backdrop-filter: blur(1px) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+        border: rgba($color: $white, $alpha: 0.8) 1px solid;
+        $text-shadow: 0 0 3px rgba($color: $black, $alpha: 0.8);
+        text-shadow: $text-shadow;
+
+        &.disabled,
+        &[disabled] {
+            opacity: 0.5;
+            $disabled-color: white;
+            color: $disabled-color;
+            border: 1px solid $disabled-color;
+        }
+
+        &.active {
+            background-color: rgba($color: $primary-color, $alpha: $background-alpha);
+        }
+
+        >svg {
+            filter: drop-shadow($text-shadow);
+
+            &:not(:last-child) {
+                margin-right: $padding;
+            }
+        }
+
+        a {
+            font-weight: bold;
+        }
+    }
+
+    &.big-button {
+        padding: $padding $padding * 2;
+    }
+
+    &.huge-button {
+        padding: $large-padding $large-padding * 2;
+        font-size: $large-font;
+
+        .material-design-icon {
+            margin-right: $large-padding;
+        }
     }
 
     a {
-      font-weight: bold;
+        @include resetLinkStyle();
+        color: currentColor;
     }
-  }
-
-  &.big-button {
-    padding: $padding $padding * 2;
-  }
-
-  &.huge-button {
-    padding: $large-padding $large-padding * 2;
-    font-size: $large-font;
-
-    .material-design-icon {
-      margin-right: $large-padding;
-    }
-  }
-
-  a {
-    @include resetLinkStyle();
-    color: currentColor;
-  }
 }
 </style>
 
-<style lang="scss" scoped>
+<style
+    lang="scss"
+    scoped
+>
 .button {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  text-align: center;
-  box-sizing: border-box;
-
-  a {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
     text-align: center;
     box-sizing: border-box;
-    flex: 1;
-  }
 
-  &.multiline {
-    flex-direction: column;
-  }
+    a {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        text-align: center;
+        box-sizing: border-box;
+        flex: 1;
+    }
 
-  .material-design-icon:not(:last-child) {
-    margin-right: $padding;
-  }
+    &.multiline {
+        flex-direction: column;
+    }
 
-  &.colored {
-    border-radius: 3px;
+    .material-design-icon:not(:last-child) {
+        margin-right: $padding;
+    }
 
-    @include buttonColor($white, $primary-color);
-  }
+    &.colored {
+        border-radius: 3px;
 
-  &.content-button {
-    background-color: transparent;
-    border: none;
-  }
+        @include buttonColor($white, $primary-color);
+    }
 
-  &.borderless {
-    background-color: transparent;
-    border: none;
-    border-radius: 0;
-  }
+    &.content-button {
+        background-color: transparent;
+        border: none;
+    }
 
-  a {
-    display: block;
-  }
+    &.borderless {
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+    }
+
+    a {
+        display: block;
+    }
 }
 </style>

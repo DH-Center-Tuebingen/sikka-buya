@@ -53,7 +53,7 @@ export default {
 
     .error {
         color: $white;
-        margin:0;
+        margin: 0;
     }
 }
 

@@ -11,11 +11,9 @@
         @submit="property_form_mixin_submit"
         @cancel="property_form_mixin_cancel"
     >
-        <!-- <template #header>
-            <pre>
-                {{ value }}
-            </pre>
-        </template> -->
+        <template #header>
+            <ErrorMessage :error="importErrors" />
+        </template>
 
         <LabeledInputContainer>
             <template #label>
@@ -25,23 +23,59 @@
             <input
                 id="treasure-name-input"
                 v-model="value.name"
+                style="font-weight: bold; font-size: 2rem;"
+                type="text"
+            >
+        </LabeledInputContainer>
+
+        <div
+            class="flex row"
+            style="gap: 5px;"
+        >
+            <Toggle
+                v-model="value.singleFind"
+                style="flex:1; font-weight:bold; padding-top: 8px; padding-bottom: 8px;"
+            >
+                Single Find
+            </Toggle>
+
+            <Toggle
+                v-model="value.reliableAttribution"
+                style="flex:1; font-weight:bold; padding-top: 8px; padding-bottom: 8px;"
+            >
+                Reliable Attribution
+            </Toggle>
+
+            <Toggle
+                v-model="value.completeHoard"
+                style="flex:1; font-weight:bold; padding-top: 8px; padding-bottom: 8px;"
+            >
+                Complete Hoard
+            </Toggle>
+
+            <Toggle
+                v-model="value.ottomanPredominance"
+                style="flex:1; font-weight:bold; padding-top: 8px; padding-bottom: 8px;"
+            >
+                Ottoman Predominance
+            </Toggle>
+        </div>
+
+        <LabeledInputContainer>
+            <template #label>
+                Subclassification
+            </template>
+
+            <input
+                id="treasure-name-input"
+                v-model="value.subclassification"
                 type="text"
             >
         </LabeledInputContainer>
 
         <LabeledInputContainer>
             <template #label>
-                <Locale path="general.color" />
-            </template>
-            <ColorInput
-                id="treasure-color-input"
-                v-model="value.color"
-            />
-        </LabeledInputContainer>
-
-        <LabeledInputContainer>
-            <template #label>
-                <Locale path="general.description" />
+                Circumstances
             </template>
 
             <SimpleFormattedField
@@ -49,6 +83,29 @@
                 ref="descriptionField"
                 :allow-links="true"
             />
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+            <template #label>
+                Collection
+            </template>
+
+            <input
+                v-model="value.collection"
+                type="text"
+            >
+        </LabeledInputContainer>
+
+
+        <LabeledInputContainer>
+            <template #label>
+                Publication
+            </template>
+
+            <input
+                v-model="value.publication"
+                type="text"
+            >
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -65,6 +122,16 @@
                     <Locale path="form.range_from_items" />
                 </ButtonVue>
             </div>
+        </LabeledInputContainer>
+
+        <LabeledInputContainer>
+            <template #label>
+                <Locale path="general.color" />
+            </template>
+            <ColorInput
+                id="treasure-color-input"
+                v-model="value.color"
+            />
         </LabeledInputContainer>
 
         <LabeledInputContainer>
@@ -86,6 +153,9 @@
                 <Locale path="property.treasure-items" />
             </template>
             <div class="tools">
+                <div style="flex:1;">
+                    Total Coins {{ value.count || 0 }}
+                </div>
                 <Toggle v-model="autoComplete">
                     <Locale path="general.auto-complete" />
                 </Toggle>
@@ -101,9 +171,12 @@
                 </ButtonVue>
             </div>
 
-            <ErrorMessage :error="importErrors" />
 
-            <OttomanTreasureItemTable v-model="value.items" />
+
+            <OttomanTreasureItemTable
+                v-model="value.items"
+                style="max-height: 50vh;"
+            />
             <ButtonVue @click="addItem">
                 <Locale path="form.add_item" />
             </ButtonVue>
@@ -172,11 +245,19 @@ export default {
     data() {
         return {
             value: {
-                name: "",
+                collection: "",
+                color: "#000000",
+                completeHoard: false,
                 description: "",
-                timespan: { from: null, to: null },
-                location: defaultLocation,
                 items: [],
+                location: defaultLocation,
+                name: "",
+                ottomanPredominance: false,
+                publication: "",
+                reliableAttribution: false,
+                singleFind: false,
+                subclassification: "",
+                timespan: { from: null, to: null },
             },
             autoComplete: true,
             importing: false,
@@ -212,10 +293,18 @@ export default {
         },
         updateProperty: async function () {
             const treasure = new OttomanTreasure({
-                name: this.value.name,
+                collection: this.value.collection,
                 color: this.value.color,
-                location: this.$refs.locationInput.getGeoJSON(),
+                completeHoard: this.value.completeHoard,
                 description: this.$refs.descriptionField.getContent(),
+                location: this.$refs.locationInput.getGeoJSON(),
+                name: this.value.name,
+                ottomanPredominance: this.value.ottomanPredominance,
+                publication: this.value.publication,
+                reliableAttribution: this.value.reliableAttribution,
+                singleFind: this.value.singleFind,
+                subclassification: this.value.subclassification,
+
                 timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
                 items: this.value.items.map(item => {
                     let ti = OttomanTreasureItem.fromInputs(item)
@@ -318,6 +407,7 @@ export default {
     .tools {
         display: flex;
         justify-content: flex-end;
+        align-items: center;
         margin-bottom: $padding;
 
         label {

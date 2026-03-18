@@ -85,14 +85,9 @@ export default {
 
         {
           name: 'routes.map',
-          target: { name: 'Map Landing' },
+          target: { name: 'Ottoman Hoards Map' },
           auth: true,
           count: 2,
-        },
-        {
-          name: 'routes.catalog',
-          target: { name: 'Catalog' },
-          auth: true,
         },
       ],
     };

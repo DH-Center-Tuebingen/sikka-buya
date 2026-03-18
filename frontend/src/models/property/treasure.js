@@ -50,6 +50,15 @@ export class Treasure {
                 "location",
                 "description",
                 "color",
+
+                
+                "singleFind",
+                "reliableAttribution",
+                "completeHoard",
+                "ottomanPredominance",
+                "circumstances",
+                "subclassification",
+
                 { timespan: ["from", "to"] },
                 {
                     items: [
@@ -71,15 +80,7 @@ export class Treasure {
                         "person",
                         "issuingState",
                         "historicalRegion",
-
-                        "singleFind",
-                        "reliableAttribution",
-                        "completeHoard",
-                        "ottomanPredominance",
-
                         "authenticity",
-                        "circumstances",
-                        "subclassification",
 
                         { yearOfLoss: ["from", "to"] },
                         { yearOfMint: ["from", "to"] },

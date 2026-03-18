@@ -35,12 +35,15 @@
         />
         <form
             v-show="!loading"
+            style="position: relative;"
             @submit.prevent.stop="() => log('PREVENTED SUBMIT')"
         >
             <slot />
+
             <div
                 v-if="error"
                 class="information error"
+                style="position: absolute; background-color: white; top: 0; left: 0; right: 0; padding: 20px; z-index: 100000000;"
             >
                 <template v-if="Array.isArray(error)">
                     <p

@@ -10,13 +10,13 @@ const Language = require('./src/language.js')
 const { createSchema } = require('graphql-yoga')
 const Settings = require('./src/models/settings.js')
 
+ const { graphqlUploadExpress } = require('graphql-upload');
+
 async function start({
     expressPort,
     routes = []
 } = {}) {
 
-
-    const { default: graphqlUploadExpress } = await import("graphql-upload/graphqlUploadExpress.mjs");
     Frontend.init()
     Language.init()
 

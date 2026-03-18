@@ -47,6 +47,10 @@ class NamedModel extends Model {
     async delete(id, transaction = WriteableDatabase) {
         return transaction.none(`DELETE FROM ${this.tableName} WHERE id = $1`, [id])
     }
+
+    async findByName(name, transaction = Database) {
+        return transaction.oneOrNone(`SELECT id, name FROM ${this.tableName} WHERE name = $1`, [name])
+    }
 }
 
 module.exports = NamedModel;

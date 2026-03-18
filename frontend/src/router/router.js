@@ -115,6 +115,7 @@ const mconfig = new ManagedConfig("project_settings", SettingsTemplate["project_
 
 // OTTOMAN SPECIFIC ROUTES
 import OttomanTreasureMap from "@/components/Ottoman/OttomanTreasureMap.vue"
+import EditorImporter from "../components/page/editor/EditorImporter.vue"
 
 
 const routes = [
@@ -334,6 +335,10 @@ const routes = [
                         component: EditorPanel,
 
                     }, {
+                        path: 'import',
+                        name: "Import",
+                        component: EditorImporter,
+                    }, {
                         path: "expert_search",
                         name: "ExpertSearch",
                         component: ExpertSearch,
@@ -342,7 +347,6 @@ const routes = [
                         path: "fixdiff",
                         name: "FixDiff",
                         component: FixDiff,
-
                     },
                     {
                         path: 'user',

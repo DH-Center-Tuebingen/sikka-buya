@@ -80,7 +80,7 @@ class MintRegion {
     } = {}) {
         const { properties, geometry } = GeoJSON.separate(location)
 
-        return WriteableDatabase.query(`INSERT INTO 
+        return WriteableDatabase.one(`INSERT INTO 
         $[tableName:name]
         (name, location, properties, uncertain)
         VALUES
@@ -89,7 +89,8 @@ class MintRegion {
             ${properties ? "to_jsonb($[properties]::jsonb)" : null},
             $[uncertain]
             )
-        `, {
+        RETURNING id`,
+        {
             tableName: MintRegion.tableName,
             name,
             location: geometry,
@@ -112,6 +113,10 @@ class MintRegion {
         })
 
         return result.map((row) => MintRegion.postProcess(row))
+    }
+
+    static async findByName(name, transaction = Database) {
+        return transaction.oneOrNone(`SELECT id, name, location, properties, uncertain FROM ${MintRegion.tableName} WHERE name = $1`, [name])
     }
 }
 

@@ -37,7 +37,7 @@ export default class Query {
         const getName = `get${this.capitalizedName}`
 
         function recursivelyBuildBody(p) {
-            console.log("Building body for", p) 
+            console.log("Building body for", p)
 
             for (let [index, object] of p.entries()) {
                 if (typeof (object) == "object") {
@@ -133,6 +133,27 @@ export default class Query {
                 "file": null,
                 "identity": "${identity}"
             }
+        }`
+        formData.append("operations", operations)
+
+        const map = `{ "0": ["variables.file"]}`
+        formData.append("map", map)
+        formData.append("0", file)
+
+        return AxiosHelper.request({
+            url: graphqlEndpoint,
+            method: "post",
+            headers: Headers.join(Headers.ContentTypeFormData, Headers.Auth),
+            data: formData
+        })
+    }
+
+    static async rawWithFile(query, variables, file) {
+
+        const formData = new FormData()
+        const operations = `{
+            "query": "${query}",
+            "variables": ${JSON.stringify(variables)}
         }`
         formData.append("operations", operations)
 

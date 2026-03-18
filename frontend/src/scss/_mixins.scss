@@ -43,12 +43,12 @@
   color: $foregroundColor;
   background-color: $backgroundColor;
 
-  &:hover:not(.disable-input) {
+  &:hover:not(.disable-input):not(:disabled) {
     color: color.adjust($foregroundColor, $lightness: 5%);
     background-color: color.adjust($backgroundColor, $lightness: 5%);
   }
 
-  &:active:not(.disable-input) {
+  &:active:not(.disable-input):not(:disabled) {
     color: color.adjust($color: $foregroundColor, $lightness: -5%);
     background-color: color.adjust($color: $backgroundColor, $lightness: -5%);
   }

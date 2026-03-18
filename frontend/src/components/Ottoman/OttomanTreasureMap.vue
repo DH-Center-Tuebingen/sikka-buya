@@ -807,7 +807,7 @@ table {
     max-width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: flex-end;
     padding: $padding;
     padding-bottom: 20px;
 }

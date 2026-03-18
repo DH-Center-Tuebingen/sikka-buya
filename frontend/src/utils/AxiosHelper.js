@@ -19,8 +19,6 @@ export default class AxiosHelper {
         })
     }
 
-
-
     static handleRejectedErrors(error, reject) {
         if (error.isAxiosError) {
             if (error.response) {
@@ -45,7 +43,6 @@ export default class AxiosHelper {
             return false
         } else return true
     }
-
 
     static getErrors(result) {
         let errors = [];

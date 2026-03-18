@@ -27,15 +27,7 @@ class Treasure extends Table {
                 weight = null,
                 year = null,
 
-                singleFind = null,
-                reliableAttribution = null,
-                completeHoard = null,
-                ottomanPredominance = null,
-
                 authenticity = null,
-                subclassification = null,
-                circumstances = null,
-
                 person = null,
                 historicalRegion = null,
                 issuingState = null,
@@ -65,17 +57,9 @@ class Treasure extends Table {
                     reconstructed,
                     mint_region_uncertain,
                     mint_as_on_coin,
-
-                    
-                    single_find,
-                    reliable_attribution,
-                    complete_hoard,
-                    ottoman_predominance,
                     
                     authenticity,
-                    subclassification,
-                    circumstances,
-                    
+
                     person,
                     historical_region,
                     issuing_state,
@@ -100,14 +84,7 @@ class Treasure extends Table {
                     $[mintRegionUncertain],
                     $[mintAsOnCoin],
                     
-                    $[singleFind],
-                    $[reliableAttribution],
-                    $[completeHoard],
-                    $[ottomanPredominance],
-                    
                     $[authenticity],
-                    $[subclassification],
-                    $[circumstances],
                     
                     $[person],
                     $[historicalRegion],
@@ -132,13 +109,7 @@ class Treasure extends Table {
                 year,
                 reconstructed,
                 mintAsOnCoin,
-                singleFind,
-                reliableAttribution,
-                completeHoard,
-                ottomanPredominance,
                 authenticity,
-                subclassification,
-                circumstances,
                 person,
                 historicalRegion,
                 issuingState,
@@ -257,14 +228,7 @@ class Treasure extends Table {
                 t.mint_region_uncertain,
                 t.mint_as_on_coin,
 
-                t.single_find,
-                t.reliable_attribution,
-                t.complete_hoard,
-                t.ottoman_predominance,
-
                 t.authenticity,
-                t.subclassification,
-                t.circumstances,
 
                 t.person,
                 t.historical_region,
@@ -354,8 +318,6 @@ class Treasure extends Table {
         return Database.tx(async t => {
             const result = []
 
-            const treasures = await (`Select id, name, location`)
-
             for (let id of mintIds) {
                 const mint = await MintRegion.get(id, t)
 
@@ -400,13 +362,7 @@ class TreasureItem {
             "uncertainYear": "uncertain_year",
             "mintRegionUncertain": "mint_region_uncertain",
             "mintAsOnCoin": "mint_as_on_coin",
-            "singleFind": "single_find",
-            "reliableAttribution": "reliable_attribution",
-            "completeHoard": "complete_hoard",
-            "ottomanPredominance": "ottoman_predominance",
             "authenticity": "authenticity",
-            "subclassification": "subclassification",
-            "circumstances": "circumstances",
             "person": "person",
             "historicalRegion": "historical_region",
             "issuingState": "issuing_state",

@@ -81,15 +81,7 @@ type TreasureItem {
   person: Person
   issuingState: Name
   historicalRegion: Name
-
-  singleFind: Boolean
-  reliableAttribution: Boolean
-  completeHoard: Boolean
-  ottomanPredominance: Boolean
-
   authenticity: String
-  circumstances: String
-  subclassification: String
 
   yearOfLoss: Range
   yearOfMint: Range
@@ -114,15 +106,7 @@ input TreasureItemInput {
 
   issuingState: ID
   historicalRegion: ID
-
-  singleFind: Boolean
-  reliableAttribution: Boolean
-  completeHoard: Boolean
-  ottomanPredominance: Boolean
-
   authenticity: String
-  circumstances: String
-  subclassification: String
 
   yearOfLoss: RangeInput
   yearOfMint: RangeInput
@@ -135,6 +119,19 @@ type Treasure {
   location: GeoJSON
   timespan: Range
   description: String
+
+  count: Int
+  singleFind: Boolean
+  reliableAttribution: Boolean
+  completeHoard: Boolean
+  ottomanPredominance: Boolean
+  subclassification: String
+  dateOfLoss: Range
+
+  
+  collection: String
+  publication: String
+
   items: [TreasureItem]
 }
 
@@ -144,6 +141,16 @@ input TreasureInput {
   location: GeoJSON
   timespan: RangeInput
   description: String
+
+  singleFind: Boolean
+  reliableAttribution: Boolean
+  completeHoard: Boolean
+  ottomanPredominance: Boolean
+  subclassification: String
+
+  collection: String
+  publication: String
+
   items: [TreasureItemInput]
 }
 
@@ -683,6 +690,9 @@ type Mutation {
   deleteBlock(id:ID!):Void
   createPageGroup(name:String):ID
   
+  importResolver(file: Upload!): Void
+  importDestructor: Void
+
   deleteFile(identity:String!):Void
   uploadFile(identity:String!, file:Upload!):Void
   setLang(path:String!, lang:String!, singular:String!, plural:String):Void
