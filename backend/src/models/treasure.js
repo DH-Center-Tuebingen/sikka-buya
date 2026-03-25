@@ -12,15 +12,25 @@ class Treasure extends Table {
 
     static async insertItems(t, treasure, items = []) {
         for (let i = 0; i < items.length; i++) {
-            let { coinType = null,
+            let {
+                coinType = null,
+                coinTypeText = null,
+
                 count = 1,
                 epoch = null,
                 reconstructed = false,
                 fragment = false,
                 material = null,
+                materialUncertain = null,
+
                 mintRegion = null,
+                mintRegionUncertain = false,
+
+                denominationText = null,
                 nominal = null,
-                mintRegionUncertain = null,
+                typeOfDenomination = null,
+                denominationUncertain = null,
+
                 mintAsOnCoin = null,
                 uncertainYear = null,
                 weight = null,
@@ -28,12 +38,22 @@ class Treasure extends Table {
 
                 // Ottoman specific fields
                 person,
+                personUncertain = false,
+
                 issuingState,
+                stateUncertain = false,
+                issuingStateRegion,
+
                 historicalRegion,
+
                 authenticity,
+                statusUncertain = false,
 
                 yearOfLoss,
+                yearOfLossUncertain = { from: false, to: false },
+
                 yearOfMint,
+                yearOfMintUncertain = { from: false, to: false },
             } = items[i]
 
             if (reconstructed == null) reconstructed = false
@@ -41,12 +61,20 @@ class Treasure extends Table {
 
             await t.none(`INSERT INTO treasure_item (
                     coinType,
+                    cointype_text,
                     count,
                     epoch,
                     fragment,
                     material,
+                    material_uncertain,
+
                     mint_region,
+                    
+                    denomination_text,
                     nominal,
+                    type_of_denomination,
+                    denomination_uncertain,
+
                     treasure,
                     uncertain_year,
                     weight,
@@ -56,23 +84,44 @@ class Treasure extends Table {
                     mint_as_on_coin,
 
                     person,
+                    person_uncertain,
+
                     issuing_state,
+                    state_uncertain,
+                    issuing_state_region,
+
                     historical_region,
+
                     authenticity,
+                    status_uncertain,
 
                     year_of_loss_from,
                     year_of_loss_to,
+
+                    year_of_loss_from_uncertain,
+                    year_of_loss_to_uncertain,
+
                     year_of_mint_from,
-                    year_of_mint_to
-                    
+                    year_of_mint_to,
+
+                    year_of_mint_from_uncertain,
+                    year_of_mint_to_uncertain
+
                 ) VALUES (
                     $[coinType],
+                    $[coinTypeText],
                     $[count],
                     $[epoch],
                     $[fragment],
                     $[material],
+                    $[materialUncertain],
                     $[mintRegion],
+
+                    $[denominationText],
                     $[nominal],
+                    $[typeOfDenomination],
+                    $[denominationUncertain],
+                    
                     $[treasure],
                     $[uncertainYear],
                     $[weight],
@@ -82,23 +131,40 @@ class Treasure extends Table {
                     $[mintAsOnCoin],
 
                     $[person],
+                    $[personUncertain],
+
                     $[issuingState],
+                    $[stateUncertain],
+                    $[issuingStateRegion],
+
                     $[historicalRegion],
+
                     $[authenticity],
+                    $[statusUncertain],
 
                     $[yearOfLossFrom],
                     $[yearOfLossTo],
+                    $[yearOfLossFromUncertain],
+                    $[yearOfLossToUncertain],
+
                     $[yearOfMintFrom],
-                    $[yearOfMintTo]
+                    $[yearOfMintTo],
+                    $[yearOfMintFromUncertain],
+                    $[yearOfMintToUncertain]
                 )`, {
                 coinType,
+                coinTypeText,
                 count,
                 epoch,
                 fragment,
                 material,
+                materialUncertain,
                 mintRegion,
+                denominationText,
+                denominationUncertain,
                 nominal,
                 treasure: treasure,
+                typeOfDenomination,
                 mintRegionUncertain,
                 uncertainYear,
                 weight,
@@ -107,13 +173,21 @@ class Treasure extends Table {
                 mintAsOnCoin,
                 // Ottoman specific fields
                 person,
+                personUncertain,
                 issuingState,
+                stateUncertain,
+                issuingStateRegion,
+                statusUncertain,
                 historicalRegion,
                 authenticity,
                 yearOfLossFrom: yearOfLoss ? yearOfLoss.from : null,
                 yearOfLossTo: yearOfLoss ? yearOfLoss.to : null,
                 yearOfMintFrom: yearOfMint ? yearOfMint.from : null,
                 yearOfMintTo: yearOfMint ? yearOfMint.to : null,
+                yearOfLossFromUncertain: yearOfLossUncertain ? yearOfLossUncertain.from : false,
+                yearOfLossToUncertain: yearOfLossUncertain ? yearOfLossUncertain.to : false,
+                yearOfMintFromUncertain: yearOfMintUncertain ? yearOfMintUncertain.from : false,
+                yearOfMintToUncertain: yearOfMintUncertain ? yearOfMintUncertain.to : false,
             })
         }
     }
@@ -128,6 +202,7 @@ class Treasure extends Table {
         description = "",
         color = null,
         singleFind = false,
+        typeOfFindUncertain = false,
         reliableAttribution = false,
         completeHoard = false,
         ottomanPredominance = false,
@@ -151,6 +226,7 @@ class Treasure extends Table {
                 description,
                 color,
                 single_find,
+                type_of_find_uncertain,
                 reliable_attribution,
                 complete_hoard,
                 ottoman_predominance,
@@ -167,6 +243,7 @@ class Treasure extends Table {
                 $[description],
                 $[color],
                 $[singleFind],
+                $[typeOfFindUncertain],
                 $[reliableAttribution],
                 $[completeHoard],
                 $[ottomanPredominance],
@@ -183,6 +260,7 @@ class Treasure extends Table {
                 properties,
                 color,
                 singleFind,
+                typeOfFindUncertain,
                 reliableAttribution,
                 completeHoard,
                 ottomanPredominance,
@@ -206,6 +284,7 @@ class Treasure extends Table {
         description = "",
         color = null,
         singleFind = false,
+        typeOfFindUncertain = false,
         reliableAttribution = false,
         completeHoard = false,
         ottomanPredominance = false,
@@ -230,6 +309,7 @@ class Treasure extends Table {
                     color=$[color],
                     
                     single_find = $[singleFind],
+                    type_of_find_uncertain = $[typeOfFindUncertain],
                     reliable_attribution = $[reliableAttribution],
                     complete_hoard = $[completeHoard],
                     ottoman_predominance = $[ottomanPredominance],
@@ -250,6 +330,7 @@ class Treasure extends Table {
                     properties,
                     color,
                     singleFind,
+                    typeOfFindUncertain,
                     reliableAttribution,
                     completeHoard,
                     ottomanPredominance,
@@ -291,7 +372,6 @@ class Treasure extends Table {
             items = await TreasureItem.build(t, items, fields, cache)
         })
 
-        console.log("Listed items: ", items)
         return items
     }
 
@@ -302,10 +382,17 @@ class Treasure extends Table {
                 t.count,
                 t.epoch,
                 t.coinType,
+                t.cointype_text,
+
                 t.mint_region,
                 t.year,
                 t.nominal,
+                t.type_of_denomination,
+                t.denomination_uncertain,
+
                 t.material,
+                t.material_uncertain,
+
                 t.fragment,
                 t.uncertain_year,
                 t.weight,
@@ -314,15 +401,25 @@ class Treasure extends Table {
                 t.mint_as_on_coin,
 
                 t.authenticity,
+                t.status_uncertain,
 
                 t.person,
+                t.person_uncertain,
+
                 t.historical_region,
                 t.issuing_state,
+                t.state_uncertain,
+                t.issuing_state_region,
 
                 t.year_of_loss_from,
                 t.year_of_loss_to,
+                t.year_of_loss_from_uncertain,
+                t.year_of_loss_to_uncertain,
+
                 t.year_of_mint_from,
                 t.year_of_mint_to,
+                t.year_of_mint_from_uncertain,
+                t.year_of_mint_to_uncertain,
                 
                 row_to_json(t) AS items_json
             FROM
@@ -361,6 +458,7 @@ class Treasure extends Table {
                         treasure.properties::jsonb AS properties,
                         ST_AsGeoJSON(treasure.location) AS location,
                         treasure.single_find,
+                        treasure.type_of_find_uncertain,
                         treasure.reliable_attribution,
                         treasure.complete_hoard,
                         treasure.ottoman_predominance,
@@ -384,6 +482,7 @@ class Treasure extends Table {
                 treasure.timespan = { from: treasure.earliest_year, to: treasure.latest_year }
                 treasure.location = GeoJSON.rebuild(JSON.parse(treasure.location), treasure.properties)
                 treasure.singleFind = treasure.single_find
+                treasure.typeOfFindUncertain = treasure.type_of_find_uncertain
                 treasure.reliableAttribution = treasure.reliable_attribution
                 treasure.completeHoard = treasure.complete_hoard
                 treasure.ottomanPredominance = treasure.ottoman_predominance
@@ -458,11 +557,21 @@ class TreasureItem {
 
     static get nameMap() {
         return {
-            "coinType": "cointype",
+            "coinTypeText": "cointype_text",
             "mintRegion": "mint_region",
             "uncertainYear": "uncertain_year",
             "mintRegionUncertain": "mint_region_uncertain",
             "mintAsOnCoin": "mint_as_on_coin",
+            "mintUncertain": "mint_uncertain",
+            "personUncertain": "person_uncertain",
+            "stateUncertain": "state_uncertain",
+            "issuingStateRegion": "issuing_state_region",
+            "statusUncertain": "status_uncertain",
+            "materialUncertain": "material_uncertain",
+
+            "denominationText": "denomination_text",
+            "typeOfDenomination": "type_of_denomination",
+            "denominationUncertain": "denomination_uncertain",
             // Ottoman specific fields
             "issuingState": "issuing_state",
             "historicalRegion": "historical_region",
@@ -471,6 +580,10 @@ class TreasureItem {
             "yearOfLossTo": "year_of_loss_to",
             "yearOfMintFrom": "year_of_mint_from",
             "yearOfMintTo": "year_of_mint_to",
+            "yearOfLossUncertainFrom": "year_of_loss_from_uncertain",
+            "yearOfLossUncertainTo": "year_of_loss_to_uncertain",
+            "yearOfMintUncertainFrom": "year_of_mint_from_uncertain",
+            "yearOfMintUncertainTo": "year_of_mint_to_uncertain",
         }
     }
 
@@ -478,6 +591,8 @@ class TreasureItem {
         return {
             yearOfLoss: { type: "range", columns: ["year_of_loss_from", "year_of_loss_to"] },
             yearOfMint: { type: "range", columns: ["year_of_mint_from", "year_of_mint_to"] },
+            yearOfLossUncertain: { type: "range", columns: ["year_of_loss_from_uncertain", "year_of_loss_to_uncertain"] },
+            yearOfMintUncertain: { type: "range", columns: ["year_of_mint_from_uncertain", "year_of_mint_to_uncertain"] },
         }
     }
 
@@ -577,12 +692,9 @@ class TreasureItem {
         const PersonModel = new NamedModel("person")
         const HistoricalRegionModel = new NamedModel("historical_region")
         const IssuingStateModel = new NamedModel("state")
+        const IssuingStateRegionModel = new NamedModel("issuing_state_region")
 
         return {
-            coinType: async (transaction, id, fields) => {
-                const { types } = await Type.getTypes(null, { filters: { id }, postProcessFields: fields.coinType, transaction })
-                return (types?.length > 0) ? types[0] : null
-            },
             epoch: async (transaction, id) => (new NamedModel("epoch")).get(id, transaction),
             mintRegion: async (transaction, id) => MintRegion.get(id, transaction),
             nominal: async (transaction, id) => Nominal.get(id, transaction),
@@ -591,6 +703,7 @@ class TreasureItem {
             person: async (transaction, id) => PersonModel.get(id, transaction),
             historicalRegion: async (transaction, id) => HistoricalRegionModel.get(id, transaction),
             issuingState: async (transaction, id) => IssuingStateModel.get(id, transaction),
+            issuingStateRegion: async (transaction, id) => IssuingStateRegionModel.get(id, transaction),
         }
     }
 }

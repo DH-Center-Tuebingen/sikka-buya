@@ -19,6 +19,7 @@ const PageGQL = require('./klasses/PageGQL')
 const SettingsGQL = require('./klasses/SettingsGQL')
 const TreasureGQL = require('./klasses/TreasureGQL')
 const IssuingStateGQL = new NamedGQL("issuingState", 'state')
+const IssuingStateRegionGQL = new NamedGQL("issuingStateRegion", 'issuing_state_region')
 const HistoricalRegionGQL = new NamedGQL("historicalRegion")
 
 const Frontend = require('../frontend')
@@ -178,6 +179,7 @@ const EditorMutations = {
     ...MintRegionGQL.Mutations,
     ...EpochGQL.Mutations,
     ...IssuingStateGQL.Mutations,
+    ...IssuingStateRegionGQL.Mutations,
     ...HistoricalRegionGQL.Mutations,
     async changePersonExplorerOrder(_, args) {
         return WriteableDatabase.none("INSERT INTO person_explorer_custom_sorting (person, position) VALUES ($[person], $[position]) ON CONFLICT (person) DO UPDATE SET position=$[position]", args)

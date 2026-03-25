@@ -30,39 +30,39 @@ async function importResolver(_, { file: fileUpload }) {
         "Historical region of coin loss": 'item.historicalRegion@historical_region',
         'Hoard/Single finds': 'treasure.singleFind$boolean',
         'Subclassification of finds': "treasure.subclassification",
-        // 'Type of find uncertain': "",
+        'Type of find uncertain': "treasure.typeOfFindUncertain$boolean",
         // 'Quantity of studied coins (for all findspot)': "", // Calculated
         // 'Date of loss (text)': "",
-        // 'Date of loss from': "year_of_loss_from",
-        // 'Date of loss from uncertain': "",
-        // 'Date of loss to': "year_of_loss_to",
-        // 'Date of loss to uncertain': "",
+        'Date of loss from': "year_of_loss_from",
+        'Date of loss from uncertain': "year_of_loss_from_uncertain$boolean",
+        'Date of loss to': "year_of_loss_to",
+        'Date of loss to uncertain': "year_of_loss_to_uncertain$boolean",
         'Circumstances of find': "treasure.description",
         'Collection': "treasure.collection",
         'Publication': "treasure.publication",
         'Issuing state': "item.issuingState@issuing_state",
-        // 'State uncertain': "",
-        // 'Region (cluster of issuing states) (for pie chart)': "",
+        'State uncertain': "item.stateUncertain$boolean",
+        'Region (cluster of issuing states) (for pie chart)': "item.issuingStateRegion@issuing_state_region",
         'Metal': "item.material@material",
-        // 'Metal uncertain': "",
-        // 'Denomination (precise name)': "",
-        // 'Denomination uncertain': "",
+        'Metal uncertain': "item.metalUncertain$boolean",
+        'Denomination (precise name)': "item.denominationText",
+        'Denomination uncertain': "item.denominationUncertain$boolean",
         'Denomination (for search)': "item.nominal@nominal",
-        // 'Type of denomination (for pie chart)': "",
+        'Type of denomination (for pie chart)': "item.denominationType",
         'Issuer (only for Ottoman coins)': "item.person@person",
-        // 'Issuer uncertain': "",
+        'Issuer uncertain': "item.personUncertain$boolean",
         // 'Reign period': "",
         // 'Date of minting (text)': "",
-        // 'Date of minting from': "year_of_mint_from",
-        // 'Date From uncertain': "",
-        // 'Date of minting to': "year_of_mint_to",
-        // 'Date To uncertain': "",
+        'Date of minting from': "year_of_mint_from",
+        'Date From uncertain': "year_of_mint_from_uncertain$boolean",
+        'Date of minting to': "year_of_mint_to",
+        'Date To uncertain': "year_of_mint_to_uncertain$boolean",
         'Mint (only for Ottoman coins)': "item.mintRegion@mint_region",
         'Mint uncertain': "item.mintRegionUncertain$boolean",
         // 'X coordinate for mint': "",
         // 'Y coordinate for mint': "",
         'Authenticity of coins': "item.authenticity",
-        // 'Status uncertain': "",
+        'Status uncertain': "item.statusUncertain$boolean",
         'Quantity': "item.count$number",
         'Coin type reference (only for Ottoman coins)': "",
         // 'Remarks to coin type reference': "",    !!!!
@@ -108,9 +108,6 @@ async function importResolver(_, { file: fileUpload }) {
 
                     const [fieldAndDb, type] = mappingStrategy.split('$');
                     const resolvedType = type ? type.toLowerCase() : 'string';
-
-                    console.log(fieldAndDb, resolvedType, type)
-
                     const [field, dbAndProperty] = fieldAndDb.split('@');
                     const [db, property = 'name'] = dbAndProperty ? dbAndProperty.split(':') : [null, null];
 
@@ -222,6 +219,7 @@ async function createRelatedDatabaseEntries(resolutionPromises, cache = {}) {
 }
 
 async function getByName(db, name) {
+    console.log(`Fetching "${name}" from database "${db}"`);
     switch (db) {
         case 'mint_region':
             return MintRegion.findByName(name)
@@ -229,6 +227,7 @@ async function getByName(db, name) {
             // For these we can use the generic NamedModel method.
             const StateModel = new NamedModel('state');
             return StateModel.findByName(name);
+        case 'issuing_state_region':
         case 'material':
         case 'nominal':
         case 'person':
@@ -249,6 +248,7 @@ async function addValueToDatabase(db, value) {
             // For these we can use the generic NamedModel method.
             const StateModel = new NamedModel('state');
             return StateModel.add(value.name);
+        case 'issuing_state_region':
         case 'material':
         case 'nominal':
         case 'person':
@@ -269,6 +269,10 @@ function resolveValue(value, type) {
             return isNaN(num) ? 0 : num;
         case 'boolean':
             return Boolean(value.trim());
+        case 'singlefind':
+            if (value.trim().toLowerCase() === 'single finds') return true;
+            if (value.trim().toLowerCase() === 'hoard') return false;
+            throw new Error(`Unexpected value "${value}" for singleFind column. Expected "Single finds" or "Hoard".`);
         case 'string':
             return value;
         default:

@@ -64,14 +64,25 @@ type ModCoinTypePagination {
 
 type TreasureItem {
   coinType: CoinType
+  coinTypeText: String
   count: Int
   epoch:Name
   fragment: Boolean
   id: ID
+
+  typeOfFindUncertain:Boolean
+
   material: Material
+  materialUncertain: Boolean
+
   mintRegion: MintRegion
   mintRegionUncertain: Boolean
+
+  denominationText: String
   nominal: Name
+  typeOfDenomination: String
+  denominationUncertain: Boolean
+
   weight: Float
   year: Int
   uncertainYear: String
@@ -79,23 +90,41 @@ type TreasureItem {
   reconstructed: Boolean
 
   person: Person
+  personUncertain: Boolean
+
   issuingState: Name
+  issuingStateRegion: Name
+  stateUncertain: Boolean
+
   historicalRegion: Name
+  
   authenticity: String
+  statusUncertain: Boolean
 
   yearOfLoss: Range
+  yearOfLossUncertain: RangeUncertainty
+
   yearOfMint: Range
+  yearOfMintUncertain: RangeUncertainty
 }
 
 input TreasureItemInput {
   coinType: ID
+  coinTypeText: String
   count: Int
   epoch: ID
   fragment: Boolean 
   material: ID
+  materialUncertain: Boolean
+
   mintRegion: ID
   mintRegionUncertain: Boolean
+
+  denominationText: String
   nominal: ID
+  typeOfDenomination: String
+  denominationUncertain: Boolean
+
   weight: Float
   year: Int
   uncertainYear: String
@@ -103,13 +132,24 @@ input TreasureItemInput {
   reconstructed: Boolean
 
   person: ID
+  personUncertain: Boolean
+
 
   issuingState: ID
+  issuingStateRegion: ID
+  stateUncertain: Boolean
+
   historicalRegion: ID
+
   authenticity: String
+  statusUncertain: Boolean
 
   yearOfLoss: RangeInput
+  yearOfLossUncertain: RangeUncertaintyInput
+
   yearOfMint: RangeInput
+  yearOfMintUncertain: RangeUncertaintyInput
+
 }
 
 type Treasure {
@@ -127,6 +167,7 @@ type Treasure {
   ottomanPredominance: Boolean
   subclassification: String
   dateOfLoss: Range
+  typeOfFindUncertain:Boolean
 
   
   collection: String
@@ -337,6 +378,16 @@ input RangeInput {
   to: Int
 }
 
+type RangeUncertainty {
+  from: Boolean
+  to: Boolean
+}
+
+input RangeUncertaintyInput {
+  from: Boolean
+  to: Boolean
+}
+
 type PersonPosition {
   person: ID
   order: Int
@@ -436,6 +487,10 @@ type Query {
     issuingState: [Name]
     searchIssuingState(text: String): [Name]!
     getIssuingState(id: ID!): Name
+
+    issuingStateRegion: [Name]
+    searchIssuingStateRegion(text: String): [Name]!
+    getIssuingStateRegion(id: ID!): Name
 
 
   propertyByName(property: String!, name:String!): Name
@@ -666,6 +721,10 @@ type Mutation {
   addIssuingState(name: String!): Void
   updateIssuingState(id: ID!, name: String!): Void
   deleteIssuingState(id: ID): Void
+
+  addIssuingStateRegion(name: String!): Void
+  updateIssuingStateRegion(id: ID!, name: String!): Void
+  deleteIssuingStateRegion(id: ID): Void
 
   updateNote(text: String, property: String, propertyId: ID): Void
   updateLang(

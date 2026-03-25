@@ -87,6 +87,7 @@ import TitleForm from "@/components/page/property/TitleForm"
 import TreasureForm from "@/components/page/property/TreasureForm"
 import HistoricalRegionForm from "@/components/page/property/HistoricalRegionForm.vue"
 import IssuingStateForm from "@/components/page/property/IssuingStateForm.vue"
+import IssuingStateRegionForm from "../components/page/property/IssuingStateRegionForm.vue"
 import Auth from "../utils/Auth.js"
 
 
@@ -420,6 +421,7 @@ const routes = [
                     ...PropertyRoute.from("treasure", TreasureForm).routes,
                     ...PropertyRoute.from("historical_region", HistoricalRegionForm).routes,
                     ...PropertyRoute.from("issuing_state", IssuingStateForm).routes,
+                    ...PropertyRoute.from("issuing_state_region", IssuingStateRegionForm).routes,
                     {
                         path: "locale/:lang/:path",
                         name: "Locale",

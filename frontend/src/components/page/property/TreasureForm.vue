@@ -156,19 +156,6 @@
                 <div style="flex:1;">
                     Total Coins {{ value.count || 0 }}
                 </div>
-                <Toggle v-model="autoComplete">
-                    <Locale path="general.auto-complete" />
-                </Toggle>
-                <FileUploadButton
-                    :loading="importing"
-                    accept=".csv"
-                    @input="importItems"
-                >
-                    <Locale path="general.import" />
-                </FileUploadButton>
-                <ButtonVue @click="exportItems">
-                    <Locale path="general.export" />
-                </ButtonVue>
             </div>
 
 
@@ -204,15 +191,12 @@
 // import { Treasure, TreasureItem } from '../../../models/property/treasure';
 import ButtonVue from "@/components/layout/buttons/Button.vue"
 import ErrorMessage from "@/components/ErrorMessage"
-import FileUploadButton from "@/components/layout/buttons/FileUploadButton"
-// import FormList from "@/components/forms/FormList"
 import LabeledInputContainer from "@/components/LabeledInputContainer"
 import Locale from '@/components/cms/Locale';
 import LocationInput from "@/components/forms/LocationInput"
 import PropertyFormWrapper from "@/components/page/PropertyFormWrapper"
 import RangeInput from '../../forms/RangeInput.vue';
 import Toggle from "@/components/layout/buttons/Toggle"
-// import TreasureItemForm from "./TreasureItemForm"
 import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
 import { TreasureItemsImporter, CsvExporter } from "@/models/importer"
@@ -228,7 +212,6 @@ export default {
     components: {
         ButtonVue,
         ErrorMessage,
-        FileUploadButton,
         // FormList,
         LabeledInputContainer,
         Locale,
@@ -279,7 +262,6 @@ export default {
             this.$refs.locationInput.updateSize()
         },
         getProperty: async function (id) {
-            console.log("Load treasure GET")
             const ottomanTreasure = new OttomanTreasure()
             let treasure = await ottomanTreasure.get(id)
             let location = treasure.location || defaultLocation
@@ -289,6 +271,7 @@ export default {
 
             if (!treasure.items) treasure.items = []
             treasure.items = treasure.items.map(item => new OttomanTreasureItem(item).forInput())
+
             return treasure
         },
         updateProperty: async function () {
@@ -348,25 +331,6 @@ export default {
             // const item = new TreasureItem().forInput()
             this.value.items.push(item)
         },
-        async importItems(event) {
-            this.importing = true
-            this.importErrors = []
-            const file = event.target.files[0]
-
-
-            const importer = new TreasureItemsImporter()
-            await importer.execFromFile(file)
-            this.importErrors = importer.errors
-            if (importer.errors.length === 0) {
-                this.value.items = importer.items
-                this.getCoinRangeFromItems()
-            }
-
-            this.importing = false
-        },
-        exportItems() {
-            CsvExporter.use(this.value.items).exec().download(`${this.value.name} [Items] ${new Date().toDateString()}.csv`)
-        }
     }
 }
 </script>

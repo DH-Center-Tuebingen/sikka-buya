@@ -175,6 +175,7 @@ export default {
                 'province',
                 'historical_region',
                 'issuing_state',
+                'issuing_state_region',
                 // 'role',
                 // 'title',
                 'treasure',

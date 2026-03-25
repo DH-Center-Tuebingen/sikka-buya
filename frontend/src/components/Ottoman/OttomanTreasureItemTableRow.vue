@@ -32,6 +32,7 @@
             <RangeInput
                 v-else-if="definition.type === 'range'"
                 v-model="value[definition.attribute]"
+                :show-uncertainty="true"
             />
             <DataSelectField
                 v-else-if="definition.type === 'model'"

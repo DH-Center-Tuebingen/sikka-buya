@@ -7,7 +7,21 @@
             @beforeinput="validateNumber"
             @input="updateFrom"
         >
+        <button
+            v-if="showUncertainty"
+            style="width: 10px;"
+            @click="toggleFromUncertain()"
+        >
+            {{ fromValueUncertain ? "?" : "." }}
+        </button>
         <span>–</span>
+        <button
+            v-if="showUncertainty"
+            style="width: 10px;"
+            @click="toggleToUncertain()"
+        >
+            {{ toValueUncertain ? "?" : "." }}
+        </button>
         <input
             class="to"
             :step="step"
@@ -19,8 +33,12 @@
 </template>
 
 <script>
-export default { 
+export default {
     props: {
+        showUncertainty: {
+            type: Boolean,
+            default: false
+        },
         value: {
             validator: (value) => value instanceof Object && value.hasOwnProperty("from") && value.hasOwnProperty("to")
         },
@@ -30,28 +48,37 @@ export default {
         }
     },
     computed: {
+        fromUncertain() {
+            return this.value?.fromUncertain ? this.value.fromUncertain : false;
+        },
+        toUncertain() {
+            return this.value?.toUncertain ? this.value.toUncertain : false;
+        },
         fromValue() {
-            return this.value?.from ? this.value.from : "";
+            return (this.value && this.value.from != null) ? this.value.from : "";
         },
         toValue() {
-            return this.value?.to ? this.value.to : "";
-        }
+            return (this.value && this.value.to != null) ? this.value.to : "";
+        },
+        fromValueUncertain() {
+            return this.value?.fromUncertain ? this.value.fromUncertain : false;
+        },
+        toValueUncertain() {
+            return this.value?.toUncertain ? this.value.toUncertain : false;
+        },
     },
     methods: {
+        getDefaultValue() {
+            return { from: null, to: null, fromUncertain: false, toUncertain: false };
+        },
         updateFrom(event) {
-            let value = this.value;
-            if(!value) {
-                value = { from: null, to: null };
-            }
-            value.from = Number(event.target.value) || null;
+            const value = Object.assign({}, this.value || this.getDefaultValue());
+            value.from = event.target.value === '' ? null : Number(event.target.value);
             this.$emit('input', value);
         },
         updateTo(event) {
-            let value = this.value;
-            if(!value) {
-                value = { from: null, to: null };
-            }
-            value.to = Number(event.target.value) || null;
+            const value = Object.assign({}, this.value || this.getDefaultValue());
+            value.to = event.target.value === '' ? null : Number(event.target.value);
             this.$emit('input', value);
         },
         validateNumber(event) {
@@ -62,7 +89,17 @@ export default {
             if (!/[0-9]/.test(char)) {
                 event.preventDefault();
             }
-        }
+        },
+        toggleFromUncertain() {
+            const value = Object.assign({}, this.value || this.getDefaultValue());
+            value.fromUncertain = !value.fromUncertain;
+            this.$emit('input', value);
+        },
+        toggleToUncertain() {
+            const value = Object.assign({}, this.value || this.getDefaultValue());
+            value.toUncertain = !value.toUncertain;
+            this.$emit('input', value);
+        },
     }
 }
 </script>
@@ -112,5 +149,9 @@ input {
     padding: 4px;
     border-radius: 4px;
     text-align: center;
+}
+
+button {
+    border-radius: 0;
 }
 </style>
