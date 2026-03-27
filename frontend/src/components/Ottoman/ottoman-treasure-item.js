@@ -91,7 +91,7 @@ export class OttomanTreasure {
                         "year",
                         "weight",
                         "coinTypeText",
-                        { "mintRegion": ["id", "name"] },
+                        { "mintRegion": ["id", "name", "location"] },
                         { epoch: ["id", "name"] },
 
                         "denominationText",
@@ -168,7 +168,7 @@ export class OttomanTreasure {
                         "year",
                         "weight",
                         "coinTypeText",
-                        { "mintRegion": ["id", "name"] },
+                        { "mintRegion": ["id", "name", "location"] },
                         { epoch: ["id", "name"] },
 
                         "denominationText",
@@ -349,7 +349,7 @@ export class OttomanTreasureItem {
 
         this.nominal = nominal
         this.denominationText = denominationText,
-            this.typeOfDenomination = typeOfDenomination
+        this.typeOfDenomination = typeOfDenomination
         this.denominationUncertain = denominationUncertain
 
         this.uncertainYear = uncertainYear

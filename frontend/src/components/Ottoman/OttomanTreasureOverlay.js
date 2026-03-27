@@ -64,7 +64,7 @@ export default class OttomanTreasureOverlay extends Overlay {
                 mint {
                     id 
                     name 
-                    location 
+                    location
                 }
                 treasures {
                     count
@@ -83,7 +83,7 @@ export default class OttomanTreasureOverlay extends Overlay {
     async fetchTreasures() {
         const ottomanTreasure = new OttomanTreasure()
         const result = await ottomanTreasure.list();
-        console.log("Fetched treasures", result)
+        console.log("Treasures", result)
         return result
     }
 
@@ -409,6 +409,8 @@ export default class OttomanTreasureOverlay extends Overlay {
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color || "#ffffff"
 
+            console.log(treasure)
+
             const style = {
                 color,
                 weight: 3
@@ -450,11 +452,12 @@ export default class OttomanTreasureOverlay extends Overlay {
 
                     treasure.items.forEach((item, idx) => {
 
+                        console.log("Item", item)
+
                         if (item.mintRegion) {
 
                             const mintRegion = item.mintRegion
                             if (mintRegion.location) {
-
                                 const text = `${mintRegion.name}: ${item.count} / ${treasure.totalCount} (${(100 * item.count / treasure.totalCount).toFixed(2)}%)`
 
                                 connections.push({

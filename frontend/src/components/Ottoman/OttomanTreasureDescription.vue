@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { stringifyRange } from '../../utils/Range';
+
 export default {
     props: {
         treasure: {
@@ -30,7 +32,7 @@ export default {
             return [
                 { label: 'Subclassification', value: this.treasure.subclassification ?? "N/A" },
                 { label: 'Quantity', value: this.treasure.totalCount ?? "N/A" },
-                { label: 'Date of loss', value: this.treasure.dateOfLoss ?? "N/A" },
+                { label: 'Date of loss', value: stringifyRange(this.treasure.yearOfLoss) },
                 { label: 'Circumstances of find', value: this.treasure.description ?? "N/A" },
                 { label: 'Collection', value: this.treasure.collection ?? "N/A" },
                 { label: 'Publication', value: this.treasure.publication ?? "N/A" },

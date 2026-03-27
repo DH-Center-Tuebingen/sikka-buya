@@ -34,7 +34,6 @@
                 v-if="selectedTreasures.length === 1"
                 :key="`list-item-description-${selectedTreasures[0].id}`"
                 class="treasure-description"
-                style="margin-bottom: 40px;"
             >
                 <OttomanTreasureDescription :treasure="selectedTreasures[0]" />
             </ScrollView>
@@ -574,20 +573,18 @@ export default {
                     this.selectedTreasures.forEach((treasure, index) => {
                         console.log("Treasure", treasure)
                         treasure.items.forEach(itemArr => {
-                            console.log("ItemArr", itemArr)
-                            // itemArr.items.forEach(item => {
-                            //     const count = parseInt(item.count) || 1
-                            //     console.log("Item", item.typeOfDenomination)
-                            //     const name = item.typeOfDenomination|| "no_name"
-                            //     if (!map[name]) {
-                            //         map[name] = {
-                            //             count: 0,
-                            //             color: getColor(item[value]),
-                            //             label: item[value] || this.$t(`property.label.${value}.no_name`)
-                            //         }
-                            //     }
-                            //     map[name].count += count
-                            // })
+                            itemArr.items.forEach(item => {
+                                const count = parseInt(item.count) || 1
+                                const name = item.typeOfDenomination|| "no_name"
+                                if (!map[name]) {
+                                    map[name] = {
+                                        count: 0,
+                                        color: getColor(item[value]),
+                                        label: item[value] || this.$t(`property.label.${value}.no_name`)
+                                    }
+                                }
+                                map[name].count += count
+                            })
                         })
                     })
 
@@ -597,7 +594,6 @@ export default {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
                                 const count = parseInt(item.count) || 1
-                                console.log("Item", item, value)
                                 const name = item[value]?.name || "no_name"
                                 if (!map[name]) {
                                     map[name] = {
