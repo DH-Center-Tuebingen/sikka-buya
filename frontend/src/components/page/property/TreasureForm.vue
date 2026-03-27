@@ -107,8 +107,18 @@
                 type="text"
             >
         </LabeledInputContainer>
-
         <LabeledInputContainer>
+            <template #label>
+                Date of Loss
+            </template>
+
+            <RangeInput
+                id="treasure-timespan-input"
+                v-model="value.yearOfLoss"
+                :show-uncertainty="true"
+            />
+        </LabeledInputContainer>
+        <!-- <LabeledInputContainer>
             <template #label>
                 <Locale path="general.range" />
             </template>
@@ -122,7 +132,7 @@
                     <Locale path="form.range_from_items" />
                 </ButtonVue>
             </div>
-        </LabeledInputContainer>
+        </LabeledInputContainer>-->
 
         <LabeledInputContainer>
             <template #label>
@@ -241,6 +251,7 @@ export default {
                 singleFind: false,
                 subclassification: "",
                 timespan: { from: null, to: null },
+                yearOfLoss: { from: null, to: null, fromUncertain: false, toUncertain: false },
             },
             autoComplete: true,
             importing: false,
@@ -287,6 +298,10 @@ export default {
                 reliableAttribution: this.value.reliableAttribution,
                 singleFind: this.value.singleFind,
                 subclassification: this.value.subclassification,
+                yearOfLoss: {
+                    from: parseInt(this.value.yearOfLoss.from), to: parseInt(this.value.yearOfLoss.to)
+                },
+                yearOfLossUncertain: { from: this.value.yearOfLoss.fromUncertain, to: this.value.yearOfLoss.toUncertain },
 
                 timespan: { from: parseInt(this.value.timespan.from), to: parseInt(this.value.timespan.to) },
                 items: this.value.items.map(item => {

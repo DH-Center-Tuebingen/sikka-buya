@@ -166,7 +166,6 @@ type Treasure {
   completeHoard: Boolean
   ottomanPredominance: Boolean
   subclassification: String
-  dateOfLoss: Range
   typeOfFindUncertain:Boolean
 
   
@@ -174,6 +173,9 @@ type Treasure {
   publication: String
 
   items: [TreasureItem]
+
+  yearOfLoss: Range
+  yearOfLossUncertain: RangeUncertainty
 }
 
 input TreasureInput {
@@ -193,6 +195,9 @@ input TreasureInput {
   publication: String
 
   items: [TreasureItemInput]
+
+  yearOfLoss: RangeInput
+  yearOfLossUncertain: RangeUncertaintyInput
 }
 
 type TreasureCount {

@@ -23,6 +23,7 @@ export class Treasure {
         timespan = { from: null, to: null },
         items = [],
         color = null,
+        yearOfLoss = { from: null, to: null },
     } = {}) {
         this.id = id
         this.name = name
@@ -31,6 +32,7 @@ export class Treasure {
         this.timespan = timespan
         this.items = items
         this.color = color
+        this.yearOfLoss = yearOfLoss
     }
 
     async upsert() {
@@ -211,7 +213,6 @@ export class TreasureItem {
         circumstances = null,
         subclassification = null,
 
-        yearOfLoss = null,
         yearOfMint = null,
     } = {}
     ) {

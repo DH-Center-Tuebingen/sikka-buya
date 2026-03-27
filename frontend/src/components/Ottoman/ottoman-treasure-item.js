@@ -31,6 +31,8 @@ export class OttomanTreasure {
         subclassification = null,
         collection = null,
         publication = null,
+        yearOfLoss = { from: null, to: null },
+        yearOfLossUncertain = { from: false, to: false },
 
     } = {}) {
         this.id = id
@@ -47,6 +49,8 @@ export class OttomanTreasure {
         this.subclassification = subclassification
         this.collection = collection
         this.publication = publication
+        this.yearOfLoss = yearOfLoss
+        this.yearOfLossUncertain = yearOfLossUncertain
     }
 
     async upsert() {
@@ -58,9 +62,9 @@ export class OttomanTreasure {
         }
     }
 
-    async get(id) {
-        return new Query("treasure")
-            .get(id, [
+    async list() {
+        const result = await new Query("treasure")
+            .list([
                 "id",
                 "name",
                 "location",
@@ -75,6 +79,9 @@ export class OttomanTreasure {
                 "count",
                 "collection",
                 "publication",
+                { yearOfLoss: ["from", "to"] },
+                { yearOfLossUncertain: ["from", "to"] },
+
 
                 { timespan: ["from", "to"] },
                 {
@@ -90,6 +97,7 @@ export class OttomanTreasure {
                         "denominationText",
                         { nominal: ["id", "name"] },
                         "typeOfDenomination",
+                        "denominationUncertain",
 
                         { material: ["id", "name"] },
                         "materialUncertain",
@@ -111,13 +119,101 @@ export class OttomanTreasure {
                         { issuingStateRegion: ["id", "name"] },
 
 
-                        { yearOfLoss: ["from", "to"] },
                         { yearOfMint: ["from", "to"] },
-                        { yearOfLossUncertain: ["from", "to"] },
                         { yearOfMintUncertain: ["from", "to"] },
                     ]
                 }
             ])
+            
+            return result.map(treasure => {
+                const yearOfLossWithUncertainty = {
+                    from: treasure.yearOfLoss?.from,
+                    to: treasure.yearOfLoss?.to,
+                    fromUncertain: treasure.yearOfLossUncertain?.from,
+                    toUncertain: treasure.yearOfLossUncertain?.to,
+                }
+
+                treasure.yearOfLoss = yearOfLossWithUncertainty
+                delete treasure.yearOfLossUncertain
+
+                return treasure
+             })
+    }
+
+    async get(id) {
+        const result = await (new Query("treasure"))
+            .get(id, [
+                "id",
+                "name",
+                "location",
+                "description",
+                "color",
+                "singleFind",
+                "typeOfFindUncertain",
+                "reliableAttribution",
+                "completeHoard",
+                "ottomanPredominance",
+                "subclassification",
+                "count",
+                "collection",
+                "publication",
+                { yearOfLoss: ["from", "to"] },
+                { yearOfLossUncertain: ["from", "to"] },
+
+                { timespan: ["from", "to"] },
+                {
+                    items: [
+                        "id",
+                        "count",
+                        "year",
+                        "weight",
+                        "coinTypeText",
+                        { "mintRegion": ["id", "name"] },
+                        { epoch: ["id", "name"] },
+
+                        "denominationText",
+                        { nominal: ["id", "name"] },
+                        "typeOfDenomination",
+                        "denominationUncertain",
+
+                        { material: ["id", "name"] },
+                        "materialUncertain",
+
+                        "uncertainYear",
+                        "mintRegionUncertain",
+                        "fragment",
+                        "reconstructed",
+                        "mintAsOnCoin",
+
+                        "authenticity",
+
+                        { person: ["id", "name"] },
+                        "personUncertain",
+
+                        { historicalRegion: ["id", "name"] },
+                        { issuingState: ["id", "name"] },
+                        "stateUncertain",
+                        { issuingStateRegion: ["id", "name"] },
+
+
+                        { yearOfMint: ["from", "to"] },
+                        { yearOfMintUncertain: ["from", "to"] },
+                    ]
+                }
+            ])
+
+        const yearOfLossWithUncertainty = {
+            from: result.yearOfLoss?.from,
+            to: result.yearOfLoss?.to,
+            fromUncertain: result.yearOfLossUncertain?.from,
+            toUncertain: result.yearOfLossUncertain?.to,
+        }
+
+        result.yearOfLoss = yearOfLossWithUncertainty
+        delete result.yearOfLossUncertain
+
+        return result
+
     }
 
     fixLocation(location) {
@@ -147,6 +243,8 @@ export class OttomanTreasure {
             subclassification: this.subclassification,
             collection: this.collection,
             publication: this.publication,
+            yearOfLoss: this.yearOfLoss,
+            yearOfLossUncertain: this.yearOfLossUncertain,
         }
     }
 
@@ -214,6 +312,7 @@ export class OttomanTreasureItem {
         denominationText = "",
         nominal = null,
         typeOfDenomination = "",
+        denominationUncertain = false,
 
         mintRegionUncertain = false,
         uncertainYear = null,
@@ -225,20 +324,17 @@ export class OttomanTreasureItem {
         authenticity = null,
 
         person = { from: null, to: null },
-        personUncertain= false,
+        personUncertain = false,
 
         historicalRegion = { from: null, to: null },
         issuingState = { from: null, to: null },
         stateUncertain = false,
         issuingStateRegion = { from: null, to: null },
-        
-        yearOfLoss = null,
+
         yearOfMint = null,
-        yearOfLossUncertain = null,
         yearOfMintUncertain = null,
     } = {}
     ) {
-        console.log(arguments)
         this.coinType = coinType
         this.coinTypeText = coinTypeText
         this.count = count
@@ -247,13 +343,14 @@ export class OttomanTreasureItem {
         this.id = id
         this.material = material
         this.materialUncertain = materialUncertain
-        
+
         this.mintRegion = mintRegion
         this.mintRegionUncertain = mintRegionUncertain
-        
+
         this.nominal = nominal
         this.denominationText = denominationText,
-        this.typeOfDenomination = typeOfDenomination
+            this.typeOfDenomination = typeOfDenomination
+        this.denominationUncertain = denominationUncertain
 
         this.uncertainYear = uncertainYear
         this.weight = weight
@@ -271,9 +368,7 @@ export class OttomanTreasureItem {
         this.stateUncertain = stateUncertain
         this.issuingStateRegion = issuingStateRegion
 
-        this.yearOfLoss = yearOfLoss
         this.yearOfMint = yearOfMint
-        this.yearOfLossUncertain = yearOfLossUncertain
         this.yearOfMintUncertain = yearOfMintUncertain
     }
 
@@ -291,6 +386,7 @@ export class OttomanTreasureItem {
             { type: 'model', label: 'Denomination', attribute: 'nominal' },
             { type: 'text', label: 'Denom. Text', attribute: 'denominationText' },
             { type: 'text', label: 'Denom. Pie Chart', attribute: 'typeOfDenomination' },
+            { type: 'boolean', label: 'denom. ?', attribute: 'denominationUncertain' },
 
             { type: 'model', label: 'Mint', attribute: 'mintRegion' },
             { type: 'boolean', label: 'mi. ?', attribute: 'mintRegionUncertain' },
@@ -302,7 +398,6 @@ export class OttomanTreasureItem {
             { type: 'boolean', label: 'sta. ?', attribute: 'stateUncertain' },
             { type: 'model', label: 'Issuing State Region', attribute: 'issuingStateRegion' },
 
-            { type: 'range', label: 'Year Of Loss', attribute: 'yearOfLoss' },
             { type: 'range', label: 'Year Of Minting', attribute: 'yearOfMint' },
         ];
     }
@@ -319,8 +414,7 @@ export class OttomanTreasureItem {
             historicalRegion: { id: this.historicalRegion?.id || null, name: this.historicalRegion?.name || "" },
             issuingState: { id: this.issuingState?.id || null, name: this.issuingState?.name || "" },
             issuingStateRegion: { id: this.issuingStateRegion?.id || null, name: this.issuingStateRegion?.name || "" },
-            yearOfLoss: { from: this.yearOfLoss?.from || null, to: this.yearOfLoss?.to || null, fromUncertain: this.yearOfLossUncertain ?? false, toUncertain: this.yearOfLossUncertain ?? false },
-            yearOfMint: { from: this.yearOfMint?.from || null, to: this.yearOfMint?.to || null, fromUncertain: this.yearOfMintUncertain ?? false, toUncertain: this.yearOfMintUncertain ?? false },
+            yearOfMint: { from: this.yearOfMint?.from || null, to: this.yearOfMint?.to || null, fromUncertain: this.yearOfMintUncertain?.from ?? false, toUncertain: this.yearOfMintUncertain?.to ?? false },
         })
     }
 
@@ -341,10 +435,8 @@ export class OttomanTreasureItem {
             person: obj.person.hasOwnProperty("id") ? obj.person.id : obj.person,
             historicalRegion: obj.historicalRegion.hasOwnProperty("id") ? obj.historicalRegion.id : obj.historicalRegion,
             issuingState: obj.issuingState.hasOwnProperty("id") ? obj.issuingState.id : obj.issuingState,
-            issuginStateRegion: obj.issuingStateRegion.hasOwnProperty("id") ? obj.issuingStateRegion.id : obj.issuingStateRegion,
+            issuingStateRegion: obj.issuingStateRegion.hasOwnProperty("id") ? obj.issuingStateRegion.id : obj.issuingStateRegion,
 
-            yearOfLoss: yearOfLoss ? { from: parseInt(yearOfLoss.from), to: parseInt(yearOfLoss.to) } : null,
-            yearOfLossUncertain: yearOfLoss ? { from: !!yearOfLoss.fromUncertain, to: !!yearOfLoss.toUncertain } : null,
             yearOfMint: yearOfMint ? { from: parseInt(yearOfMint.from), to: parseInt(yearOfMint.to) } : null,
             yearOfMintUncertain: yearOfMint ? { from: !!yearOfMint.fromUncertain, to: !!yearOfMint.toUncertain } : null,
         })

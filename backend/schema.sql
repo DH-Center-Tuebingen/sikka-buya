@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.16
--- Dumped by pg_dump version 12.16
+-- Dumped from database version 17.4
+-- Dumped by pg_dump version 17.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -44,6 +44,9 @@ CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
 COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
 
 
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: app_user; Type: TABLE; Schema: public; Owner: -
@@ -257,6 +260,36 @@ ALTER SEQUENCE public.epochs_id_seq OWNED BY public.epochs.id;
 
 
 --
+-- Name: historical_region; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.historical_region (
+    id integer NOT NULL,
+    name text
+);
+
+
+--
+-- Name: historical_region_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.historical_region_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: historical_region_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.historical_region_id_seq OWNED BY public.historical_region.id;
+
+
+--
 -- Name: honorific; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -335,7 +368,9 @@ CREATE TABLE public.internal_notes_plain_text (
 CREATE TABLE public.issuer (
     id integer NOT NULL,
     type integer,
-    person integer
+    person integer,
+    reign_from integer,
+    reign_to integer
 );
 
 
@@ -377,6 +412,43 @@ CREATE TABLE public.issuer_titles (
     issuer integer,
     title integer
 );
+
+
+--
+-- Name: issuing_state_region; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.issuing_state_region (
+    id integer NOT NULL,
+    name text
+);
+
+
+--
+-- Name: TABLE issuing_state_region; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.issuing_state_region IS 'a coarser clustering for the pie chart';
+
+
+--
+-- Name: issuing_state_for_pie_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.issuing_state_for_pie_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: issuing_state_for_pie_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.issuing_state_for_pie_id_seq OWNED BY public.issuing_state_region.id;
 
 
 --
@@ -650,7 +722,9 @@ CREATE TABLE public.person (
     role_legacy character varying,
     dynasty integer,
     short_name character varying,
-    role integer
+    role integer,
+    reign_from integer,
+    reign_to integer
 );
 
 
@@ -818,6 +892,36 @@ ALTER SEQUENCE public.settings_id_seq OWNED BY public.settings.id;
 
 
 --
+-- Name: state; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.state (
+    id integer NOT NULL,
+    name text
+);
+
+
+--
+-- Name: state_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.state_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: state_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.state_id_seq OWNED BY public.state.id;
+
+
+--
 -- Name: title; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -853,13 +957,25 @@ ALTER SEQUENCE public.title_id_seq OWNED BY public.title.id;
 
 CREATE TABLE public.treasure (
     id integer NOT NULL,
-    description text,
     name character varying(255) NOT NULL,
     location public.geometry,
     properties jsonb,
     latest_year integer,
     earliest_year integer,
-    color text
+    color text,
+    ottoman_predominance boolean DEFAULT false,
+    complete_hoard boolean DEFAULT false,
+    subclassification text,
+    collection text,
+    publication text,
+    single_find boolean DEFAULT false,
+    description text,
+    reliable_attribution boolean DEFAULT false,
+    type_of_find_uncertain boolean,
+    year_of_loss_from integer,
+    year_of_loss_to integer,
+    year_of_loss_from_uncertain boolean,
+    year_of_loss_to_uncertain boolean
 );
 
 
@@ -903,7 +1019,30 @@ CREATE TABLE public.treasure_item (
     reconstructed boolean DEFAULT false NOT NULL,
     mint_region_uncertain boolean DEFAULT false NOT NULL,
     mint_as_on_coin text,
-    epoch integer
+    epoch integer,
+    authenticity text,
+    reliable_attribution boolean DEFAULT false,
+    year_of_mint_from integer,
+    year_of_mint_to integer,
+    year_of_loss_from integer,
+    year_of_loss_to integer,
+    circumstances text,
+    historical_region integer,
+    issuing_state integer,
+    person integer,
+    cointype_text text,
+    year_of_mint_from_uncertain boolean DEFAULT false,
+    year_of_mint_to_uncertain boolean DEFAULT false,
+    material_uncertain boolean DEFAULT false,
+    type_of_denomination text,
+    person_uncertain boolean DEFAULT false,
+    state_uncertain boolean DEFAULT false,
+    year_of_loss_from_uncertain boolean DEFAULT false,
+    year_of_loss_to_uncertain boolean DEFAULT false,
+    denomination_text text,
+    denomination_uncertain boolean,
+    status_uncertain boolean,
+    issuing_state_region integer
 );
 
 
@@ -1212,6 +1351,13 @@ ALTER TABLE ONLY public.epochs ALTER COLUMN id SET DEFAULT nextval('public.epoch
 
 
 --
+-- Name: historical_region id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.historical_region ALTER COLUMN id SET DEFAULT nextval('public.historical_region_id_seq'::regclass);
+
+
+--
 -- Name: honorific id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1230,6 +1376,13 @@ ALTER TABLE ONLY public.i18n ALTER COLUMN id SET DEFAULT nextval('public.i18n_id
 --
 
 ALTER TABLE ONLY public.issuer ALTER COLUMN id SET DEFAULT nextval('public.issuer_id_seq'::regclass);
+
+
+--
+-- Name: issuing_state_region id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuing_state_region ALTER COLUMN id SET DEFAULT nextval('public.issuing_state_for_pie_id_seq'::regclass);
 
 
 --
@@ -1307,6 +1460,13 @@ ALTER TABLE ONLY public.province ALTER COLUMN id SET DEFAULT nextval('public.pro
 --
 
 ALTER TABLE ONLY public.settings ALTER COLUMN id SET DEFAULT nextval('public.settings_id_seq'::regclass);
+
+
+--
+-- Name: state id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.state ALTER COLUMN id SET DEFAULT nextval('public.state_id_seq'::regclass);
 
 
 --
@@ -1446,6 +1606,14 @@ ALTER TABLE ONLY public.epochs
 
 
 --
+-- Name: historical_region historical_region_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.historical_region
+    ADD CONSTRAINT historical_region_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: honorific honorific_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1475,6 +1643,14 @@ ALTER TABLE ONLY public.internal_notes_plain_text
 
 ALTER TABLE ONLY public.issuer
     ADD CONSTRAINT issuer_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: issuing_state_region issuing_state_for_pie_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuing_state_region
+    ADD CONSTRAINT issuing_state_for_pie_pkey PRIMARY KEY (id);
 
 
 --
@@ -1627,6 +1803,14 @@ ALTER TABLE ONLY public.province
 
 ALTER TABLE ONLY public.settings
     ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: state state_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.state
+    ADD CONSTRAINT state_pkey PRIMARY KEY (id);
 
 
 --
@@ -1941,6 +2125,14 @@ ALTER TABLE ONLY public.settings
 
 
 --
+-- Name: treasure_item treasure_historical_region_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_historical_region_fkey FOREIGN KEY (historical_region) REFERENCES public.historical_region(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
+
+--
 -- Name: treasure_item treasure_item_cointype_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2018,6 +2210,30 @@ ALTER TABLE ONLY public.treasure_item
 
 ALTER TABLE ONLY public.treasure_item
     ADD CONSTRAINT treasure_item_nominal_fkey FOREIGN KEY (nominal) REFERENCES public.nominal(id);
+
+
+--
+-- Name: treasure_item treasure_item_person_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_person_fkey FOREIGN KEY (person) REFERENCES public.person(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
+
+--
+-- Name: treasure_item treasure_item_state_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_state_fkey FOREIGN KEY (issuing_state) REFERENCES public.state(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
+
+--
+-- Name: treasure_item treasure_item_state_region_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.treasure_item
+    ADD CONSTRAINT treasure_item_state_region_fkey FOREIGN KEY (issuing_state_region) REFERENCES public.issuing_state_region(id) NOT VALID;
 
 
 --

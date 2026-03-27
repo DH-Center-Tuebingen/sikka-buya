@@ -179,7 +179,7 @@ export default {
                 // 'role',
                 // 'title',
                 'treasure',
-                'type',
+                // 'type',
             ];
 
             if (include) {

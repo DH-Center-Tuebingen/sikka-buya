@@ -107,7 +107,7 @@ function constructFileName(prefix, ext) {
 
 function dump(fileName, options) {
     return new Promise((resolve, reject) => {
-        const command = `pg_dump --username ${process.env.DB_USER} --no-privileges --exclude-table-data app_user --no-password ${options}  --file ${fileName} ${process.env.DB_NAME} `
+        const command = `pg_dump --username ${process.env.DB_USER} --port ${process.env.DB_PORT} --no-privileges --exclude-table-data app_user --no-password ${options}  --file ${fileName} ${process.env.DB_NAME} `
         execute(command).then(() => {
             console.log(`Successfully exported dump to: ${fileName}`)
             resolve()

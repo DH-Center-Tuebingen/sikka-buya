@@ -36,18 +36,7 @@
                 class="treasure-description"
                 style="margin-bottom: 40px;"
             >
-                <h2 style="margin-top: 0;">
-                    {{ selectedTreasures[0].name }}
-                </h2>
-                <template v-if="hasDescription">
-                    <!-- eslint-disable-next-line vue/no-v-html -->
-                    <div v-html="selectedTreasures[0].description" />
-                </template>
-                <template v-else>
-                    <div class="placeholder-text">
-                        <Locale path="message.no_description_available" />
-                    </div>
-                </template>
+                <OttomanTreasureDescription :treasure="selectedTreasures[0]" />
             </ScrollView>
             <div v-else />
 
@@ -114,14 +103,17 @@
                                 :value="diagramMode"
                                 @input="updateDiagram"
                             >
+                                <option value="person">
+                                    <Locale path="property.issuer" />
+                                </option>
                                 <option value="material">
                                     <Locale path="property.material" />
                                 </option>
-                                <option value="epoch">
-                                    <Locale path="property.epoch" />
+                                <option value="typeOfDenomination">
+                                    <Locale path="property.denomination" />
                                 </option>
-                                <option value="fragment">
-                                    <Locale path="property.fragment" />
+                                <option value="historicalRegion">
+                                    <Locale path="property.region" />
                                 </option>
                             </select>
                         </div>
@@ -197,6 +189,7 @@ import { IconSize } from "@/config";
 
 import { ottomanFilterConfig } from './ottoman-filter'
 import MapBaseLayerButton from "../map/control/MapBaseLayerButton.vue";
+import OttomanTreasureDescription from "./OttomanTreasureDescription.vue";
 
 export default {
     components: {
@@ -210,6 +203,7 @@ export default {
         MultiSelectListItem,
         Sidebar,
         ScrollView,
+        OttomanTreasureDescription,
     },
     mixins: [
         map,
@@ -270,8 +264,8 @@ export default {
             // return this.yearCountData["undefined"].reduce((acc, a) => acc + a, 0) > 0
             return true
         },
-        hasDescription(){
-            if(!this.selectedTreasures[0].description) return false
+        hasDescription() {
+            if (!this.selectedTreasures[0].description) return false
 
             const parser = new DOMParser()
             const doc = parser.parseFromString(this.selectedTreasures[0].description, "text/html")
@@ -489,6 +483,8 @@ export default {
             this.diagramMode = value === "" ? null : value
             this.local_storage_mixin_save()
 
+            console.log("Updating diagram with mode", this.diagramMode, "and value", value)
+
             if (value) {
                 let map = {}
 
@@ -574,12 +570,34 @@ export default {
                         }
                     })
 
+                } else if (value === "typeOfDenomination") {
+                    this.selectedTreasures.forEach((treasure, index) => {
+                        console.log("Treasure", treasure)
+                        treasure.items.forEach(itemArr => {
+                            console.log("ItemArr", itemArr)
+                            // itemArr.items.forEach(item => {
+                            //     const count = parseInt(item.count) || 1
+                            //     console.log("Item", item.typeOfDenomination)
+                            //     const name = item.typeOfDenomination|| "no_name"
+                            //     if (!map[name]) {
+                            //         map[name] = {
+                            //             count: 0,
+                            //             color: getColor(item[value]),
+                            //             label: item[value] || this.$t(`property.label.${value}.no_name`)
+                            //         }
+                            //     }
+                            //     map[name].count += count
+                            // })
+                        })
+                    })
+
                 } else {
 
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
                                 const count = parseInt(item.count) || 1
+                                console.log("Item", item, value)
                                 const name = item[value]?.name || "no_name"
                                 if (!map[name]) {
                                     map[name] = {

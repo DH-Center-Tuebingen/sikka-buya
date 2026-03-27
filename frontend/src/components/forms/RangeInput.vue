@@ -61,6 +61,7 @@ export default {
             return (this.value && this.value.to != null) ? this.value.to : "";
         },
         fromValueUncertain() {
+            console.log("fromValueUncertain", this.value);
             return this.value?.fromUncertain ? this.value.fromUncertain : false;
         },
         toValueUncertain() {

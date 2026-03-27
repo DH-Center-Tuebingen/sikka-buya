@@ -3,14 +3,14 @@ const MintRegion = require("../../models/mint_region");
 const { parse } = require("csv-parse");
 const { WriteableDatabase } = require("../../utils/database");
 const Treasure = require("../../models/treasure");
+const { GeoJSON, GeoJsonPointGeoemtry } = require("../../models/geojson");
 
 
 async function importDestructor() {
-    const tables = ['treasure_item', 'treasure', 'mint_region', 'state', 'nominal', 'material', 'person', 'historical_region'];
+    const tables = ['treasure_item', 'treasure', 'mint_region', 'state', 'nominal', 'material', 'person', 'historical_region', 'issuing_state_region'];
     for (const table of tables) {
         await WriteableDatabase.none(`DELETE FROM ${table}`);
     }
-    console.log("All relevant tables have been cleared.");
 }
 
 async function importResolver(_, { file: fileUpload }) {
@@ -33,10 +33,10 @@ async function importResolver(_, { file: fileUpload }) {
         'Type of find uncertain': "treasure.typeOfFindUncertain$boolean",
         // 'Quantity of studied coins (for all findspot)': "", // Calculated
         // 'Date of loss (text)': "",
-        'Date of loss from': "year_of_loss_from",
-        'Date of loss from uncertain': "year_of_loss_from_uncertain$boolean",
-        'Date of loss to': "year_of_loss_to",
-        'Date of loss to uncertain': "year_of_loss_to_uncertain$boolean",
+        'Date of loss from': "treasure.yearOfLoss$range.from",
+        'Date of loss from uncertain': "treasure.yearOfLossUncertain$range.from#boolean",
+        'Date of loss to': "treasure.yearOfLoss$range.to",
+        'Date of loss to uncertain': "treasure.yearOfLossUncertain$range.to#boolean",
         'Circumstances of find': "treasure.description",
         'Collection': "treasure.collection",
         'Publication': "treasure.publication",
@@ -44,27 +44,27 @@ async function importResolver(_, { file: fileUpload }) {
         'State uncertain': "item.stateUncertain$boolean",
         'Region (cluster of issuing states) (for pie chart)': "item.issuingStateRegion@issuing_state_region",
         'Metal': "item.material@material",
-        'Metal uncertain': "item.metalUncertain$boolean",
+        'Metal uncertain': "item.materialUncertain$boolean",
         'Denomination (precise name)': "item.denominationText",
         'Denomination uncertain': "item.denominationUncertain$boolean",
         'Denomination (for search)': "item.nominal@nominal",
-        'Type of denomination (for pie chart)': "item.denominationType",
+        'Type of denomination (for pie chart)': "item.typeOfDenomination",
         'Issuer (only for Ottoman coins)': "item.person@person",
         'Issuer uncertain': "item.personUncertain$boolean",
         // 'Reign period': "",
         // 'Date of minting (text)': "",
-        'Date of minting from': "year_of_mint_from",
-        'Date From uncertain': "year_of_mint_from_uncertain$boolean",
-        'Date of minting to': "year_of_mint_to",
-        'Date To uncertain': "year_of_mint_to_uncertain$boolean",
+        'Date of minting from': "item.yearOfMint$range.from",
+        'Date From uncertain': "item.yearOfMintUncertain$range.from#boolean",
+        'Date of minting to': "item.yearOfMint$range.to",
+        'Date To uncertain': "item.yearOfMintUncertain$range.to#boolean",
         'Mint (only for Ottoman coins)': "item.mintRegion@mint_region",
         'Mint uncertain': "item.mintRegionUncertain$boolean",
-        // 'X coordinate for mint': "",
-        // 'Y coordinate for mint': "",
+        'X coordinate for mint': "item.mintRegion@mint_region:location.x$number",
+        'Y coordinate for mint': "item.mintRegion@mint_region:location.y$number",
         'Authenticity of coins': "item.authenticity",
         'Status uncertain': "item.statusUncertain$boolean",
         'Quantity': "item.count$number",
-        'Coin type reference (only for Ottoman coins)': "",
+        'Coin type reference (only for Ottoman coins)': "item.coinTypeText",
         // 'Remarks to coin type reference': "",    !!!!
         // 'Remarks': "", // SAME AS CIRCUMSTANCES (?)
         'Display only coins with reliable attribution': "treasure.reliableAttribution$boolean",
@@ -99,6 +99,9 @@ async function importResolver(_, { file: fileUpload }) {
             for (const [csvColumn, value] of Object.entries(record)) {
                 if (!value) continue; // Skip empty values
 
+                // For example range attributes we need to cache the values and add it to the same object.
+                const rowCache = {}
+
                 const mappingStrategy = columnMapping[csvColumn];
                 if (!mappingStrategy) {
                     if (!skippedColumns[csvColumn]) {
@@ -109,30 +112,53 @@ async function importResolver(_, { file: fileUpload }) {
                     const [fieldAndDb, type] = mappingStrategy.split('$');
                     const resolvedType = type ? type.toLowerCase() : 'string';
                     const [field, dbAndProperty] = fieldAndDb.split('@');
-                    const [db, property = 'name'] = dbAndProperty ? dbAndProperty.split(':') : [null, null];
 
                     const [targetName, column] = field.split('.');
+
                     if (!['treasure', 'item'].includes(targetName)) {
                         console.warn(`Unknown target "${targetName}" for column "${csvColumn}". Skipping.`);
                         continue;
                     }
-
                     const target = targetName === 'treasure' ? treasure : item;
+
+                    const [db, propertyChain = 'name'] = dbAndProperty ? dbAndProperty.split(':') : [null, null];
                     if (!db) {
-                        const resolvedValue = resolveValue(value, resolvedType);
-                        if (resolvedType !== 'string') {
-                            console.log(`Resolved value for column "${csvColumn}" (${resolvedType}):`, resolvedValue);
+                        const resolvedValue = resolveValue(value, resolvedType, target, column);
+
+                        // When we insert a range, we directly add it on the target.
+                        if (resolvedValue !== null) {
+                            target[column] = resolvedValue;
                         }
-                        target[column] = resolvedValue;
                     } else {
-                        const resolvedValue = {}
+
+                        // Get the property path from the configuration, e.g. "location.x" and split it into parts.
+                        const [...propertyParts] = propertyChain.split('.');
+
+                        let resolvedValue = {}
                         if (!resolutionPromises[db]) {
-                            console.log(`Creating resolution promise for database: ${JSON.stringify({ db, value: resolvedValue, target, column, type: resolvedType })}`);
                             resolutionPromises[db] = { db, value: resolvedValue, target, column, type: resolvedType };
                         } else {
                             resolvedValue = resolutionPromises[db].value;
                         }
-                        resolvedValue[property] = resolveValue(value, resolvedType);
+
+                        if (propertyParts.length === 0) {
+                            throw new Error(`Missing property path for database "${db}" in column mapping.`);
+                        }
+
+                        let property = null;
+                        if (propertyParts.length > 1) {
+                            do {
+                                property = propertyParts.shift();
+                                if (!resolvedValue[property]) {
+                                    resolvedValue[property] = {};
+                                }
+                                resolvedValue = resolvedValue[property];
+                            } while (propertyParts.length > 1);
+                        } else {
+                            property = propertyParts[0];
+                        }
+
+                        resolvedValue[propertyParts[0]] = resolveValue(value, resolvedType, target, column);
                     }
                 }
             }
@@ -145,6 +171,7 @@ async function importResolver(_, { file: fileUpload }) {
             // columns of the sheet and built the complete object.
             await createRelatedDatabaseEntries(resolutionPromises, databaseCache);
             const ensuredTreasure = await ensureTreasure(treasure, cachedTreasures);
+
             await Treasure.insertItems(WriteableDatabase, ensuredTreasure.id, [item]);
         }
 
@@ -219,7 +246,6 @@ async function createRelatedDatabaseEntries(resolutionPromises, cache = {}) {
 }
 
 async function getByName(db, name) {
-    console.log(`Fetching "${name}" from database "${db}"`);
     switch (db) {
         case 'mint_region':
             return MintRegion.findByName(name)
@@ -243,6 +269,16 @@ async function getByName(db, name) {
 async function addValueToDatabase(db, value) {
     switch (db) {
         case 'mint_region':
+
+
+            if (value.location && value.location.x != null && value.location.y != null) {
+                value.location = {
+                    type: "point",
+                    coordinates: [value.location.x, value.location.y]
+                }
+            }
+
+            console.log("Adding mint region to database:", value)
             return MintRegion.add(value)
         case 'issuing_state':
             // For these we can use the generic NamedModel method.
@@ -261,11 +297,21 @@ async function addValueToDatabase(db, value) {
     }
 }
 
-function resolveValue(value, type) {
+function resolveBaseValue(value, type) {
     switch (type) {
         case 'number':
-            const num = parseInt(value.trim());
-            console.error(`Failed to parse number from "${value}". Defaulting to 0.`);
+            const trimmedValue = value.trim();
+
+            if (trimmedValue === '' || trimmedValue.toLowerCase() === 'unknown' || trimmedValue.toLowerCase() === 'n/a') {
+                return null; // Return null for empty strings to represent missing values
+            }
+
+            const num = parseFloat(trimmedValue);
+
+            if (isNaN(num)) {
+                throw new Error(`Value "${trimmedValue}" is not a valid number.`);
+            }
+
             return isNaN(num) ? 0 : num;
         case 'boolean':
             return Boolean(value.trim());
@@ -276,8 +322,38 @@ function resolveValue(value, type) {
         case 'string':
             return value;
         default:
-            throw new Exception(`Unknown type "${type}" for value "${value}".`);
+            throw new Error(`Unknown type "${type}" for value "${value}".`);
     }
+}
+
+function resolveValue(value, type, target, column) {
+
+    if (type.startsWith('range.')) {
+        const [rangeDef, rangeType = 'number'] = type.split('#')
+        const attr = rangeDef.split('.')[1];
+
+        if (!target[column]) {
+            target[column] = {};
+        }
+
+        target[column][attr] = resolveBaseValue(value, rangeType);
+        return null; // The actual value will be set in the target object, so we return null here.
+    }
+
+    if (type.startsWith('geometry')) {
+        const [geometryDef, geometryType = 'number'] = type.split('#')
+        const [attr, subAttr] = geometryDef.split('.');
+
+
+        if (!target[column]) {
+            target[column] = { name: null, location: { x: null, y: null } }; // We set the name here to ensure that the entry is created in the database and we can link it later.
+        }
+
+        target[column][attr][subAttr] = resolveBaseValue(value, geometryType);
+        return null; // The actual value will be set in the target object, so we return null here.
+    }
+
+    return resolveBaseValue(value, type);
 }
 
 module.exports = { importResolver, importDestructor };

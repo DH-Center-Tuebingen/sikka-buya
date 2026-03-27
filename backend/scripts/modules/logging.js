@@ -1,4 +1,6 @@
-const chalk = require("chalk")
+const { Chalk } = require("chalk")
+
+const chalk = new Chalk()
 
 function log(msg, ...optional_parameters) {
     console.log(msg, ...optional_parameters)

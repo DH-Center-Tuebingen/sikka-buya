@@ -86,6 +86,12 @@ export default class TreasureOverlay extends Overlay {
                 location 
                 timespan {from to}
                 description
+                
+                singleFind
+                reliableAttribution
+                completeHoard
+                ottomanPredominance
+
                 color
                 items {
                     count
@@ -118,11 +124,6 @@ export default class TreasureOverlay extends Overlay {
 
                     issuingState
                     historicalRegion
-
-                    singleFind
-                    reliableAttribution
-                    completeHoard
-                    ottomanPredominance
 
                     authenticity
                     circumstances
@@ -454,7 +455,7 @@ export default class TreasureOverlay extends Overlay {
     createTreasureMapObjects(treasures, selectedTreasureIds, { extendBorder = 20 } = {}) {
         const geoJSON = []
         const connections = []
-        
+
         const selectedTreasures = treasures.filter((treasure) => treasure.selected)
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color

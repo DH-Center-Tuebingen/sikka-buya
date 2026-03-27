@@ -134,8 +134,8 @@ export default {
     async list() {
       new Query(this.queryName)
         .list(['id', 'name', ...this.parameters])
-        .then((obj) => {
-          this.$data.items = obj.data.data[this.queryName];
+        .then((data) => {
+          this.$data.items = data;
         })
         .catch((e) => {
           this.listError = this.$t('error.loading_list');

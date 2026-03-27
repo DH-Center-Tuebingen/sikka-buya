@@ -6,6 +6,7 @@ import Overlay from '@/maps/Overlay';
 import { MintLocationMarker } from '@/models/mintlocation'
 
 import Mint from '@/models/map/mint';
+import { OttomanTreasure } from './ottoman-treasure-item';
 
 
 // ON REFACTOR: I think trying to push all states in a single overlay is a bad idea.
@@ -80,62 +81,10 @@ export default class OttomanTreasureOverlay extends Overlay {
     }
 
     async fetchTreasures() {
-        const result = await Query.raw(`{
-            treasure {
-                id
-                name
-                location 
-                timespan {from to}
-                description
-                color
-                items {
-                    count
-                    epoch {
-                        id
-                        name
-                    }
-                    material {
-                        id
-                        name
-                        color
-                    }
-                    mintRegion {
-                        id
-                        name
-                        uncertain
-                        location 
-                    }
-                    mintRegionUncertain
-                    uncertainYear
-                    year
-                    weight
-                    fragment
-                    nominal {
-                        id
-                        name
-                    }
-                    reconstructed
-                    mintAsOnCoin
-
-                    issuingState {id name}
-                    historicalRegion {id name}
-
-                    singleFind
-                    reliableAttribution
-                    completeHoard
-                    ottomanPredominance
-
-                    authenticity
-                    circumstances
-                    subclassification
-
-                    yearOfLoss {from to}
-                    yearOfMint {from to}
-                }
-            }
-        }`, {})
-
-        return result.data.data.treasure
+        const ottomanTreasure = new OttomanTreasure()
+        const result = await ottomanTreasure.list();
+        console.log("Fetched treasures", result)
+        return result
     }
 
 

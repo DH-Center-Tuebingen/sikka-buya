@@ -32,30 +32,28 @@ export default class Query {
         return this.raw(query)
     }
 
+    recursivelyBuildBody(p) {
+        for (let [index, object] of p.entries()) {
+            if (typeof (object) == "object") {
+                if (Array.isArray(object)) throw new Error("Invalid property type: array")
+                let substring = ""
+                for (const key of Object.keys(object)) {
+                    substring += key + " " + this.recursivelyBuildBody(object[key])
+                }
+                p[index] = substring
+            }
+        }
+        return `{ ${p.join(",")} }`
+    }
+
     async get(id, properties = this.defaultProperties) {
 
         const getName = `get${this.capitalizedName}`
 
-        function recursivelyBuildBody(p) {
-            console.log("Building body for", p)
-
-            for (let [index, object] of p.entries()) {
-                if (typeof (object) == "object") {
-                    if (Array.isArray(object)) throw new Error("Invalid property type: array")
-                    let substring = ""
-                    for (const key of Object.keys(object)) {
-                        substring += key + " " + recursivelyBuildBody(object[key])
-                    }
-                    p[index] = substring
-                }
-            }
-            return `{ ${p.join(",")} }`
-        }
-
         const query = `
               {
                  ${getName}(id:${id})  
-                    ${recursivelyBuildBody(properties)}
+                    ${this.recursivelyBuildBody(properties)}
                 
               }
             `
@@ -100,13 +98,16 @@ export default class Query {
 
     async list(properties) {
         const query = `{
-          ${this.name} {
-              ${properties.join(",")}
-          }
+          ${this.name} ${this.recursivelyBuildBody(properties)}
         }
       `
+        const response = await this.raw(query)
+        if (response.data.errors) {
+            console.error("Error fetching data", response.data.errors)
+            throw new Error("Error fetching data")
+        }
 
-        return Query.raw(query)
+        return response.data.data[this.name] 
     }
 
     static async gql(query, variables) {

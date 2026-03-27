@@ -10,6 +10,10 @@ const graphqlFields = require('graphql-fields')
 
 class Treasure extends Table {
 
+            //     yearOfLoss: { type: "range", columns: ["year_of_loss_from", "year_of_loss_to"] },
+            // yearOfLossUncertain: { type: "range", columns: ["year_of_loss_from_uncertain", "year_of_loss_to_uncertain"] },
+
+
     static async insertItems(t, treasure, items = []) {
         for (let i = 0; i < items.length; i++) {
             let {
@@ -95,12 +99,6 @@ class Treasure extends Table {
                     authenticity,
                     status_uncertain,
 
-                    year_of_loss_from,
-                    year_of_loss_to,
-
-                    year_of_loss_from_uncertain,
-                    year_of_loss_to_uncertain,
-
                     year_of_mint_from,
                     year_of_mint_to,
 
@@ -142,13 +140,9 @@ class Treasure extends Table {
                     $[authenticity],
                     $[statusUncertain],
 
-                    $[yearOfLossFrom],
-                    $[yearOfLossTo],
-                    $[yearOfLossFromUncertain],
-                    $[yearOfLossToUncertain],
-
                     $[yearOfMintFrom],
                     $[yearOfMintTo],
+
                     $[yearOfMintFromUncertain],
                     $[yearOfMintToUncertain]
                 )`, {
@@ -180,12 +174,8 @@ class Treasure extends Table {
                 statusUncertain,
                 historicalRegion,
                 authenticity,
-                yearOfLossFrom: yearOfLoss ? yearOfLoss.from : null,
-                yearOfLossTo: yearOfLoss ? yearOfLoss.to : null,
                 yearOfMintFrom: yearOfMint ? yearOfMint.from : null,
                 yearOfMintTo: yearOfMint ? yearOfMint.to : null,
-                yearOfLossFromUncertain: yearOfLossUncertain ? yearOfLossUncertain.from : false,
-                yearOfLossToUncertain: yearOfLossUncertain ? yearOfLossUncertain.to : false,
                 yearOfMintFromUncertain: yearOfMintUncertain ? yearOfMintUncertain.from : false,
                 yearOfMintToUncertain: yearOfMintUncertain ? yearOfMintUncertain.to : false,
             })
@@ -209,6 +199,8 @@ class Treasure extends Table {
         subclassification = "",
         collection = "",
         publication = "",
+        yearOfLoss = { from: null, to: null },
+        yearOfLossUncertain = { from: false, to: false },
     } = {}) {
 
         let { geometry: _loc, properties } = GeoJSON.separate(location)
@@ -232,7 +224,11 @@ class Treasure extends Table {
                 ottoman_predominance,
                 subclassification,
                 collection,
-                publication
+                publication,
+                year_of_loss_from,
+                year_of_loss_to,
+                year_of_loss_from_uncertain,
+                year_of_loss_to_uncertain
                 ) 
             VALUES (
                 $[name],
@@ -249,7 +245,11 @@ class Treasure extends Table {
                 $[ottomanPredominance],
                 $[subclassification],
                 $[collection],
-                $[publication]
+                $[publication],
+                $[yearOfLossFrom],
+                $[yearOfLossTo],
+                $[yearOfLossFromUncertain],
+                $[yearOfLossToUncertain]
             ) 
             RETURNING treasure.id`, {
                 name,
@@ -267,6 +267,10 @@ class Treasure extends Table {
                 subclassification,
                 collection,
                 publication,
+                yearOfLossFrom: yearOfLoss.from,
+                yearOfLossTo: yearOfLoss.to,
+                yearOfLossFromUncertain: yearOfLossUncertain ? yearOfLossUncertain.from : false,
+                yearOfLossToUncertain: yearOfLossUncertain ? yearOfLossUncertain.to : false,
             })
 
             await this.insertItems(t, id, items)
@@ -291,6 +295,8 @@ class Treasure extends Table {
         subclassification = "",
         collection = "",
         publication = "",
+        yearOfLoss = { from: null, to: null },
+        yearOfLossUncertain = { from: false, to: false },
     } = {}) {
         if (id == null) throw new Error("Treasure ID is required")
 
@@ -316,7 +322,12 @@ class Treasure extends Table {
                     subclassification = $[subclassification],
 
                     collection = $[collection],
-                    publication = $[publication]
+                    publication = $[publication],
+
+                    year_of_loss_from = $[yearOfLossFrom],
+                    year_of_loss_to = $[yearOfLossTo],
+                    year_of_loss_from_uncertain = $[yearOfLossFromUncertain],
+                    year_of_loss_to_uncertain = $[yearOfLossToUncertain]
 
                 WHERE id=$[id]
             `,
@@ -337,6 +348,10 @@ class Treasure extends Table {
                     subclassification,
                     collection,
                     publication,
+                    yearOfLossFrom: yearOfLoss.from,
+                    yearOfLossTo: yearOfLoss.to,
+                    yearOfLossFromUncertain: yearOfLossUncertain ? yearOfLossUncertain.from : false,
+                    yearOfLossToUncertain: yearOfLossUncertain ? yearOfLossUncertain.to : false,
                 }
             )
             await this.insertItems(t, id, items)
@@ -411,11 +426,6 @@ class Treasure extends Table {
                 t.state_uncertain,
                 t.issuing_state_region,
 
-                t.year_of_loss_from,
-                t.year_of_loss_to,
-                t.year_of_loss_from_uncertain,
-                t.year_of_loss_to_uncertain,
-
                 t.year_of_mint_from,
                 t.year_of_mint_to,
                 t.year_of_mint_from_uncertain,
@@ -466,6 +476,11 @@ class Treasure extends Table {
                         treasure.collection,
                         treasure.publication,
 
+                        treasure.year_of_loss_from,
+                        treasure.year_of_loss_to,
+                        treasure.year_of_loss_from_uncertain,
+                        treasure.year_of_loss_to_uncertain,
+
                         COALESCE(json_agg(items_json) FILTER(where items_json is not null), '[]') AS items
                 FROM 
                     treasure
@@ -486,6 +501,8 @@ class Treasure extends Table {
                 treasure.reliableAttribution = treasure.reliable_attribution
                 treasure.completeHoard = treasure.complete_hoard
                 treasure.ottomanPredominance = treasure.ottoman_predominance
+                treasure.yearOfLoss = { from: treasure.year_of_loss_from, to: treasure.year_of_loss_to }
+                treasure.yearOfLossUncertain = { from: treasure.year_of_loss_from_uncertain, to: treasure.year_of_loss_to_uncertain }
                 return treasure
             })
 
@@ -576,12 +593,8 @@ class TreasureItem {
             "issuingState": "issuing_state",
             "historicalRegion": "historical_region",
             "reliableAttribution": "reliable_attribution",
-            "yearOfLossFrom": "year_of_loss_from",
-            "yearOfLossTo": "year_of_loss_to",
             "yearOfMintFrom": "year_of_mint_from",
             "yearOfMintTo": "year_of_mint_to",
-            "yearOfLossUncertainFrom": "year_of_loss_from_uncertain",
-            "yearOfLossUncertainTo": "year_of_loss_to_uncertain",
             "yearOfMintUncertainFrom": "year_of_mint_from_uncertain",
             "yearOfMintUncertainTo": "year_of_mint_to_uncertain",
         }
@@ -589,9 +602,7 @@ class TreasureItem {
 
     static get rangeFields() {
         return {
-            yearOfLoss: { type: "range", columns: ["year_of_loss_from", "year_of_loss_to"] },
             yearOfMint: { type: "range", columns: ["year_of_mint_from", "year_of_mint_to"] },
-            yearOfLossUncertain: { type: "range", columns: ["year_of_loss_from_uncertain", "year_of_loss_to_uncertain"] },
             yearOfMintUncertain: { type: "range", columns: ["year_of_mint_from_uncertain", "year_of_mint_to_uncertain"] },
         }
     }

@@ -4,8 +4,7 @@ class GeoJSON {
     //All implemented GeoJSON types: https://www.rfc-editor.org/rfc/rfc7946 
     static types = ['point', 'polygon', 'feature']
     static fields = ['type', 'coordinates']
-
-
+    
     static addProperties(geoJson, properties = {}) {
         const { properties: existingProperties = {}, geometry } = GeoJSON.separate(geoJson)
         Object.assign(existingProperties, properties)
