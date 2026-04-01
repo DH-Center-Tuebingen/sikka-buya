@@ -47,7 +47,7 @@ async function importResolver(_, { file: fileUpload }) {
         'Metal uncertain': "item.materialUncertain$boolean",
         'Denomination (precise name)': "item.denominationText",
         'Denomination uncertain': "item.denominationUncertain$boolean",
-        'Denomination (for search)': "item.nominal@nominal",
+        'Denomination': "item.nominal@nominal",
         'Type of denomination (for pie chart)': "item.typeOfDenomination",
         'Issuer (only for Ottoman coins)': "item.person@person",
         'Issuer uncertain': "item.personUncertain$boolean",
@@ -269,16 +269,12 @@ async function getByName(db, name) {
 async function addValueToDatabase(db, value) {
     switch (db) {
         case 'mint_region':
-
-
             if (value.location && value.location.x != null && value.location.y != null) {
                 value.location = {
                     type: "point",
                     coordinates: [value.location.x, value.location.y]
                 }
             }
-
-            console.log("Adding mint region to database:", value)
             return MintRegion.add(value)
         case 'issuing_state':
             // For these we can use the generic NamedModel method.
@@ -289,6 +285,11 @@ async function addValueToDatabase(db, value) {
         case 'nominal':
         case 'person':
         case 'historical_region':
+
+            if (db === 'nominal') {
+                console.log("Adding nominal to database:", value)
+            }
+
             // For these we can use the generic NamedModel method.
             const Model = new NamedModel(db);
             return Model.add(value.name);

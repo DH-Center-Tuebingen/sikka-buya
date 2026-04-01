@@ -29,6 +29,11 @@ class NamedModel extends Model {
     }
 
     async add(name, transaction = WriteableDatabase) {
+
+        if (this.tableName === 'nominal') {
+            console.log(`Adding ${name} to table ${this.tableName}`);
+        }
+
         if (this.supportsTimestamps) {
             return transaction.one(`INSERT INTO ${this.tableName} (name, created_at, updated_at) VALUES ($1, NOW(), NOW()) RETURNING id`, [name])
         } else {
@@ -41,7 +46,7 @@ class NamedModel extends Model {
             return transaction.none(`UPDATE ${this.tableName} SET name = $1, updated_at = NOW() WHERE id = $2`, [name, id])
         } else {
             return transaction.none(`UPDATE ${this.tableName} SET name = $1 WHERE id = $2`, [name, id])
-        }   
+        }
     }
 
     async delete(id, transaction = WriteableDatabase) {

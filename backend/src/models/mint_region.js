@@ -78,18 +78,8 @@ class MintRegion {
         location = null,
         uncertain = false,
     } = {}) {
-        console.log("ADD MINT REGION TO DATABASE:", {
-            name,
-            location,
-            uncertain
-         })
         const { properties, geometry } = GeoJSON.separate(location)
-
-        console.log("ADD MINT REGION TO DATABASE:", {
-            location: geometry,
-            properties
-         })
-
+        
         return WriteableDatabase.one(`INSERT INTO 
         $[tableName:name]
         (name, location, properties, uncertain)

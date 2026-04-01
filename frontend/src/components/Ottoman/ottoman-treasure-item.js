@@ -124,20 +124,20 @@ export class OttomanTreasure {
                     ]
                 }
             ])
-            
-            return result.map(treasure => {
-                const yearOfLossWithUncertainty = {
-                    from: treasure.yearOfLoss?.from,
-                    to: treasure.yearOfLoss?.to,
-                    fromUncertain: treasure.yearOfLossUncertain?.from,
-                    toUncertain: treasure.yearOfLossUncertain?.to,
-                }
 
-                treasure.yearOfLoss = yearOfLossWithUncertainty
-                delete treasure.yearOfLossUncertain
+        return result.map(treasure => {
+            const yearOfLossWithUncertainty = {
+                from: treasure.yearOfLoss?.from,
+                to: treasure.yearOfLoss?.to,
+                fromUncertain: treasure.yearOfLossUncertain?.from,
+                toUncertain: treasure.yearOfLossUncertain?.to,
+            }
 
-                return treasure
-             })
+            treasure.yearOfLoss = yearOfLossWithUncertainty
+            delete treasure.yearOfLossUncertain
+
+            return treasure
+        })
     }
 
     async get(id) {
@@ -349,7 +349,7 @@ export class OttomanTreasureItem {
 
         this.nominal = nominal
         this.denominationText = denominationText,
-        this.typeOfDenomination = typeOfDenomination
+            this.typeOfDenomination = typeOfDenomination
         this.denominationUncertain = denominationUncertain
 
         this.uncertainYear = uncertainYear
@@ -375,30 +375,33 @@ export class OttomanTreasureItem {
     static rowDefinition() {
         return [
             { type: 'index', label: '#', attribute: null },
-            { type: 'number', label: 'Quantity', attribute: 'count' },
-            { type: 'text', label: 'Authenticity', attribute: 'authenticity' },
 
-            { type: 'text', label: 'Coin Type', attribute: 'coinTypeText' },
+            { type: 'model', label: 'Issuing State', attribute: 'issuingState' },
+            { type: 'boolean', label: 'sta. ?', attribute: 'stateUncertain' },
+            { type: 'model', label: 'Issuing State Region', attribute: 'issuingStateRegion' },
 
             { type: 'model', label: 'Material', attribute: 'material' },
             { type: 'boolean', label: 'mat. ?', attribute: 'materialUncertain' },
 
             { type: 'model', label: 'Denomination', attribute: 'nominal' },
+            { type: 'boolean', label: 'denom. ?', attribute: 'denominationUncertain' },
             { type: 'text', label: 'Denom. Text', attribute: 'denominationText' },
             { type: 'text', label: 'Denom. Pie Chart', attribute: 'typeOfDenomination' },
-            { type: 'boolean', label: 'denom. ?', attribute: 'denominationUncertain' },
 
-            { type: 'model', label: 'Mint', attribute: 'mintRegion' },
-            { type: 'boolean', label: 'mi. ?', attribute: 'mintRegionUncertain' },
             { type: 'model', label: 'Issuer', attribute: 'person' },
             { type: 'boolean', label: 'is. ?', attribute: 'personUncertain' },
 
-            { type: 'model', label: 'Historical Region', attribute: 'historicalRegion' },
-            { type: 'model', label: 'Issuing State', attribute: 'issuingState' },
-            { type: 'boolean', label: 'sta. ?', attribute: 'stateUncertain' },
-            { type: 'model', label: 'Issuing State Region', attribute: 'issuingStateRegion' },
-
             { type: 'range', label: 'Year Of Minting', attribute: 'yearOfMint' },
+
+
+            { type: 'model', label: 'Mint', attribute: 'mintRegion' },
+            { type: 'boolean', label: 'mi. ?', attribute: 'mintRegionUncertain' },
+
+            { type: 'text', label: 'Authenticity', attribute: 'authenticity' },
+            { type: 'number', label: 'Quantity', attribute: 'count' },
+
+            { type: 'text', label: 'Coin Type', attribute: 'coinTypeText' },
+
         ];
     }
 
