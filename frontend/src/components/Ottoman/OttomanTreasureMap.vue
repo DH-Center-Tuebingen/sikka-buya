@@ -386,9 +386,6 @@ export default {
                 }
             })
 
-            // this.mintLocationMarkerGroup = this.$L.featureGroup()
-            // this.mintLocationMarkerGroup.addTo(this.map)
-
             window.addEventListener('resize', this.resizeCanvas);
             this.update()
 
@@ -589,7 +586,6 @@ export default {
                     })
 
                 } else {
-
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
@@ -714,6 +710,8 @@ export default {
 
             this.selectedTreasures.forEach(treasure => {
                 treasure.items.forEach(item => {
+                    if(item.mintRegion === null) return
+
                     if (!this.activeMintMap[item.mintRegion.id]) {
                         this.activeMintMap[item.mintRegion.id] = item.mintRegion
                         this.activeMintMap[item.mintRegion.id].count = 0
@@ -824,6 +822,11 @@ table {
     align-items: flex-end;
     padding: $padding;
     padding-bottom: 20px;
+    pointer-events: none;
+}
+
+.bottom-center-ui > * {
+    pointer-events: all;
 }
 
 .treasure-description {

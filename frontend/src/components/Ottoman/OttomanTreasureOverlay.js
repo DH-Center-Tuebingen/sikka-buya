@@ -83,7 +83,6 @@ export default class OttomanTreasureOverlay extends Overlay {
     async fetchTreasures() {
         const ottomanTreasure = new OttomanTreasure()
         const result = await ottomanTreasure.list();
-        console.log("Treasures", result)
         return result
     }
 
@@ -100,18 +99,22 @@ export default class OttomanTreasureOverlay extends Overlay {
             let items = {}
             for (let original of treasure.items) {
                 let item = cloneDeep(original)
-                if (item.mintRegion == null) continue
 
-                if (!items[item.mintRegion.id]) {
-                    items[item.mintRegion.id] = {}
-                    items[item.mintRegion.id].mintRegion = item.mintRegion
-                    items[item.mintRegion.id].count = 0
-                    items[item.mintRegion.id].items = []
+                const key = item.mintRegion ? item.mintRegion.id : 0
+                if (item.mintRegion == null){
+
+                }
+
+                if (!items[key]) {
+                    items[key] = {}
+                    items[key].mintRegion = item.mintRegion
+                    items[key].count = 0
+                    items[key].items = []
                 }
 
                 totalCount += item.count
-                items[item.mintRegion.id].count += item.count
-                items[item.mintRegion.id].items.push(item)
+                items[key].count += item.count
+                items[key].items.push(item)
             }
             treasure.totalCount = totalCount
 

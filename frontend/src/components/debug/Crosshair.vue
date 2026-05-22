@@ -37,6 +37,7 @@ export default {
             }
         },
         text() {
+            if(!this.center.lat || !this.center.lng) return "N/A";
             return this.center.lat.toFixed(4) + ", " + this.center.lng.toFixed(4);
         }
     }

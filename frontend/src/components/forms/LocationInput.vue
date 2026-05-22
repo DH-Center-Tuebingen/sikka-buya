@@ -68,7 +68,7 @@
         ref="mapview"
         :use-boundaries="false"
         height="500px"
-        :location="[29.99300228455108, 50.96557617187501]"
+        :location="center"
         :zoom="5"
         tabindex="0"
       />
@@ -130,6 +130,12 @@ export default {
     };
   },
   computed: {
+    center() {
+      const managedCenter = this.$mconfig.getArray('map.default.center');
+      console.log("Managed center is", managedCenter)
+      return managedCenter ?? [0, 0];
+
+    },
     interactive() {
       return this.options.length > 1
     },
@@ -787,7 +793,10 @@ export default {
 
 
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 .toolbar {
   display: flex;
 
