@@ -110,7 +110,7 @@ export class OttomanTreasure {
 
                         "authenticity",
 
-                        { person: ["id", "name"] },
+                        { person: ["id", "name", {reign: ["from", "to"]}] },
                         "personUncertain",
 
                         { historicalRegion: ["id", "name"] },

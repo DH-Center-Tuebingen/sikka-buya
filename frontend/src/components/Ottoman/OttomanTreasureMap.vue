@@ -111,7 +111,7 @@
                                 <option value="typeOfDenomination">
                                     <Locale path="property.denomination" />
                                 </option>
-                                <option value="historicalRegion">
+                                <option value="issuingStateRegion">
                                     <Locale path="property.region" />
                                 </option>
                             </select>
@@ -327,6 +327,7 @@ export default {
                 },
                 onDataTransformed: (data) => {
                     this.treasures = data.treasures
+                    console.log("Data transformed, treasures:", this.treasures)
                 },
                 onEnd: () => {
                     this.mounted_and_loaded_mixin_loaded("data")
@@ -568,16 +569,44 @@ export default {
 
                 } else if (value === "typeOfDenomination") {
                     this.selectedTreasures.forEach((treasure, index) => {
-                        console.log("Treasure", treasure)
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
                                 const count = parseInt(item.count) || 1
-                                const name = item.typeOfDenomination|| "no_name"
+                                const name = item.typeOfDenomination || "no_name"
                                 if (!map[name]) {
                                     map[name] = {
                                         count: 0,
                                         color: getColor(item[value]),
                                         label: item[value] || this.$t(`property.label.${value}.no_name`)
+                                    }
+                                }
+                                map[name].count += count
+                            })
+                        })
+                    })
+
+                } else if (value === "person") {
+                    console.log("Processing itemArr", this.selectedTreasures);
+
+
+
+                    this.selectedTreasures.forEach((treasure, index) => {
+                        treasure.items.forEach(itemArr => {
+                            itemArr.items.forEach(item => {
+                                if(!item[value]) return
+
+                                const from = item[value].reign?.from ??  "?"
+                                const to = item[value].reign?.to ?? "?"
+                                
+                                let reign = (from === "?" && to === "?") ? "?" : `${from}-${to}`
+
+                                const count = parseInt(item.count) || 1
+                                const name = item[value].name
+                                if (!map[name]) {
+                                    map[name] = {
+                                        count: 0,
+                                        color: getColor(item[value]),
+                                        label: `${item[value].name} (${reign})` 
                                     }
                                 }
                                 map[name].count += count
@@ -710,7 +739,7 @@ export default {
 
             this.selectedTreasures.forEach(treasure => {
                 treasure.items.forEach(item => {
-                    if(item.mintRegion === null) return
+                    if (item.mintRegion === null) return
 
                     if (!this.activeMintMap[item.mintRegion.id]) {
                         this.activeMintMap[item.mintRegion.id] = item.mintRegion
@@ -825,7 +854,7 @@ table {
     pointer-events: none;
 }
 
-.bottom-center-ui > * {
+.bottom-center-ui>* {
     pointer-events: all;
 }
 

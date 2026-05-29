@@ -5,6 +5,7 @@ const Material = require('./material');
 const MintRegion = require('./mint_region');
 const NamedModel = require('./named-model');
 const Nominal = require('./nominal');
+const Person = require('./person');
 const { Table } = require('./table.js')
 const graphqlFields = require('graphql-fields')
 
@@ -699,8 +700,6 @@ class TreasureItem {
     }
 
     static get getters() {
-
-        const PersonModel = new NamedModel("person")
         const HistoricalRegionModel = new NamedModel("historical_region")
         const IssuingStateModel = new NamedModel("state")
         const IssuingStateRegionModel = new NamedModel("issuing_state_region")
@@ -711,7 +710,7 @@ class TreasureItem {
             nominal: async (transaction, id) => Nominal.get(id, transaction),
             material: async (transaction, id) => Material.get(id, { transaction }),
 
-            person: async (transaction, id) => PersonModel.get(id, transaction),
+            person: async (transaction, id) => Person.get(transaction, id),
             historicalRegion: async (transaction, id) => HistoricalRegionModel.get(id, transaction),
             issuingState: async (transaction, id) => IssuingStateModel.get(id, transaction),
             issuingStateRegion: async (transaction, id) => IssuingStateRegionModel.get(id, transaction),
