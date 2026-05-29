@@ -28,7 +28,7 @@ async function importResolver(_, { file: fileUpload }) {
     const columnMapping = {
         "Place of finding": 'treasure.name',
         "Historical region of coin loss": 'item.historicalRegion@historical_region',
-        'Hoard/Single finds': 'treasure.singleFind$boolean',
+        'Hoard/Single finds': 'treasure.singleFind$singlefind',
         'Subclassification of finds': "treasure.subclassification",
         'Type of find uncertain': "treasure.typeOfFindUncertain$boolean",
         // 'Quantity of studied coins (for all findspot)': "", // Calculated
