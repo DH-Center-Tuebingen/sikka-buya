@@ -376,6 +376,7 @@ export class OttomanTreasureItem {
         return [
             { type: 'index', label: '#', attribute: null },
 
+            { type: 'model', label: 'Historical Region', attribute: 'historicalRegion' },
             { type: 'model', label: 'Issuing State', attribute: 'issuingState' },
             { type: 'boolean', label: 'sta. ?', attribute: 'stateUncertain' },
             { type: 'model', label: 'Issuing State Region', attribute: 'issuingStateRegion' },
