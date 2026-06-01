@@ -1,6 +1,8 @@
 <template>
     <div class="treasure-map ui">
-        <Sidebar>
+        <Sidebar 
+                style="min-width: 800px !important;"
+>
             <template #title>
                 <Locale
                     path="general.filter"
@@ -9,6 +11,7 @@
             </template>
             <CatalogFilter
                 ref="catalogFilter"
+                style="padding: 0 1em 1em;"
                 :init-data="catalog_filter_mixin_initData"
                 :filter-config="filterConfig"
                 :force-all="true"
@@ -586,9 +589,6 @@ export default {
                     })
 
                 } else if (value === "person") {
-                    console.log("Processing itemArr", this.selectedTreasures);
-
-
 
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {

@@ -974,3 +974,10 @@ type Analytics {
   mintCount: Int
   yearCount: Int
 }
+
+
+# OTTOMAN COINS
+
+# input OttomanTypeFilter {
+#     test:string
+# }

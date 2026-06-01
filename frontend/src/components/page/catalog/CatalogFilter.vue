@@ -40,7 +40,7 @@
                 <template #label>
                     <locale :path="input.label" />
                 </template>
-                <radio-button-group
+                <RadioButtonGroup
                     :id="input.name"
                     v-model="filters[input.name]"
                     :tlabels="input.labels"
@@ -58,9 +58,12 @@
                 <template #label>
                     <locale :path="input.label" />
                 </template>
-                <three-way-toggle
+                <ThreeWayToggle
                     v-model="filters[input.name]"
                     :invert="input.invert"
+                    :true-label="input.trueLabel"
+                    :false-label="input.falseLabel"
+                    :null-label="input.nullLabel"
                 />
             </LabeledInputContainer>
 
@@ -73,7 +76,7 @@
                 <template #label>
                     <locale :path="input.label" />
                 </template>
-                <multi-data-select
+                <MultiDataSelect
                     v-model="filters[searchVariableName(input.name)]"
                     :active="filters[input.name]"
                     :additional-parameters="input.additionalParameters"
@@ -113,7 +116,7 @@
                     @change-mode="() => dataSelectToggled(input)"
                 />
             </LabeledInputContainer>
-            <error-box
+            <ErrorBox
                 v-else
                 :key="input.name"
                 :message="`${input.name} - Unbekannter Eingabetyp '${input.type}': EingabeFeld kann nicht angezeigt werden!`"
@@ -178,7 +181,11 @@ export default {
         filterConfig: {
             type: Object,
             required: true,
-        }
+        },
+        filterClass: {
+            type: Object,
+            default: null,
+        },
     },
     data() {
         return {
@@ -224,6 +231,13 @@ export default {
                     return obj;
                 }, {});
         },
+        activeFilterClass() {
+            if (!this.filterClass) {
+                return Type;
+            } else {
+                return this.filterClass;
+            }
+        },
         inputs() {
             return this.unorderedInputs.slice().sort((a, b) => {
                 let A = this.overwriteOrder[a.name] ? this.overwriteOrder[a.name] : a.order;
@@ -242,10 +256,10 @@ export default {
             );
         },
         multiSelectFilters() {
-            return this.excludeItem(this.filterConfig[FilterType.multiSelect]);
+            return this.excludeItem(this.filterConfig[FilterType.multiSelect] ?? []);
         },
         multiSelectFilters2D() {
-            return this.excludeItem(this.filterConfig[FilterType.multiSelect2D]);
+            return this.excludeItem(this.filterConfig[FilterType.multiSelect2D] ?? []);
         },
         storageString() {
             return JSON.stringify(this.getStorage());
@@ -325,10 +339,10 @@ export default {
             let filterMethods = {};
 
             [
-                ...filters[FilterType.text],
-                ...filters[FilterType.threeWay],
-                ...filters[FilterType.buttonGroup],
-                ...filters[FilterType.number]
+                ...this.getFiltersFor(FilterType.text),
+                ...this.getFiltersFor(FilterType.threeWay),
+                ...this.getFiltersFor(FilterType.buttonGroup),
+                ...this.getFiltersFor(FilterType.number),
             ].forEach((item) => {
                 filterData = Object.assign(filterData, {
                     [item.name]: item.defaultValue == null ? null : item.defaultValue,
@@ -337,7 +351,7 @@ export default {
 
             let filterMode = {};
 
-            filters[FilterType.multiSelect].forEach((item) => {
+            this.getFiltersFor(FilterType.multiSelect).forEach((item) => {
                 const filter = new Filter(item.name);
                 filterData = Object.assign(filterData, filter.mapData(item.defaultValue));
                 filterMethods = Object.assign(filterMethods, filter.mapMethods());
@@ -345,7 +359,7 @@ export default {
                 item.filter = filter;
             });
 
-            filters[FilterType.multiSelect2D].forEach((item) => {
+            this.getFiltersFor(FilterType.multiSelect2D).forEach((item) => {
                 const filter = new FilterList(item.name);
                 filterData = Object.assign(filterData, filter.mapData([[]]));
                 filterMethods = Object.assign(filterMethods, filter.mapMethods());
@@ -393,6 +407,9 @@ export default {
             }
             return options;
         },
+        getFiltersFor(type){
+            return this.filterConfig[type] ?? [];
+        },
         async searchCallback(filters) {
             this.$emit('loading', true);
 
@@ -406,7 +423,7 @@ export default {
                         pageInfo.page * (pageInfo.count + 1) < pageInfo.total
                     ) {
                         let { types: nextTypes, pageInfo: nextPageInfo } =
-                            await Type.filteredQuery(
+                            await this.activeFilterClass.filteredQuery(
                                 {
                                     pagination: Pagination.fromPageInfo(pageInfo),
                                     filters,
@@ -419,7 +436,7 @@ export default {
                         types.push(...nextTypes);
                     }
                 } else {
-                    ({ types, pageInfo } = await Type.filteredQuery(
+                    ({ types, pageInfo } = await this.activeFilterClass.filteredQuery(
                         {
                             pagination: Pagination.fromPageInfo(this.pageInfo),
                             filters,
@@ -539,15 +556,15 @@ export default {
         },
         resetFilters() {
             [
-                ...this.filterConfig[FilterType.text],
-                ...this.filterConfig[FilterType.threeWay],
-                ...this.filterConfig[FilterType.buttonGroup],
-                ...this.filterConfig[FilterType.number],
+                ...this.getFiltersFor(FilterType.text),
+                ...this.getFiltersFor(FilterType.threeWay),
+                ...this.getFiltersFor(FilterType.buttonGroup),
+                ...this.getFiltersFor(FilterType.number),
             ].forEach((item) => {
                 this.resetFilter(item.name)
             });
 
-            [...this.filterConfig[FilterType.multiSelect]].forEach((filter) => {
+            [...this.getFiltersFor(FilterType.multiSelect)].forEach((filter) => {
                 const emptyObj = cloneDeep(Filter.mapData(filter.name, filter.defaultValue));
                 for (let [key, val] of Object.entries(emptyObj)) {
 
@@ -557,7 +574,7 @@ export default {
                 }
             });
 
-            [...this.filterConfig[FilterType.multiSelect2D]].forEach((filter) => {
+            [...this.getFiltersFor(FilterType.multiSelect2D)].forEach((filter) => {
                 const emptyObj = cloneDeep(FilterList.mapData(filter.name, filter.defaultValue));
                 for (let [key, val] of Object.entries(emptyObj)) {
                     this.$set(this.filters, key, val);
@@ -569,10 +586,10 @@ export default {
         },
         setFilters(options) {
             [
-                ...this.filterConfig[FilterType.text],
-                ...this.filterConfig[FilterType.threeWay],
-                ...this.filterConfig[FilterType.buttonGroup],
-                ...this.filterConfig[FilterType.number],
+                ...this.getFiltersFor(FilterType.text),
+                ...this.getFiltersFor(FilterType.threeWay),
+                ...this.getFiltersFor(FilterType.buttonGroup),
+                ...this.getFiltersFor(FilterType.number),
             ].forEach((item) => {
                 if (options[item.name] !== undefined) {
                     this.$set(this.filters, item.name, options[item.name]);
@@ -580,8 +597,8 @@ export default {
             });
 
             [
-                ...this.filterConfig[FilterType.multiSelect],
-                ...this.filterConfig[FilterType.multiSelect2D]
+                ...this.getFiltersFor(FilterType.multiSelect),
+                ...this.getFiltersFor(FilterType.multiSelect2D),
             ].forEach((filter) => {
                 if (options[filter.name] !== undefined) {
                     this.$set(this.filters, filter.name, options[filter.name].value);
@@ -643,16 +660,17 @@ export default {
             this.watching = true;
         },
         excludeItem(group) {
+            console.log("Excluding items: ", this.exclude, " from group: ", group)
             return group.filter((item) => this.exclude.indexOf(item.name) === -1);
         },
         getStorage() {
             let storage = {};
             let activeFilters = this.activeFilters;
             [
-                ...this.filterConfig[FilterType.text],
-                ...this.filterConfig[FilterType.threeWay],
-                ...this.filterConfig[FilterType.buttonGroup],
-                ...this.filterConfig[FilterType.number],
+                ...this.getFiltersFor(FilterType.text),
+                ...this.getFiltersFor(FilterType.threeWay),
+                ...this.getFiltersFor(FilterType.buttonGroup),
+                ...this.getFiltersFor(FilterType.number),
             ].forEach(({ name }) => {
                 if (activeFilters[name] != null) {
                     storage[name] = activeFilters[name];
@@ -660,7 +678,7 @@ export default {
             });
 
 
-            this.filterConfig[FilterType.multiSelect].forEach(
+            this.getFiltersFor(FilterType.multiSelect).forEach(
                 (filter) => {
                     storage[filter.name] = {
                         mode: this.filterMode[filter.name] || Mode.And,
@@ -670,7 +688,7 @@ export default {
             );
 
 
-            this.filterConfig[FilterType.multiSelect2D].forEach(
+            this.getFiltersFor(FilterType.multiSelect2D).forEach(
                 (filter) => {
                     storage[filter.name] = {
                         mode: this.filterMode[filter.name] || Mode.And,

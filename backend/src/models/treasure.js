@@ -509,8 +509,6 @@ class Treasure extends Table {
                 ORDER BY unaccent(treasure.name)
             `)
 
-            console.log("Fetched treasures: ", treasures[0].items[0].remarks, treasures[0].items[0].remarks_to_coin_type_reference)
-
             treasures = treasures.map(treasure => {
                 treasure.timespan = { from: treasure.earliest_year, to: treasure.latest_year }
                 treasure.location = GeoJSON.rebuild(JSON.parse(treasure.location), treasure.properties)
@@ -660,7 +658,6 @@ class TreasureItem {
                 } else {
                     const dbField = TreasureItem.getDbName(field)
                     const dbValue = item[dbField]
-                    console.log(`Processing field ${field} with db value ${dbValue}`)
 
                     if (dbValue != null) {
                         if (!cache[field])
