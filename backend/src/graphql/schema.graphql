@@ -106,6 +106,9 @@ type TreasureItem {
 
   yearOfMint: Range
   yearOfMintUncertain: RangeUncertainty
+
+  remarksToCoinTypeReference: String
+  remarks: String
 }
 
 input TreasureItemInput {
@@ -150,6 +153,8 @@ input TreasureItemInput {
   yearOfMint: RangeInput
   yearOfMintUncertain: RangeUncertaintyInput
 
+  remarksToCoinTypeReference: String
+  remarks: String
 }
 
 type Treasure {

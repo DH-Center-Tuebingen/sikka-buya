@@ -59,6 +59,9 @@ class Treasure extends Table {
 
                 yearOfMint,
                 yearOfMintUncertain = { from: false, to: false },
+
+                remarksToCoinTypeReference = null,
+                remarks = null,
             } = items[i]
 
             if (reconstructed == null) reconstructed = false
@@ -104,7 +107,10 @@ class Treasure extends Table {
                     year_of_mint_to,
 
                     year_of_mint_from_uncertain,
-                    year_of_mint_to_uncertain
+                    year_of_mint_to_uncertain,
+
+                    remarks_to_coin_type_reference,
+                    remarks
 
                 ) VALUES (
                     $[coinType],
@@ -145,7 +151,10 @@ class Treasure extends Table {
                     $[yearOfMintTo],
 
                     $[yearOfMintFromUncertain],
-                    $[yearOfMintToUncertain]
+                    $[yearOfMintToUncertain],
+
+                    $[remarksToCoinTypeReference],
+                    $[remarks]
                 )`, {
                 coinType,
                 coinTypeText,
@@ -179,6 +188,8 @@ class Treasure extends Table {
                 yearOfMintTo: yearOfMint ? yearOfMint.to : null,
                 yearOfMintFromUncertain: yearOfMintUncertain ? yearOfMintUncertain.from : false,
                 yearOfMintToUncertain: yearOfMintUncertain ? yearOfMintUncertain.to : false,
+                remarksToCoinTypeReference,
+                remarks,
             })
         }
     }
@@ -202,6 +213,8 @@ class Treasure extends Table {
         publication = "",
         yearOfLoss = { from: null, to: null },
         yearOfLossUncertain = { from: false, to: false },
+        remarks = null,
+        remarksToCoinTypeReference = null,
     } = {}) {
 
         let { geometry: _loc, properties } = GeoJSON.separate(location)
@@ -431,6 +444,9 @@ class Treasure extends Table {
                 t.year_of_mint_to,
                 t.year_of_mint_from_uncertain,
                 t.year_of_mint_to_uncertain,
+
+                t.remarks,
+                t.remarks_to_coin_type_reference,
                 
                 row_to_json(t) AS items_json
             FROM
@@ -452,7 +468,6 @@ class Treasure extends Table {
                         throw new Error(`Unknown filter key: ${key}`)
                 }
             })
-
         }
 
         let treasures = []
@@ -493,6 +508,8 @@ class Treasure extends Table {
                 GROUP BY treasure.id, treasure.name, treasure.location
                 ORDER BY unaccent(treasure.name)
             `)
+
+            console.log("Fetched treasures: ", treasures[0].items[0].remarks, treasures[0].items[0].remarks_to_coin_type_reference)
 
             treasures = treasures.map(treasure => {
                 treasure.timespan = { from: treasure.earliest_year, to: treasure.latest_year }
@@ -598,6 +615,7 @@ class TreasureItem {
             "yearOfMintTo": "year_of_mint_to",
             "yearOfMintUncertainFrom": "year_of_mint_from_uncertain",
             "yearOfMintUncertainTo": "year_of_mint_to_uncertain",
+            "remarksToCoinTypeReference": "remarks_to_coin_type_reference",
         }
     }
 
@@ -620,7 +638,8 @@ class TreasureItem {
             ...Object.keys(this.rangeFields),
             ...Object.keys(this.getters),
             ...Object.keys(this.mappings),
-            ...Object.keys(this.nameMap)])
+            ...Object.keys(this.nameMap)
+        ])
 
         return Object.keys(fields).filter(key => set.has(key))
     }
@@ -641,6 +660,7 @@ class TreasureItem {
                 } else {
                     const dbField = TreasureItem.getDbName(field)
                     const dbValue = item[dbField]
+                    console.log(`Processing field ${field} with db value ${dbValue}`)
 
                     if (dbValue != null) {
                         if (!cache[field])

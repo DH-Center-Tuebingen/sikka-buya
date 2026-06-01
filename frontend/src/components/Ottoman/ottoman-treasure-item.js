@@ -110,7 +110,7 @@ export class OttomanTreasure {
 
                         "authenticity",
 
-                        { person: ["id", "name", {reign: ["from", "to"]}] },
+                        { person: ["id", "name", { reign: ["from", "to"] }] },
                         "personUncertain",
 
                         { historicalRegion: ["id", "name"] },
@@ -121,6 +121,9 @@ export class OttomanTreasure {
 
                         { yearOfMint: ["from", "to"] },
                         { yearOfMintUncertain: ["from", "to"] },
+
+                        "remarks",
+                        "remarksToCoinTypeReference",
                     ]
                 }
             ])
@@ -198,6 +201,9 @@ export class OttomanTreasure {
 
                         { yearOfMint: ["from", "to"] },
                         { yearOfMintUncertain: ["from", "to"] },
+
+                        "remarks",
+                        "remarksToCoinTypeReference",
                     ]
                 }
             ])
@@ -333,6 +339,9 @@ export class OttomanTreasureItem {
 
         yearOfMint = null,
         yearOfMintUncertain = null,
+
+        remarks = null,
+        remarksToCoinTypeReference = null,
     } = {}
     ) {
         this.coinType = coinType
@@ -370,6 +379,9 @@ export class OttomanTreasureItem {
 
         this.yearOfMint = yearOfMint
         this.yearOfMintUncertain = yearOfMintUncertain
+
+        this.remarks = remarks
+        this.remarksToCoinTypeReference = remarksToCoinTypeReference
     }
 
     static rowDefinition() {
@@ -402,7 +414,9 @@ export class OttomanTreasureItem {
             { type: 'number', label: 'Quantity', attribute: 'count' },
 
             { type: 'text', label: 'Coin Type', attribute: 'coinTypeText' },
+            { type: 'text', label: 'Remarks to Coin Type Reference', attribute: 'remarksToCoinTypeReference' },
 
+            { type: 'text', label: 'Remarks', attribute: 'remarks' },
         ];
     }
 
