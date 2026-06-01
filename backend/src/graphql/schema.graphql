@@ -586,6 +586,9 @@ type Query {
   getEpoch(id:ID!):Name
   searchEpoch(text:String):[Name]
 
+  # OTTOMAN COINS
+  filterOttomanTreasures(filters: OttomanTreasureFilter): [ID]
+  searchSubclassification(text: String): [String]! 
 }
 
 
@@ -978,6 +981,21 @@ type Analytics {
 
 # OTTOMAN COINS
 
-# input OttomanTypeFilter {
-#     test:string
-# }
+
+input OttomanTreasureFilter {
+    singleFind: Boolean
+    reliableAttribution: Boolean
+    completeHoard: Boolean
+    ottomanPredominance: Boolean
+    subclassification: String
+    issuingStateRegion_and: [ID]
+    nominal_and: [ID]
+    person_and: [ID]
+    mintRegion_and: [ID]
+    material_and: [ID]
+    authenticity: String
+    coinTypeText: String
+    historicalRegion_and: [ID]
+    yearOfMint: RangeInput
+    yearOfLoss: RangeInput
+}

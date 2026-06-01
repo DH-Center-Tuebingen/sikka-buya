@@ -4,140 +4,146 @@
 @use 'variables';
 
 @mixin interactive() {
-  cursor: pointer;
-  user-select: none;
+    cursor: pointer;
+    user-select: none;
 }
 
 @mixin focus() {
-  &:focus {
-    outline: none;
-    // border-color: rgb(143, 143, 143);
-  }
+    &:focus {
+        outline: none;
+        // border-color: rgb(143, 143, 143);
+    }
 }
 
 @mixin mouseeffects($additional_selector: "") {
-  &:hover#{$additional_selector} {
-    filter: brightness(95%);
-  }
+    &:hover#{$additional_selector} {
+        filter: brightness(95%);
+    }
 
-  &:active#{$additional_selector} {
-    filter: brightness(90%);
-  }
+    &:active#{$additional_selector} {
+        filter: brightness(90%);
+    }
 }
 
 @mixin input {
-  padding: math.div(variables.$padding, 2) variables.$padding;
-  color: variables.$gray;
-  border: 1px solid rgb(204, 204, 204);
-  border-radius: 3px;
-  box-sizing: border-box;
-  background-color: variables.$white;
+    padding: math.div(variables.$padding, 2) variables.$padding;
+    color: variables.$gray;
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 3px;
+    box-sizing: border-box;
+    background-color: variables.$white;
 
-  transition: background-color 0.2s, color 0.2s;
+    transition: background-color 0.2s, color 0.2s;
 
-  @include mouseeffects(":not(.disable-input)");
-  @include focus();
+    @include mouseeffects(":not(.disable-input)");
+    @include focus();
 }
 
 @mixin buttonColor($foregroundColor, $backgroundColor) {
-  color: $foregroundColor;
-  background-color: $backgroundColor;
+    color: $foregroundColor;
+    background-color: $backgroundColor;
 
-  &:hover:not(.disable-input):not(:disabled) {
-    color: color.adjust($foregroundColor, $lightness: 5%);
-    background-color: color.adjust($backgroundColor, $lightness: 5%);
-  }
+    &:hover:not(.disable-input):not(:disabled) {
+        color: color.adjust($foregroundColor, $lightness: 5%);
+        background-color: color.adjust($backgroundColor, $lightness: 5%);
+    }
 
-  &:active:not(.disable-input):not(:disabled) {
-    color: color.adjust($color: $foregroundColor, $lightness: -5%);
-    background-color: color.adjust($color: $backgroundColor, $lightness: -5%);
-  }
+    &:active:not(.disable-input):not(:disabled) {
+        color: color.adjust($color: $foregroundColor, $lightness: -5%);
+        background-color: color.adjust($color: $backgroundColor, $lightness: -5%);
+    }
 }
 
 @mixin disabled_input {
-  border: 1px solid variables.$border-color;
-  background-color: variables.$border-color;
-  user-select: none;
-  color: white;
-  user-select: none;
-  cursor: pointer;
+    border: 1px solid variables.$border-color;
+    background-color: variables.$border-color;
+    user-select: none;
+    color: white;
+    user-select: none;
+    cursor: pointer;
+
+    &:hover {
+        filter: none;
+        cursor: not-allowed;
+    }
+
 }
 
 @mixin media-min-desktop {
-  @media only screen and (min-width: 1024px) {
-    @content;
-  }
+    @media only screen and (min-width: 1024px) {
+        @content;
+    }
 }
 
 @mixin media-tablet {
 
-  /* Portrait and Landscape */
-  @media only screen and (max-width: 1024px) {
-    @content;
-  }
+    /* Portrait and Landscape */
+    @media only screen and (max-width: 1024px) {
+        @content;
+    }
 }
 
 @mixin media-phone {
-  @media only screen and (max-width: 720px) {
-    @content;
-  }
+    @media only screen and (max-width: 720px) {
+        @content;
+    }
 }
 
 @mixin linkStyle {
-  font-weight: bold;
-  color: variables.$primary-color;
-  text-decoration: none;
+    font-weight: bold;
+    color: variables.$primary-color;
+    text-decoration: none;
 }
 
 @mixin resetLinkStyle {
-  font-weight: normal;
-  color: currentColor;
+    font-weight: normal;
+    color: currentColor;
 }
 
 @mixin allHeadings {
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @content;
-  }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @content;
+    }
 }
 
 @mixin font-face($name, $regular, $italic, $bold, $bold-italic, $format: "truetype") {
-  @font-face {
-    font-family: $name;
-    font-style: normal;
-    font-weight: normal;
-    src: url($regular) format($format);
-  }
+    @font-face {
+        font-family: $name;
+        font-style: normal;
+        font-weight: normal;
+        src: url($regular) format($format);
+    }
 
-  @font-face {
-    font-family: $name;
-    font-style: normal;
-    font-weight: italic;
-    src: url($italic) format($format);
-  }
+    @font-face {
+        font-family: $name;
+        font-style: normal;
+        font-weight: italic;
+        src: url($italic) format($format);
+    }
 
-  @font-face {
-    font-family: $name;
-    font-style: bold;
-    font-weight: normal;
-    src: url($bold) format($format);
-  }
+    @font-face {
+        font-family: $name;
+        font-style: bold;
+        font-weight: normal;
+        src: url($bold) format($format);
+    }
 
-  @font-face {
-    font-family: $name;
-    font-style: italic;
-    font-weight: bold;
-    src: url($bold-italic) format($format);
-  }
+    @font-face {
+        font-family: $name;
+        font-style: italic;
+        font-weight: bold;
+        src: url($bold-italic) format($format);
+    }
 }
 
 @mixin circle($radius) {
-  width: $radius * 2;
-  height: $radius * 2;
-  border-radius: $radius;
+    width: $radius * 2;
+    height: $radius * 2;
+    border-radius: $radius;
 }

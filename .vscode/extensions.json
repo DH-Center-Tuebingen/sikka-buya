@@ -5,7 +5,8 @@
         "bradymholt.pgformatter",
         "github.copilot",
         "github.copilot-chat",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "thebearingedge.vscode-sql-lit"
     ],
     "unwantedRecommendations": [
         "esbenp.prettier-vscode",

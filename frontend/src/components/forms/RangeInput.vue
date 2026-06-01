@@ -4,20 +4,23 @@
             class="from"
             :step="step"
             :value="fromValue"
+            :disabled="disabled"
             @beforeinput="validateNumber"
             @input="updateFrom"
         >
         <button
             v-if="showUncertainty"
             style="width: 10px;"
+            :disabled="disabled"
             @click="toggleFromUncertain()"
         >
             {{ fromValueUncertain ? "?" : "." }}
         </button>
-        <span>–</span>
+        <span :class="{disabled}">–</span>
         <button
             v-if="showUncertainty"
             style="width: 10px;"
+            :disabled="disabled"
             @click="toggleToUncertain()"
         >
             {{ toValueUncertain ? "?" : "." }}
@@ -26,6 +29,7 @@
             class="to"
             :step="step"
             :value="toValue"
+            :disabled="disabled"
             @beforeinput="validateNumber"
             @input="updateTo"
         >
@@ -45,6 +49,10 @@ export default {
         step: {
             type: Number,
             default: 1
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -61,7 +69,6 @@ export default {
             return (this.value && this.value.to != null) ? this.value.to : "";
         },
         fromValueUncertain() {
-            console.log("fromValueUncertain", this.value);
             return this.value?.fromUncertain ? this.value.fromUncertain : false;
         },
         toValueUncertain() {
@@ -116,6 +123,11 @@ export default {
 
     input {
         min-width: 6ch;
+        @include input;
+
+        &:disabled {
+            @include disabled-input;
+        }
     }
 
     .from {
@@ -141,6 +153,12 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        &.disabled {
+            color: $gray;
+            background-color: $light-gray;
+            cursor: not-allowed;
+        }
     }
 }
 

@@ -25,6 +25,7 @@ const IssuingStateGQL = new NamedGQL("issuingState", 'state')
 const IssuingStateRegionGQL = new NamedGQL("issuingStateRegion", 'issuing_state_region')
 const HistoricalRegionGQL = new NamedGQL("historicalRegion")
 
+const OttomanGQL = require('./_ottoman/OttomanGQL.js')
 
 
 const SuperUserQueries = {
@@ -634,6 +635,7 @@ module.exports = Object.assign(Queries,
     TreasureGQL.Queries,
     MintRegionGQL.Queries,
     CoinTypeGQL.Queries,
+    OttomanGQL.Queries,
     IssuingStateGQL.Queries,
     IssuingStateRegionGQL.Queries,
     HistoricalRegionGQL.Queries

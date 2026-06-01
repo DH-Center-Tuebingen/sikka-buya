@@ -10,6 +10,11 @@ export default class GraphQLUtils {
      */
     static buildQueryBody(properties) {
         let parts = []
+
+        if(!Array.isArray(properties) || properties.length == 0) {
+            return "";
+        }
+
         for (let val of properties.values()) {
             if (typeof val == "object") {
                 for (let [key, childArr] of Object.entries(val)) {
@@ -23,7 +28,7 @@ export default class GraphQLUtils {
                 parts.push(val)
             }
         }
-        return parts.join(",")
+        return `{${parts.join(",")}}`;
     }
 
     /**

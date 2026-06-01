@@ -1,26 +1,19 @@
 <template>
     <div class="treasure-map ui">
-        <Sidebar 
-                style="min-width: 800px !important;"
->
+        <Sidebar style="min-width: 300px !important;">
             <template #title>
                 <Locale
                     path="general.filter"
                     :count="2"
                 />
             </template>
-            <CatalogFilter
+            <CatalogFilterControls
                 ref="catalogFilter"
                 style="padding: 0 1em 1em;"
                 :init-data="catalog_filter_mixin_initData"
                 :filter-config="filterConfig"
-                :force-all="true"
-                :page-info="pageInfo"
-                @loading="setLoading"
-                @update="dataUpdated"
                 @dynamic-change="recalculateCatalogSidebar"
-                @toggled="save"
-                @error="(e) => $store.commit('printError', e)"
+                @filters-change="(data) => filtersChanged(data)"
             />
         </Sidebar>
 
@@ -61,12 +54,17 @@
                 />
             </template>
 
-            <MultiSelectList style="flex: 1;">
-                <template v-for="treasure in treasures">
+            <template v-if="selectedTreasures.length > 0">
+                <MultiSelectList style="flex: 1;margin-bottom: 1em; border-bottom: 1px solid var(--border-color);">
+                    <h4 class="sidebar-header">
+                        Selected Finds
+                    </h4>
                     <MultiSelectListItem
+                        v-for="treasure in selectedTreasures"
                         :key="`list-item-${treasure.id}`"
                         :selected="isTreasureSelected(treasure.id)"
                         :checkbox-disabled="selectedTreasures.length > 1 && !isTreasureSelected(treasure.id)"
+                        :style="getSelectedTreasureStyle(treasure)"
                         @click.native="setTreasure(treasure.id)"
                         @checkbox-selected="() => toggleTreasure(treasure.id)"
                     >
@@ -78,7 +76,32 @@
                         </template>
                         {{ treasure.name }}
                     </MultiSelectListItem>
-                </template>
+                </MultiSelectList>
+            </template>
+
+            <MultiSelectList style="flex: 1;">
+                <h4
+                    v-if="selectedTreasures.length > 0"
+                    class="sidebar-header"
+                >
+                    Available Finds
+                </h4>
+                <MultiSelectListItem
+                    v-for="treasure in activeTreasures"
+                    :key="`list-item-${treasure.id}`"
+                    :selected="isTreasureSelected(treasure.id)"
+                    :checkbox-disabled="selectedTreasures.length > 1 && !isTreasureSelected(treasure.id)"
+                    @click.native="setTreasure(treasure.id)"
+                    @checkbox-selected="() => toggleTreasure(treasure.id)"
+                >
+                    <template #before>
+                        <ListColorIndicator
+                            :color="treasure.color"
+                            default-color="transparent"
+                        />
+                    </template>
+                    {{ treasure.name }}
+                </MultiSelectListItem>
             </MultiSelectList>
             <template #footer>
                 <div
@@ -153,7 +176,7 @@ import MountedAndLoadedMixin from '@/components/mixins/mounted-and-loaded';
 import CatalogFilterMixin from '@/components/mixins/catalog-filter';
 
 //Components
-import CatalogFilter from '@/components/page/catalog/CatalogFilter.vue';
+import CatalogFilterControls from '@/components/page/catalog/CatalogFilterControls.vue';
 import ButtonVue from '@/components/layout/buttons/Button.vue';
 import Sidebar from '@/components/map/Sidebar.vue';
 import Timeline from '@/components/map/timeline/Timeline.vue';
@@ -196,7 +219,7 @@ import OttomanTreasureDescription from "./OttomanTreasureDescription.vue";
 export default {
     components: {
         ButtonVue,
-        CatalogFilter,
+        CatalogFilterControls,
         ListColorIndicator,
         Locale,
         MapToolbar,
@@ -236,7 +259,6 @@ export default {
             mintLocationMarkerGroup: null,
             mintRegions: [],
             painter: null,
-            pageInfo: { page: 0, count: 100000 },
             selectedLayerIndex: 0,
             selectedMintIds: [],
             selectedTreasureIds: [],
@@ -244,9 +266,15 @@ export default {
             unknownWeights: 0,
             weightDataFrequency: 0.1,
             yearCountData: {},
+            filteredTreasureIds: [],
+            overlay: null,
         };
     },
     computed: {
+        activeTreasures() {
+            if (this.filteredTreasureIds.length === 0) return this.treasures
+            return this.treasures.filter(treasure => this.filteredTreasureIds.includes(treasure.id))
+        },
         availableBaseLayerButtons() {
             const layerNames = [
                 "modern",
@@ -330,7 +358,6 @@ export default {
                 },
                 onDataTransformed: (data) => {
                     this.treasures = data.treasures
-                    console.log("Data transformed, treasures:", this.treasures)
                 },
                 onEnd: () => {
                     this.mounted_and_loaded_mixin_loaded("data")
@@ -411,18 +438,36 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
-        dataUpdated(data) {
+        filtersChanged({ filters }) {
+            this.filters = filters;
             this.catalog_filter_mixin_updateActive(this.$refs.catalogFilter, [
                 'excludeFromMapApp',
                 'mint',
                 'yearOfMint',
             ]);
 
-            // this.drawTimeline()
+            const switchFilters = ['reliableAttribution', 'completeHoard', 'ottomanPredominance']
+            switchFilters.forEach(filter => {
+                if (this.filters[filter] === false) {
+                    delete this.filters[filter]
+                }
+            })
 
-            // Note: OttomanTreasureOverlay fetches its own data via update() method
-            // Unlike MaterialMap which uses setData/repaint pattern
-            // The overlay is updated via the update() method called elsewhere
+            Query.raw("query filterOttomanTreasures($filters: OttomanTreasureFilter){filterOttomanTreasures(filters: $filters)}", {
+                filters: this.filters
+            }).then(result => {
+                this.filteredTreasureIds = result.data.data.filterOttomanTreasures ?? []
+
+                if (this.overlay) {
+                    this.overlay.setTreasureFilterMask(this.filteredTreasureIds)
+                } else {
+                    console.error("Overlay is not initialized yet")
+                }
+            }).catch(error => {
+                console.error("Error filtering treasures", error)
+            })
+
+
 
             this.save();
         },
@@ -448,6 +493,15 @@ export default {
             interactiveMints = interactiveMints.sort(Sort.stringPropAlphabetically("name"))
 
             return [...activeMints, ...interactiveMints]
+        },
+        getSelectedTreasureStyle(treasure) {
+            if (this.activeTreasures.find(t => t.id === treasure.id)) {
+                return {}
+            } else {
+                return {
+                    opacity: 0.5,
+                }
+            }
         },
         invertBackgroundIfNecessary(color) {
             return Color.isBright(color)
@@ -482,8 +536,6 @@ export default {
             const value = this.$refs.diagramSelect.value
             this.diagramMode = value === "" ? null : value
             this.local_storage_mixin_save()
-
-            console.log("Updating diagram with mode", this.diagramMode, "and value", value)
 
             if (value) {
                 let map = {}
@@ -593,11 +645,11 @@ export default {
                     this.selectedTreasures.forEach((treasure, index) => {
                         treasure.items.forEach(itemArr => {
                             itemArr.items.forEach(item => {
-                                if(!item[value]) return
+                                if (!item[value]) return
 
-                                const from = item[value].reign?.from ??  "?"
+                                const from = item[value].reign?.from ?? "?"
                                 const to = item[value].reign?.to ?? "?"
-                                
+
                                 let reign = (from === "?" && to === "?") ? "?" : `${from}-${to}`
 
                                 const count = parseInt(item.count) || 1
@@ -606,7 +658,7 @@ export default {
                                     map[name] = {
                                         count: 0,
                                         color: getColor(item[value]),
-                                        label: `${item[value].name} (${reign})` 
+                                        label: `${item[value].name} (${reign})`
                                     }
                                 }
                                 map[name].count += count
@@ -668,7 +720,7 @@ export default {
             this.mounted_and_loaded_mixin_loaded("storage")
         },
         resetFilters() {
-            this.filters = {}
+            this.$refs.catalogFilter?.resetFilters();
         },
         async update() {
             // this.updateMintLocationMarker()
@@ -763,8 +815,6 @@ export default {
             return this.selectedTreasureIds.includes(id)
         },
         toggleTreasure(id) {
-            console.log("Setting treasure", id)
-
             if (this.isTreasureSelected(id)) {
                 this.selectedTreasureIds.splice(this.selectedTreasureIds.indexOf(id), 1)
             } else {
@@ -774,8 +824,6 @@ export default {
             this.selectionChanged()
         },
         setTreasure(id) {
-            console.log("Setting treasure", id)
-
             this.selectedMintIds = []
 
             if (this.selectedTreasureIds.length === 1 && this.selectedTreasureIds[0] === id) {
@@ -930,5 +978,10 @@ tr.selected {
     align-items: center;
     font-style: italic;
     opacity: 0.5;
+}
+
+.sidebar-header {
+    color: $gray;
+    margin: $small-padding $padding;
 }
 </style>

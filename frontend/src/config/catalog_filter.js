@@ -3,6 +3,7 @@ import Mode from "../models/Mode";
 export const FilterType = {
     text: "text",
     number: "number",
+    inlineCheckbox: "inline-checkbox",
     buttonGroup: "button-group",
     threeWay: "three-way",
     multiSelect: "multi-select",

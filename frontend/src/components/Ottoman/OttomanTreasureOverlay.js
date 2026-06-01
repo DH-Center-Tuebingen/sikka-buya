@@ -36,6 +36,13 @@ export default class OttomanTreasureOverlay extends Overlay {
         this.mintGeometryMap = {}
         this.mlms = []
         this._markersRemoved = false
+        this.treasureFilterMask = []
+    }
+
+    setTreasureFilterMask(filterMask = []) {
+        console.log("Setting treasure filter mask to", filterMask)
+        this.treasureFilterMask = filterMask
+        this.repaint()
     }
 
     async fetch({ selections = {} } = {}) {
@@ -92,7 +99,6 @@ export default class OttomanTreasureOverlay extends Overlay {
         const treasures = data.treasures
         let transformedData = []
         treasures.forEach(treasure => {
-
             const selectedTreasures = (Array.isArray(selections.treasures)) ? selections.treasures : []
 
             let totalCount = 0
@@ -101,7 +107,7 @@ export default class OttomanTreasureOverlay extends Overlay {
                 let item = cloneDeep(original)
 
                 const key = item.mintRegion ? item.mintRegion.id : 0
-                if (item.mintRegion == null){
+                if (item.mintRegion == null) {
 
                 }
 
@@ -129,6 +135,12 @@ export default class OttomanTreasureOverlay extends Overlay {
         })
         data.treasures = transformedData
         return data
+    }
+
+    setTreasureData(treasures) {
+        const data = this.data;
+        data.treasures = treasures
+        this.setData(data)
     }
 
     toFeature(geoJson, properties = {}) {
@@ -331,6 +343,10 @@ export default class OttomanTreasureOverlay extends Overlay {
     showClickableTreasureArea(treasures, { extendBorder = 20 } = {}) {
         let features = []
         treasures.forEach(treasure => {
+            if (this.treasureFilterMask.length > 0 && !this.treasureFilterMask.includes(treasure.id)) {
+                return
+            }
+
             if (treasure.location) {
                 const treasureLocation = cloneDeep(treasure.location)
                 if (!treasureLocation.properties) treasureLocation.properties = {}
@@ -365,7 +381,15 @@ export default class OttomanTreasureOverlay extends Overlay {
 
 
                 if (treasuresByMint && Array.isArray(treasuresByMint.treasures)) {
-                    treasuresByMint.treasures.forEach(treasureCount => {
+
+                    let filteredTreasures = treasuresByMint
+                    if (this.treasureFilterMask.length > 0) {
+                        filteredTreasures.treasures = treasuresByMint.treasures.filter(({ treasure }) => {
+                            return this.treasureFilterMask.includes(treasure.id);
+                        })
+                    }
+
+                    filteredTreasures.treasures.forEach(treasureCount => {
                         let location = treasureCount.treasure.location
                         const treasure = treasureCount.treasure
 
@@ -412,7 +436,6 @@ export default class OttomanTreasureOverlay extends Overlay {
         for (let treasure of selectedTreasures.values()) {
             const color = treasure.color || "#ffffff"
 
-            console.log(treasure)
 
             const style = {
                 color,
@@ -445,18 +468,13 @@ export default class OttomanTreasureOverlay extends Overlay {
                 }
 
                 treasureGeometries.push(findLocation)
-
                 if (treasure.items) {
 
                     const mintStyle = Object.assign({}, style, {
                         color: color,
                     })
 
-
                     treasure.items.forEach((item, idx) => {
-
-                        console.log("Item", item)
-
                         if (item.mintRegion) {
 
                             const mintRegion = item.mintRegion
@@ -497,9 +515,7 @@ export default class OttomanTreasureOverlay extends Overlay {
                                 }
 
                                 const to = geometry.coordinates
-
                                 itemGeometries.push(location)
-
                             }
                         }
                     })
@@ -524,7 +540,6 @@ export default class OttomanTreasureOverlay extends Overlay {
         })
         this.mlms = []
         let allMintGroup = L.featureGroup()
-
         const overlayContext = this
 
         this.additionalData.mints.forEach(mint => {
@@ -541,7 +556,6 @@ export default class OttomanTreasureOverlay extends Overlay {
                         const mintRegionMarker = new MintLocationMarker(mint)
                         let mlm = mintRegionMarker.create(latlng, { size: (active) ? 7 : 4, active })
 
-
                         let activeStyle = {}
                         if (active) {
                             activeStyle = {
@@ -556,17 +570,11 @@ export default class OttomanTreasureOverlay extends Overlay {
 
                         }, MintLocationMarker.normalStyle, activeStyle))
 
-
-
                         circle.addTo(group)
                         mlm.addTo(group)
-
                         overlayContext.mintGeometryMap[mint.id] = circle
-
-
                         mlm.parent = group
                         overlayContext.mlms.push(mlm)
-
 
                         group.addLayer(mlm)
                         group.getElement = () => {
@@ -627,7 +635,6 @@ export default class OttomanTreasureOverlay extends Overlay {
             stepSizeGroupsInPercent.shift()
             size += stepsize
         }
-
 
         if (count != null && totalCount != null) {
             marker = new L.ShapeMarker(latlng, { shape: "square", radius: size, fill: false })

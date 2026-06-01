@@ -119,9 +119,14 @@ export default {
             },
         });
 
+        let  location = this.location; 
+        if(!Array.isArray(location) || location.length !== 2) {
+            location = [0, 0];
+        }
+
         // Initialize the map 
         var map = L.map('map_' + this._uid, {
-            center: this.location,
+            center: location,
             zoom: this.zoom,
             minZoom: 3,
             maxBounds: mapBoundaries,

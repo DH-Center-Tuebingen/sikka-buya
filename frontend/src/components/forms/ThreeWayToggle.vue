@@ -1,8 +1,7 @@
 <template>
     <div class="three-way-toggle">
         <ButtonVue
-            class="no"
-            :class="isActive(false)"
+            :class="noClass"
             @click="select(false)"
         >
             <span v-if="falseLabel">{{ falseLabel }}</span>
@@ -16,8 +15,7 @@
             <SlashForward v-else />
         </ButtonVue>
         <ButtonVue
-            class="yes"
-            :class="isActive(true)"
+            :class="yesClass"
             @click="select(true)"
         >
             <span v-if="trueLabel">{{ trueLabel }}</span>
@@ -45,6 +43,30 @@ export default {
         trueLabel: String,
         falseLabel: String,
         nullLabel: String,
+        overwriteNoClass: String,
+        overwriteYesClass: String,
+    },
+    computed: {
+        noClass() {
+            const noClass = this.isActive(false)
+
+            if (this.overwriteNoClass) {
+                noClass[this.overwriteNoClass] = true;
+            } else {
+                noClass.no = true;
+            }
+            return noClass;
+        },
+        yesClass() {
+            const yesClass = this.isActive(true)
+
+            if (this.overwriteYesClass) {
+                yesClass[this.overwriteYesClass] = true;
+            } else {
+                yesClass.yes = true;
+            }
+            return yesClass;
+        },
     },
     methods: {
         select(state) {
@@ -60,7 +82,7 @@ export default {
             if (this.invert && state != null) state = !state;
             return state;
         },
-    },
+    }
 };
 </script>
 

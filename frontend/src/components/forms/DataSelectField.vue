@@ -285,9 +285,9 @@ export default {
                             ([key, value]) => `,${key}:${JSON.stringify(value)}`
                         )
                         : ''
-                    } ){
+                    } )
         ${GraphQLUtils.buildQueryBody(this.queryBody)}
-      }
+      
       }`;
             }
 

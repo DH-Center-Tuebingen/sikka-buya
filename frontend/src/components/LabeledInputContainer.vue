@@ -42,9 +42,12 @@ export default {
 >
 label {
     margin-bottom: $small-padding;
-    white-space: nowrap;
+    white-space: break-spaces;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    line-height: 1.3;
 }
 
 .labeled-input-container {

@@ -1,3 +1,39 @@
+import Query from '@/database/query';
+
+export class OttomanFilterType {
+
+    static async filteredQuery({
+        filters = {},
+        pagination = { count: 20, page: 0 },
+        typeBody = "id projectId"
+    } = {}, debug = false) {
+        const result = await Query.raw(`
+    query ($pagination: Pagination, $filters: TypeFilter) {
+      coinType(pagination: $pagination, filters: $filters) {
+        pageInfo {
+          page
+          count
+          last
+          total
+        }
+        types {
+          ${typeBody}
+        }
+      }
+    }
+    `, {
+            pagination,
+            filters
+        }, debug)
+
+        return {
+            pageInfo: result.data.data.coinType.pageInfo,
+            types: result.data.data.coinType.types
+        }
+    }
+
+}
+
 export const ottomanListTreasuresGQL = `
 query {
   treasure {
@@ -38,9 +74,25 @@ export const ottomanFilterGQL = `
 `;
 
 export const ottomanFilterList = [
-    { type: "three-way", name: 'single-find', label: 'Single & Hoard Finds', trueLabel: 'Single Finds', falseLabel: 'Hoard Finds', nullLabel: 'Single & Hoard Finds' },
+    { span: 6, type: "three-way", name: 'singleFind', label: 'Single & Hoard Finds', trueLabel: 'Single Finds', falseLabel: 'Hoard Finds', nullLabel: 'Single & Hoard Finds', overwriteNoClass: 'yes' },
+    { span: 6, type: "inline-checkbox", name: 'reliableAttribution', label: 'Display only coins with reliable attribution'},
+    { span: 6, type: "inline-checkbox", name: 'completeHoard', label: 'Display only complete hoard'},
+    { span: 6, type: "inline-checkbox", name: 'ottomanPredominance', label: 'Display only hoards consisting predominantly (90%+) of Ottoman coins '},
 
-]
+
+    { span: 6, type: "single-select", name: 'subclassification', label: 'Subclassification of finds', queryBody: [], displayTextCallback: (option) => option },
+    { span: 6, type: "multi-select", name: 'issuingState', label: 'Issuing State' },
+    { span: 6, type: "multi-select", name: 'material', label: 'Metal' },
+    { span: 6, type: "multi-select", name: 'nominal', label: 'Denomination' },
+    { span: 6, type: "multi-select", name: 'person', label: 'Issuer (only for Ottoman coins)' },
+    { span: 6, type: "multi-select", name: 'mintRegion', label: 'Mint (only for Ottoman coins)' },
+    { span: 6, type: "single-select", name: 'authenticity', label: 'Authenticity of coins' },
+    { span: 6, type: "single-select", name: 'coinTypeText', label: 'Coin type reference (only for Ottoman coins) ' },
+    { span: 6, type: "multi-select", name: 'historicalRegion', label: 'Historical region of coin loss' },
+
+    { span: 6, type: "range", name: 'yearOfMint', label: 'Year of Minting', disabled: true,},
+    { span: 6, type: "range", name: 'yearOfLoss', label: 'Year of Loss',disabled: true,},
+]   
 /*
     "text": [],
     "number": [],
