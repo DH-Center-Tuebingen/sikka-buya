@@ -226,12 +226,7 @@ const WriterMutations = {
 
         createDirectoryStructure(CMS.dataPath, dirConfig)
         await CMS.removeExistingFiles(parts, filename)
-        try {
-            const fileURI = await CMS.writeFileFromPromise(parts, filename, filePromise)
-            console.log("File was uploaded to: " + fileURI)
-        } catch (e) {
-            console.error("ERROR OCCURED: ", e)
-        }
+        await CMS.writeFileFromPromise(parts, filename, filePromise)
     },
     async deleteFile(_, { identity }) {
         if (!identity) throw new Error("Identity field is required!")
