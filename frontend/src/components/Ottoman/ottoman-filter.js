@@ -81,7 +81,7 @@ export const ottomanFilterList = [
 
 
     { span: 6, type: "single-select", name: 'subclassification', label: 'Subclassification of finds', queryBody: [], displayTextCallback: (option) => option },
-    { span: 6, type: "multi-select", name: 'issuingState', label: 'Issuing State' },
+    { span: 6, type: "multi-select", name: 'issuingStateRegion', label: 'Issuing State' },
     { span: 6, type: "multi-select", name: 'material', label: 'Metal' },
     { span: 6, type: "multi-select", name: 'nominal', label: 'Denomination' },
     { span: 6, type: "multi-select", name: 'person', label: 'Issuer (only for Ottoman coins)' },

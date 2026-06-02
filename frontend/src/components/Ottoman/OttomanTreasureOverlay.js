@@ -40,7 +40,6 @@ export default class OttomanTreasureOverlay extends Overlay {
     }
 
     setTreasureFilterMask(filterMask = []) {
-        console.log("Setting treasure filter mask to", filterMask)
         this.treasureFilterMask = filterMask
         this.repaint()
     }
