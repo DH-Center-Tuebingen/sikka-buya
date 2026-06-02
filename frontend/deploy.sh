@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+	echo "Error: Do not source this script. Run it as: ./deploy.sh" >&2
+	return 1 2>/dev/null || exit 1
+fi
+
 set -Eeuo pipefail
 
 log_error() {
