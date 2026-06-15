@@ -988,7 +988,7 @@ input OttomanTreasureFilter {
     completeHoard: Boolean
     ottomanPredominance: Boolean
     subclassification: String
-    issuingStateRegion_and: [ID]
+    issuingState_and: [ID]
     nominal_and: [ID]
     person_and: [ID]
     mintRegion_and: [ID]

@@ -25,7 +25,7 @@ class NamedModel extends Model {
     }
 
     async search(text = "", transaction = Database) {
-        return transaction.manyOrNone(`SELECT id, name FROM ${this.tableName} WHERE unaccent(name) ILIKE unaccent($1)`, [`%${text}%`])
+        return transaction.manyOrNone(`SELECT id, name FROM ${this.tableName} WHERE unaccent(name) ILIKE unaccent($1) ORDER BY name ASC`, [`%${text}%`])
     }
 
     async add(name, transaction = WriteableDatabase) {

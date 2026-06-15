@@ -37,23 +37,9 @@ class OttomanGQL extends GQL {
                     }
                 }
 
-
-
-                // coinTypeText: String
-                // subclassification: String
-
-                // issuingStateRegion: [ID]
-                // nominal: [ID]
-                // person: ID
-                // mintRegion: [ID]
-                // historicalRegion: ID
-                // yearOfMint: RangeInput
-                // yearOfLoss: RangeInput
-
-
                 const multiSelectFields = [
                     { name: 'historicalRegion', column: 'historical_region', table: 'item' },
-                    { name: 'issuingStateRegion', column: 'issuing_state_region', table: 'item' },
+                    { name: 'issuingState', column: 'issuing_state', table: 'item' },
                     { name: 'material', column: 'material', table: 'item' },
                     { name: 'mintRegion', column: 'mint_region', table: 'item' },
                     { name: 'nominal', column: 'nominal', table: 'item' },
@@ -75,9 +61,6 @@ class OttomanGQL extends GQL {
                         values[andName] = filters[andName].map(strVal => Number(strVal))
                     }
                 })
-
-
-
 
                 const query = /* sql */`
                     SELECT treasure.id, count(*) 

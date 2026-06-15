@@ -191,7 +191,7 @@ async function ensureTreasure(treasure, cachedTreasures) {
             cachedTreasures[treasure.name] = fetchedTreasure
             existingTreasure = fetchedTreasure
         } else {
-            treasure.color = treasure.singleFind ? '#000000' : '#ff0000';
+            treasure.color = '#ff0000';
             const id = await Treasure.add(treasure);
             treasure.id = id;
             cachedTreasures[treasure.name] = treasure

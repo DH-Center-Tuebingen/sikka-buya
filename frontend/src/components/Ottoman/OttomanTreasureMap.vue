@@ -42,7 +42,7 @@
                         <template #header>
                             <ButtonVue
                                 style="padding: 0.25em 1em;"
-                                @click="()=> showTable = true"
+                                @click="() => showTable = true"
                             >
                                 Table View
                             </ButtonVue>
@@ -96,6 +96,7 @@
                 </MultiSelectList>
             </template>
 
+
             <MultiSelectList style="flex: 1;">
                 <h4
                     v-if="selectedTreasures.length > 0"
@@ -103,6 +104,15 @@
                 >
                     Available Finds
                 </h4>
+                <div
+                    v-if="activeTreasures.length === 0"
+                    class="no-results"
+                >
+                    <p>
+                        No finds found with the current filter selection. Please adjust the filters to see available
+                        finds.
+                    </p>
+                </div>
                 <MultiSelectListItem
                     v-for="treasure in activeTreasures"
                     :key="`list-item-${treasure.id}`"
@@ -430,7 +440,7 @@ export default {
                                 boxWidth: 10,
                                 boxHeight: 10,
                                 useBorderRadius: 4,
-                                sort: Sort.stringPropAlphabetically("text"),
+                                // sort: Sort.stringPropAlphabetically("text"),
                             },
 
                         }
@@ -676,10 +686,17 @@ export default {
                                 const count = parseInt(item.count) || 1
                                 const name = item[value].name
                                 if (!map[name]) {
+                                    let label = item[value].name
+                                    if (name != "Unknown") {
+                                        label += ` (${reign})`
+                                    }
+
+
                                     map[name] = {
                                         count: 0,
+                                        reignFrom: from === "?" ? null : from,
                                         color: getColor(item[value]),
-                                        label: `${item[value].name} (${reign})`
+                                        label
                                     }
                                 }
                                 map[name].count += count
@@ -706,10 +723,25 @@ export default {
                     })
                 }
 
-                const mapValues = Object.values(map)
-                this.chart.data.datasets[0].backgroundColor = mapValues.map(obj => obj.color)
-                this.chart.data.labels = mapValues.map(obj => obj.label)
-                this.chart.data.datasets[0].data = mapValues.map(obj => obj.count)
+                let dataArray
+                if (value === "person") {
+                    dataArray = Object.values(map).sort((a, b) => {
+                        if (a.label === "Unknown") return 1
+                        if (b.label === "Unknown") return -1
+
+                        console.log(a.label, a.reignFrom, b.label, b.reignFrom)
+                        if (!a.reignFrom) return 1
+                        if (!b.reignFrom) return -1
+
+                        return a.reignFrom - b.reignFrom
+                    })
+                } else {
+                    dataArray = Object.values(map).sort(Sort.stringPropAlphabetically('label'))
+                }
+
+                this.chart.data.datasets[0].backgroundColor = dataArray.map(obj => obj.color)
+                this.chart.data.labels = dataArray.map(obj => obj.label)
+                this.chart.data.datasets[0].data = dataArray.map(obj => obj.count)
                 this.chart.update()
             }
         },
@@ -1017,5 +1049,12 @@ tr.selected {
     pointer-events: none;
     display: grid;
     grid-row: span 3;
+}
+
+.no-results {
+    padding: 0 2em;
+    text-align: center;
+    color: $gray;
+    font-style: italic;
 }
 </style>

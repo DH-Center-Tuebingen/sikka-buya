@@ -30,7 +30,7 @@
                 <tr
                     v-for="(item, index) in treasure.originalItems"
                     :key="index"
-                    :class="{'row-in-filter': columns.some(column => inFilters(column, item))}"
+                    :class="{ 'row-in-filter': columns.some(column => inFilters(column, item)) }"
                 >
                     <td
                         v-for="column in columns"
@@ -71,15 +71,19 @@ export default {
             return [
                 { label: '#', key: 'index' },
                 { label: 'Quantity', key: 'count' },
-                { label: 'Denomination', key: 'denominationText' },
+                { label: "Historical Region of coin loss", key: 'historicalRegion', object: 'name' },
+                { label: 'Issuing State', key: 'issuingState', object: 'name' },
                 { label: 'Material', key: 'material', object: 'name' },
+                { label: 'Denomination', key: 'nominal', object: 'name' },
                 { label: 'Issuer', key: 'person', object: 'name' },
+                { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}` },
                 { label: 'Mint', key: 'mintRegion', object: 'name' },
+                { label: 'Authenticity', key: 'authenticity' },
                 { label: 'Coin type reference', key: 'coinTypeText' },
-                { label: 'Historical region of loss', key: 'historicalRegion', object: 'name' },
                 // { label: 'Region of loss', key: 'regionOfLoss' },
                 // { label: 'Year of minting', key: 'yearOfMint' },
                 // { label: 'Year of loss', key: 'yearOfLoss' },
+
             ]
         }
     },
@@ -101,11 +105,14 @@ export default {
             }
         },
         formatCell(column, item, index = null) {
-            if(column.key === 'index') {
+            if (column.key === 'index') {
                 return index + 1
             }
 
-            if (column.object) {
+            if (column.fn) {
+                return column.fn(item[column.key])
+            }
+            else if (column.object) {
                 return item[column.key]?.[column.object] ?? "-"
             }
             else {
