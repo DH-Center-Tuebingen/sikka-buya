@@ -6,7 +6,7 @@ class OttomanGQL extends GQL {
     static get Queries() {
         return {
             filterOttomanTreasures: async function (_, { filters } = {}) {
-                if (!filters || Object.keys(filters).length === 0) return []
+                if (!filters || Object.keys(filters).length === 0) return null
 
 
                 const whereConditions = []
@@ -64,10 +64,15 @@ class OttomanGQL extends GQL {
                     const andName = `${name}_and`
 
                     if (filters[andName] && filters[andName].length > 0) {
-                        aggregates.push(`array_agg(DISTINCT ${table}.${column}) AS ${andName}`)
-
-                        havingConditions.push(`array_remove(array_agg(DISTINCT ${table}.${column})::text[], NULL) @> ARRAY[\${${andName}:csv}]::text[]`)
-                        values[andName] = filters[andName]
+                        
+                        //// This was used to get an OR condition over all the items of a treasure, but by an email on the 3rd june
+                        //// it was requested only to show results that match one item. 
+                        // aggregates.push(`array_agg(DISTINCT ${table}.${column}) AS ${andName}`)
+                        // havingConditions.push(`array_remove(array_agg(DISTINCT ${table}.${column})::text[], NULL) @> ARRAY[\${${andName}:csv}]::text[]`)
+                        whereConditions.push(`${table}.${column} = ANY(\$[${andName}])`)
+                        
+                        // Value is always the id of the referenced table, so we can safely assume it's a number > 0
+                        values[andName] = filters[andName].map(strVal => Number(strVal))
                     }
                 })
 

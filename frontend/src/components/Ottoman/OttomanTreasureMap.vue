@@ -17,28 +17,45 @@
             />
         </Sidebar>
 
-        <div class="center-ui center-ui-top">
-            <map-toolbar
-                :filters-active="filtersActive"
-                @reset-filters="resetFilters"
+        <div class="center-ui-wrapper">
+            <OttomanTreasureTable
+                v-if="showTable"
+                :treasure="selectedTreasures[0]"
+                :filters="filters"
+                @close="() => showTable = false"
             />
-        </div>
-        <div class="center-ui center-ui-center" />
+            <div class="center-ui-top center-ui-top-ottoman">
+                <map-toolbar
+                    :filters-active="filtersActive"
+                    @reset-filters="resetFilters"
+                />
+            </div>
+            <div class="center-ui-center" />
 
-        <div class="bottom-center-ui center-ui-center">
-            <ScrollView
-                v-if="selectedTreasures.length === 1"
-                :key="`list-item-description-${selectedTreasures[0].id}`"
-                class="treasure-description"
-            >
-                <OttomanTreasureDescription :treasure="selectedTreasures[0]" />
-            </ScrollView>
-            <div v-else />
+            <div class="bottom-center-ui center-ui-center">
+                <ScrollView
+                    v-if="selectedTreasures.length === 1"
+                    :key="`list-item-description-${selectedTreasures[0].id}`"
+                    class="treasure-description"
+                >
+                    <OttomanTreasureDescription :treasure="selectedTreasures[0]">
+                        <template #header>
+                            <ButtonVue
+                                style="padding: 0.25em 1em;"
+                                @click="()=> showTable = true"
+                            >
+                                Table View
+                            </ButtonVue>
+                        </template>
+                    </OttomanTreasureDescription>
+                </ScrollView>
+                <div v-else />
 
-            <MapBaseLayerButton
-                v-model="selectedLayerIndex"
-                style="justify-self: flex-end;"
-            />
+                <MapBaseLayerButton
+                    v-model="selectedLayerIndex"
+                    style="justify-self: flex-end;"
+                />
+            </div>
         </div>
 
 
@@ -215,6 +232,7 @@ import { IconSize } from "@/config";
 import { ottomanFilterConfig } from './ottoman-filter'
 import MapBaseLayerButton from "../map/control/MapBaseLayerButton.vue";
 import OttomanTreasureDescription from "./OttomanTreasureDescription.vue";
+import OttomanTreasureTable from "./OttomanTreasureTable.vue";
 
 export default {
     components: {
@@ -229,6 +247,7 @@ export default {
         Sidebar,
         ScrollView,
         OttomanTreasureDescription,
+        OttomanTreasureTable,
     },
     mixins: [
         map,
@@ -262,17 +281,19 @@ export default {
             selectedLayerIndex: 0,
             selectedMintIds: [],
             selectedTreasureIds: [],
+            showTable: false,
             treasures: [],
             unknownWeights: 0,
             weightDataFrequency: 0.1,
             yearCountData: {},
-            filteredTreasureIds: [],
+            // null means no filter is applied, an empty array means all treasures are filtered out, so no treasure is shown.
+            filteredTreasureIds: null,
             overlay: null,
         };
     },
     computed: {
         activeTreasures() {
-            if (this.filteredTreasureIds.length === 0) return this.treasures
+            if (this.filteredTreasureIds === null) return this.treasures
             return this.treasures.filter(treasure => this.filteredTreasureIds.includes(treasure.id))
         },
         availableBaseLayerButtons() {
@@ -456,7 +477,7 @@ export default {
             Query.raw("query filterOttomanTreasures($filters: OttomanTreasureFilter){filterOttomanTreasures(filters: $filters)}", {
                 filters: this.filters
             }).then(result => {
-                this.filteredTreasureIds = result.data.data.filterOttomanTreasures ?? []
+                this.filteredTreasureIds = result.data.data.filterOttomanTreasures ?? null
 
                 if (this.overlay) {
                     this.overlay.setTreasureFilterMask(this.filteredTreasureIds)
@@ -839,6 +860,12 @@ export default {
 </script>
 
 
+<style lang="scss">
+.center-ui-top-ottoman .map-toolbar .toolbar {
+    pointer-events: all;
+}
+</style>
+
 <style
     lang="scss"
     scoped
@@ -983,5 +1010,12 @@ tr.selected {
 .sidebar-header {
     color: $gray;
     margin: $small-padding $padding;
+}
+
+.center-ui-wrapper {
+    position: relative;
+    pointer-events: none;
+    display: grid;
+    grid-row: span 3;
 }
 </style>

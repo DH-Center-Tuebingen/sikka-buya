@@ -2,8 +2,11 @@
     <div class="ottoman-treasure-description">
         <header class="flex row">
             <h2>{{ treasure.name }}</h2>
-            <div class="find-type">
-                {{ treasure.singleFind ? "Single Find" : "Hoard" }}
+            <div class="flex row toolbar">
+                <slot name="header" />
+                <div class="find-type">
+                    {{ treasure.singleFind ? "Single Find" : "Hoard" }}
+                </div>
             </div>
         </header>
         <div
@@ -38,7 +41,7 @@ export default {
                 { label: 'Publication', value: this.treasure.publication ?? "N/A" },
 
             ]
-        }
+        },
     }
 }
 </script>
@@ -47,12 +50,17 @@ export default {
     scoped
     lang="scss"
 >
-
 header {
     margin-top: $small-padding;
     align-items: flex-start;
     gap: $padding;
     justify-content: space-between;
+
+    .toolbar {
+        margin-bottom: $padding;
+        gap: $padding;
+        margin-right: $padding;
+    }
 }
 
 h2 {
@@ -63,13 +71,27 @@ h2 {
 .find-type {
     display: inline-block;
     font-style: italic;
-    margin-bottom: $padding;
     background-color: $primary-color;
     border-radius: $border-radius;
     color: $white;
     padding: $small-padding;
     font-weight: bolder;
     min-width: fit-content;
-    margin-right: $padding;
+}
+
+th,
+td {
+    padding: 0.2em;
+}
+
+th {
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+tr:nth-child(2n+1) {
+    background-color: whitesmoke;
 }
 </style>

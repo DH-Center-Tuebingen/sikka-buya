@@ -36,10 +36,13 @@ export default class OttomanTreasureOverlay extends Overlay {
         this.mintGeometryMap = {}
         this.mlms = []
         this._markersRemoved = false
-        this.treasureFilterMask = []
+
+        // null means no filter mask is active.
+        // an empty array means all treasures are filtered out, so no treasure is shown.
+        this.treasureFilterMask = null
     }
 
-    setTreasureFilterMask(filterMask = []) {
+    setTreasureFilterMask(filterMask = null) {
         this.treasureFilterMask = filterMask
         this.repaint()
     }
@@ -129,6 +132,7 @@ export default class OttomanTreasureOverlay extends Overlay {
                 clone.selected = true
             }
 
+            clone.originalItems = clone.items
             clone.items = Object.values(items)
             transformedData.push(clone)
         })
@@ -341,8 +345,11 @@ export default class OttomanTreasureOverlay extends Overlay {
 
     showClickableTreasureArea(treasures, { extendBorder = 20 } = {}) {
         let features = []
+
+        if(!treasures) return features
         treasures.forEach(treasure => {
-            if (this.treasureFilterMask.length > 0 && !this.treasureFilterMask.includes(treasure.id)) {
+
+            if (this.treasureFilterMask !== null && !this.treasureFilterMask.includes(treasure.id)) {
                 return
             }
 
@@ -382,7 +389,8 @@ export default class OttomanTreasureOverlay extends Overlay {
                 if (treasuresByMint && Array.isArray(treasuresByMint.treasures)) {
 
                     let filteredTreasures = treasuresByMint
-                    if (this.treasureFilterMask.length > 0) {
+
+                    if (this.treasureFilterMask !== null && this.treasureFilterMask.length > 0) {
                         filteredTreasures.treasures = treasuresByMint.treasures.filter(({ treasure }) => {
                             return this.treasureFilterMask.includes(treasure.id);
                         })
