@@ -57,6 +57,19 @@
                         <locale path="routes.map" />
                     </card-link>
                 </section>
+                <section class="alternate-buttons">
+                    <card-link
+                        class="subtle-card-link alternative-card-link"
+                        :no-image="true"
+                        :to="{
+                            name: 'Bibliography',
+                        }"
+                    >
+                        <div class="subtitled">
+                            <locale path="cms.group.bibliography" />
+                        </div>
+                    </card-link>
+                </section>
             </aside>
         </div>
         <page-footer />
