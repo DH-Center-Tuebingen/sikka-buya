@@ -568,7 +568,7 @@ type Query {
   getPageList(group:String!): [Page]
   getImage(identity:String!):String
   getPageGroup(name:String):ID
-  getSinglePage(group: String!): Page
+  getSinglePage(group: String!, allowDraft: Boolean): Page
 
   i18n:String
 

@@ -117,6 +117,7 @@ const mconfig = new ManagedConfig("project_settings", SettingsTemplate["project_
 // OTTOMAN SPECIFIC ROUTES
 import OttomanTreasureMap from "@/components/Ottoman/OttomanTreasureMap.vue"
 import EditorImporter from "../components/page/editor/EditorImporter.vue"
+import alternatePages from "../../config/alternate-pages.js"
 
 
 const routes = [
@@ -196,6 +197,30 @@ const routes = [
                         }
                     },
                 ]
+            }, {
+                path: "/page",
+                component: RouterContainer,
+                children: alternatePages.map(page => {
+                    const props = {
+                        headingTag: "h1",
+                        single: true,
+                    }
+
+                    if (page.id) {
+                        props.id = page.id
+                    } else if (page.group) {
+                        props.group = page.group
+                    } else {
+                        console.error("CMSView requires an id or a group.")
+                    }
+
+                    return {
+                        path: page.path,
+                        name: page.name,
+                        component: CMSView,
+                        props,
+                    }
+                })
             },
             {
                 path: "/cms/single/:group",

@@ -69,6 +69,20 @@
                             <locale path="cms.group.bibliography" />
                         </div>
                     </card-link>
+
+                    <card-link
+                        v-for="page of alternatePages"
+                        :key="page.name"
+                        class="subtle-card-link alternative-card-link"
+                        :no-image="true"
+                        :to="{
+                            name: page.name,
+                        }"
+                    >
+                        <div class="subtitled">
+                            <locale :path="page.translation" />
+                        </div>
+                    </card-link>
                 </section>
             </aside>
         </div>
@@ -83,6 +97,7 @@ import CMSListView from '@/components/page/cms/CMSListView.vue';
 import CMSView from '@/components/cms/CMSView.vue';
 import Locale from '@/components/cms/Locale.vue';
 import PageFooter from '@/components/page/PageFooter.vue';
+import alternatePages from '../../../config/alternate-pages';
 
 export default {
     components: {
@@ -93,6 +108,9 @@ export default {
         Locale,
         PageFooter,
     },
+    computed: {
+        alternatePages: ()=> alternatePages
+    }
 };
 </script>
 
