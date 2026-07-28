@@ -154,7 +154,7 @@ WHERE year_of_mint='$[year]'
 
         return Person.searchCaliph(...arguments)
     },
-    
+
     getDominion: async function (_, args) {
         const year = args.year
         if (!year) throw new Error(`The query did not provide a year.`)
@@ -617,6 +617,12 @@ ORDER BY person.id;
     countTypesInCatalog() {
         return Type.countTypesInCatalog()
     },
+    getYearOfMintRange() {
+        return Database.one(`SELECT MIN(year_of_mint_from) AS from, MAX(year_of_mint_to) AS to FROM public.treasure_item;`)
+    },
+    getYearOfLossRange() {
+        return Database.one(`SELECT MIN(year_of_loss_from) AS from, MAX(year_of_loss_to) AS to FROM public.treasure_item;`)
+    }
 }
 
 const UserQueries = {

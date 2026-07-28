@@ -13,7 +13,7 @@
                 :init-data="catalog_filter_mixin_initData"
                 :filter-config="filterConfig"
                 @dynamic-change="recalculateCatalogSidebar"
-                @filters-change="(data) => filtersChanged(data)"
+                @filters-change="(data) => debounceFilters(data)"
             />
         </Sidebar>
 
@@ -243,6 +243,7 @@ import { ottomanFilterConfig } from './ottoman-filter'
 import MapBaseLayerButton from "../map/control/MapBaseLayerButton.vue";
 import OttomanTreasureDescription from "./OttomanTreasureDescription.vue";
 import OttomanTreasureTable from "./OttomanTreasureTable.vue";
+import { debounce } from "lodash";
 
 export default {
     components: {
@@ -380,8 +381,28 @@ export default {
     },
     mounted: async function () {
         try {
-            const result = await Query.raw(`{mintRegion { id name location }}`)
+            const result = await Query.raw(`{
+                mintRegion { id name location }
+                getYearOfMintRange {from, to}
+                getYearOfLossRange {from, to}
+            }`)
             this.mintRegions = result.data.data.mintRegion
+
+            function applyRange(name, value) {
+                const from = value?.from;
+                const to = value?.to;
+
+                let config = ottomanFilterConfig["real-range"].find(range => range.name === name)
+                if (from == null || to == null) {
+                    config.disabled = true
+                } else {
+                    config.min = from;
+                    config.max = to;
+                }
+            }
+
+            applyRange("yearOfMint", result?.data?.data?.getYearOfMintRange)
+            applyRange("yearOfLoss", result?.data?.data?.getYearOfLossRange)
 
             this.overlay = new OttomanTreasureOverlay(this.featureGroup, settings, {
                 additionalData: {
@@ -469,6 +490,9 @@ export default {
         window.removeEventListener('resize', this.resizeCanvas);
     },
     methods: {
+        debounceFilters: debounce(function (data) {
+            this.filtersChanged(data)
+        }, 300),
         filtersChanged({ filters }) {
             this.filters = filters;
             this.catalog_filter_mixin_updateActive(this.$refs.catalogFilter, [
@@ -497,8 +521,6 @@ export default {
             }).catch(error => {
                 console.error("Error filtering treasures", error)
             })
-
-
 
             this.save();
         },
@@ -729,7 +751,6 @@ export default {
                         if (a.label === "Unknown") return 1
                         if (b.label === "Unknown") return -1
 
-                        console.log(a.label, a.reignFrom, b.label, b.reignFrom)
                         if (!a.reignFrom) return 1
                         if (!b.reignFrom) return -1
 

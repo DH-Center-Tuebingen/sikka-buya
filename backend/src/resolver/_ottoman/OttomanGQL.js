@@ -8,7 +8,6 @@ class OttomanGQL extends GQL {
             filterOttomanTreasures: async function (_, { filters } = {}) {
                 if (!filters || Object.keys(filters).length === 0) return null
 
-
                 const whereConditions = []
                 const havingConditions = []
                 const values = {}
@@ -34,6 +33,29 @@ class OttomanGQL extends GQL {
                     if (filterValue != null) {
                         whereConditions.push(`${columnName}.${tableName} = \${${tableName}}`)
                         values[tableName] = filterValue
+                    }
+                }
+
+                const rangeFields = {
+                    'yearOfMint': "year_of_mint@item",
+                    'yearOfLoss': "year_of_loss@item"
+                }
+
+                for (const field in rangeFields) {
+                    const tableDefinition = rangeFields[field]
+                    const [columnName, tableName = "treasure"] = tableDefinition.split("@")
+
+                    const filterValue = filters[field]
+                    if (filterValue != null && (filterValue.from != null || filterValue.to != null)) {
+                        const {from, to} = filterValue
+                        if (from != null) {
+                            whereConditions.push(`${tableName}.${columnName}_from >= \${${field}_from}`)
+                            values[`${field}_from`] = from
+                        }
+                        if (to != null) {
+                            whereConditions.push(`${tableName}.${columnName}_to <= \${${field}_to}`)
+                            values[`${field}_to`] = to
+                        }
                     }
                 }
 
@@ -75,6 +97,7 @@ class OttomanGQL extends GQL {
                     GROUP BY treasure.id
                     ${havingConditions.length > 0 ? "HAVING " + havingConditions.join(" AND ") : ""}
                 `
+
                 const results = await Database.manyOrNone(builtQuery, values)
                 const filtered = results.filter(r => +r.count > 0)
 

@@ -489,7 +489,6 @@ type Query {
   
   # TODO: missing Tests ---------------------------------------------
 
-
     historicalRegion: [Name]
     searchHistoricalRegion(text: String): [Name]!
     getHistoricalRegion(id: ID!): Name
@@ -589,6 +588,8 @@ type Query {
   # OTTOMAN COINS
   filterOttomanTreasures(filters: OttomanTreasureFilter): [ID]
   searchSubclassification(text: String): [String]! 
+  getYearOfMintRange:Range
+  getYearOfLossRange:Range
 }
 
 

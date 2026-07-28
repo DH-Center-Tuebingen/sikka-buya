@@ -90,8 +90,8 @@ export const ottomanFilterList = [
     { span: 6, type: "single-select", name: 'coinTypeText', label: 'Coin type reference (only for Ottoman coins) ' },
     { span: 6, type: "multi-select", name: 'historicalRegion', label: 'Historical region of coin loss' },
 
-    { span: 6, type: "range", name: 'yearOfMint', label: 'Year of Minting', disabled: true,},
-    { span: 6, type: "range", name: 'yearOfLoss', label: 'Year of Loss',disabled: true,},
+    { span: 6, type: "real-range", name: 'yearOfMint', label: 'Year of Minting', step: 1 },
+    { span: 6, type: "real-range", name: 'yearOfLoss', label: 'Year of Loss', step: 1 },
 ]   
 /*
     "text": [],

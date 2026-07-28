@@ -187,6 +187,25 @@
                     @change-mode="() => dataSelectToggled(input)"
                 />
             </LabeledInputContainer>
+            <LabeledInputContainer
+                v-else-if="input.type === 'real-range'"
+                :key="`${input.name}-real-range`"
+                :style="getStyle(input)"
+
+                :class="[input.name]"
+                class="real-range-wrapper"
+            >
+                <template #label>
+                    <locale :path="input.label" />
+                </template>
+                <RangeSlider
+                    v-model="filters[input.name]"
+                    :disabled="input.disabled"
+                    :min="input.min"
+                    :max="input.max"
+                    :step="input.step"
+                />
+            </LabeledInputContainer>
             <ErrorBox
                 v-else
                 :key="input.name"
@@ -203,12 +222,15 @@ import Filter, { FilterList } from '../../../models/Filter';
 import LabeledInputContainer from '../../LabeledInputContainer.vue';
 import Locale from '../../cms/Locale.vue';
 import Mode from '../../../models/Mode';
+
 import SingleDataSelect from '../../forms/SingleDataSelect.vue';
 import MultiDataSelect from '../../forms/MultiDataSelect.vue';
 import MultiDataSelect2D from '../../forms/MultiDataSelect2D.vue';
 import RadioButtonGroup from '../../forms/RadioButtonGroup.vue';
 import ThreeWayToggle from '../../forms/ThreeWayToggle.vue';
 import RangeInput from '../../forms/RangeInput.vue';
+import RangeSlider from '../../forms/RangeSlider.vue';
+
 import { FilterType } from '../../../config/catalog_filter';
 import StringUtils from '../../../utils/StringUtils';
 import URLParams from '../../../utils/URLParams';
@@ -226,6 +248,7 @@ export default {
         MultiDataSelect2D,
         Locale,
         RangeInput,
+        RangeSlider,
         SingleDataSelect,
     },
     mixins: [Mode.mixin()],
@@ -271,7 +294,8 @@ export default {
                                 return false;
                             }
                         } else {
-                            return val.id && val.id !== null;
+                            if ('id' in val) return val.id !== null;
+                            return Object.keys(val).length > 0;
                         }
                     } else {
                         switch (typeof val) {
@@ -315,6 +339,9 @@ export default {
         },
         getThreeWayFilters() {
             return this.getFiltersFor(FilterType.threeWay);
+        },
+        getRangeFilters() {
+            return this.getFiltersFor(FilterType.range);
         },
         multiSelectFilters() {
             return this.excludeItem(this.getMultiSelectFilters);
@@ -478,6 +505,7 @@ export default {
                 ...this.getButtonGroupFilters,
                 ...this.getNumberFilters,
                 ...this.getInlineCheckboxFilters,
+                ...this.getRangeFilters,
             ]
         },
         reloadFilterNamesIfNecessary(reload = []) {
@@ -540,6 +568,8 @@ export default {
                 this.constantFilters,
                 this.overwriteFilters,
             );
+
+            this.range
 
             this.multiSelectFilters.forEach(({ name }) => {
                 if (filters[name]) {
