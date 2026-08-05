@@ -124,13 +124,24 @@
                 <template #label>
                     <locale :path="input.label" />
                 </template>
-                <SingleDataSelect
-                    v-model="filters[input.name]"
+                <MultiDataSelectString
+                    v-model="filters[searchVariableName(input.name)]"
+                    :active="filters[input.name]"
+                    :additional-parameters="input.additionalParameters"
+                    :allow-mode-change="input.allowModeChange"
+                    :attribute="input.attribute"
                     :disabled="input.disabled"
+                    :disable-remove-button="true"
+                    :display-text-callback="input.displayTextCallback"
+                    :mode="filterMode[input.name]"
+                    :query-command="input.queryCommand"
+                    :query-body="input.queryBody"
                     :table="input.name"
                     :text="input.text"
                     @select="(el) => selectFilter(input.name, el)"
                     @remove="(el, index) => removeFilterItem(input.name, el, index)"
+                    @change-mode="() => dataSelectToggled(input)"
+                    @dynamic-change="() => $emit('dynamic-change')"
                 />
             </LabeledInputContainer>
 
@@ -191,7 +202,6 @@
                 v-else-if="input.type === 'real-range'"
                 :key="`${input.name}-real-range`"
                 :style="getStyle(input)"
-
                 :class="[input.name]"
                 class="real-range-wrapper"
             >
@@ -223,7 +233,6 @@ import LabeledInputContainer from '../../LabeledInputContainer.vue';
 import Locale from '../../cms/Locale.vue';
 import Mode from '../../../models/Mode';
 
-import SingleDataSelect from '../../forms/SingleDataSelect.vue';
 import MultiDataSelect from '../../forms/MultiDataSelect.vue';
 import MultiDataSelect2D from '../../forms/MultiDataSelect2D.vue';
 import RadioButtonGroup from '../../forms/RadioButtonGroup.vue';
@@ -237,6 +246,8 @@ import URLParams from '../../../utils/URLParams';
 import { snakeCase } from 'change-case';
 
 import { cloneDeep } from 'lodash';
+import MultiDataSelectString from '../../forms/MultiDataSelectString.vue';
+import StringFilter from '../../../models/StringFilter';
 
 export default {
     components: {
@@ -249,7 +260,7 @@ export default {
         Locale,
         RangeInput,
         RangeSlider,
-        SingleDataSelect,
+        MultiDataSelectString,
     },
     mixins: [Mode.mixin()],
     props: {
@@ -343,11 +354,17 @@ export default {
         getRangeFilters() {
             return this.getFiltersFor(FilterType.range);
         },
+        multiSelectStringFilters() {
+            return this.excludeItem(this.getMultiSelectStringFilters);
+        },
         multiSelectFilters() {
             return this.excludeItem(this.getMultiSelectFilters);
         },
         multiSelectFilters2D() {
             return this.excludeItem(this.getMultiSelectFilters2D);
+        },
+        getMultiSelectStringFilters() {
+            return this.getFiltersFor('single-select');
         },
         getMultiSelectFilters() {
             return this.getFiltersFor(FilterType.multiSelect);
@@ -382,6 +399,15 @@ export default {
         if (this.initData) {
             const reload = [];
             const initFilterMode = {};
+
+            this.getMultiSelectStringFilters.forEach((input) => {
+                if (this.initData[input.name]) {
+                    input.mode = input.allowModeChange ? this.initData[input.name].mode || input.mode : input.mode;
+                    initFilterMode[input.name] = input.mode;
+                    this.initData[input.name] = this.initData[input.name].value || [];
+                }
+            })
+
             this.getMultiSelectFilters.forEach((input) => {
                 if (this.initData[input.name]) {
                     input.mode = input.allowModeChange ? this.initData[input.name].mode || input.mode : input.mode;
@@ -443,6 +469,14 @@ export default {
             });
 
             let filterMode = {};
+
+            this.getMultiSelectStringFilters.forEach((item) => {
+                const filter = new StringFilter(item.name);
+                filterData = Object.assign(filterData, filter.mapData(item.defaultValue));
+                filterMethods = Object.assign(filterMethods, filter.mapMethods());
+                filterMode[item.name] = item.mode ? item.mode : Mode.And;
+                item.filter = filter;
+            });
 
             this.getMultiSelectFilters.forEach((item) => {
                 const filter = new Filter(item.name);
@@ -569,7 +603,18 @@ export default {
                 this.overwriteFilters,
             );
 
-            this.range
+            this.multiSelectStringFilters.forEach(({ name }) => {
+                if (filters[name]) {
+                    let filterMode = this.filterMode?.[name] ? this.filterMode[name].toLowerCase() : 'and';
+
+                    if (filterMode === 'and') {
+                        filters[name + '_and'] = filters[name];
+                        delete filters[name];
+                    } else {
+                        filters[name] = filters[name];
+                    }
+                }
+            });
 
             this.multiSelectFilters.forEach(({ name }) => {
                 if (filters[name]) {
@@ -608,7 +653,7 @@ export default {
                 this.resetFilter(item.name);
             });
 
-            [...this.getMultiSelectFilters].forEach((filter) => {
+            [...this.getMultiSelectFilters, ...this.getMultiSelectStringFilters].forEach((filter) => {
                 const emptyObj = cloneDeep(Filter.mapData(filter.name, filter.defaultValue));
                 for (let [key, val] of Object.entries(emptyObj)) {
 
@@ -634,6 +679,7 @@ export default {
             });
 
             [
+                ...this.getMultiSelectStringFilters,
                 ...this.getMultiSelectFilters,
                 ...this.getMultiSelectFilters2D,
             ].forEach((filter) => {
@@ -653,6 +699,7 @@ export default {
                 name,
                 idx
             );
+            console.log(methodName, this)
             return this[methodName](target, idx);
         },
         resetFilter(name) {
@@ -706,6 +753,12 @@ export default {
                     storage[name] = activeFilters[name];
                 }
             });
+            this.getMultiSelectStringFilters.forEach((filter) => {
+                storage[filter.name] = {
+                    mode: this.filterMode[filter.name] || Mode.And,
+                    value: activeFilters[filter.name] || [],
+                };
+            })
 
             this.getMultiSelectFilters.forEach(
                 (filter) => {

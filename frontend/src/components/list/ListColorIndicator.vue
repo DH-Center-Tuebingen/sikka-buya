@@ -30,6 +30,8 @@ export default {
   $size: 14px;
   width: $size;
   height: $size;
+  min-width: $size;
+  min-height: $size;
   border: $border;
   border-color: $gray;
   box-sizing: border-box;

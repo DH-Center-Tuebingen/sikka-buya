@@ -47,7 +47,7 @@ class OttomanGQL extends GQL {
 
                     const filterValue = filters[field]
                     if (filterValue != null && (filterValue.from != null || filterValue.to != null)) {
-                        const {from, to} = filterValue
+                        const { from, to } = filterValue
                         if (from != null) {
                             whereConditions.push(`${tableName}.${columnName}_from >= \${${field}_from}`)
                             values[`${field}_from`] = from
@@ -59,6 +59,12 @@ class OttomanGQL extends GQL {
                     }
                 }
 
+                const stringMultiSelect = [
+                    { name: 'subclassification', column: 'subclassification', table: 'treasure' },
+                    { name: 'authenticity', column: 'authenticity', table: 'item' },
+                    { name: 'coinTypeText', column: 'cointype_text', table: 'item' },
+                ]
+
                 const multiSelectFields = [
                     { name: 'historicalRegion', column: 'historical_region', table: 'item' },
                     { name: 'issuingState', column: 'issuing_state', table: 'item' },
@@ -68,17 +74,26 @@ class OttomanGQL extends GQL {
                     { name: 'person', column: 'person', table: 'item' },
                 ]
 
+                stringMultiSelect.forEach(({ name, column, table }) => {
+                    if (filters[name] && filters[name].length > 0) {
+                        whereConditions.push(`${table}.${column} = ANY(\$[${name}])`)
+
+                        // Value is always the id of the referenced table, so we can safely assume it's a number > 0
+                        values[name] = filters[name]
+                    }
+                })
+
                 multiSelectFields.forEach(({ name, column, table }) => {
                     const andName = `${name}_and`
 
                     if (filters[andName] && filters[andName].length > 0) {
-                        
+
                         //// This was used to get an OR condition over all the items of a treasure, but by an email on the 3rd june
                         //// it was requested only to show results that match one item. 
                         // aggregates.push(`array_agg(DISTINCT ${table}.${column}) AS ${andName}`)
                         // havingConditions.push(`array_remove(array_agg(DISTINCT ${table}.${column})::text[], NULL) @> ARRAY[\${${andName}:csv}]::text[]`)
                         whereConditions.push(`${table}.${column} = ANY(\$[${andName}])`)
-                        
+
                         // Value is always the id of the referenced table, so we can safely assume it's a number > 0
                         values[andName] = filters[andName].map(strVal => Number(strVal))
                     }
@@ -104,7 +119,6 @@ class OttomanGQL extends GQL {
                 return filtered.map(r => r.id);
             },
             searchSubclassification: async function (_, { text }) {
-                if (!text || text.trim() === "") return []
                 const results = await Database.manyOrNone(/* sql */`
                     SELECT DISTINCT subclassification FROM treasure
                     WHERE subclassification ILIKE \${text}
@@ -113,7 +127,20 @@ class OttomanGQL extends GQL {
                 `, { text: `%${text}%` })
 
                 return results.map(r => r.subclassification)
-            }
+
+            },
+            searchAuthenticity: async function (text) {
+                text = (text) ? text : ''
+                const results = await Database.manyOrNone(`SELECT DISTINCT authenticity FROM treasure_item WHERE authenticity IS NOT NULL AND authenticity ilike unaccent($1) ORDER BY authenticity;`, [`%${text}%`])
+                if (!results) return []
+                return results.map(r => r.authenticity)
+            },
+            searchCoinTypeText: async function (text) {
+                text = (text) ? text : ''
+                const results = await Database.manyOrNone(`SELECT DISTINCT cointype_text FROM treasure_item WHERE cointype_text IS NOT NULL AND cointype_text ilike unaccent($1) ORDER BY cointype_text;`, [`%${text}%`])
+                if (!results) return []
+                return results.map(r => r.cointype_text)
+            },
         }
     }
 

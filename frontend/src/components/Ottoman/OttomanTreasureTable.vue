@@ -1,53 +1,55 @@
 <template>
     <div class="ottoman-treasure-table">
-        <div
-            class="close-button"
-            @click="$emit('close')"
-        >
-            🗙
-        </div>
-        <header class="flex row">
+<header class="flex row">
             <div class="flex row">
                 <h2>{{ treasure.name }}</h2>
                 <div class="find-type">
                     {{ treasure.singleFind ? "Single Find" : "Hoard" }}
                 </div>
             </div>
+            <div
+                class="close-button"
+                @click="$emit('close')"
+            >
+                🗙
+            </div>
         </header>
-        <table>
-            <thead>
-                <tr>
-                    <th
-                        v-for="column in columns"
-                        :key="column.key"
-                        :title="column.label"
+        <div class="table-view">
+            <table>
+                <thead>
+                    <tr>
+                        <th
+                            v-for="column in columns"
+                            :key="column.key"
+                            :title="column.label"
+                        >
+                            {{ column.label }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="(item, index) in treasure.originalItems"
+                        :key="index"
+                        :class="{ 'row-in-filter': columns.some(column => inFilters(column, item)) }"
                     >
-                        {{ column.label }}
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="(item, index) in treasure.originalItems"
-                    :key="index"
-                    :class="{ 'row-in-filter': columns.some(column => inFilters(column, item)) }"
-                >
-                    <td
-                        v-for="column in columns"
-                        :key="`${index}-${column.key}`"
-                        :class="inFilters(column, item) ? 'in-filter' : ''"
-                        :title="formatCell(column, item, index)"
-                    >
-                        <template v-if="column.key === 'index'">
-                            <b style="opacity: 30%; margin-right: 1rem;">{{ formatCell(column, item, index) }}</b>
-                        </template>
-                        <template v-else>
-                            {{ formatCell(column, item) }}
-                        </template>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        <td
+                            v-for="column in columns"
+                            :key="`${index}-${column.key}`"
+                            :class="inFilters(column, item) ? 'in-filter' : ''"
+                            :title="formatCell(column, item, index)"
+                        >
+                            <template v-if="column.key === 'index'">
+                                <b style="opacity: 30%; margin-right: 1rem;">{{ formatCell(column, item, index) }}</b>
+                            </template>
+                            <template v-else>
+                                {{ formatCell(column, item) }}
+                            </template>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
 
@@ -70,22 +72,37 @@ export default {
         columns() {
             return [
                 { label: '#', key: 'index' },
-                { label: 'Quantity', key: 'count' },
-                { label: "Historical Region of coin loss", key: 'historicalRegion', object: 'name' },
                 { label: 'Issuing State', key: 'issuingState', object: 'name' },
-                { label: 'Material', key: 'material', object: 'name' },
-                { label: 'Denomination', key: 'nominal', object: 'name' },
+                { label: '⬅ ?', type: 'boolean', key: 'stateUncertain'},
+
                 { label: 'Issuer', key: 'person', object: 'name' },
+                { label: '⬅ ?', type: 'boolean', key: 'personUncertain'},
+
                 { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}` },
+                { label: '⬅ ?', type: 'boolean', key: 'yearOfMintUncertain'},
+                
                 { label: 'Mint', key: 'mintRegion', object: 'name' },
+                { label: '⬅ ?', type: 'boolean', key: 'mintRegionUncertain'},
+
+                { label: 'Material', key: 'material', object: 'name' },
+                { label: '⬅ ?', type: 'boolean', key: 'materialUncertain'},
+
+                { label: 'Denomination', key: 'denominationText' }, //Denom. Text
                 { label: 'Authenticity', key: 'authenticity' },
+                { label: 'Quantity', key: 'count' },
                 { label: 'Coin type reference', key: 'coinTypeText' },
+                { label: 'Remarks to Coin Type Reference', key:'remarksToCoinTypeReference'},
+                { label: 'Remarks', key:'remarks'},
+                
                 // { label: 'Region of loss', key: 'regionOfLoss' },
                 // { label: 'Year of minting', key: 'yearOfMint' },
                 // { label: 'Year of loss', key: 'yearOfLoss' },
 
             ]
         }
+    },
+    mounted(){
+        console.log(this.treasure)
     },
     methods: {
         inFilters(column, item) {
@@ -105,6 +122,10 @@ export default {
             }
         },
         formatCell(column, item, index = null) {
+            if (column.type === 'boolean') {
+                return (item[column.key]) ? '?': '-'
+            }
+
             if (column.key === 'index') {
                 return index + 1
             }
@@ -140,6 +161,8 @@ export default {
     overflow: auto;
     padding: $padding;
     pointer-events: all;
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -172,6 +195,12 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: $padding;
+}
+
+.table-view {
+    width: 100%;
+    overflow: auto;
+    flex: 1;
 }
 
 th,

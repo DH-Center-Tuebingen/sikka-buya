@@ -80,14 +80,14 @@ export const ottomanFilterList = [
     { span: 6, type: "inline-checkbox", name: 'ottomanPredominance', label: 'Display only hoards consisting predominantly (90%+) of Ottoman coins '},
 
 
-    { span: 6, type: "single-select", name: 'subclassification', label: 'Subclassification of finds', queryBody: [], displayTextCallback: (option) => option },
+    { span: 6, type: "single-select", name: 'subclassification', label: 'Subclassification of finds', mode: 'or' },
     { span: 6, type: "multi-select", name: 'issuingState', label: 'Issuing State' },
     { span: 6, type: "multi-select", name: 'material', label: 'Metal' },
     { span: 6, type: "multi-select", name: 'nominal', label: 'Denomination' },
     { span: 6, type: "multi-select", name: 'person', label: 'Issuer (only for Ottoman coins)' },
     { span: 6, type: "multi-select", name: 'mintRegion', label: 'Mint (only for Ottoman coins)' },
-    { span: 6, type: "single-select", name: 'authenticity', label: 'Authenticity of coins' },
-    { span: 6, type: "single-select", name: 'coinTypeText', label: 'Coin type reference (only for Ottoman coins) ' },
+    { span: 6, type: "single-select", name: 'authenticity', label: 'Authenticity of coins', mode: 'or' },
+    { span: 6, type: "single-select", name: 'coinTypeText', label: 'Coin type reference (only for Ottoman coins) ', mode: 'or' },
     { span: 6, type: "multi-select", name: 'historicalRegion', label: 'Historical region of coin loss' },
 
     { span: 6, type: "real-range", name: 'yearOfMint', label: 'Year of Minting', step: 1 },

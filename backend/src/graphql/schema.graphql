@@ -590,6 +590,8 @@ type Query {
   searchSubclassification(text: String): [String]! 
   getYearOfMintRange:Range
   getYearOfLossRange:Range
+  searchAuthenticity(text: String): [String]
+  searchCoinTypeText(text: String): [String]
 }
 
 
@@ -988,14 +990,15 @@ input OttomanTreasureFilter {
     reliableAttribution: Boolean
     completeHoard: Boolean
     ottomanPredominance: Boolean
-    subclassification: String
     issuingState_and: [ID]
     nominal_and: [ID]
     person_and: [ID]
     mintRegion_and: [ID]
     material_and: [ID]
-    authenticity: String
-    coinTypeText: String
+
+    subclassification: [String]
+    authenticity: [String]
+    coinTypeText: [String]
     historicalRegion_and: [ID]
     yearOfMint: RangeInput
     yearOfLoss: RangeInput

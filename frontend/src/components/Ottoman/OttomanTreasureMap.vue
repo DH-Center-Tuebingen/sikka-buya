@@ -8,6 +8,7 @@
                 />
             </template>
             <CatalogFilterControls
+                v-if="filterConfigLoaded"
                 ref="catalogFilter"
                 style="padding: 0 1em 1em;"
                 :init-data="catalog_filter_mixin_initData"
@@ -171,7 +172,7 @@
                         </div>
                         <ButtonVue
                             :disabled="diagramMode === null"
-                            @click="() => diagramMode = null"
+                            @click="clearDiagram"
                         >
                             <Icon
                                 type="mdi"
@@ -181,10 +182,16 @@
                         </ButtonVue>
                     </div>
 
-                    <canvas
-                        ref="diagramCanvas"
-                        height="500"
-                    />
+                    <div
+                        ref="diagramContainer"
+                        style="position: relative;"
+                    >
+                        <canvas
+                            ref="diagramCanvas"
+                            height="500"
+                            style="position: absolute; right: 0; bottom: 0 ;"
+                        />
+                    </div>
                 </div>
             </template>
         </Sidebar>
@@ -299,6 +306,7 @@ export default {
             yearCountData: {},
             // null means no filter is applied, an empty array means all treasures are filtered out, so no treasure is shown.
             filteredTreasureIds: null,
+            filterConfigLoaded: false,
             overlay: null,
         };
     },
@@ -400,9 +408,10 @@ export default {
                     config.max = to;
                 }
             }
-
+            window.filterConfig = ottomanFilterConfig
             applyRange("yearOfMint", result?.data?.data?.getYearOfMintRange)
             applyRange("yearOfLoss", result?.data?.data?.getYearOfLossRange)
+            this.filterConfigLoaded = true
 
             this.overlay = new OttomanTreasureOverlay(this.featureGroup, settings, {
                 additionalData: {
@@ -508,7 +517,11 @@ export default {
                 }
             })
 
-            Query.raw("query filterOttomanTreasures($filters: OttomanTreasureFilter){filterOttomanTreasures(filters: $filters)}", {
+            this.applyYearOfMintFilter()
+            this.save();
+        },
+        applyYearOfMintFilter() {
+            Query.raw(`query filterOttomanTreasures($filters: OttomanTreasureFilter){filterOttomanTreasures(filters: $filters)}`, {
                 filters: this.filters
             }).then(result => {
                 this.filteredTreasureIds = result.data.data.filterOttomanTreasures ?? null
@@ -521,8 +534,6 @@ export default {
             }).catch(error => {
                 console.error("Error filtering treasures", error)
             })
-
-            this.save();
         },
         recalculateCatalogSidebar() {
             this.$refs.catalogSidebar?.recalculate();
@@ -583,6 +594,10 @@ export default {
         },
         removeInvalidIds() {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
+        },
+        clearDiagram(){
+            this.$refs.diagramSelect.value = null
+            this.updateDiagram()
         },
         updateDiagram() {
             if (!this.$refs.diagramSelect) return
@@ -765,8 +780,19 @@ export default {
                 this.chart.data.datasets[0].data = dataArray.map(obj => obj.count)
                 this.chart.update()
             }
+
+            this.resizeCanvas()
+
         },
         resizeCanvas() {
+            console.log(this.diagramMode)
+            if (!this.diagramMode) {
+                this.$refs.diagramContainer.style.height = 0
+            } else {
+                const aspect = this.chart.aspectRatio
+                const width = this.$refs.diagramContainer.clientWidth;
+                this.$refs.diagramContainer.style.height = (width / aspect) + "px"
+            }
         },
         isActiveMint(mint) {
             return this.selectedTreasures.some(treasure => {

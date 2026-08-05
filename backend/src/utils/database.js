@@ -4,7 +4,7 @@ const pgp = require("pg-promise")({
     // This logs the queries that are executed
     query: function (e) {
         if (process.env.NODE_DEBUG === "true") {
-            // console.log(e.query);
+            console.log(e.query);
         }
     }
 })

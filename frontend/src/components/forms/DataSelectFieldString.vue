@@ -1,0 +1,432 @@
+<template>
+    <div
+        class="data-select"
+    >
+        <input
+            ref="nameField"
+            v-model="value[attribute]"
+            class="name-field"
+            :placeholder="placeholder"
+            :required="required"
+            @input="input"
+            @focus="activateList"
+            @blur="hideList"
+        >
+
+        <Button
+            v-if="!disableRemoveButton"
+            id="clear-btn"
+            @click.stop.prevent="clear()"
+        >
+            <Close :size="iconSize" />
+        </Button>
+
+
+        <div
+            v-if="debug"
+            class="debug-id"
+        >
+            ({{ idValue }})
+        </div>
+
+        <ul
+            ref="scrollable"
+            :class="'search-box ' + (listVisible ? 'visible' : 'hidden')"
+            @mousedown.stop.prevent
+            @mouseup.stop.prevent
+        >
+            <li
+                v-if="internal_error"
+                class="error non-selectable"
+            >
+                {{ internal_error }}
+            </li>
+
+            <li
+                v-if="(!internal_error && !loading && !searchResults) ||
+                    searchResults.length == 0
+                "
+                class="non-selectable"
+            >
+                {{ $t('message.list_empty') }}
+            </li>
+            <li
+                v-for="search of searchResults"
+                :key="search"
+                @click.stop="($event) => setValue($event, search)"
+            >
+                <!-- These comments are necessary, that no whitespace is added!
+        -->{{ search
+        }}<!--
+      -->
+            </li>
+        </ul>
+
+        <div
+            v-if="error"
+            class="error non-selectable"
+        >
+            {{ error }}
+        </div>
+    </div>
+</template>
+
+<script>
+import GraphQLUtils from '../../utils/GraphQLUtils';
+import Query from '../../database/query';
+
+import Close from 'vue-material-design-icons/Close';
+
+export default {
+    name: 'DataSelectField',
+    components: { Close },
+    props: {
+        debug: {
+            type: Boolean,
+            default: false,
+        },
+        value: {
+            type: String,
+        },
+        error: String,
+        queryBody: {
+            type: Array,
+            default: function () {
+                return ['id', 'name'];
+            },
+        },
+        additionalParameters: Object,
+        table: {
+            type: String,
+            required: true,
+        },
+        required: {
+            type: Boolean,
+            default: false,
+        },
+        // Text allows us to format the text as we want to.
+        // This is an alternative to attribute.
+        // Use JavaScript template literals placeholders ('${your_variable}')
+        text: {
+            type: String,
+            default: null,
+        },
+        displayTextCallback: Function,
+        /**
+         * Unselectable is used, when you e.g. have multiple selection options and the
+         * field is cleared afterwards and only the selection is tracked.
+         */
+        unselectable: {
+            default: false,
+            type: Boolean,
+        },
+        /**
+         * You may use a custom query and just need to set the $text variable in that
+         * query. You must set the dataPath or queryCommand value to the path where the data is stored.
+         */
+        query: String,
+        /**
+         * The 'dataPath' value is used in conjunktion with the 'query' value.
+         * And is an alternative to the queryCommand value, if you have a more
+         * complex structure you want to access.
+         * 
+         * E.g. coinTypes.types
+         */
+        dataPath: String,
+        /**
+         * The 'queryCommand' value is used in conjunktion with the 'query' value.
+         * And is an alternative to the dataPath value, if you have a simple
+         * structure you want to access.
+         * 
+         * E.g. 'coinTypes'
+         */
+        queryCommand: String,
+        msg: String,
+        tooltip: String,
+        placeholder: String,
+        disableRemoveButton: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    data: function () {
+        return {
+            listVisible: false,
+            hideTimeout: null,
+            searchResults: [],
+            loading: false,
+            internal_error: '',
+            iconSize: 18
+        };
+    },
+    methods: {
+        setValue: function (event, data) {
+            this.$refs.nameField.blur();
+            this.listVisible = false;
+            this.$emit('input', data);
+            this.$emit('select', data, data);
+
+        },
+        input: async function (event, preventSimiliarityCheck = false) {
+            const value = event.target.value
+            this.checkMatch(value);
+            this.$emit('input', value);
+        },
+        focus() {
+            this.$refs.nameField.focus();
+        },
+        checkMatch: async function (value) {
+            await this.searchEntry(value);
+        },
+        activateList: async function () {
+            await this.checkMatch(this.value);
+            this.showList();
+        },
+        showList: function () {
+            if (this.hideTimeout) clearTimeout(this.hideTimeout);
+            this.listVisible = true;
+            this.$emit('dynamic-change');
+        },
+        hideList: function () {
+            this.hideTimeout = setTimeout(() => {
+                this.listVisible = false;
+                this.$emit('blur');
+            }, 200);
+        },
+        getData: function () {
+            let loaded;
+            try {
+                loaded = JSON.parse(window.localStorage.getItem(this.$props.table));
+            } catch (e) {
+                console.error("Couldn't load data-select", e);
+            }
+
+            return loaded || [];
+        },
+        searchEntry: async function (str = null) {
+            let searchString = str;
+
+            let query = this.query
+
+            const queryCommand = this.queryCommand
+                ? this.queryCommand
+                : `search${this.$utils.pascalCase(this.table)}`;
+
+            if (!query) {
+                query = `query search($text: String!){
+      ${queryCommand}(text: $text ${this.additionalParameters
+                        ? Object.entries(this.additionalParameters).map(
+                            ([key, value]) => `,${key}:${JSON.stringify(value)}`
+                        )
+                        : ''
+                    } )
+        ${GraphQLUtils.buildQueryBody({})}
+      
+      }`;
+            }
+
+            Query.raw(query, { text: searchString })
+                .then((result) => {
+
+                    let data = result?.data?.data
+                    let searchResults = null
+
+                    if (data) {
+
+                        let parts = this.dataPath ? this.dataPath.split('.') : [queryCommand]
+
+                        while (parts.length > 0) {
+                            const part = parts.shift()
+                            if (data[part] == null) break
+                            data = data[part]
+                        }
+
+                        searchResults = data
+                    }
+
+
+                    if (searchResults) {
+                        this.searchResults = searchResults;
+                        this.internal_error = '';
+                    } else {
+                        console.error('Could not get value');
+                        this.internal_error = 'Unknown Search Error';
+                    }
+                })
+                .catch((error) => {
+                    this.internal_error = error;
+                })
+                .finally(() => {
+                    this.loading = false;
+                });
+        },
+        // transformTextContent: function (search) {
+        //     if (this.displayTextCallback) return this.displayTextCallback(search);
+        //     else if (this.text) {
+        //         return this.text.replace(/\${(.+?)}/g, function (match, name) {
+        //             const path = name.split('.');
+        //             let target = search;
+        //             for (let i = 0; i < path.length && target != null; i++) {
+        //                 target = target[path[i]];
+        //             }
+
+        //             return target ? target : '';
+        //         });
+        //     } else {
+        //         return search[this.attribute] || '';
+        //     }
+        // },
+        clear() {
+            this.$emit('input', '');
+        },
+    },
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style
+    lang="scss"
+    scoped
+>
+.error {
+    position: static;
+}
+
+.visible {
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
+
+.data-select {
+    display: flex;
+    position: relative;
+    color: #000000;
+}
+
+.check {
+    color: $primary-color;
+}
+
+.alert {
+    color: $red;
+}
+
+#clear-btn {
+    right: 0;
+    top: 1px;
+    padding: 0;
+    right: 1px;
+    width: 24px;
+    border-radius: 0;
+    background-color: none;
+    height: calc(100% - 2px);
+    position: absolute;
+    border: none;
+    z-index: 1;
+
+    &:hover {
+        background-color: rgba($color: $gray, $alpha: 0.2);
+    }
+}
+
+.indicator {
+    position: absolute;
+    right: 25px;
+    border-left: none;
+    padding: 0 5px;
+    box-sizing: border-box;
+    display: flex;
+    height: 100%;
+    pointer-events: none;
+
+    >* {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.debug-id {
+    position: absolute;
+    right: 55px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    color: gray;
+}
+
+.error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+
+    // display: flex;
+    // align-items: center;
+    padding: 5px 20px;
+}
+
+.name-field {
+    flex: 1;
+    min-width: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    //   border: 1px solid gray;
+    transition: opacity 0.2s;
+}
+
+.id-field {
+    max-width: 37px;
+    border: none;
+    text-align: center;
+    @include disabled_input;
+}
+
+button {
+    width: 64px;
+}
+
+.search-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin: 0;
+    padding-left: 0;
+    list-style-type: none;
+    background-color: white;
+    width: 100%;
+    // padding: 10px;
+    box-sizing: border-box;
+    z-index: 2000;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-shadow: 1px 2px 3px rgba($color: #000000, $alpha: 0.2);
+
+    border: $border;
+    border-top-width: 0;
+    border-bottom-right-radius: $border-radius;
+    border-bottom-left-radius: $border-radius;
+    transform: translateY(-2px);
+
+    li {
+        font-size: $small-font;
+        border-bottom: 1px solid whitesmoke;
+        padding: $small-padding 2 * $small-padding;
+
+        &.non-selectable {
+            background-color: whitesmoke;
+        }
+
+        &:not(.non-selectable):hover {
+            // color: whitesmoke;
+            background-color: $dark-white;
+            cursor: pointer;
+        }
+    }
+}
+</style>
