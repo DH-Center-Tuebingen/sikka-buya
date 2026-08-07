@@ -101,9 +101,6 @@ export default {
             ]
         }
     },
-    mounted() {
-        console.log(this.treasure)
-    },
     methods: {
         inFilters(column, item) {
             const filterValue = [
@@ -113,8 +110,6 @@ export default {
 
             if (column.object) {
                 const id = Number(item[column.key]?.id) ?? null
-
-                console.log("Filter result:", filterValue.includes(id))
                 return filterValue.includes(id)
             }
             else {

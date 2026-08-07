@@ -143,8 +143,6 @@ export default {
                 reign_to: this.person.reign.to,
             };
 
-            console.log(variables.reign_from, variables.reign_to);
-
             if (this.person.id && this.person.id > 0) {
                 variables.id = this.person.id;
                 queryName = "updatePerson"

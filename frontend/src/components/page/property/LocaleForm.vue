@@ -109,7 +109,6 @@ export default {
         },
         reset(target) {
             let initial = `initial${target.charAt(0).toUpperCase() + target.slice(1)}`;
-            console.log(initial, target)
             this.$data[target] = this.$data[initial]
         },
         submitWithEnter(e) {

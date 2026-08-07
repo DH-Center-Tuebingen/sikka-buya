@@ -699,7 +699,6 @@ export default {
                 name,
                 idx
             );
-            console.log(methodName, this)
             return this[methodName](target, idx);
         },
         resetFilter(name) {

@@ -26,7 +26,6 @@ function createChildDirectories(path, config, depth = 0) {
         for (let [key, children] of Object.entries(config)) {
             const targetPath = joinPath(path, key)
             if (!existsSync(targetPath)) {
-                console.log("Create directory: " + targetPath)
                 mkdirSync(targetPath)
             }
             if (children === true) {

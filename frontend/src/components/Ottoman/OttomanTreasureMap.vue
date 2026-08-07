@@ -792,7 +792,6 @@ export default {
 
         },
         resizeCanvas() {
-            console.log(this.diagramMode)
             if (!this.diagramMode) {
                 this.$refs.diagramContainer.style.height = 0
             } else {

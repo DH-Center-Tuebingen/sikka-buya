@@ -211,7 +211,6 @@ const WriterMutations = {
     ...PageGQL.Mutations,
     ...BlockGQL.Mutations,
     async uploadFile(_, { identity, file: filePromise }) {
-        console.log(filePromise)
         if (!identity) throw new Error("Identity field is required!")
         if (!filePromise) throw new Error("File field is required!")
 

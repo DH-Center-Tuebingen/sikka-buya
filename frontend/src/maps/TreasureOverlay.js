@@ -726,7 +726,6 @@ export default class TreasureOverlay extends Overlay {
     }
 
     select(treasureId) {
-        console.log("SELECTED")
         this.onSelectTreasure(treasureId)
     }
 

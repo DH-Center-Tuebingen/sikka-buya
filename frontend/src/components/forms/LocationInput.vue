@@ -132,7 +132,6 @@ export default {
   computed: {
     center() {
       const managedCenter = this.$mconfig.getArray('map.default.center');
-      console.log("Managed center is", managedCenter)
       return managedCenter ?? [0, 0];
 
     },

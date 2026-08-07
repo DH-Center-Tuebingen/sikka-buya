@@ -51,13 +51,10 @@ export class RequestGuard {
                 if(this.before) this.before(value)
 
                 try {
-                    // console.log(`RequestGuard starts processing ${current}.`)
                     returnValue = await this.callback(value)
                 } catch (e) {
                     console.error(e)
                 } finally {
-                    // console.log(`RequestGuard finished request ${current}.`)
-                    // if (this.reqCount > current) console.log(`RequestGuard queued request ${this.reqCount}.`)
                     this.current = current
                     this.locked = false
                 }

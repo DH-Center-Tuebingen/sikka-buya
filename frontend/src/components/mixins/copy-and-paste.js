@@ -46,7 +46,6 @@ export default {
          * @returns { TextAndNode } - The text and node that was pasted
          */
         pastePlainText: function (event) {
-            console.log("PASTED PLAIN TEXT")
             event.preventDefault();
             let pastedText = (event.clipboardData || window.clipboardData).getData('text/plain');
             const selection = window.getSelection();
