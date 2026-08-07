@@ -18,6 +18,7 @@
                     :value="item"
                     :index="index"
                     :row-definition="rowDefinition"
+                    @delete="deleteRow(item)"
                 />
             </tbody>
         </table>
@@ -45,6 +46,11 @@ export default {
             return OttomanTreasureItem.rowDefinition();
         }
     },
+    methods: {
+        deleteRow(item) {
+            this.$emit("delete", item)
+        }
+    }
 };
 
 </script>

@@ -168,11 +168,18 @@
                 </div>
             </div>
 
+            <div style="display:flex; justify-content: flex-end;align-items:center; margin-bottom: 1rem;">
+                <div class="delete-all-btn">
+                    Delete All
+                    <DynamicDeleteButton @delete="deleteAll" />
+                </div>
+            </div>
 
 
             <OttomanTreasureItemTable
                 v-model="value.items"
                 style="max-height: 50vh;"
+                @delete="(item) => removeRow(item)"
             />
             <ButtonVue @click="addItem">
                 <Locale path="form.add_item" />
@@ -215,6 +222,7 @@ import ColorInput from '../../forms/ColorInput.vue';
 import OttomanTreasureItemTable from '@/components/Ottoman/OttomanTreasureItemTable.vue';
 
 import { OttomanTreasure, OttomanTreasureItem } from '@/components/Ottoman/ottoman-treasure-item';
+import DynamicDeleteButton from "../../layout/DynamicDeleteButton.vue";
 
 const defaultLocation = { type: "Feature", geometry: { coordinates: null, type: "point" }, properties: { radius: 1000 } }
 
@@ -222,6 +230,7 @@ export default {
     components: {
         ButtonVue,
         ErrorMessage,
+        DynamicDeleteButton,
         // FormList,
         LabeledInputContainer,
         Locale,
@@ -346,6 +355,15 @@ export default {
             // const item = new TreasureItem().forInput()
             this.value.items.push(item)
         },
+        removeRow(item) {
+            const index = this.value.items.findIndex((other) => other.id === item.id)
+            if (index > -1) {
+                this.value.items.splice(index, 1)
+            }
+        },
+        deleteAll(){
+            this.value.items = []
+        }
     }
 }
 </script>
@@ -353,6 +371,18 @@ export default {
 
 <style lang="scss">
 .treasure-form {
+
+    .delete-all-btn {
+        display: flex;
+        min-width: 130px;
+        align-items: center;
+        justify-content: space-between;
+        padding: $padding 2*$padding;
+        border-radius: $border-radius;
+        background-color: $red;
+        font-weight: bold;
+        gap: 0.5rem;
+    }
 
     .list-shadow {
         position: relative;

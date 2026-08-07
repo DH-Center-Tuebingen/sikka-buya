@@ -1,5 +1,5 @@
 <template>
-    <tr>
+    <tr style="position:relative;">
         <td
             v-for="definition in rowDefinition"
             :key="definition.label"
@@ -44,6 +44,10 @@
                 :error="'Unknown row definition type: ' + definition.type"
             />
         </td>
+        <DynamicDeleteButton
+            class="delete-btn"
+            @delete="() => $emit('delete')"
+        />
     </tr>
 </template>
 
@@ -51,11 +55,12 @@
 import RangeInput from '../forms/RangeInput.vue';
 import ErrorMessage from '../ErrorMessage.vue';
 import DataSelectField from '../forms/DataSelectField.vue';
-
+import DynamicDeleteButton from '../layout/DynamicDeleteButton.vue'
 
 export default {
     components: {
         DataSelectField,
+        DynamicDeleteButton,
         ErrorMessage,
         RangeInput,
     },
@@ -73,7 +78,7 @@ export default {
             required: true
         }
     },
-    emits: ['update:modelValue'],
+    emits: ['update:modelValue', 'delete'],
 };
 
 </script>
@@ -85,5 +90,11 @@ export default {
 td {
     text-align: center;
     vertical-align: middle;
+}
+
+.delete-btn {
+    position: sticky;
+    right: 0;
+    z-index: 1;
 }
 </style>
