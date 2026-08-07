@@ -37,8 +37,6 @@ class Treasure extends Table {
             if (reconstructed == null) reconstructed = false
             if (mintRegionUncertain == null) mintRegionUncertain = false
 
-            yearOfLossFrom = items[i].yearOfLoss?.from || null
-            yearOfLossTo = items[i].yearOfLoss?.to || null
             yearOfMintFrom = items[i].yearOfMint?.from || null
             yearOfMintTo = items[i].yearOfMint?.to || null
 
@@ -89,9 +87,6 @@ class Treasure extends Table {
                     $[person],
                     $[historicalRegion],
                     $[issuingState],
-
-                    $[yearOfLossFrom],
-                    $[yearOfLossTo],
                     $[yearOfMintFrom],
                     $[yearOfMintTo],
                 )`, {
@@ -113,8 +108,6 @@ class Treasure extends Table {
                 person,
                 historicalRegion,
                 issuingState,
-                yearOfLossFrom,
-                yearOfLossTo,
                 yearOfMintFrom,
                 yearOfMintTo,
             })
@@ -366,8 +359,6 @@ class TreasureItem {
             "person": "person",
             "historicalRegion": "historical_region",
             "issuingState": "issuing_state",
-            "yearOfLossFrom": "year_of_loss_from",
-            "yearOfLossTo": "year_of_loss_to",
             "yearOfMintFrom": "year_of_mint_from",
             "yearOfMintTo": "year_of_mint_to",
         }

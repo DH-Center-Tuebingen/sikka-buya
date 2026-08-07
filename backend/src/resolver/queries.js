@@ -621,7 +621,7 @@ ORDER BY person.id;
         return Database.one(`SELECT MIN(year_of_mint_from) AS from, MAX(year_of_mint_to) AS to FROM public.treasure_item;`)
     },
     getYearOfLossRange() {
-        return Database.one(`SELECT MIN(year_of_loss_from) AS from, MAX(year_of_loss_to) AS to FROM public.treasure_item;`)
+        return Database.one(`SELECT MIN(year_of_loss_from) AS from, MAX(year_of_loss_to) AS to FROM public.treasure;`)
     }
 }
 

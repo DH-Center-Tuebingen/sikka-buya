@@ -52,7 +52,6 @@ query {
       mintRegion {id name}
       nominal {id name}
       yearOfMint {from to}
-      yearOfLoss {from to}
       person {id name reign {from to}}
       issuingState {id name}
       historicalRegion {id name}

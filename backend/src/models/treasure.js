@@ -54,9 +54,6 @@ class Treasure extends Table {
                 authenticity,
                 statusUncertain = false,
 
-                yearOfLoss,
-                yearOfLossUncertain = { from: false, to: false },
-
                 yearOfMint,
                 yearOfMintUncertain = { from: false, to: false },
 
@@ -213,8 +210,6 @@ class Treasure extends Table {
         publication = "",
         yearOfLoss = { from: null, to: null },
         yearOfLossUncertain = { from: false, to: false },
-        remarks = null,
-        remarksToCoinTypeReference = null,
     } = {}) {
 
         let { geometry: _loc, properties } = GeoJSON.separate(location)

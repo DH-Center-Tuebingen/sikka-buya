@@ -101,9 +101,6 @@ type TreasureItem {
   authenticity: String
   statusUncertain: Boolean
 
-  yearOfLoss: Range
-  yearOfLossUncertain: RangeUncertainty
-
   yearOfMint: Range
   yearOfMintUncertain: RangeUncertainty
 
@@ -146,9 +143,6 @@ input TreasureItemInput {
 
   authenticity: String
   statusUncertain: Boolean
-
-  yearOfLoss: RangeInput
-  yearOfLossUncertain: RangeUncertaintyInput
 
   yearOfMint: RangeInput
   yearOfMintUncertain: RangeUncertaintyInput

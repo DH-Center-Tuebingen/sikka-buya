@@ -38,7 +38,7 @@ class OttomanGQL extends GQL {
 
                 const rangeFields = {
                     'yearOfMint': "year_of_mint@item",
-                    'yearOfLoss': "year_of_loss@item"
+                    'yearOfLoss': "year_of_loss@treasure"
                 }
 
                 for (const field in rangeFields) {
@@ -48,14 +48,11 @@ class OttomanGQL extends GQL {
                     const filterValue = filters[field]
                     if (filterValue != null && (filterValue.from != null || filterValue.to != null)) {
                         const { from, to } = filterValue
-                        if (from != null) {
-                            whereConditions.push(`${tableName}.${columnName}_from >= \${${field}_from}`)
-                            values[`${field}_from`] = from
-                        }
-                        if (to != null) {
-                            whereConditions.push(`${tableName}.${columnName}_to <= \${${field}_to}`)
-                            values[`${field}_to`] = to
-                        }
+                        whereConditions.push(`${tableName}.${columnName}_from <= \${${field}_to}`)
+                        values[`${field}_from`] = from
+
+                        whereConditions.push(`${tableName}.${columnName}_to >= \${${field}_from}`)
+                        values[`${field}_to`] = to
                     }
                 }
 
