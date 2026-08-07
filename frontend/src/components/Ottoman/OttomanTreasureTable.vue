@@ -79,7 +79,7 @@ export default {
                 { label: '⬅ ?', type: 'boolean', key: 'personUncertain'},
 
                 { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}` },
-                { label: '⬅ ?', type: 'boolean', key: 'yearOfMintUncertain'},
+                { label: '⬅ ?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '-' : '?'},
                 
                 { label: 'Mint', key: 'mintRegion', object: 'name' },
                 { label: '⬅ ?', type: 'boolean', key: 'mintRegionUncertain'},
