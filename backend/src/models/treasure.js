@@ -208,6 +208,7 @@ class Treasure extends Table {
         subclassification = "",
         collection = "",
         publication = "",
+        yearOfLossText = "",
         yearOfLoss = { from: null, to: null },
         yearOfLossUncertain = { from: false, to: false },
     } = {}) {
@@ -234,6 +235,7 @@ class Treasure extends Table {
                 subclassification,
                 collection,
                 publication,
+                year_of_loss_text,
                 year_of_loss_from,
                 year_of_loss_to,
                 year_of_loss_from_uncertain,
@@ -255,6 +257,7 @@ class Treasure extends Table {
                 $[subclassification],
                 $[collection],
                 $[publication],
+                $[yearOfLossText],
                 $[yearOfLossFrom],
                 $[yearOfLossTo],
                 $[yearOfLossFromUncertain],
@@ -276,6 +279,7 @@ class Treasure extends Table {
                 subclassification,
                 collection,
                 publication,
+                yearOfLossText,
                 yearOfLossFrom: yearOfLoss.from,
                 yearOfLossTo: yearOfLoss.to,
                 yearOfLossFromUncertain: yearOfLossUncertain ? yearOfLossUncertain.from : false,
@@ -304,6 +308,7 @@ class Treasure extends Table {
         subclassification = "",
         collection = "",
         publication = "",
+        yearOfLossText = "",
         yearOfLoss = { from: null, to: null },
         yearOfLossUncertain = { from: false, to: false },
     } = {}) {
@@ -333,6 +338,7 @@ class Treasure extends Table {
                     collection = $[collection],
                     publication = $[publication],
 
+                    year_of_loss_text = $[yearOfLossText],
                     year_of_loss_from = $[yearOfLossFrom],
                     year_of_loss_to = $[yearOfLossTo],
                     year_of_loss_from_uncertain = $[yearOfLossFromUncertain],
@@ -357,6 +363,7 @@ class Treasure extends Table {
                     subclassification,
                     collection,
                     publication,
+                    yearOfLossText,
                     yearOfLossFrom: yearOfLoss.from,
                     yearOfLossTo: yearOfLoss.to,
                     yearOfLossFromUncertain: yearOfLossUncertain ? yearOfLossUncertain.from : false,
@@ -487,6 +494,7 @@ class Treasure extends Table {
                         treasure.collection,
                         treasure.publication,
 
+                        treasure.year_of_loss_text,
                         treasure.year_of_loss_from,
                         treasure.year_of_loss_to,
                         treasure.year_of_loss_from_uncertain,
@@ -512,6 +520,7 @@ class Treasure extends Table {
                 treasure.reliableAttribution = treasure.reliable_attribution
                 treasure.completeHoard = treasure.complete_hoard
                 treasure.ottomanPredominance = treasure.ottoman_predominance
+                treasure.yearOfLossText = treasure.year_of_loss_text,
                 treasure.yearOfLoss = { from: treasure.year_of_loss_from, to: treasure.year_of_loss_to }
                 treasure.yearOfLossUncertain = { from: treasure.year_of_loss_from_uncertain, to: treasure.year_of_loss_to_uncertain }
                 return treasure

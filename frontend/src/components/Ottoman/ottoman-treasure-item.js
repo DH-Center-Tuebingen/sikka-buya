@@ -31,6 +31,7 @@ export class OttomanTreasure {
         subclassification = null,
         collection = null,
         publication = null,
+        yearOfLossText = null,
         yearOfLoss = { from: null, to: null },
         yearOfLossUncertain = { from: false, to: false },
 
@@ -49,6 +50,7 @@ export class OttomanTreasure {
         this.subclassification = subclassification
         this.collection = collection
         this.publication = publication
+        this.yearOfLossText = yearOfLossText
         this.yearOfLoss = yearOfLoss
         this.yearOfLossUncertain = yearOfLossUncertain
     }
@@ -79,6 +81,7 @@ export class OttomanTreasure {
                 "count",
                 "collection",
                 "publication",
+                "yearOfLossText",
                 { yearOfLoss: ["from", "to"] },
                 { yearOfLossUncertain: ["from", "to"] },
 
@@ -160,6 +163,7 @@ export class OttomanTreasure {
                 "count",
                 "collection",
                 "publication",
+                "yearOfLossText",
                 { yearOfLoss: ["from", "to"] },
                 { yearOfLossUncertain: ["from", "to"] },
 
@@ -249,6 +253,7 @@ export class OttomanTreasure {
             subclassification: this.subclassification,
             collection: this.collection,
             publication: this.publication,
+            yearOfLossText: this.yearOfLossText,
             yearOfLoss: this.yearOfLoss,
             yearOfLossUncertain: this.yearOfLossUncertain,
         }

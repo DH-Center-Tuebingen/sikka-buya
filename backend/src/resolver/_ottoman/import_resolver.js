@@ -32,7 +32,7 @@ async function importResolver(_, { file: fileUpload }) {
         'Subclassification of finds': "treasure.subclassification",
         'Type of find uncertain': "treasure.typeOfFindUncertain$boolean",
         // 'Quantity of studied coins (for all findspot)': "", // Calculated
-        // 'Date of loss (text)': "",
+        'Date of loss (text)': "treasure.yearOfLossText",
         'Date of loss from': "treasure.yearOfLoss$range.from",
         'Date of loss from uncertain': "treasure.yearOfLossUncertain$range.from#boolean",
         'Date of loss to': "treasure.yearOfLoss$range.to",
@@ -65,8 +65,8 @@ async function importResolver(_, { file: fileUpload }) {
         'Status uncertain': "item.statusUncertain$boolean",
         'Quantity': "item.count$number",
         'Coin type reference (only for Ottoman coins)': "item.coinTypeText",
-        // 'Remarks to coin type reference': "",    !!!!
-        // 'Remarks': "", // SAME AS CIRCUMSTANCES (?)
+        'Remarks to coin type reference': "item.remarksToCoinTypeReference",
+        'Remarks': "item.remarks",
         'Display only coins with reliable attribution': "treasure.reliableAttribution$boolean",
         'Display only complete hoard': "treasure.completeHoard$boolean",
         'Display only hoards consisting predominantly (90%+) of Ottoman coins': "treasure.ottomanPredominance$boolean",
@@ -190,6 +190,7 @@ async function ensureTreasure(treasure, cachedTreasures) {
         if (fetchedTreasure) {
             cachedTreasures[treasure.name] = fetchedTreasure
             existingTreasure = fetchedTreasure
+            await Treasure.update(fetchedTreasure.id, treasure)
         } else {
             treasure.color = '#ff0000';
             const id = await Treasure.add(treasure);

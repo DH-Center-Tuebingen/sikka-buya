@@ -109,6 +109,13 @@
         </LabeledInputContainer>
         <LabeledInputContainer>
             <template #label>
+                Date of Loss (Text) = {{ value.yearOfLossText }}
+            </template>
+
+            <input v-model="value.yearOfLossText">
+        </LabeledInputContainer>
+        <LabeledInputContainer>
+            <template #label>
                 Date of Loss
             </template>
 
@@ -260,6 +267,7 @@ export default {
                 singleFind: false,
                 subclassification: "",
                 timespan: { from: null, to: null },
+                yearOfLossText: "",
                 yearOfLoss: { from: null, to: null, fromUncertain: false, toUncertain: false },
             },
             autoComplete: true,
@@ -307,6 +315,7 @@ export default {
                 reliableAttribution: this.value.reliableAttribution,
                 singleFind: this.value.singleFind,
                 subclassification: this.value.subclassification,
+                yearOfLossText: this.value.yearOfLossText,
                 yearOfLoss: {
                     from: parseInt(this.value.yearOfLoss.from), to: parseInt(this.value.yearOfLoss.to)
                 },
@@ -361,7 +370,7 @@ export default {
                 this.value.items.splice(index, 1)
             }
         },
-        deleteAll(){
+        deleteAll() {
             this.value.items = []
         }
     }

@@ -173,6 +173,7 @@ type Treasure {
 
   items: [TreasureItem]
 
+  yearOfLossText: String
   yearOfLoss: Range
   yearOfLossUncertain: RangeUncertainty
 }
@@ -195,6 +196,7 @@ input TreasureInput {
 
   items: [TreasureItemInput]
 
+  yearOfLossText: String
   yearOfLoss: RangeInput
   yearOfLossUncertain: RangeUncertaintyInput
 }

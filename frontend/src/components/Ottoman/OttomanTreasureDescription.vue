@@ -35,7 +35,7 @@ export default {
             return [
                 { label: 'Subclassification', value: this.treasure.subclassification ?? "N/A" },
                 { label: 'Quantity', value: this.treasure.totalCount ?? "N/A" },
-                { label: 'Date of loss', value: stringifyRange(this.treasure.yearOfLoss) },
+                { label: 'Date of loss', value: this.treasure.yearOfLossText ?? "N/A" },
                 { label: 'Circumstances of find', value: this.treasure.description ?? "N/A" },
                 { label: 'Collection', value: this.treasure.collection ?? "N/A" },
                 { label: 'Publication', value: this.treasure.publication ?? "N/A" },
