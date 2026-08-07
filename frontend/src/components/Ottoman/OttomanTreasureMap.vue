@@ -355,6 +355,13 @@ export default {
             return mints.sort(Sort.stringPropAlphabetically("name"))
         }
     },
+    watch: {
+        selectedTreasures(){
+            if(this.selectedTreasures.length === 0){
+                this.showTable = false;
+            }
+        }
+    },
     created() {
         window.graphics = this.featureGroup
 

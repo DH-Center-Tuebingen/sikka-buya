@@ -1,6 +1,6 @@
 <template>
     <div class="ottoman-treasure-table">
-<header class="flex row">
+        <header class="flex row">
             <div class="flex row">
                 <h2>{{ treasure.name }}</h2>
                 <div class="find-type">
@@ -73,27 +73,27 @@ export default {
             return [
                 { label: '#', key: 'index' },
                 { label: 'Issuing State', key: 'issuingState', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'stateUncertain'},
+                { label: '⬅ ?', type: 'boolean', key: 'stateUncertain' },
 
                 { label: 'Issuer', key: 'person', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'personUncertain'},
+                { label: '⬅ ?', type: 'boolean', key: 'personUncertain' },
 
                 { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}` },
-                { label: '⬅ ?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '-' : '?'},
-                
+                { label: '⬅ ?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '-' : '?' },
+
                 { label: 'Mint', key: 'mintRegion', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'mintRegionUncertain'},
+                { label: '⬅ ?', type: 'boolean', key: 'mintRegionUncertain' },
 
                 { label: 'Material', key: 'material', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'materialUncertain'},
+                { label: '⬅ ?', type: 'boolean', key: 'materialUncertain' },
 
                 { label: 'Denomination', key: 'denominationText' }, //Denom. Text
                 { label: 'Authenticity', key: 'authenticity' },
                 { label: 'Quantity', key: 'count' },
                 { label: 'Coin type reference', key: 'coinTypeText' },
-                { label: 'Remarks to Coin Type Reference', key:'remarksToCoinTypeReference'},
-                { label: 'Remarks', key:'remarks'},
-                
+                { label: 'Remarks to Coin Type Reference', key: 'remarksToCoinTypeReference' },
+                { label: 'Remarks', key: 'remarks' },
+
                 // { label: 'Region of loss', key: 'regionOfLoss' },
                 // { label: 'Year of minting', key: 'yearOfMint' },
                 // { label: 'Year of loss', key: 'yearOfLoss' },
@@ -101,7 +101,7 @@ export default {
             ]
         }
     },
-    mounted(){
+    mounted() {
         console.log(this.treasure)
     },
     methods: {
@@ -123,7 +123,7 @@ export default {
         },
         formatCell(column, item, index = null) {
             if (column.type === 'boolean') {
-                return (item[column.key]) ? '?': '-'
+                return (item[column.key]) ? '?' : '-'
             }
 
             if (column.key === 'index') {
