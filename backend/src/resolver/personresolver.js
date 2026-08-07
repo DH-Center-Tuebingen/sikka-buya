@@ -66,7 +66,8 @@ class PersonResolver extends Resolver {
 
     async get(_, args) {
         let result = await Database.one(`
-        SELECT p.id, p.name, p.short_name, p.reign_from, p.reign_to,
+        SELECT p.id, p.name, p.short_name, 
+        p.reign_from, p.reign_to,
         r.id AS role_id, r.name AS role_name,
         d.id AS dynasty_id, d.name AS dynasty_name,
         c.color AS color
@@ -81,7 +82,7 @@ class PersonResolver extends Resolver {
             id: args.id
         })
 
-        return Person.decomposePersonResult(result)
+        return result.map(this.decomposePersonResult)
     }
 
 
@@ -116,6 +117,7 @@ class PersonResolver extends Resolver {
 
         let result = await Database.manyOrNone(`
         SELECT p.id, p.name, p.short_name,
+        p.reign_from, p.reign_to,
         r.id AS role_id, r.name AS role_name,
         d.id AS dynasty_id, d.name AS dynasty_name,
         c.color AS color
@@ -127,9 +129,7 @@ class PersonResolver extends Resolver {
         ORDER BY ${SQLUtils.normalizeString("p.name")} ASC`,
             queryParameters)
 
-        result = result.map(item => {
-            return Person.decomposePersonResult(item)
-        })
+        result = result.map(this.decomposePersonResult)
 
 
         return result
@@ -139,6 +139,7 @@ class PersonResolver extends Resolver {
 
         let result = await Database.manyOrNone(`
         SELECT p.id, p.name, p.short_name,
+        p.reign_from, p.reign_to,
         r.id AS role_id, r.name AS role_name,
         d.id AS dynasty_id, d.name AS dynasty_name,
         c.color AS color
@@ -148,13 +149,17 @@ class PersonResolver extends Resolver {
         LEFT JOIN person_color c ON c.person = p.id
         WHERE unaccent(p.name) 
         ILIKE unaccent($[search]) 
-        ORDER BY p.name ASC
+        ORDER BY p.reign_from, p.name ASC
         `, {
             table: this.tableName,
             search: `%${args.text}%`
         })
 
-        return result.map(res => Person.decomposePersonResult(res))
+        return result.map(this.decomposePersonResult)
+    }
+
+    decomposePersonResult(item) {
+        return Person.decomposePersonResult(item)
     }
 
     async request(query, params = []) {

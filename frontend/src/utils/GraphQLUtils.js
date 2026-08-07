@@ -19,7 +19,7 @@ export default class GraphQLUtils {
             if (typeof val == "object") {
                 for (let [key, childArr] of Object.entries(val)) {
                     if (Array.isArray(childArr)) {
-                        parts.push(`${key}{${this.buildQueryBody(childArr)}}`)
+                        parts.push(`${key}${this.buildQueryBody(childArr)}`)
                     } else {
                         console.error(`Cannot destructure ${key}, value is no array!`, val)
                     }
