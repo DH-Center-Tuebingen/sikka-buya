@@ -74,7 +74,7 @@ export const ottomanFilterGQL = `
 
 export const ottomanFilterList = [
     { span: 6, type: "three-way", name: 'singleFind', label: 'Single & Hoard Finds', trueLabel: 'Single Finds', falseLabel: 'Hoard Finds', nullLabel: 'Single & Hoard Finds', overwriteNoClass: 'yes' },
-    { span: 6, type: "inline-checkbox", name: 'reliableAttribution', label: 'Display only coins with reliable attribution' },
+    { span: 6, type: "inline-checkbox", name: 'reliableAttribution', label: 'Display only sufficiently published finds' },
     { span: 6, type: "inline-checkbox", name: 'completeHoard', label: 'Display only complete hoard' },
     { span: 6, type: "inline-checkbox", name: 'ottomanPredominance', label: 'Display only hoards consisting predominantly (90%+) of Ottoman coins ' },
 
