@@ -3,18 +3,25 @@
         <Box>
             <template #header>
                 <h2>Server Offline</h2>
-</template>
+            </template>
             <p>Der Server ist derzeit nicht erreichbar. Versuchen Sie es später erneut</p>
             <p>Currently the server appears to be offline. Please try again later</p>
+            <ButtonVue @click="$emit('tryAgain')">
+                Try again
+            </ButtonVue>
         </Box>
     </div>
 </template>
 
 <script>
 import Box from "@/components/layout/Box.vue"
+import ButtonVue from "@/components/layout/buttons/Button.vue";
 
 export default {
-    components: { Box }
+    components: {
+        Box,
+        ButtonVue,
+    },
 };
 </script>
 
@@ -27,7 +34,10 @@ export default {
 }
 </style>
 
-<style lang='scss' scoped>
+<style
+    lang='scss'
+    scoped
+>
 .page {
     position: absolute;
     top: 0;

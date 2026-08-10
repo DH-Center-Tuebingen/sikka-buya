@@ -57,7 +57,6 @@ import InitialSetup from "@/components/page/InitialSetup.vue"
 import UserManagementPage from "@/components/page/UserManagementPage.vue"
 import FixDiff from "@/components/page/FixDiff.vue"
 import PageNotFoundPage from "@/components/page/system/PageNotFoundPage"
-import ServerOfflinePage from "@/components/page/system/ServerOfflinePage"
 import SettingsPage from "@/components/page/SettingsPage.vue"
 
 import EditorPanel from "@/components/page/EditorPanel.vue"
@@ -124,11 +123,6 @@ const routes = [
     {
         path: "/template",
         component: TemplatePage
-    },
-    {
-        name: "Server Offline",
-        path: "/offline",
-        component: ServerOfflinePage
     },
     ...componentTestRoutes,
     {

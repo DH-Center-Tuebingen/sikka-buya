@@ -78,7 +78,7 @@
                         <div class="subtitled">
                             <locale path="cms.group.bibliography" />
                         </div>
-</card-link>
+                    </card-link>
                     <card-link
                         class="subtle-card-link alternative-card-link"
                         :no-image="true"
@@ -87,7 +87,7 @@
                             name: 'Working Papers'
                         }"
                     >
-<div :class="{ subtitled: $mconfig.getBoolean('working_papers.disabled') }">
+                        <div :class="{ subtitled: $mconfig.getBoolean('working_papers.disabled') }">
                             <locale path="cms.group.Working Papers" />
                             <span
                                 v-if="$mconfig.getBoolean('working_papers.disabled')"

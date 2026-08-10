@@ -7,7 +7,7 @@
         <LoadingPage v-if="loading" />
         <template v-else>
             <template v-if="offline">
-                <router-view />
+                <ServerOfflinePage @tryAgain="tryAgain" />
             </template>
             <template v-else>
                 <user-hub v-if="$store.getters.loggedIn && !$route.meta.hideHub" />
@@ -38,10 +38,11 @@ import UserHub from './components/auth/UserHub.vue';
 
 import AuthMixin from './components/mixins/auth';
 import I18n from './i18n/i18n';
+import ServerOfflinePage from './components/page/system/ServerOfflinePage.vue';
 
 export default {
     name: 'App',
-    components: { UserHub, LoadingPage },
+    components: { UserHub, LoadingPage, ServerOfflinePage },
     mixins: [AuthMixin],
     data: function () {
         return {
@@ -56,55 +57,51 @@ export default {
             return this.$store.getters.loggedIn ? 'logged-in' : '';
         },
     },
-    created: async function () {
-
-        try {
-            await I18n.load(this)
-            await this.authenticateIfAvailable();
-        } catch (e) {
-            this.offline = true;
-            if (this.$route.name !== "Server Offline") {
-                this.$router.replace({ name: "Server Offline" });
-            }
-        } finally {
-            this.loading = false;
-        }
-
-        this.popupHandler = new PopupHandler(this);
-        this.popupHandler.init(document.body);
-    },
     beforeDestroy: function () {
         document.body.removeEventListener("click", this.globalClick)
         this.popupHandler.cleanup();
     },
-    mounted: function () {
-        /**
-         * Disables the default zoom behaviour of the browser.
-         */
-
-        this.$refs.app.addEventListener('wheel', (event) => {
-            if (event.ctrlKey) {
-                event.preventDefault();
-            }
-        });
-
-        /**
-         * Sets the debug mode, if in development mode.
-         *
-         * Debug mode can be enabled by calling 'setDebug()'
-         */
-        if (process.env.NODE_ENV === 'development') {
-            let store = this.$store;
-            if (window.debug) store.commit('setDebug');
-            window.setDebug = function () {
-                store.commit('setDebug');
-            };
-        }
-
-        document.body.addEventListener("click", this.globalClick)
-
+    mounted: async function () {
+        this.load()
     },
     methods: {
+        async load() {
+            try {
+                await I18n.load(this)
+                await this.authenticateIfAvailable();
+            } catch (e) {
+                this.offline = true;
+            } finally {
+                this.loading = false;
+            }
+
+            this.popupHandler = new PopupHandler(this);
+            this.popupHandler.init(document.body);
+            /**
+             * Disables the default zoom behaviour of the browser.
+             */
+
+            this.$refs.app.addEventListener('wheel', (event) => {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                }
+            });
+
+            /**
+             * Sets the debug mode, if in development mode.
+             *
+             * Debug mode can be enabled by calling 'setDebug()'
+             */
+            if (process.env.NODE_ENV === 'development') {
+                let store = this.$store;
+                if (window.debug) store.commit('setDebug');
+                window.setDebug = function () {
+                    store.commit('setDebug');
+                };
+            }
+
+            document.body.addEventListener("click", this.globalClick)
+        },
         globalClick(event) {
             this.$root.$emit("global-click", event)
         },
@@ -115,6 +112,11 @@ export default {
             this.$store.commit('closeLoginForm');
             this.$store.commit('increment');
         },
+        tryAgain() {
+            this.offline = false
+            this.loading = true
+            this.load();
+        }
     },
 };
 </script>
