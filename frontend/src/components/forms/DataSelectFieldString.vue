@@ -4,7 +4,6 @@
     >
         <input
             ref="nameField"
-            v-model="value[attribute]"
             class="name-field"
             :placeholder="placeholder"
             :required="required"

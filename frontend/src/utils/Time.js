@@ -1,3 +1,5 @@
+import { toNumber } from "lodash";
+
 export default class Time {
     static formatDateTime(timestamp) {
         if (!timestamp) return '-';
@@ -21,5 +23,15 @@ export default class Time {
     static dateInputValueToTimestamp(dateInputValue) {
         const date = new Date(dateInputValue)
         return date.getTime()
+    }
+
+    static overlap(A, B) {
+        if(A.from === undefined || A.to === undefined || B.from === undefined || B.to === undefined) return false
+        const fromA = toNumber(A.from)
+        const toA = toNumber(A.to)
+        const fromB = toNumber(B.from)
+        const toB = toNumber(B.to)
+        if(isNaN(fromA) || isNaN(toA) || isNaN(fromB) || isNaN(toB)) return false
+        return fromA <= toB &&  toA >= fromB
     }
 }

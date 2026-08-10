@@ -305,8 +305,12 @@ export default {
                                 return false;
                             }
                         } else {
-                            if ('id' in val) return val.id !== null;
-                            return Object.keys(val).length > 0;
+                            if('to' in val && 'from' in val){
+                                const rangeFilter = this.filterNameMap[name]
+                                return val.from > rangeFilter.min || val.to < rangeFilter.max
+                            }
+                            else if ('id' in val) return val.id !== null;
+                            else return Object.keys(val).length > 0;
                         }
                     } else {
                         switch (typeof val) {
@@ -352,7 +356,7 @@ export default {
             return this.getFiltersFor(FilterType.threeWay);
         },
         getRangeFilters() {
-            return this.getFiltersFor(FilterType.range);
+            return this.getFiltersFor(FilterType.realRange);
         },
         multiSelectStringFilters() {
             return this.excludeItem(this.getMultiSelectStringFilters);
@@ -539,7 +543,6 @@ export default {
                 ...this.getButtonGroupFilters,
                 ...this.getNumberFilters,
                 ...this.getInlineCheckboxFilters,
-                ...this.getRangeFilters,
             ]
         },
         reloadFilterNamesIfNecessary(reload = []) {
@@ -653,6 +656,10 @@ export default {
                 this.resetFilter(item.name);
             });
 
+            this.getRangeFilters.forEach((item) => {
+                this.resetRangeFilter(item)
+            });
+
             [...this.getMultiSelectFilters, ...this.getMultiSelectStringFilters].forEach((filter) => {
                 const emptyObj = cloneDeep(Filter.mapData(filter.name, filter.defaultValue));
                 for (let [key, val] of Object.entries(emptyObj)) {
@@ -672,6 +679,8 @@ export default {
             });
         },
         setFilters(options) {
+            // This seems to not be used at all.
+            console.warn("DEPRECATION WARNING::: SETFILTERS IS NOT USED")
             this.getRegularFilters().forEach((item) => {
                 if (options[item.name] !== undefined) {
                     this.$set(this.filters, item.name, options[item.name]);
@@ -710,6 +719,12 @@ export default {
                     this.$set(this.filters, name, item.defaultValue || null);
             }
 
+        },
+        resetRangeFilter(item) {
+            const active = this.activeFilters[item.name];
+            if (active !== undefined) {
+                this.$set(this.filters, item.name, { from: item.min, to: item.max });
+            }
         },
         removeFilterItem(name, target, index) {
             const methodName = this._getMethodFromFilter(
@@ -752,6 +767,12 @@ export default {
                     storage[name] = activeFilters[name];
                 }
             });
+            this.getRangeFilters.forEach((filter) => {
+                console.log("storage: " , filter)
+                if(activeFilters[filter.name] != null){
+                    storage[filter.name] = activeFilters[filter.name]
+                }
+            })
             this.getMultiSelectStringFilters.forEach((filter) => {
                 storage[filter.name] = {
                     mode: this.filterMode[filter.name] || Mode.And,

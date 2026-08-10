@@ -55,6 +55,7 @@
 
 <script>
 import { stringifyRange } from '../../utils/Range';
+import Time from '../../utils/Time';
 
 export default {
     props: {
@@ -70,6 +71,7 @@ export default {
     },
     computed: {
         columns() {
+
             return [
                 { label: '#', key: 'index' },
                 { label: 'Issuing State', key: 'issuingState', object: 'name' },
@@ -78,8 +80,8 @@ export default {
                 { label: 'Issuer', key: 'person', object: 'name' },
                 { label: '⬅ ?', type: 'boolean', key: 'personUncertain' },
 
-                { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}` },
-                { label: '⬅ ?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '-' : '?' },
+                { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}`, match: Time.overlap },
+                { label: '⬅ ?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '-' : '?', match: Time.overlap },
 
                 { label: 'Mint', key: 'mintRegion', object: 'name' },
                 { label: '⬅ ?', type: 'boolean', key: 'mintRegionUncertain' },
@@ -103,17 +105,27 @@ export default {
     },
     methods: {
         inFilters(column, item) {
-            const filterValue = [
-                ...this.filters[column.key] ?? [],
-                ... this.filters[column.key + "_and"] ?? []
-            ]
+            if(this.filters[column.key] == null) return false;
 
-            if (column.object) {
-                const id = Number(item[column.key]?.id) ?? null
-                return filterValue.includes(id)
-            }
-            else {
-                return false;
+            if (Array.isArray(this.filters[column.key])) {
+                const filterValue = [
+                    ...this.filters[column.key] ?? [],
+                    ... this.filters[column.key + "_and"] ?? []
+                ]
+
+                if (column.object) {
+                    const id = Number(item[column.key]?.id) ?? null
+                    return filterValue.includes(id)
+                }
+                else {
+                    return false;
+                }
+            } else {
+                if (column.match) {
+                    return column.match(this.filters[column.key], item[column.key])
+                } else {
+                    console.warn("Not implemented inFilter method!", column, item)
+                }
             }
         },
         formatCell(column, item, index = null) {

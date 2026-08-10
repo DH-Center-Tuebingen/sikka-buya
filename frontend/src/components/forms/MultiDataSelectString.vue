@@ -20,15 +20,6 @@
     </div>
 
     <div
-      v-if="mode"
-      class="mode-indicator"
-      :class="{ interactive: allowModeChange }"
-      @click="changeMode"
-    >
-      <Locale :path="`general.${mode.toLowerCase()}`" />
-    </div>
-
-    <div
       ref="dataSelectWrapper"
       class="data-select-wrapper"
       @click="showDataSelect"
@@ -68,14 +59,12 @@
 import DataSelectFieldString from './DataSelectFieldString.vue';
 import CloseThickIcon from 'vue-material-design-icons/CloseThick.vue';
 import PlusIcon from 'vue-material-design-icons/Plus.vue';
-import Locale from '../cms/Locale.vue';
 
 export default {
   components: {
     CloseThickIcon,
     PlusIcon,
     DataSelectFieldString,
-    Locale
   },
   props: {
     active: {
