@@ -82,7 +82,7 @@ class PersonResolver extends Resolver {
             id: args.id
         })
 
-        return result.map(this.decomposePersonResult)
+        return this.decomposePersonResult(result)
     }
 
 
