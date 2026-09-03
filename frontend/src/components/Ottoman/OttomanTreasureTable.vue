@@ -75,19 +75,19 @@ export default {
             return [
                 { label: '#', key: 'index' },
                 { label: 'Issuing State', key: 'issuingState', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'stateUncertain' },
+                { label: '?', type: 'boolean', key: 'stateUncertain' },
 
                 { label: 'Issuer', key: 'person', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'personUncertain' },
+                { label: '?', type: 'boolean', key: 'personUncertain' },
 
                 { label: 'Year of minting', key: 'yearOfMint', fn: (item) => `${item.from ?? "?"}-${item.to ?? "?"}`, match: Time.overlap },
-                { label: '⬅ ?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '-' : '?', match: Time.overlap },
+                { label: '?', key: 'yearOfMintUncertain', fn: (item) => (item.from === false && item.to === false) ? '' : '?', match: Time.overlap },
 
                 { label: 'Mint', key: 'mintRegion', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'mintRegionUncertain' },
+                { label: '?', type: 'boolean', key: 'mintRegionUncertain' },
 
                 { label: 'Material', key: 'material', object: 'name' },
-                { label: '⬅ ?', type: 'boolean', key: 'materialUncertain' },
+                { label: '?', type: 'boolean', key: 'materialUncertain' },
 
                 { label: 'Denomination', key: 'denominationText' }, //Denom. Text
                 { label: 'Authenticity', key: 'authenticity' },
@@ -130,7 +130,7 @@ export default {
         },
         formatCell(column, item, index = null) {
             if (column.type === 'boolean') {
-                return (item[column.key]) ? '?' : '-'
+                return (item[column.key]) ? '?' : ''
             }
 
             if (column.key === 'index') {
