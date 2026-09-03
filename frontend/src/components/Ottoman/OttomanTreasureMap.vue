@@ -72,30 +72,35 @@
                 />
             </template>
 
-            <template v-if="selectedTreasures.length > 0">
-                <MultiSelectList style="flex: 1;margin-bottom: 1em; border-bottom: 1px solid var(--border-color);">
-                    <h4 class="sidebar-header">
-                        Selected Finds
-                    </h4>
-                    <MultiSelectListItem
-                        v-for="treasure in selectedTreasures"
-                        :key="`list-item-${treasure.id}`"
-                        :selected="isTreasureSelected(treasure.id)"
-                        :checkbox-disabled="selectedTreasures.length > 1 && !isTreasureSelected(treasure.id)"
-                        :style="getSelectedTreasureStyle(treasure)"
-                        @click.native="setTreasure(treasure.id)"
-                        @checkbox-selected="() => toggleTreasure(treasure.id)"
-                    >
-                        <template #before>
-                            <ListColorIndicator
-                                :color="treasure.color"
-                                default-color="transparent"
-                            />
-                        </template>
-                        {{ treasure.name }}
-                    </MultiSelectListItem>
-                </MultiSelectList>
+            <template #before-body>
+                <template v-if="selectedTreasures.length > 0">
+                    <MultiSelectList style="flex: 1;margin-bottom: 1em; border-bottom: 1px solid var(--border-color);">
+                        <h4 class="sidebar-header">
+                            Selected Finds
+                        </h4>
+                        <MultiSelectListItem
+                            v-for="treasure in selectedTreasures"
+                            :key="`list-item-${treasure.id}`"
+                            :selected="isTreasureSelected(treasure.id)"
+                            :style="getSelectedTreasureStyle(treasure)"
+                            :no-checkbox="maxSelectedTreasures < 2"
+                            :checkbox-disabled="selectedTreasureIds.length >= maxSelectedTreasures - 1 && !isTreasureSelected(treasure.id)"
+                            @click.native="setTreasure(treasure.id)"
+                            @checkbox-selected="() => toggleTreasure(treasure.id)"
+                        >
+                            <template #before>
+                                <ListColorIndicator
+                                    :color="treasure.color"
+                                    default-color="transparent"
+                                />
+                            </template>
+                            {{ treasure.name }}
+                        </MultiSelectListItem>
+                    </MultiSelectList>
+                </template>
             </template>
+
+
 
 
             <MultiSelectList style="flex: 1;">
@@ -118,7 +123,8 @@
                     v-for="treasure in activeTreasures"
                     :key="`list-item-${treasure.id}`"
                     :selected="isTreasureSelected(treasure.id)"
-                    :checkbox-disabled="selectedTreasures.length > 1 && !isTreasureSelected(treasure.id)"
+                    :no-checkbox="maxSelectedTreasures < 2"
+                    :checkbox-disabled="selectedTreasureIds.length >= maxSelectedTreasures - 1 && !isTreasureSelected(treasure.id)"
                     @click.native="setTreasure(treasure.id)"
                     @checkbox-selected="() => toggleTreasure(treasure.id)"
                 >
@@ -350,14 +356,17 @@ export default {
             const t = this.treasures.filter(t => this.selectedTreasureIds.includes(t.id))
             return t
         },
+        maxSelectedTreasures() {
+            return 1
+        },
         mints() {
             let mints = this.mintRegions?.slice() || []
             return mints.sort(Sort.stringPropAlphabetically("name"))
         }
     },
     watch: {
-        selectedTreasures(){
-            if(this.selectedTreasures.length === 0){
+        selectedTreasures() {
+            if (this.selectedTreasures.length === 0) {
                 this.showTable = false;
             }
         }
@@ -602,7 +611,7 @@ export default {
         removeInvalidIds() {
             this.selectedTreasureIds = this.selectedTreasureIds.filter(id => this.treasures.find(t => t.id === id))
         },
-        clearDiagram(){
+        clearDiagram() {
             this.$refs.diagramSelect.value = null
             this.updateDiagram()
         },
