@@ -11,8 +11,8 @@ const graphqlFields = require('graphql-fields')
 
 class Treasure extends Table {
 
-            //     yearOfLoss: { type: "range", columns: ["year_of_loss_from", "year_of_loss_to"] },
-            // yearOfLossUncertain: { type: "range", columns: ["year_of_loss_from_uncertain", "year_of_loss_to_uncertain"] },
+    //     yearOfLoss: { type: "range", columns: ["year_of_loss_from", "year_of_loss_to"] },
+    // yearOfLossUncertain: { type: "range", columns: ["year_of_loss_from_uncertain", "year_of_loss_to_uncertain"] },
 
 
     static async insertItems(t, treasure, items = []) {
@@ -521,20 +521,21 @@ class Treasure extends Table {
                 treasure.completeHoard = treasure.complete_hoard
                 treasure.ottomanPredominance = treasure.ottoman_predominance
                 treasure.yearOfLossText = treasure.year_of_loss_text,
-                treasure.yearOfLoss = { from: treasure.year_of_loss_from, to: treasure.year_of_loss_to }
+                    treasure.yearOfLoss = { from: treasure.year_of_loss_from, to: treasure.year_of_loss_to }
                 treasure.yearOfLossUncertain = { from: treasure.year_of_loss_from_uncertain, to: treasure.year_of_loss_to_uncertain }
                 return treasure
             })
 
 
-            let requestedFields = graphqlFields(info)
-            if (requestedFields.items) {
-                const cache = {}
-                for (let treasureIdx = 0; treasureIdx < treasures.length; treasureIdx++) {
-                    const treasure = treasures[treasureIdx]
-                    await TreasureItem.build(t, treasure.items, requestedFields.items, cache)
-                    treasures[treasureIdx] = treasure
-
+            if (info) {
+                let requestedFields = graphqlFields(info)
+                if (requestedFields.items) {
+                    const cache = {}
+                    for (let treasureIdx = 0; treasureIdx < treasures.length; treasureIdx++) {
+                        const treasure = treasures[treasureIdx]
+                        await TreasureItem.build(t, treasure.items, requestedFields.items, cache)
+                        treasures[treasureIdx] = treasure
+                    }
                 }
             }
         })
@@ -586,7 +587,9 @@ class Treasure extends Table {
     }
 
     static async findByName(name, transaction = Database) {
-        return transaction.oneOrNone(`SELECT * FROM treasure WHERE name = $1`, [name])
+        const treasure = await transaction.oneOrNone(`SELECT * FROM treasure WHERE name = $1`, [name])
+        if (!treasure || !treasure.id) return null;
+        return this.get(treasure.id)
     }
 }
 

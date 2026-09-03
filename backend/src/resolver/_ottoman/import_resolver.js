@@ -188,9 +188,17 @@ async function ensureTreasure(treasure, cachedTreasures) {
     if (!existingTreasure) {
         const fetchedTreasure = await Treasure.findByName(treasure.name)
         if (fetchedTreasure) {
-            cachedTreasures[treasure.name] = fetchedTreasure
-            existingTreasure = fetchedTreasure
-            await Treasure.update(fetchedTreasure.id, treasure)
+            // We don't want to keep the outdated items.
+            delete fetchedTreasure.items
+            
+            const combinedTreasure = {
+                ... fetchedTreasure,
+                ... treasure
+            }
+
+            await Treasure.update(fetchedTreasure.id, combinedTreasure)
+            existingTreasure = await Treasure.get(fetchedTreasure.id)
+            cachedTreasures[treasure.name] = existingTreasure
         } else {
             treasure.color = '#ff0000';
             const id = await Treasure.add(treasure);
