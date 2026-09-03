@@ -109,7 +109,7 @@
         </LabeledInputContainer>
         <LabeledInputContainer>
             <template #label>
-                Date of Loss (Text) = {{ value.yearOfLossText }}
+                Date of Loss (Text)
             </template>
 
             <input v-model="value.yearOfLossText">
