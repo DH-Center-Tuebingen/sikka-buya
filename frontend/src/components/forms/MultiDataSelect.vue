@@ -3,7 +3,6 @@
     <div class="content">
       <div class="active-list">
         <div class="data-select-wrapper placeholder" />
-
         <template v-for="(el, index) of active">
           <button
             :key="`active-${el.id}`"

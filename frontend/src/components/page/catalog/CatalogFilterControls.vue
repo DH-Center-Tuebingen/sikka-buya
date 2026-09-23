@@ -665,7 +665,7 @@ export default {
                 for (let [key, val] of Object.entries(emptyObj)) {
 
                     this.$set(this.filters, key, val);
-                    const mode = filter?.mode || Mode.And;
+                    const mode = filter?.mode || null;
                     this.$set(this.filterMode, key, mode);
                 }
             });
@@ -674,7 +674,7 @@ export default {
                 const emptyObj = cloneDeep(FilterList.mapData(filter.name, filter.defaultValue));
                 for (let [key, val] of Object.entries(emptyObj)) {
                     this.$set(this.filters, key, val);
-                    this.$set(this.filterMode, key, filter?.mode || Mode.And);
+                    this.$set(this.filterMode, key, filter?.mode || null);
                 }
             });
         },
@@ -818,7 +818,6 @@ export default {
 >
 .catalog-filters {
     display: grid;
-    gap: $padding;
     grid-template-columns: repeat(6, 1fr);
 }
 

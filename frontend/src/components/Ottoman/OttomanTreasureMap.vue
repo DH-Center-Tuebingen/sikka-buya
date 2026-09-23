@@ -958,6 +958,15 @@ export default {
 .center-ui-top-ottoman .map-toolbar .toolbar {
     pointer-events: all;
 }
+
+.treasure-map .catalog-filters {
+    margin-top: $big-padding;
+}
+
+.treasure-map .catalog-filters label,
+.treasure-map .catalog-filters button{
+    font-size: 0.78rem !important;
+}
 </style>
 
 <style
@@ -1029,18 +1038,23 @@ table {
 
 .treasure-description {
     box-sizing: border-box;
-    width: 400px;
+    width: 640px;
     margin: 0 1em;
     padding: .5rem;
     background-color: $white;
     border: $border;
     border-radius: $border-radius;
 
-    max-height: 300px;
+    height: fit-content;
+    max-height: 700px;
     max-width: 100%;
     min-width: 0;
     overflow-y: auto;
     overflow-x: auto;
+
+    button {
+        white-space: nowrap;
+    }
 }
 
 

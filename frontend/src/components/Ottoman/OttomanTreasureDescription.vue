@@ -52,9 +52,11 @@ export default {
 >
 header {
     margin-top: $small-padding;
-    align-items: flex-start;
+    margin-bottom: $small-padding;
+    align-items: start;
     gap: $padding;
     justify-content: space-between;
+    flex-wrap: wrap-reverse;
 
     .toolbar {
         margin-bottom: $padding;
@@ -65,7 +67,7 @@ header {
 
 h2 {
     margin-top: 0;
-    margin-bottom: $small-padding;
+    margin-bottom: 0;
 }
 
 .find-type {
