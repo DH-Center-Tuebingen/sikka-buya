@@ -121,7 +121,7 @@ export default {
             background-color: $light-gray;
 
             &.yes {
-                background-color: $green;
+                background-color: $primary-color;
             }
 
             &.no {
