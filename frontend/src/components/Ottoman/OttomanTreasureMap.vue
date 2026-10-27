@@ -76,7 +76,7 @@
                 <template v-if="selectedTreasures.length > 0">
                     <MultiSelectList style="flex: 1;margin-bottom: 1em; border-bottom: 1px solid var(--border-color);">
                         <h4 class="sidebar-header">
-                            Selected Finds
+                            Selected Find
                         </h4>
                         <MultiSelectListItem
                             v-for="treasure in selectedTreasures"
@@ -93,8 +93,13 @@
                                     :color="treasure.color"
                                     default-color="transparent"
                                 />
+                                {{ treasure.name }}
                             </template>
-                            {{ treasure.name }}
+                            <template #after>
+                                <button @click.stop="toggleTreasure(treasure.id)">
+                                    X
+                                </button>
+                            </template>
                         </MultiSelectListItem>
                     </MultiSelectList>
                 </template>
@@ -964,7 +969,7 @@ export default {
 }
 
 .treasure-map .catalog-filters label,
-.treasure-map .catalog-filters button{
+.treasure-map .catalog-filters button {
     font-size: 0.78rem !important;
 }
 </style>

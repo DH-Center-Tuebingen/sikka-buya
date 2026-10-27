@@ -17,6 +17,7 @@
                 </label>
             </div>
             <slot />
+            <slot name="after" />
         </div>
         <div>
             <slot name="beneath" />

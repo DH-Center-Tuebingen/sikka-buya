@@ -35,8 +35,8 @@
           :value="getRadius()"
           class="circle-slider"
           min="1"
-          max="1000000"
-          step="1"
+          max="1000"
+          step="0.001"
           @input="($event) => updateRadius(parseFloat($event.target.value))"
         >
         <input
@@ -582,7 +582,6 @@ export default {
     } = {}) {
       let location
       type = type.toLowerCase()
-
 
       if (type === "feature" || type === "circle") {
         location = {

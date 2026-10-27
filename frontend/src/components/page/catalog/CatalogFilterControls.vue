@@ -768,7 +768,6 @@ export default {
                 }
             });
             this.getRangeFilters.forEach((filter) => {
-                console.log("storage: " , filter)
                 if(activeFilters[filter.name] != null){
                     storage[filter.name] = activeFilters[filter.name]
                 }

@@ -1,64 +1,111 @@
 <template>
     <div
-        class="range-slider"
-        :class="{ disabled: disabled }"
+        class="range-slider-wrapper"
+        @wheel="(e) => onWheel(e)"
     >
-        <div class="range-slider-track">
-            <div
-                ref="innerTrack"
-                class="range-slider-inner-track"
-            >
+        <input
+            v-model="inputFrom"
+            type="text"
+            :min="min"
+            :max="max"
+            :step="step"
+            :disabled="disabled"
+            :size="4"
+            @input="(e) => onInput('from', e)"
+            @blur="(e) => onBlur('from', e)"
+            @keydown="(e) => onKeydown('from', e)"
+        >
+        <div
+            class="range-slider"
+            :class="{ disabled: disabled }"
+        >
+            <div class="range-slider-track">
                 <div
-                    class="range-slider-active-track"
-                    :style="activeTrackStyle"
-                />
-                <div
-                    class="range-slider-active-track"
-                    :style="activeTrackStyle"
-                />
-
-
-                <div
-                    class="range-slider-caret-container range-slider-start user-select-none"
-                    role="button"
-                    :style="startStyle"
-                    @pointerdown="startDrag('from')"
+                    ref="innerTrack"
+                    class="range-slider-inner-track"
                 >
                     <div
-                        class="range-slider-caret"
-                        :class="getDraggedClass('from')"
+                        class="range-slider-active-track"
+                        :style="activeTrackStyle"
+                    />
+                    <div
+                        class="range-slider-active-track"
+                        :style="activeTrackStyle"
                     />
 
-                    <span class="range-slider-caret-value">
-                        {{ startLabelText }}
-                    </span>
+
+                    <div
+                        class="range-slider-caret-container range-slider-start user-select-none"
+                        :class="{ selected: selectedCaret === 'from' }"
+                        role="button"
+                        :style="startStyle"
+                        @pointerdown="startDrag('from')"
+                    >
+                        <div
+                            class="range-slider-caret"
+                            :class="getDraggedClass('from')"
+                        />
+
+                        <div
+                            ref="textStartWrapper"
+                            class="range-slider-caret-value-wrapper"
+                        >
+                            <span
+                                ref="textStart"
+                                class="range-slider-caret-value"
+                            >
+                                {{ startLabelText }}
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="range-slider-caret-container range-slider-end user-select-none"
+                        :class="{ selected: selectedCaret === 'to' }"
+                        role="button"
+                        :style="endStyle"
+                        @pointerdown="startDrag('to')"
+                    >
+                        <div
+                            class="range-slider-caret"
+                            :class="getDraggedClass('to')"
+                        />
+                        <div
+                            ref="textEndWrapper"
+                            class="range-slider-caret-value-wrapper"
+                        >
+                            <span
+                                ref="textEnd"
+                                class="range-slider-caret-value"
+                            >
+                                {{ endLabelText }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
 
-                <div
-                    class="range-slider-caret-container range-slider-end user-select-none"
-                    role="button"
-                    :style="endStyle"
-                    @pointerdown="startDrag('to')"
+                <canvas
+                    v-if="requireCanvas"
+                    ref="canvas"
                 >
-                    <div
-                        class="range-slider-caret"
-                        :class="getDraggedClass('to')"
-                    />
-                    <span class="range-slider-caret-value">
-                        {{ endLabelText }}
-                    </span>
-                </div>
+                    No canvas support
+                </canvas>
             </div>
-
-
-            <canvas
-                v-if="requireCanvas"
-                ref="canvas"
-            >
-                No canvas support
-            </canvas>
         </div>
+        <input
+            v-model="inputTo"
+            type="text"
+            :min="min"
+            :max="max"
+            :step="step"
+            :disabled="disabled"
+            :size="4"
+            @input="(e) => onInput('to', e)"
+            @blur="(e) => onBlur('to', e)"
+            @keydown="(e) => onKeydown('to', e)"
+        >
     </div>
 </template>
 
@@ -114,22 +161,25 @@ export default {
         rulers: {
             type: Array,
             default: null
-        }
+        },
     },
 
     data() {
         return {
             dragging: null,
+            inputFrom: null,
+            inputTo: null,
             internalValue: this.value ? { ...this.value } : { from: this.min, to: this.max },
+            selectedCaret: null,
         };
     },
 
     computed: {
         start() {
-            return this.internalValue ? this.internalValue.from : this.min;
+            return this.internalValue?.from ? Math.max(this.internalValue.from, this.min) : this.min;
         },
         end() {
-            return this.internalValue ? this.internalValue.to : this.max;
+            return this.internalValue?.to ? Math.min(this.internalValue.to, this.max) : this.max;
         },
         requireCanvas() {
             if (!this.rulers) { return false; }
@@ -148,10 +198,20 @@ export default {
             return this.makeTextLabel(this.end);
         },
         startStyle() {
-            return { left: `${this.getPosition(this.start)}%` };
+            let val = this.start;
+            if (this.start > this.end) {
+                val = this.end;
+            }
+
+            return { left: `${this.getPosition(val)}%` };
         },
         endStyle() {
-            return { left: `${this.getPosition(this.end)}%` };
+            let val = this.end;
+            if (this.end < this.start) {
+                val = this.start;
+            }
+
+            return { left: `${this.getPosition(val)}%` };
         },
         activeTrackStyle() {
             return {
@@ -165,12 +225,18 @@ export default {
         value(newVal) {
             if (newVal) {
                 this.internalValue = { ...newVal };
+                this.setInputValues();
+                this.$nextTick(() => {
+                    this.preventLabelOverlap();
+                });
             }
         }
     },
 
     mounted() {
         this.updateCanvas();
+        this.preventLabelOverlap();
+        this.setInputValues();
 
         if (this.$refs.canvas) {
             const obs = new ResizeObserver(() => this.updateCanvas());
@@ -181,8 +247,13 @@ export default {
     },
 
     methods: {
+        setInputValues() {
+            this.inputFrom = this.internalValue.from;
+            this.inputTo = this.internalValue.to;
+        },
         makeTextLabel(value) {
-            return (this.step <= 0) ? value.toFixed(2) : value.toFixed(0);
+            const valueNumber = Number(value);
+            return (this.step <= 0) ? valueNumber.toFixed(2) : valueNumber.toFixed(0);
         },
 
         getDraggedClass(index) {
@@ -261,10 +332,27 @@ export default {
 
             value = this.enforceLimit(value);
             value = this.enforceLimit(value, true);
+            this.preventLabelOverlap();
 
             this.swapCaretWhenCrossing(value);
             this.$set(this.internalValue, this.dragging, value);
             this.$emit('input', { ...this.internalValue });
+        },
+
+        preventLabelOverlap() {
+            const startRect = this.$refs.textStartWrapper.getBoundingClientRect();
+            const endRect = this.$refs.textEndWrapper.getBoundingClientRect();
+            const padding = 10;
+            const right = startRect.right + padding / 2;
+            const left = endRect.left - padding / 2;
+            if (right > left) {
+                const overlap = right - left;
+                this.$refs.textStart.style.transform = `translateX(-${overlap / 2}px)`;
+                this.$refs.textEnd.style.transform = `translateX(${overlap / 2}px)`;
+            } else {
+                this.$refs.textStart.style.transform = '';
+                this.$refs.textEnd.style.transform = '';
+            }
         },
 
         enforceLimit(value, upper) {
@@ -299,6 +387,7 @@ export default {
 
         startDrag(target) {
             this.dragging = target;
+            this.selectedCaret = target;
             window.addEventListener('pointermove', this.performDrag);
             window.addEventListener('pointerup', this.endDrag);
             window.addEventListener('pointercancel', this.endDrag);
@@ -378,13 +467,69 @@ export default {
                     }
                 }
             });
+        },
+
+        isValidInput(type, value) {
+            if (type === 'from') {
+                return value <= this.internalValue['to'] && value >= this.min;
+            } else if (type === 'to') {
+                return value >= this.internalValue['from'] && value <= this.max;
+            }
+            return false;
+        },
+
+        onInput(type, event) {
+            const value = Number(event.target.value);
+            if (this.isValidInput(type, value)) {
+                this.internalValue[type] = value;
+                this.$emit('input', { ...this.internalValue });
+            }
+        },
+
+        onBlur(type, event) {
+            this.$emit('input', { ...this.internalValue });
+        },
+
+        onKeydown(type, event) {
+
+            const multiplier = event.shiftKey ? 10 : 1;
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (type === 'from') {
+                    this.onInput('from', { target: { value: Math.min(this.internalValue['from'] + multiplier, this.max) } });
+                } else if (type === 'to') {
+                    this.onInput('to', { target: { value: Math.min(this.internalValue['to'] + multiplier, this.max) } });
+                }
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (type === 'from') {
+                    this.onInput('from', { target: { value: Math.max(this.internalValue['from'] - multiplier, this.min) } });
+                } else if (type === 'to') {
+                    this.onInput('to', { target: { value: Math.max(this.internalValue['to'] - multiplier, this.min) } });
+                }
+            }
+        },
+
+        onWheel(event) {
+            console.log(event);
+            if(!this.selectedCaret) return;
+            const multiplier = event.shiftKey ? 10 : 1;
+            if (this.selectedCaret === 'from') {
+                this.onInput('from', { target: { value: Math.min(Math.max(this.internalValue['from'] + (event.deltaY < 0 ? multiplier : -multiplier), this.min), this.max) } });
+            } else if (this.selectedCaret === 'to') {
+                this.onInput('to', { target: { value: Math.min(Math.max(this.internalValue['to'] + (event.deltaY < 0 ? multiplier : -multiplier), this.min), this.max) } });
+            }
         }
     }
 };
 </script>
 
-<style lang="scss" scoped>
-$size: 20px;
+<style
+    lang="scss"
+    scoped
+>
+$size: 10px;
+$height: 10px;
 
 canvas {
     position: absolute;
@@ -392,12 +537,27 @@ canvas {
     width: 100%;
 }
 
+.range-slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+
+
+    input {
+        font-size: 10px;
+        width: 40px;
+        text-align: center;
+    }
+}
+
 .range-slider {
+    flex: 1;
     position: relative;
-    min-width: 200px;
-    min-height: $size + 10px;
-    height: $size + 10px;
-    // background-color: rgb(24, 201, 53);
+    min-width: 100px;
+    min-height: $height + 5px;
+    height: $height + 5px;
+    top:3px;
 
     &.disabled {
         pointer-events: none;
@@ -408,7 +568,7 @@ canvas {
 .range-slider-track {
     position: absolute;
     bottom: 0;
-    height: $size/2;
+    height: $height;
     width: 100%;
     border-radius: 5px;
     background-color: white;
@@ -436,6 +596,10 @@ canvas {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
+
+    &.selected .range-slider-caret {
+        border: 1px solid $primary-color;
+    }
 }
 
 .range-slider-caret {
@@ -444,35 +608,47 @@ canvas {
     left: 0;
     transform: translate(-50%, -50%) scale(1);
 
-    height: $size;
+    height: $height * 1.5;
     width: $size;
 
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
+    background: rgba(255, 255, 255);
+    border-radius: 3px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.25);
 
     user-select: none;
 
     transition: transform 0.3s ease;
 
-    &::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 60%;
-        height: 60%;
-        background-color: $primary-color;
-        border-radius: 50%;
-    }
+    // &::after {
+    //     content: '';
+    //     position: absolute;
+    //     top: 50%;
+    //     left: 50%;
+    //     transform: translate(-50%, -50%);
+    //     width: 60%;
+    //     height: 60%;
+    //     background-color: $primary-color;
+    //     border-radius: 50%;
+    // }
 
     &.dragged {
         transform: translate(-50%, -50%) scale(.9);
     }
 }
 
+.range-slider-end {
+    .range-slider-caret {
+        &::after {
+            // background-color: red !important;
+        }
+    }
+}
+
 .range-slider-caret-value {
+    display: inline-block;
+}
+
+.range-slider-caret-value-wrapper {
     position: absolute;
     top: -24px;
     left: 50%;
