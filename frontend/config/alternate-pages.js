@@ -6,6 +6,12 @@
  */
 export default [
     {
+        name: "map-introduction",
+        group: "map-introduction",
+        path: "/map-introduction",
+        translation: "cms.pages.map_introduction",
+    },
+    {
         name: "contributing-museums",
         group: "contributing-museums",
         path: "/contributing-museums",
