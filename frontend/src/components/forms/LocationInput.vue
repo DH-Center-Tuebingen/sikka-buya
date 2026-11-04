@@ -31,11 +31,11 @@
         >{{ type.toUpperCase() }}</label>
         <input
           v-if="extendedType === 'circle'"
+          v-model="radiusValue"
           type="range"
-          :value="getRadius()"
           class="circle-slider"
-          min="1"
-          max="1000"
+          :min="minStep"
+          :max="maxStep"
           step="0.001"
           @input="($event) => updateRadius(parseFloat($event.target.value))"
         >
@@ -71,7 +71,14 @@
         :location="center"
         :zoom="5"
         tabindex="0"
-      />
+      >
+        <div style="z-index: 1000; position: absolute; bottom: 10px; right: 10px;">
+          <MapBaseLayerButton
+            v-if="interactive"
+            :map="map"
+          />
+        </div>
+      </map-view>
       <div class="legend">
         <ul>
           <li><b>STRG + Linksklick:</b> Punkt setzen</li>
@@ -89,6 +96,7 @@ import ContentPaste from 'vue-material-design-icons/ContentPaste.vue';
 import ButtonVue from '../layout/buttons/Button.vue';
 import MapView from '../map/MapView.vue';
 import { isValidGeoJson } from '../../utils/Validators';
+import MapBaseLayerButton from '../map/control/MapBaseLayerButton.vue';
 
 export default {
   name: 'LocationInput',
@@ -97,6 +105,7 @@ export default {
     Close,
     ButtonVue,
     ContentPaste,
+    MapBaseLayerButton,
   },
   props: {
     only: {
@@ -119,6 +128,7 @@ export default {
     return {
       polygonPointRadius: 8,
       activeMarkerIndex: null,
+      radiusValue: 100,
       focused: false,
       location: null,
       marker: null,
@@ -127,6 +137,8 @@ export default {
       markerHistory: [],
       historyLimit: 20,
       updateString: 0,
+      maxStep: 1000,
+      minStep: 1,
     };
   },
   computed: {
@@ -218,6 +230,7 @@ export default {
     this.$refs.input.addEventListener('paste', this.pasteEvtListener);
     this.enableMap();
     this.fixObject(this.value)
+    this.setupRadiusSlider();
 
     if (this.coordinates && this.coordinates.length > 0) {
       const focusPoint = this.getCenter(this.value);
@@ -350,6 +363,15 @@ export default {
       });
 
       this.updateMarker();
+    },
+    setupRadiusSlider() {
+      if (this.value?.properties?.radius) {
+        const maxRadiusInMeters = 3000000; // 3000 km ; 6000 km diameter ; wider than the US, should be big enough!
+        const steepness = 2.5;
+        let calculatedRadius = this.value.properties.radius;
+        let sliderValue = this.minStep + (this.maxStep - this.minStep) * Math.pow(calculatedRadius / maxRadiusInMeters, 1 / steepness); // Reverse the calcuation from updateRadius (manually confirmed to be correct)
+        this.radiusValue = sliderValue;
+      }
     },
     focus() {
       this.focused = true;
@@ -571,8 +593,11 @@ export default {
         });
       }
     },
-    updateRadius(radius) {
-      let properties = Object.assign(this.properties, { radius })
+    updateRadius() {
+      const maxRadiusInMeters = 3000000; // 3000 km ; 6000 km diameter ; wider than the US, should be big enough!
+      const steepness = 2.5;
+      let calculatedRadius = maxRadiusInMeters * Math.pow((this.radiusValue - this.minStep) / (this.maxStep - this.minStep), steepness);
+      let properties = Object.assign(this.properties, { radius: calculatedRadius });
       this.emitUpdate({ properties });
     },
     emitUpdate({
