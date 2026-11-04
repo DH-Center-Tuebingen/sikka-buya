@@ -168,7 +168,7 @@
                                 @input="updateDiagram"
                             >
                                 <option value="person">
-                                    <Locale path="property.issuer" />
+                                    <Locale path="property.ottoman_issuer" />
                                 </option>
                                 <option value="material">
                                     <Locale path="property.material" />
