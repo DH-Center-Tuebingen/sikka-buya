@@ -59,19 +59,7 @@
                 </section>
                 <section class="alternate-buttons">
                     <card-link
-                        class="subtle-card-link alternative-card-link"
-                        :no-image="true"
-                        :to="{
-                            name: 'Bibliography',
-                        }"
-                    >
-                        <div class="subtitled">
-                            <locale path="cms.group.bibliography" />
-                        </div>
-                    </card-link>
-
-                    <card-link
-                        v-for="page of alternatePages"
+                        v-for="page of pages"
                         :key="page.name"
                         class="subtle-card-link alternative-card-link"
                         :no-image="true"
@@ -109,7 +97,14 @@ export default {
         PageFooter,
     },
     computed: {
-        alternatePages: ()=> alternatePages
+        pages: () => {
+            const bibliography = {
+                name: "Bibliography",
+                translation: "cms.group.bibliography",
+            }
+            
+            return [alternatePages[0], bibliography, ... alternatePages.slice(1)]
+        }
     }
 };
 </script>

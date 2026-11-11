@@ -96,9 +96,11 @@
                                 {{ treasure.name }}
                             </template>
                             <template #after>
-                                <button @click.stop="toggleTreasure(treasure.id)">
-                                    X
-                                </button>
+                                <Icon
+style="margin-left:auto;"
+:path="icons.mdiClose"
+type="mdi"
+/>
                             </template>
                         </MultiSelectListItem>
                     </MultiSelectList>
@@ -280,7 +282,6 @@ export default {
     },
     mixins: [
         map,
-
         settingsMixin(overlaySettings),
         LocaleStorageMixin("treasure-map", [
             "selectedTreasureIds",
@@ -350,7 +351,7 @@ export default {
 
             const parser = new DOMParser()
             const doc = parser.parseFromString(this.selectedTreasures[0].description, "text/html")
-            const text = doc.body.textContent || ""
+            const text = doc.body.textContent || "" 
             return text.trim().length !== 0
         },
         filterConfig: () => ottomanFilterConfig,

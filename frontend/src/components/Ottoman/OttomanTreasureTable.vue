@@ -2,10 +2,8 @@
     <div class="ottoman-treasure-table">
         <header class="flex row">
             <div class="flex row">
+                <OttomanAccentuatedText :singleFind="treasure.singleFind" />
                 <h2>{{ treasure.name }}</h2>
-                <div class="find-type">
-                    {{ treasure.singleFind ? "Single Find" : "Hoard" }}
-                </div>
             </div>
             <div
                 class="close-button"
@@ -54,10 +52,13 @@
 </template>
 
 <script>
-import { stringifyRange } from '../../utils/Range';
 import Time from '../../utils/Time';
+import OttomanAccentuatedText from './OttomanAccentuatedText.vue';
 
 export default {
+    components: {
+        OttomanAccentuatedText
+    },
     props: {
         treasure: {
             type: Object,
@@ -182,20 +183,6 @@ header {
 h2 {
     margin-top: 0;
     margin-bottom: $small-padding;
-}
-
-.find-type {
-    display: inline-block;
-    font-style: italic;
-    margin-bottom: $padding;
-    background-color: $primary-color;
-    border-radius: $border-radius;
-    color: $white;
-    padding: $small-padding;
-    font-weight: bolder;
-    min-width: fit-content;
-    margin-right: $padding;
-    margin-left: $padding
 }
 
 table {

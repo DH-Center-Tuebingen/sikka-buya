@@ -1,5 +1,6 @@
 <template>
     <div
+        ref="dataSelect"
         class="data-select"
         :class="{ invalid }"
     >
@@ -53,7 +54,13 @@
 
         <ul
             ref="scrollable"
-            :class="'search-box ' + (listVisible ? 'visible' : 'hidden')"
+            class="search-box"
+            :class="{
+                visible: listVisible,
+                hidden: !listVisible,
+                top,
+            }"
+            :style="searchBoxStyle"
             @mousedown.stop.prevent
             @mouseup.stop.prevent
         >
@@ -180,6 +187,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        maxHeight: {
+            type: Number,
+            default: 200
+        }
     },
     data: function () {
         return {
@@ -188,7 +199,8 @@ export default {
             searchResults: [],
             loading: false,
             internal_error: '',
-            iconSize: 18
+            iconSize: 18,
+            top: false,
         };
     },
     computed: {
@@ -197,6 +209,11 @@ export default {
         },
         idValue() {
             return this.value.id || '';
+        },
+        searchBoxStyle() {
+            return {
+                maxHeight: this.maxHeight + "px"
+            }
         },
     },
     methods: {
@@ -234,6 +251,11 @@ export default {
             }
         },
         activateList: async function () {
+            const bottom = this.$refs.dataSelect.getBoundingClientRect().bottom;
+            if(bottom + this.maxHeight > window.innerHeight){
+                this.top = true
+            }
+
             await this.checkMatch(this.value);
             this.showList();
         },
@@ -445,9 +467,11 @@ export default {
 
 .name-field {
     flex: 1;
+    padding-top: 7px;
     min-width: 0;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+    border-bottom: 0;
     //   border: 1px solid gray;
     transition: opacity 0.2s;
 }
@@ -475,7 +499,6 @@ button {
     // padding: 10px;
     box-sizing: border-box;
     z-index: 2000;
-    max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -486,6 +509,18 @@ button {
     border-bottom-right-radius: $border-radius;
     border-bottom-left-radius: $border-radius;
     transform: translateY(-2px);
+
+    &.top {
+        top: 0;
+        transform: translateY(calc(-100% + 2px));
+        border-bottom-width: 0;
+        border-top-right-radius: $border-radius;
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        box-shadow: 1px -2px 3px rgba($color: #000000, $alpha: 0.2);
+
+    }
 
     li {
         font-size: $small-font;

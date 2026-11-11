@@ -141,7 +141,7 @@
             </div>
         </LabeledInputContainer>-->
 
-        <LabeledInputContainer>
+        <!-- <LabeledInputContainer>
             <template #label>
                 <Locale path="general.color" />
             </template>
@@ -149,7 +149,7 @@
                 id="treasure-color-input"
                 v-model="value.color"
             />
-        </LabeledInputContainer>
+        </LabeledInputContainer> -->
 
         <LabeledInputContainer>
             <template #label>
@@ -225,7 +225,7 @@ import SimpleFormattedField from "@/components/forms/SimpleFormattedField"
 
 import { TreasureItemsImporter, CsvExporter } from "@/models/importer"
 import propertyFormMixinFunc from '../../mixins/property-form-mixin-func';
-import ColorInput from '../../forms/ColorInput.vue';
+// import ColorInput from '../../forms/ColorInput.vue';
 import OttomanTreasureItemTable from '@/components/Ottoman/OttomanTreasureItemTable.vue';
 
 import { OttomanTreasure, OttomanTreasureItem } from '@/components/Ottoman/ottoman-treasure-item';
@@ -247,7 +247,7 @@ export default {
         SimpleFormattedField,
         Toggle,
         // TreasureItemForm,
-        ColorInput,
+        // ColorInput,
         OttomanTreasureItemTable,
     },
     mixins: [propertyFormMixinFunc({ variable: "value", property: "treasure", overwriteCancelRoute: { name: "TreasureOverview" } })],

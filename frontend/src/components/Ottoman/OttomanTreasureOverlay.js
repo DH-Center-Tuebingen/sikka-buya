@@ -103,6 +103,9 @@ export default class OttomanTreasureOverlay extends Overlay {
         treasures.forEach(treasure => {
             const selectedTreasures = (Array.isArray(selections.treasures)) ? selections.treasures : []
 
+            // For the Ottoman map we just set the color of the treasures.
+            treasure.color = "#24bfe5";
+
             let totalCount = 0
             let items = {}
             for (let original of treasure.items) {
@@ -274,17 +277,24 @@ export default class OttomanTreasureOverlay extends Overlay {
                         if (mint.original) mint = mint.original
 
                         if (mint) {
+                            const getTooltipCenter = () => L.latLngBounds(treasure.getLatLng(), mint.getLatLng()).getCenter()
 
                             let line = L.connector([treasure, mint], {
                                 color: treasure.options.color,
                                 weight: 2,
                             })
+                            line.getCenter = getTooltipCenter
 
                             line = this.extendBorder(
                                 line,
                                 { properties: { extendBorder } },
-                                () => L.connector([treasure, mint])
+                                () => {
+                                    const border = L.connector([treasure, mint])
+                                    border.getCenter = getTooltipCenter
+                                    return border
+                                }
                             )
+                            line.getCenter = getTooltipCenter
 
                             geometryGroups[connection.treasure].geometries.push(line)
                             line.addTo(this.layer)
@@ -301,16 +311,24 @@ export default class OttomanTreasureOverlay extends Overlay {
                     if (mint.original) mint = mint.original
 
                     if (treasure && mint) {
+                        const getTooltipCenter = () => L.latLngBounds(treasure.getLatLng(), mint.getLatLng()).getCenter()
+
                         let line = L.connector([treasure, mint], {
                             color: treasure.options.color,
                             weight: 2,
                         })
+                        line.getCenter = getTooltipCenter
 
                         line = this.extendBorder(
                             line,
                             { properties: { extendBorder } },
-                            () => L.connector([treasure, mint])
+                            () => {
+                                const border = L.connector([treasure, mint])
+                                border.getCenter = getTooltipCenter
+                                return border
+                            }
                         )
+                        line.getCenter = getTooltipCenter
 
                         line.addTo(this.layer)
                         line.bindTooltip(connection.text, { sticky: true })
@@ -321,23 +339,10 @@ export default class OttomanTreasureOverlay extends Overlay {
         }
 
 
-        const _bringToFront = (geometry) => {
-            geometry.bringToFront()
-            geometry.addTo(targetLayer)
-        }
-
-        const targetLayer = this.layer
         for (let group of Object.values(geometryGroups)) {
             group.geometries.forEach(geometry => {
-
-                geometry.off("mouseover", _bringToFront)
-                geometry.on("mouseover", () => {
-                    group.geometries.forEach(geometry => {
-                        _bringToFront(geometry)
-                    })
-                })
                 geometry.bringToFront()
-                geometry.addTo(targetLayer)
+                geometry.addTo(this.layer)
             })
         }
     }

@@ -1,6 +1,6 @@
 {
     "name": "sikka-buya",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "description": "A digital application for displaying and exploring islamic coinage.",
     "main": "index.js",
     "repository": "git@github.com:Severino/sikka-buya.git",
@@ -20,14 +20,10 @@
         "git:tag": "node ./shared/scripts/update_git_tag.js",
         "deploy:backend": "cd backend && pm2 delete all && npm run pm2",
         "deploy:frontend": "cd frontend && ./deploy.sh",
-        "deploy": "npm run deploy:backend && npm run deploy:frontend",
-        "postinstall": "run-script-os",
-        "postinstall:windows": "(cd frontend && yarn install) && (cd backend && yarn install) && (cd test && yarn install)",
-        "postinstall:default": "(cd frontend && yarn install); (cd backend && yarn install); (cd test && yarn install)"
+        "deploy": "npm run deploy:backend && npm run deploy:frontend"
     },
     "devDependencies": {
         "concurrently": "^7.1.0",
-        "run-script-os": "^1.1.6",
         "wait-on": "^6.0.1"
     },
     "dependencies": {

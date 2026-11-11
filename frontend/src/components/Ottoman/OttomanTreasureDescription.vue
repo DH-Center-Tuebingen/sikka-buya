@@ -1,33 +1,53 @@
 <template>
-    <div class="ottoman-treasure-description">
-        <header class="flex row">
-            <h2>{{ treasure.name }}</h2>
-            <div class="flex row toolbar">
-                <slot name="header" />
-                <div class="find-type">
-                    {{ treasure.singleFind ? "Single Find" : "Hoard" }}
+    <Collapsible
+        :front="true"
+        :collapsed="collapsed"
+        @toggled="(state) => collapsed = state"
+    >
+        <template #header>
+            <div class="collapsible-header-template flex row">
+                <h2>
+                    <OttomanAccentuatedText :single-find="treasure.singleFind" />
+                    {{ treasure.name }}
+                </h2>
+                <div class="flex row toolbar">
+                    <slot name="header" />
                 </div>
             </div>
-        </header>
-        <div
-            v-for="def in definition"
-            :key="def.label"
-            class="d-flex row"
-        >
-            <strong>{{ def.label }}: </strong>
-            <span>{{ def.value }}</span>
-        </div>
-    </div>
+        </template>
+        <article>
+            <div
+                v-for="def in definition"
+                :key="def.label"
+                class="d-flex row"
+            >
+                <strong>{{ def.label }}: </strong>
+                <span>{{ def.value }}</span>
+            </div>
+        </article>
+    </Collapsible>
 </template>
 
 <script>
-import { stringifyRange } from '../../utils/Range';
+import Collapsible from "@/components/layout/Collapsible"
+import localStorageMixin from "../mixins/local-storage-mixin";
+import OttomanAccentuatedText from "./OttomanAccentuatedText.vue";
 
 export default {
+    components: {
+        Collapsible,
+        OttomanAccentuatedText,
+    },
+    mixins: [localStorageMixin('ottoman-treasure-description-collapsible'), ['collapsed']],
     props: {
         treasure: {
             type: Object,
             required: true
+        }
+    },
+    data() {
+        return {
+            collapsed: false,
         }
     },
     computed: {
@@ -56,29 +76,21 @@ header {
     align-items: start;
     gap: $padding;
     justify-content: space-between;
-    flex-wrap: wrap-reverse;
+    flex-wrap: nowrap;
 
     .toolbar {
-        margin-bottom: $padding;
+        margin-left: auto;
         gap: $padding;
-        margin-right: $padding;
     }
+}
+
+article {
+    padding-top: 2*$padding;
 }
 
 h2 {
     margin-top: 0;
     margin-bottom: 0;
-}
-
-.find-type {
-    display: inline-block;
-    font-style: italic;
-    background-color: $primary-color;
-    border-radius: $border-radius;
-    color: $white;
-    padding: $small-padding;
-    font-weight: bolder;
-    min-width: fit-content;
 }
 
 th,
@@ -95,5 +107,14 @@ th {
 
 tr:nth-child(2n+1) {
     background-color: whitesmoke;
+}
+
+.toolbar {
+    align-items: center;
+}
+
+.collapsible-header-template {
+    align-items: center;
+    flex:1;
 }
 </style>
