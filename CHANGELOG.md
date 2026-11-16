@@ -1,5 +1,11 @@
 # Changelog
 
+## Release 1.0.10
+- Fixed wrong color for mint view
+- Added 'data-locale-path' to locale component (to allow inspecting elements that doesn't provide UI, e.g. select options)
+- Fixed some typos in the filter list
+- Fixed table not highlighting dropdown fields in table view
+
 ## Release 1.0.9
 - Reworked application to work with newer version of Node (>= 24)
 - Fixed minor bug of query params not being properly applied on catalog filters
