@@ -5,7 +5,6 @@ import Query from '@/database/query';
 import Overlay from '@/maps/Overlay';
 import { MintLocationMarker } from '@/models/mintlocation'
 
-import Mint from '@/models/map/mint';
 import { OttomanTreasure } from './ottoman-treasure-item';
 
 
@@ -97,6 +96,15 @@ export default class OttomanTreasureOverlay extends Overlay {
 
 
     transform(data, selections = { treasures: [] }) {
+
+        // For the Ottoman map we just set the color of the treasures.
+        const treasureByMint = data.treasuresByMint ?? []
+        treasureByMint.forEach(mint => mint?.treasures?.length && mint.treasures.forEach(treasureData => {
+            treasureData.color = "#24bfe5"
+            if (treasureData.treasure)
+                treasureData.treasure.color = "#24bfe5"
+        }))
+
 
         const treasures = data.treasures
         let transformedData = []
@@ -351,7 +359,7 @@ export default class OttomanTreasureOverlay extends Overlay {
     showClickableTreasureArea(treasures, { extendBorder = 20 } = {}) {
         let features = []
 
-        if(!treasures) return features
+        if (!treasures) return features
         treasures.forEach(treasure => {
 
             if (this.treasureFilterMask !== null && !this.treasureFilterMask.includes(treasure.id)) {

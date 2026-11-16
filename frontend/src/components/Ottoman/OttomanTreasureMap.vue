@@ -217,8 +217,6 @@ import Chart from "chart.js/auto"
 // Mixins
 import map from '@/components/map/mixins/map';
 import settingsMixin from '@/components/map/mixins/settings';
-import TimelineMixin from '@/components/map/mixins/timeline';
-import TimelineHighlightMixin from '@/components/mixins/timeline-highlight-mixin';
 import MountedAndLoadedMixin from '@/components/mixins/mounted-and-loaded';
 import CatalogFilterMixin from '@/components/mixins/catalog-filter';
 
@@ -226,8 +224,6 @@ import CatalogFilterMixin from '@/components/mixins/catalog-filter';
 import CatalogFilterControls from '@/components/page/catalog/CatalogFilterControls.vue';
 import ButtonVue from '@/components/layout/buttons/Button.vue';
 import Sidebar from '@/components/map/Sidebar.vue';
-import Timeline from '@/components/map/timeline/Timeline.vue';
-import RadioButtonGroup from '@/components/forms/RadioButtonGroup.vue';
 import ScrollView from '@/components/layout/ScrollView.vue';
 
 // Other
@@ -237,7 +233,6 @@ import Locale from '@/components/cms/Locale.vue';
 import MapToolbar from "@/components/map/MapToolbar.vue"
 import MultiSelectList from '@/components/MultiSelectList.vue';
 import MultiSelectListItem from '@/components/MultiSelectListItem.vue';
-import { FrequencySampler } from "@/models/chart/sampler"
 
 let settings = new Settings(window, 'TreasureOverlay');
 const overlaySettings = settings.load();
@@ -245,14 +240,10 @@ const overlaySettings = settings.load();
 
 import LocaleStorageMixin from "@/components/mixins/local-storage-mixin"
 import Sort from "@/utils/Sorter";
-import TimelineChart, { BarGraph, MirrorGraph, RangeGraph, TickGraph, LineGraph } from "@/models/timeline/TimelineChart";
 import ListColorIndicator from '@/components/list/ListColorIndicator.vue';
 import Query from "@/database/query";
 
-import Range from "@/models/timeline/range";
 import Color from "@/utils/Color";
-import Row from '@/components/layout/Row.vue';
-import { fixPrecision } from "@/utils/Number"
 
 
 import IconMixin from '@/components/mixins/icon-mixin';
