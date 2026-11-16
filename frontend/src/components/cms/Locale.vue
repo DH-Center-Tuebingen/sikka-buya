@@ -2,6 +2,7 @@
     <span
         class="locale-comp"
         :class="{ editable: $store.getters.isEditableByWriter }"
+        :data-locale-path="path"
     >
         <template v-if="$store.getters.isEditableByWriter">
             <LocaleIcon
