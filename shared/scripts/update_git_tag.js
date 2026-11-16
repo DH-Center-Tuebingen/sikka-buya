@@ -4,9 +4,13 @@ const packageJsonPath = join(__dirname, "..", "..", "package.json")
 const { log, error } = require("../../backend/scripts/modules/logging.js")
 
 async function main() {
+    console.log(`Retrieving tag ...`)
     const tag = getTag()
+    console.log(`Add tag '${tag}' to repo.`)
     await addTag(tag)
+    console.log(`Push tag to remote ...`)
     await pushTag()
+    console.log(`Successfully pushed tag '${$tag}' to remote!`)
 }
 
 function getTag() {
