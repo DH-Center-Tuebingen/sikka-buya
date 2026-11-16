@@ -1,5 +1,6 @@
 const GQL = require('../klasses/gql.js')
 const { Database } = require('../../utils/database.js')
+const StringUtils = require('../../utils/string.js')
 
 class OttomanGQL extends GQL {
 
@@ -126,14 +127,14 @@ class OttomanGQL extends GQL {
                 return results.map(r => r.subclassification)
 
             },
-            searchAuthenticity: async function (text) {
-                text = (text) ? text : ''
+            searchAuthenticity: async function (_, { text }) {
+                text = StringUtils.sanitizeSearch(text)
                 const results = await Database.manyOrNone(`SELECT DISTINCT authenticity FROM treasure_item WHERE authenticity IS NOT NULL AND authenticity ilike unaccent($1) ORDER BY authenticity;`, [`%${text}%`])
                 if (!results) return []
                 return results.map(r => r.authenticity)
             },
-            searchCoinTypeText: async function (text) {
-                text = (text) ? text : ''
+            searchCoinTypeText: async function (_, { text }) {
+                text = StringUtils.sanitizeSearch(text)
                 const results = await Database.manyOrNone(`SELECT DISTINCT cointype_text FROM treasure_item WHERE cointype_text IS NOT NULL AND cointype_text ilike unaccent($1) ORDER BY cointype_text;`, [`%${text}%`])
                 if (!results) return []
                 return results.map(r => r.cointype_text)
