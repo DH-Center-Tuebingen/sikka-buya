@@ -2,7 +2,7 @@
     <div class="ottoman-treasure-table">
         <header class="flex row">
             <div class="flex row">
-                <OttomanAccentuatedText :singleFind="treasure.singleFind" />
+                <OttomanAccentuatedText :single-find="treasure.singleFind" />
                 <h2>{{ treasure.name }}</h2>
             </div>
             <div
@@ -106,24 +106,24 @@ export default {
     },
     methods: {
         inFilters(column, item) {
-            if(this.filters[column.key] == null) return false;
+            const value = item[column.key]
+            const filterKey = this.filters[column.key] ? this.filters[column.key] : this.filters[column.key + "_and"] ? this.filters[column.key + "_and"] : null
+            if (filterKey == null) return false;
 
-            if (Array.isArray(this.filters[column.key])) {
+            if (Array.isArray(filterKey)) {
                 const filterValue = [
-                    ...this.filters[column.key] ?? [],
-                    ... this.filters[column.key + "_and"] ?? []
+                    ...filterKey ?? []
                 ]
-
+                
                 if (column.object) {
-                    const id = Number(item[column.key]?.id) ?? null
+                    const id = Number(value?.id) ?? null
                     return filterValue.includes(id)
-                }
-                else {
-                    return false;
+                } else {
+                    return filterValue.includes(value);
                 }
             } else {
                 if (column.match) {
-                    return column.match(this.filters[column.key], item[column.key])
+                    return column.match(filterKey, value)
                 } else {
                     console.warn("Not implemented inFilter method!", column, item)
                 }
